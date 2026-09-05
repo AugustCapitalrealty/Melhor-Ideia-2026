@@ -553,3 +553,45 @@ try {
   console.log(`✗ FALHA na Correção 14: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 15 — a tela e o servidor precisam ler número igual
+//
+//  O front apagava todo ponto; cfNumero_ só apaga ponto quando há vírgula
+//  junto. Digitar "12.500" somava R$ 12.500,00 na tela e gravava 12,5 na
+//  planilha. Sem erro, sem aviso, no campo mais caro do sistema.
+//
+//  Este teste extrai a função num() do próprio Interface.html: se alguém
+//  "simplificar" ela de novo, quebra aqui.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxN = vm.createContext({ Logger: { log: () => {} }, console: console });
+  vm.runInContext(fs.readFileSync(path.join(root, 'app', 'Util.gs'), 'utf8'), ctxN, { filename: 'Util.gs' });
+
+  const html = fs.readFileSync(path.join(root, 'app', 'Interface.html'), 'utf8');
+  const inicio = html.indexOf('function num(v) {');
+  assert.ok(inicio > 0, 'não achei a função num() no Interface.html');
+  const fim = html.indexOf('\n}', inicio);
+  const fonteNum = html.slice(inicio, fim + 2);
+
+  const ctxF = vm.createContext({});
+  vm.runInContext(fonteNum, ctxF, { filename: 'Interface.html#num' });
+
+  const casos = ['1.234', '1234.56', '1.234,56', '12.500', '12500', '1,5', '0,99',
+                 'R$ 1.234,56', '  2.000,00 ', '', '-', '3', '1,234.56', '10.00'];
+
+  casos.forEach(v => {
+    const front = ctxF.num(v);
+    const back = ctxN.cfNumero_(v);
+    assert.equal(front, back,
+      `"${v}": a tela leu ${front} e o servidor leu ${back} — a tela somaria um valor e a planilha guardaria outro`);
+  });
+
+  // O caso que motivou tudo, explícito.
+  assert.equal(ctxF.num('12.500'), ctxN.cfNumero_('12.500'));
+
+  console.log('✓ CORREÇÃO VERIFICADA: tela e servidor leem número pela mesma regra');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 15: ${e.message}`);
+  process.exitCode = 1;
+}

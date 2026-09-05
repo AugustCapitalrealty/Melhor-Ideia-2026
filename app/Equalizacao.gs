@@ -172,9 +172,16 @@ const CF_EMPREENDIMENTOS = [
   'MEGA CENTRO LOGÍSTICO ITAJAÍ'
 ];
 
+/**
+ * As duas contratantes do grupo, com CNPJ.
+ *
+ * O CNPJ não é decorativo: cfEmpresaDoCnpj_ deriva a etiqueta "Capital
+ * Realty"/"Demercado" da consulta a partir dele. Com os dois em branco,
+ * como estavam, tudo criado pela tela saía sem empresa nenhuma.
+ */
 const CF_EMPRESAS = [
-  { cnpj: '', nome: 'DEMERCADO INVESTIMENTOS S.A.' },
-  { cnpj: '', nome: 'CAPITAL REALTY' }
+  { cnpj: '08601964000105', nome: 'DEMERCADO INVESTIMENTOS S.A.' },
+  { cnpj: '03015145000154', nome: 'CAPITAL REALTY INFRAESTRUTURA LOGÍSTICA LTDA' }
 ];
 
 function cfCriarEqualizacao_(d) {

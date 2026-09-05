@@ -131,7 +131,13 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-s
 .eq-cab .meta{font-size:13px;color:var(--suave)}
 
 /* A matriz rola sozinha: a página nunca rola de lado. */
-.mapa-rolo{overflow-x:auto;border:1px solid var(--linha);border-radius:8px;background:var(--superficie)}
+/* max-height é obrigatório aqui. Com só overflow-x:auto o eixo Y também
+   vira 'auto' pela especificação, mas sem altura limitada o container nunca
+   rola — e o thead sticky resolve contra um scrollport parado, ou seja,
+   nunca gruda. Numa EAP de 40 linhas o comprador perde os nomes das colunas. */
+.mapa-rolo{max-height:72vh;overflow:auto;border:1px solid var(--linha);border-radius:8px;background:var(--superficie)}
+table.mapa tbody tr:hover td,table.mapa tbody tr:hover .desc{background:#F7F9FD}
+table.mapa .desc{box-shadow:1px 0 0 var(--linha)}
 table.mapa{border-collapse:separate;border-spacing:0;min-width:100%}
 table.mapa th,table.mapa td{padding:9px 14px;border-bottom:1px solid var(--superficie2);white-space:nowrap}
 table.mapa thead th{
@@ -578,7 +584,12 @@ function desenharMapa(m) {
         // "não cotou" é diferente de "cotou por zero" — e nunca vence a linha.
         return '<td class="preco nao">' + esc(rotuloStatus(c.status)) + '</td>';
       }
-      return '<td class="preco' + (l.menor === p.id ? ' menor' : '') + '">' + moeda(c.valor) + '</td>';
+      // O ✓ não é enfeite: cor sozinha não comunica para quem tem
+      // deuteranopia, e "qual é o menor" é a informação central do mapa.
+      var eMenor = l.menor === p.id;
+      return '<td class="preco' + (eMenor ? ' menor' : '') + '"' +
+             (eMenor ? ' aria-label="menor preço da linha: ' + moeda(c.valor) + '"' : '') +
+             '>' + (eMenor ? '✓ ' : '') + moeda(c.valor) + '</td>';
     }).join('');
 
     return '<tr class="' + (l.tipo === 'grupo' ? 'grupo' : '') + '">' +
@@ -587,9 +598,24 @@ function desenharMapa(m) {
            esc(l.descricao) + qtd + '</td>' + celulas + '</tr>';
   }).join('');
 
-  var rodape = '<tr><td class="desc">Total declarado</td>' + props.map(function (p) {
-    return '<td class="preco">' + moeda(p.total) + '</td>';
-  }).join('') + '</tr>';
+  // Duas linhas, não uma. O que o app cria não tem total declarado — só a
+  // soma dos itens — e mostrar "—" apagava a conclusão da comparação. E
+  // quando os dois existem, divergência entre o total que o fornecedor
+  // escreveu e a soma real dos itens dele é erro comum de proposta.
+  var temDeclarado = props.some(function (p) { return p.total !== null && p.total !== undefined; });
+
+  var rodape =
+    '<tr><td class="desc">Total dos itens</td>' + props.map(function (p) {
+      return '<td class="preco">' + moeda(p.calculado) + '</td>';
+    }).join('') + '</tr>' +
+    (temDeclarado
+      ? '<tr><td class="desc">Total declarado no documento</td>' + props.map(function (p) {
+          var diverge = p.total !== null && p.calculado !== null &&
+                        Math.abs(p.total - p.calculado) > 0.01;
+          return '<td class="preco"' + (diverge ? ' style="color:var(--alerta)"' : '') + '>' +
+                 moeda(p.total) + (diverge ? ' <small>≠ soma</small>' : '') + '</td>';
+        }).join('') + '</tr>'
+      : '');
 
   var meta = [eq.empreendimento, eq.projeto, eq.area, eq.data, eq.status].filter(Boolean).map(esc).join(' · ');
 
@@ -697,7 +723,11 @@ function desenharGrade() {
       ? proponentes.map(function () { return '<td></td>'; }).join('')
       : proponentes.map(function (p, j) {
           return '<td><input class="preco" inputmode="decimal" value="' + esc(it.precos[j]) + '"' +
-                 ' placeholder="—" oninput="itens[' + i + '].precos[' + j + ']=this.value;calcular()"></td>';
+                 ' placeholder="—"' +
+                 ' aria-label="Preço unitário — ' + esc(it.descricao || ('item ' + (i + 1))) +
+                 ' — ' + esc(p.nome || ('proponente ' + (j + 1))) + '"' +
+                 ' oninput="itens[' + i + '].precos[' + j + ']=this.value;calcular()"' +
+                 ' onblur="normalizarCampo(this,' + i + ',' + j + ')"></td>';
         }).join('');
 
     var niveis = [0, 1, 2, 3].map(function (n) {
@@ -722,10 +752,52 @@ function desenharGrade() {
   calcular();
 }
 
+/**
+ * MESMA regra de cfNumero_ (Util.gs). Não simplifique.
+ *
+ * A versão anterior apagava todo ponto, e o servidor não. Digitar "12.500"
+ * mostrava R$ 12.500,00 na tela e gravava 12,5 na planilha — sem erro, sem
+ * aviso. Divergência entre o que a tela soma e o que o servidor grava é o
+ * defeito mais caro possível num sistema de preço.
+ *
+ * O teste "Correção 15" extrai esta função do HTML e compara com cfNumero_.
+ */
 function num(v) {
-  if (v === null || v === undefined || String(v).trim() === '') return null;
-  var n = Number(String(v).replace(/\./g, '').replace(',', '.'));
+  if (v === null || v === undefined || v === '') return null;
+  if (typeof v === 'number') return isNaN(v) ? null : v;
+
+  var s = String(v).trim()
+    .replace(/R\$/gi, '')
+    .replace(/\s/g, '')
+    .replace(/[()]/g, '');
+
+  if (!s || /^[-–—]$/.test(s)) return null;
+
+  var temVirgula = s.indexOf(',') >= 0;
+  var temPonto = s.indexOf('.') >= 0;
+  if (temVirgula && temPonto) {
+    s = s.lastIndexOf(',') > s.lastIndexOf('.')
+      ? s.replace(/\./g, '').replace(',', '.')
+      : s.replace(/,/g, '');
+  } else if (temVirgula) {
+    s = s.replace(',', '.');
+  }
+
+  var n = Number(s);
   return isNaN(n) ? null : n;
+}
+
+/**
+ * Reescreve o campo no formato BR ao sair dele.
+ * É a única defesa real contra erro de digitação de valor: o comprador vê
+ * como o sistema entendeu ANTES de salvar, em vez de descobrir no mapa.
+ */
+function normalizarCampo(el, i, j) {
+  var n = num(el.value);
+  if (n === null) { el.value = ''; itens[i].precos[j] = ''; calcular(); return; }
+  el.value = n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  itens[i].precos[j] = el.value;
+  calcular();
 }
 
 function calcular() {
@@ -761,6 +833,23 @@ function calcular() {
   }).join('');
 }
 
+/** Leva ao mapa da equalização recém-criada: é o fecho natural da tarefa. */
+function verMapaDe(id) {
+  aba('mapa');
+  google.script.run.withSuccessHandler(function (r) {
+    if (!r.ok) return;
+    var sel = document.getElementById('eqSel');
+    sel.innerHTML = r.equalizacoes.map(function (e) {
+      var rot = [e.data, e.empreendimento, e.area].filter(Boolean).join(' · ') +
+                ' (' + e.proponentes + ' proponentes)';
+      return '<option value="' + esc(e.id) + '">' + esc(rot) + '</option>';
+    }).join('');
+    sel.value = id;
+    equalizacoesCarregadas = true;
+    abrirMapa(id);
+  }).apiEqualizacoes();
+}
+
 function salvarEqualizacao() {
   var bt = document.getElementById('btSalvar');
   var msg = document.getElementById('salvoMsg');
@@ -769,10 +858,18 @@ function salvarEqualizacao() {
 
   google.script.run
     .withSuccessHandler(function (r) {
-      bt.disabled = false;
-      if (!r.ok) { msg.innerHTML = '<span style="color:var(--critico)">' + esc(r.erro) + '</span>'; return; }
-      msg.innerHTML = '<span style="color:var(--ok)">Gravada: ' + esc(r.resultado.id) + ' · ' +
-        r.resultado.nos + ' nós · ' + r.resultado.precos + ' preços</span>';
+      if (!r.ok) {
+        bt.disabled = false;   // só reabilita quando falhou: dá para tentar de novo
+        msg.innerHTML = '<span style="color:var(--critico)">' + esc(r.erro) + '</span>';
+        return;
+      }
+      // Continua desabilitado de propósito. Reabilitar com o formulário
+      // intacto fazia dois cliques criarem duas equalizações idênticas —
+      // não há chave de idempotência no servidor que segure isso.
+      msg.innerHTML = '<span style="color:var(--ok)">Gravada ' + esc(r.resultado.id) + ' · ' +
+        r.resultado.nos + ' nós · ' + r.resultado.precos + ' preços.</span> ' +
+        '<button class="bt" onclick="verMapaDe(\'' + esc(r.resultado.id) + '\')">Abrir o mapa</button> ' +
+        '<button class="bt" onclick="location.reload()">Nova equalização</button>';
       equalizacoesCarregadas = false;   // o seletor do mapa precisa recarregar
     })
     .withFailureHandler(function (e) {
