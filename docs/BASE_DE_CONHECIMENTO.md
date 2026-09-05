@@ -277,17 +277,20 @@ Exemplos reais: `EQU_20260827-MEGA CURITIBA_Revitalização Reservatório Metál
 ## 7. Pendências de investigação
 
 ### Bloqueia a v1
-- [ ] **Onde estão os `.xlsx` originais das equalizações?** A pasta compartilhada tem PDFs exportados. PDF dá para ler, mas xlsx/Sheets importa muito melhor. **Caminho crítico.**
+- [x] ~~Onde estão os originais das equalizações?~~ → ✅ **Google Sheets** (05/09). Leitura direta, sem parser de PDF.
+- [x] ~~Onde o app vai morar?~~ → ✅ **Drive compartilhado já existente** (05/09)
+- [x] ~~Quem usa no piloto?~~ → ✅ **usuário identificado** (05/09)
 - [ ] Tabela de empreendimentos e seus apelidos (MCtba / MEGA CURITIBA / MEGA / MEsteio / MItajai...) — sem isso a comparação entre Megas não fecha
 - [ ] "Formulário de equalização" é processo paralelo ao "EQU_"? *(agente investigando)*
 - [ ] Engenharia usa quantidade e unidade na EAP? *(agente investigando)*
 - [ ] O fluxo "fornecedor preenche a própria cópia do EAP" se confirma? *(agente investigando)*
 
 ### Só importa para a v2.0
-- [ ] Como funciona hoje o **"performance de contratos"** — é módulo do Fluig, planilha, ou outro sistema? Quem alimenta e com que frequência?
-- [ ] Quantos contratos ativos têm SLA anexo, e ele é preenchido mensalmente?
-- [ ] Quanto de glosa deixou de ser aplicada por SLA não medido?
-- [ ] Quantos contratos ativos em modalidade LPU existem? A LPU é redigitada a cada contrato ou sai de uma fonte única?
+> ⚪ **Encerradas por decisão do Guilherme em 05/09**: a frente de SLA e glosa não será aberta agora. As perguntas ficam registradas para quando a v2.0 começar.
+- [ ] ~~Como funciona hoje o "performance de contratos"?~~
+- [ ] ~~Quantos contratos ativos têm SLA anexo, e ele é preenchido mensalmente?~~
+- [ ] ~~Quanto de glosa deixou de ser aplicada por SLA não medido?~~
+- [ ] ~~Quantos contratos ativos em modalidade LPU existem?~~
 
 ---
 

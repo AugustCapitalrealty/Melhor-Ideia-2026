@@ -249,10 +249,12 @@ Contratos LPU e preço de referência contratual · SLA mensal digital e cálcul
 
 | Severidade | Risco | Ação |
 | :--- | :--- | :--- |
-| 🔴 Bloqueador | Acervo de equalizações originais (Sheets/xlsx, não PDF) | Localizar hoje |
+| ~~🔴 Bloqueador~~ ✅ | ~~Acervo em formato ilegível~~ — **está em Google Sheets** | Resolvido 05/09 |
 | 🔴 Antes de qua | `RESPOSTA_AO_COMITE.md:53` promete condicionar o encerramento da medição via Fluig; a arquitetura marca Fluig como "integração futura" | Corrigir o texto antes da reunião |
+| 🔴 Antes de qua | **Duas promessas ao comitê não se cumprem**: gatilho automatizado no Fluig e condicionamento do encerramento da medição | Corrigir a minuta e apresentar a troca como redução consciente de dependência de TI |
+| 🟠 Escopo | Cresceu muito em 05/09. Alguma coisa vai ficar de fora | Escolher agora, não descobrir em outubro |
 | 🟠 Enquadramento | Saving de negociação ≠ saving da ferramenta | Só contar o que veio de alerta |
-| 🟠 Viabilidade | Dono institucional do script e da planilha | Drive compartilhado do departamento |
+| ~~🟠 Viabilidade~~ ✅ | ~~Dono institucional~~ — **Drive compartilhado já existe** | Resolvido 05/09. Criar tudo dentro dele desde o início |
 | 🟠 Medição | Baseline de tempo precisa ser medido **antes** do piloto | Cronometrar 3 equalizações |
 | 🟡 Dependência | BrasilAPI não é "Receita Federal oficial" — é comunitária, sem SLA | Cache + fallback manual |
 | 🟡 Licença | SF Pro / SF Symbols são licenciados para plataformas Apple | Trocar por fonte livre, reposicionar como "inspirado na HIG" |

@@ -161,6 +161,29 @@ Dois ajustes que caíram do requisito:
 
 Também dá a resposta honesta para "e se o piloto rodar poucas equalizações?": o valor não depende só do que for criado, depende do que for **resgatado do passado**.
 
+### Respostas que destravaram o plano — fim do dia 05/09
+
+| Pergunta | Resposta | Efeito |
+| :--- | :--- | :--- |
+| Formato do acervo | **Google Sheets** | 🟢 **Bloqueador da Fase 1 resolvido.** Leitura direta com `SpreadsheetApp`, sem conversão e sem parser de PDF |
+| Onde o app mora | **Drive compartilhado já existe** | 🟢 Dono institucional resolvido. Viabilidade (20%) vai a 10, e o compartilhamento de PDF e deck **herda da pasta** — não precisa escrever código de permissão |
+| Usuário do piloto | **Já tem alguém em mente** | 🟢 O maior risco de Impacto cai. A primeira tela se desenha para o jeito dessa pessoa trabalhar |
+| SLA / glosa | **Fica para a v2** | ⚪ Decisão do Guilherme. Sai do radar; não voltar ao assunto |
+
+### Riscos encerrados hoje
+
+- ~~🔴 Acervo pode estar só em PDF~~ → **está em Google Sheets**
+- ~~🟠 Dono institucional do script~~ → **Drive compartilhado existe**
+- ~~🟠 Piloto sem usuário definido~~ → **usuário identificado**
+- ~~🟡 SLA está sendo preenchido?~~ → **fora de escopo por decisão**
+
+### Riscos que continuam abertos
+
+- 🔴 Corrigir com o comitê as **duas promessas que não se cumprem** (gatilho Fluig e condicionamento da medição) — antes que eles cobrem
+- 🟠 Escopo cresceu muito num dia; alguma coisa vai ficar de fora e é melhor escolher qual
+- 🟠 Baseline de tempo precisa ser medido **antes** de o piloto começar
+- 🟡 Dependência solo — mitigada pela documentação
+
 ---
 
 ## Próxima entrada

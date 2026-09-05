@@ -74,7 +74,7 @@ Isso corta bastante trabalho dos 4 dias.
 
 **Pronto quando**: importar o template oficial em branco sem erro; importar um arquivo preenchido real; **importar o mesmo arquivo duas vezes e a base não mudar na segunda**; e o relatório listar cada linha ignorada com motivo.
 
-**Risco**: 🔴 **alto e bloqueante** — depende de achar os originais em Sheets/xlsx. A pasta compartilhada tem PDFs exportados. Se só houver PDF, o parser muda de natureza e o custo sobe bastante.
+**Risco**: ✅ **resolvido em 05/09** — o acervo está em **Google Sheets**. Leitura direta com `SpreadsheetApp`, sem conversão e sem parser de PDF. O que resta é o cuidado normal de parser tolerante.
 
 ---
 
