@@ -123,7 +123,7 @@ function cfExtrairId_(entrada) {
 
 /** Reconhece a planilha pela âncora do template ou pelo rótulo Razão:. */
 function cfPareceEqualizacao_(grid) {
-  const alvo = [CF_ROTULO_ANCORA, CF_ROTULOS_PROPONENTE.razaoSocial];
+  const alvo = [CF_ROTULO_ANCORA, CF_ROTULOS_PROPONENTE.razaoSocial].map(cfNormalizar_);
   for (let l = 0; l < Math.min(grid.length, 30); l++) {
     for (let c = 0; c < grid[l].length; c++) {
       if (alvo.indexOf(cfNormalizar_(grid[l][c])) >= 0) return true;
@@ -141,7 +141,12 @@ function cfLerAba_(grid, nomeAba) {
   const idx = cfIndexarRotulos_(grid);
 
   const colunas = cfDetectarColunasProponente_(grid, idx, pendencias);
-  if (!colunas.length) throw new Error('não achei nenhuma coluna de proponente');
+  if (!colunas.length) {
+    const achados = Object.keys(idx).filter(function (k) { return k.length > 3; }).slice(0, 12);
+    throw new Error('não achei coluna de proponente. Procurei por "' +
+      CF_ROTULOS_PROPONENTE.razaoSocial + '" e "' + CF_ROTULOS_PROPONENTE.cnpj +
+      '". Rótulos encontrados na aba: ' + achados.join(' · '));
+  }
 
   const cabecalho  = cfLerCabecalho_(grid, idx);
   const proponentes = cfLerProponentes_(grid, idx, colunas, pendencias);
@@ -156,6 +161,17 @@ function cfLerAba_(grid, nomeAba) {
     validacao: validacao,
     pendencias: pendencias
   };
+}
+
+/**
+ * Busca um rótulo no índice.
+ *
+ * Os dois lados passam pela MESMA normalização — foi exatamente aqui que
+ * quebrou: "Razão:" normaliza para "razao" (a pontuação cai), mas a
+ * constante tinha o dois-pontos e nunca casava.
+ */
+function cfBuscar_(idx, rotulo) {
+  return idx[cfNormalizar_(rotulo)] || null;
 }
 
 /**
@@ -181,7 +197,8 @@ function cfIndexarRotulos_(grid) {
  * funcionam sem mudar nada.
  */
 function cfDetectarColunasProponente_(grid, idx, pendencias) {
-  const ancora = idx[CF_ROTULOS_PROPONENTE.razaoSocial] || idx[CF_ROTULOS_PROPONENTE.cnpj];
+  const ancora = cfBuscar_(idx, CF_ROTULOS_PROPONENTE.razaoSocial) ||
+                 cfBuscar_(idx, CF_ROTULOS_PROPONENTE.cnpj);
   if (!ancora) return [];
 
   const linha = grid[ancora.linha] || [];
@@ -191,7 +208,8 @@ function cfDetectarColunasProponente_(grid, idx, pendencias) {
   }
 
   // Coluna vazia no meio: o fornecedor existe mas a Razão ficou em branco.
-  const linhaCnpj = idx[CF_ROTULOS_PROPONENTE.cnpj] ? grid[idx[CF_ROTULOS_PROPONENTE.cnpj].linha] : null;
+  const posCnpj = cfBuscar_(idx, CF_ROTULOS_PROPONENTE.cnpj);
+  const linhaCnpj = posCnpj ? grid[posCnpj.linha] : null;
   if (linhaCnpj) {
     for (let c = ancora.coluna + 1; c < linhaCnpj.length; c++) {
       if (String(linhaCnpj[c] || '').trim() !== '' && colunas.indexOf(c) < 0) {
@@ -207,7 +225,7 @@ function cfDetectarColunasProponente_(grid, idx, pendencias) {
 function cfLerCabecalho_(grid, idx) {
   const saida = {};
   Object.keys(CF_ROTULOS_CABECALHO).forEach(function (campo) {
-    const pos = idx[CF_ROTULOS_CABECALHO[campo]];
+    const pos = cfBuscar_(idx, CF_ROTULOS_CABECALHO[campo]);
     if (!pos) { saida[campo] = null; return; }
     const abaixo = grid[pos.linha + 1];
     saida[campo] = abaixo ? String(abaixo[pos.coluna] || '').trim() || null : null;
@@ -221,7 +239,7 @@ function cfLerProponentes_(grid, idx, colunas, pendencias) {
   const lista = colunas.map(function (col, i) { return { ordem: i + 1, coluna: col }; });
 
   Object.keys(CF_ROTULOS_PROPONENTE).forEach(function (campo) {
-    const pos = idx[CF_ROTULOS_PROPONENTE[campo]];
+    const pos = cfBuscar_(idx, CF_ROTULOS_PROPONENTE[campo]);
     if (!pos) return;
     const linha = grid[pos.linha] || [];
     lista.forEach(function (p) {
@@ -403,7 +421,7 @@ function cfValidar_(grid, idx, colunas, eap, proponentes, pendencias) {
   const TOL = 0.01;
   const saida = { totaisDeclarados: [], divergencias: [] };
 
-  const posTotal = idx[CF_ROTULO_VALOR_TOTAL];
+  const posTotal = cfBuscar_(idx, CF_ROTULO_VALOR_TOTAL);
   if (posTotal) {
     const linha = grid[posTotal.linha] || [];
     colunas.forEach(function (col, i) {
