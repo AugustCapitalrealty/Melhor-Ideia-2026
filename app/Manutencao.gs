@@ -254,3 +254,85 @@ function reaplicarFormatacao() {
     return { abas: feitas };
   }, 300);
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Booleano fora de lugar
+//
+//  Aplicar validação de checkbox sobre célula vazia faz o Sheets GRAVAR
+//  false nela — não é só aparência. Enquanto os formatos estiveram
+//  deslocados, colunas que não são booleanas receberam checkbox e ficaram
+//  com false gravado. Tirar a validação não desfaz isso: o valor fica.
+//
+//  Só mexe em coluna cujo tipo declarado NÃO é booleano. Nessas, um
+//  true/false não é dado legítimo — nenhuma escrita do app produz isso.
+// ─────────────────────────────────────────────────────────────
+
+function simularLimpezaBooleanos() {
+  return cfRelatarBooleanos_(cfLimpezaBooleanos_(false), 'SIMULAÇÃO');
+}
+
+function limparBooleanosForaDeLugar() {
+  return cfComTrava_(function () {
+    const r = cfLimpezaBooleanos_(true);
+    cfLog_('limpeza_booleanos', 'planilha', '', JSON.stringify({ celulas: r.total }));
+    return cfRelatarBooleanos_(r, 'APLICADO');
+  }, 300);
+}
+
+function cfLimpezaBooleanos_(aplicar) {
+  const ss = cfPlanilha_();
+  const achados = [];
+  let total = 0;
+
+  CF_SCHEMA.forEach(function (def) {
+    const aba = ss.getSheetByName(def.nome);
+    if (!aba) return;
+
+    const ultima = aba.getLastRow();
+    if (ultima < 2) return;
+
+    const cab = cfCabecalho_(def.nome);
+    const tipoDe = {};
+    def.colunas.forEach(function (col) { tipoDe[col.campo] = col.tipo.split(':')[0]; });
+
+    cab.forEach(function (campo, i) {
+      if (tipoDe[campo] === 'booleano') return;      // aí o false é legítimo
+      if (!tipoDe[campo]) return;                    // coluna fora do schema
+
+      const faixa = aba.getRange(2, i + 1, ultima - 1, 1);
+      const valores = faixa.getValues();
+      const n = valores.filter(function (l) { return typeof l[0] === 'boolean'; }).length;
+      if (!n) return;
+
+      achados.push({ aba: def.nome, campo: campo, celulas: n });
+      total += n;
+
+      if (aplicar) {
+        faixa.setValues(valores.map(function (l) {
+          return [typeof l[0] === 'boolean' ? '' : l[0]];
+        }));
+      }
+    });
+  });
+
+  return { achados: achados, total: total, aplicado: aplicar };
+}
+
+function cfRelatarBooleanos_(r, rotulo) {
+  Logger.log('── Booleano fora de lugar (' + rotulo + ') ──');
+
+  if (!r.achados.length) {
+    Logger.log('Nada a fazer: nenhum true/false em coluna não booleana.');
+    return r;
+  }
+
+  r.achados.forEach(function (a) {
+    Logger.log('  ' + a.aba + '.' + a.campo + ': ' + a.celulas + ' célula(s)');
+  });
+
+  Logger.log('');
+  Logger.log('Total: ' + r.total + ' célula(s).');
+  if (!r.aplicado) Logger.log('Nada foi alterado. Rode limparBooleanosForaDeLugar() para aplicar.');
+
+  return r;
+}
