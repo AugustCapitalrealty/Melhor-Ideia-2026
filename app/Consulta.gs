@@ -8,7 +8,7 @@
  * é mais rápido que qualquer alternativa dentro do Apps Script.
  */
 
-const CF_VERSAO_CONSULTA = '2026-09-05.2';
+const CF_VERSAO_CONSULTA = '2026-09-05.3 faixa-por-item';
 
 // ─────────────────────────────────────────────────────────────
 //  Carga
@@ -113,15 +113,28 @@ function cfAgruparPorItem_(achados, termo) {
       return db - da;                                  // mais recente primeiro
     });
 
-  const valores = achados.map(function (r) { return r.valor; });
-  return {
-    termo: termo,
-    pontos: achados.length,
-    grupos: grupos,
-    minimo: valores.length ? Math.min.apply(null, valores) : null,
-    maximo: valores.length ? Math.max.apply(null, valores) : null,
-    media: valores.length ? valores.reduce(function (a, b) { return a + b; }, 0) / valores.length : null
-  };
+  // Faixa por item. Juntar itens diferentes numa faixa só produz número
+  // sem sentido: "monitoramento" traz um equipamento de R$ 3.096 e uma
+  // mensalidade de R$ 69, e a variação entre os dois não significa nada.
+  grupos.forEach(function (g) {
+    const v = g.precos.map(function (p) { return p.valor; });
+    g.minimo = Math.min.apply(null, v);
+    g.maximo = Math.max.apply(null, v);
+    g.variacao = g.minimo > 0 ? ((g.maximo - g.minimo) / g.minimo) * 100 : null;
+  });
+
+  // Série: o MESMO item em equalizações diferentes. É a única comparação
+  // ao longo do tempo que se sustenta.
+  const porChave = {};
+  grupos.forEach(function (g) {
+    const k = cfNormalizar_(g.descricao);
+    (porChave[k] = porChave[k] || []).push(g);
+  });
+  const series = Object.keys(porChave)
+    .filter(function (k) { return porChave[k].length > 1; })
+    .map(function (k) { return { descricao: porChave[k][0].descricao, ocorrencias: porChave[k] }; });
+
+  return { termo: termo, pontos: achados.length, grupos: grupos, series: series };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -196,8 +209,9 @@ function cfMoeda_(v) {
 }
 
 function cfImprimirConsulta_(r) {
+  const plural = r.grupos.length === 1 ? 'item' : 'itens';
   Logger.log('🔍 "' + r.termo + '" — ' + r.pontos + ' ponto(s) de preço em ' +
-             r.grupos.length + ' item/equalização');
+             r.grupos.length + ' ' + plural + '   (consulta ' + CF_VERSAO_CONSULTA + ')');
   if (!r.pontos) {
     Logger.log('\nNada encontrado. Tente um termo mais curto — a busca casa por palavra.');
     return;
@@ -213,14 +227,34 @@ function cfImprimirConsulta_(r) {
                  (p.vencedora ? '   ✓ contratado' : '') +
                  (p.semCadastro ? '   (sem cadastro)' : ''));
     });
+    if (g.precos.length > 1) {
+      Logger.log('      → R$ ' + cfMoeda_(g.minimo) + ' a R$ ' + cfMoeda_(g.maximo) +
+                 (g.variacao !== null ? '   ·   ' + g.variacao.toFixed(0) + '% entre o menor e o maior' : ''));
+    }
     Logger.log('');
   });
 
-  Logger.log('Faixa: R$ ' + cfMoeda_(r.minimo) + ' a R$ ' + cfMoeda_(r.maximo) +
-             '   ·   média R$ ' + cfMoeda_(r.media));
-  if (r.minimo > 0) {
-    const variacao = ((r.maximo - r.minimo) / r.minimo) * 100;
-    Logger.log('Do menor ao maior: ' + variacao.toFixed(0) + '% de diferença.');
+  if (r.series.length) {
+    Logger.log('── o mesmo item ao longo do tempo ──');
+    r.series.forEach(function (s) {
+      Logger.log(s.descricao + ':');
+      s.ocorrencias.sort(function (a, b) {
+        return (a.data ? a.data.getTime() : 0) - (b.data ? b.data.getTime() : 0);
+      }).forEach(function (o) {
+        const quando = o.data ? Utilities.formatDate(o.data, 'America/Sao_Paulo', 'MM/yyyy') : '—';
+        Logger.log('   ' + quando + '  ' + o.empreendimento + '   menor R$ ' + cfMoeda_(o.minimo));
+      });
+      const primeiro = s.ocorrencias[0].minimo, ultimo = s.ocorrencias[s.ocorrencias.length - 1].minimo;
+      if (primeiro > 0) {
+        const d = ((ultimo - primeiro) / primeiro) * 100;
+        Logger.log('   → ' + (d >= 0 ? 'subiu ' : 'caiu ') + Math.abs(d).toFixed(0) +
+                   '% entre a primeira e a última cotação');
+      }
+      Logger.log('');
+    });
+  } else if (r.grupos.length > 1) {
+    Logger.log('Estes são itens diferentes — não há faixa única que faça sentido entre eles.');
+    Logger.log('A série de preço aparece quando o MESMO item voltar em outra equalização.');
   }
 }
 
