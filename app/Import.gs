@@ -571,20 +571,28 @@ function cfImprimirAnalise_(r) {
                  '  ' + (t && t.valor !== null ? 'R$ ' + t.valor.toFixed(2) : '—'));
     });
 
+    // Agrupa pelo NÓ, não pelo valor: cada proponente precifica o filho
+    // esquecido de um jeito, então os valores diferem e a causa é a mesma.
     const causas = e.validacao.diagnostico || [];
-    const estruturais = {};
+    const porNo = {};
     causas.forEach(function (c) {
       if (c.tipo !== 'filho_fora_da_soma_do_pai') return;
-      const k = c.no + '|' + c.valorEsquecido.toFixed(2);
-      (estruturais[k] = estruturais[k] || []).push(c.proponente);
+      (porNo[c.no] = porNo[c.no] || []).push(c);
     });
 
-    Object.keys(estruturais).forEach(function (k) {
-      const c = causas.filter(function (x) { return x.no + '|' + x.valorEsquecido.toFixed(2) === k; })[0];
-      const quantos = estruturais[k].length;
-      Logger.log('   ⚠ DEFEITO DE FÓRMULA' + (quantos > 1 ? ' (nos ' + quantos + ' proponentes)' : ''));
-      Logger.log('      ' + c.explicacao);
-      Logger.log('      Valor deixado de fora: R$ ' + c.valorEsquecido.toFixed(2));
+    Object.keys(porNo).forEach(function (no) {
+      const grupo = porNo[no];
+      const total = e.proponentes.length;
+      Logger.log('   ⚠ DEFEITO DE FÓRMULA' +
+                 (grupo.length === total ? ' — afeta os ' + total + ' proponentes'
+                                         : ' — afeta ' + grupo.length + ' de ' + total));
+      Logger.log('      ' + grupo[0].explicacao);
+      Logger.log('      Fora da conta: ' + grupo.map(function (c) {
+        return 'prop.' + c.proponente + ' R$ ' + c.valorEsquecido.toFixed(2);
+      }).join('  ·  '));
+      if (grupo.length === total) {
+        Logger.log('      Aparecer em todos indica defeito da planilha, não erro de fornecedor.');
+      }
     });
 
     const cestas = e.validacao.divergencias.filter(function (d) { return d.tipo === 'cesta_incompleta'; });
