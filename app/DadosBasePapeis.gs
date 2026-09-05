@@ -13,8 +13,10 @@
  *
  * 1. O arquivo "Orç. Base Papéis Armazém B2" é a cotação 185903 — o número
  *    estava escondido atrás de um nome descritivo.
- * 2. A cotação 188139 NÃO é Mega Esteio: o endereço de entrega é Juvevê,
- *    Curitiba. Mesmo fornecedor e mesma tabela, outro empreendimento.
+ * 2. Todas as cinco são Mega Esteio, que é o único Mega atendido pela Base
+ *    Papéis. A 188139 chegou a ser gravada como Curitiba porque o endereço
+ *    de entrega é Juvevê — mas o endereço do receptor é SEMPRE Curitiba,
+ *    para qualquer destino. Ele não diz nada sobre o empreendimento.
  * 3. As quatro de Esteio trazem a UF escrita como "PR" no endereço, o que é
  *    erro do fornecedor — Esteio é RS. Gravamos RS.
  *
@@ -136,9 +138,8 @@ const CF_COT_BASEPAPEIS = [
     ['13726', 'SACO LIXO 100 LT PRETO REFORCADO C/100 (24KG) - BASE ECOSUL',  '1', '54,00', '54,00']
   ]),
 
-  // ⚠️ Curitiba, não Esteio — endereço de entrega é Juvevê.
   cfCotBasePapeis_('188139', '1LXwNr3leKFiZ48S0rEVa0zaBIAe5-4uL',
-    '15/07/2026', '492,05', '27 dias', CF_MEGA_CURITIBA, [
+    '15/07/2026', '492,05', '27 dias', CF_MEGA_ESTEIO, [
     ['1115',  'ACUCAR REFINADO 1 KG BARRA',                                   '1', '5,45',  '5,45'],
     ['15119', 'AGUA SANITARIA 5 LT - MARQUI',                                 '1', '8,90',  '8,90'],
     ['515',   'ALCOOL LIQUIDO 1 LT 70 FLOPS',                                 '1', '7,99',  '7,99'],

@@ -111,3 +111,32 @@ P0 bloqueia a ampliação da carga e a liberação do piloto. P1 fecha a valida�
 ## Limite deste plano
 
 A extração integral das 31 cotações candidatas, a carga dos 28 preços contratuais, presets, novas telas de equalização, SLA, Fluig e apresentação do concurso não fazem parte destas correções. A ampliação do acervo deve ocorrer depois que importação e consulta atenderem aos critérios acima. Não se atribui prazo fechado antes de reproduzir os defeitos e definir a migração.
+
+---
+
+## Correções posteriores à carga do acervo
+
+### Cotação Base Papéis 188139 estava no Mega errado — corrigido em 05/09/2026
+
+A cotação `188139` (15/07/2026, R$ 492,05, 14 preços) estava gravada como
+`MEGA CENTRO LOGÍSTICO CURITIBA`. É Mega Esteio, confirmado com a operação.
+
+**A causa não foi descuido, foi regra errada.** O cabeçalho de
+`app/DadosBasePapeis.gs` documentava a decisão como acerto da extração: o
+endereço de entrega da cotação é Juvevê, Curitiba, logo seria "outro
+empreendimento". A inferência não se sustenta.
+
+**Regra do domínio, para não repetir:** o endereço físico do receptor é
+SEMPRE Curitiba, qualquer que seja o destino da compra. Não há um CNPJ por
+estado. O mesmo endereço aparece em compras para Esteio, Curitiba e Itajaí,
+então endereço, cidade e UF do documento **não determinam o empreendimento**.
+Ele vem do destino da compra. Quando o documento não disser explicitamente,
+perguntar a quem conduz a operação — não deduzir.
+
+**O que foi feito:** `CF_MEGA_CURITIBA` trocado por `CF_MEGA_ESTEIO` na linha
+da cotação, comentário do cabeçalho reescrito para registrar a regra correta,
+e reimportação com `importarBasePapeis()` (em `app/DadosBasePapeis.gs`), que
+refaz o registro sem duplicar.
+
+**A revisar quando houver tempo:** qualquer outra atribuição de empreendimento
+feita a partir de endereço do fornecedor nos demais arquivos `Dados*.gs`.
