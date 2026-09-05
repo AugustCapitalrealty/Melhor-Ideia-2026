@@ -12,13 +12,25 @@
 6. Execute **`setupBaseDeDados`** e autorize
 7. Veja o resultado no Log — **Ctrl+Enter**
 
-Depois, `verificarConfiguracao()` mostra o que está valendo.
+Depois, execute nesta sequência:
+
+1. `verificarConfiguracao()` — confira a URL da planilha, schema instalado `v1`
+   e as 21 abas marcadas como `ok`. Isso confirma a instalação, não os dados.
+2. `setupBaseDeDados()` novamente — todas as abas devem indicar `sem mudança`.
+3. Repita `setupBaseDeDados()` mais uma vez para conferir o mesmo resultado.
+
+O setup cria a estrutura vazia; ainda não importa equalizações nem preenche
+cadastros. O código usa primeiro a planilha à qual o script está vinculado,
+por isso abra o Apps Script a partir da planilha da base indicada acima.
+
+O push para o GitHub não atualiza este projeto no Apps Script: copie os arquivos
+atualizados para o editor antes de executar. Não há sincronização configurada.
 
 ## Ordem dos arquivos
 
-`Config.gs` declara o schema; os outros leem dele. No Apps Script a ordem
-de carga é alfabética e todo `.gs` compartilha o mesmo escopo global,
-então não há import — só não renomeie `Config.gs` para algo depois de `S`.
+`Config.gs` declara o schema; os outros leem dele. Os três arquivos precisam
+estar no mesmo projeto. Não é necessário executar `Config.gs` ou as funções
+auxiliares de `Util.gs` separadamente: selecione as funções de entrada acima.
 
 | Arquivo | Papel |
 | :--- | :--- |

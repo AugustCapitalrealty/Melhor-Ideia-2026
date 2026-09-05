@@ -88,6 +88,11 @@ function cfGarantirAba_(ss, def, avisos) {
 
   if (!aba) {
     aba = ss.insertSheet(def.nome);
+    // Uma aba nova pode ter menos colunas que o schema (Equalizacoes usa 27).
+    const capacidade = aba.getMaxColumns();
+    if (capacidade < esperado.length) {
+      aba.insertColumnsAfter(capacidade, esperado.length - capacidade);
+    }
     aba.getRange(1, 1, 1, esperado.length).setValues([esperado]);
     cfFormatarAba_(aba, def);
     return { aba: def.nome, acao: 'criada', colunas: esperado.length };
