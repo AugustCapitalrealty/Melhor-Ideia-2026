@@ -56,6 +56,8 @@ Isso corta bastante trabalho dos 4 dias.
 
 **Objetivo**: o histórico existir. Sem isso a tese não se demonstra.
 
+> **Não é migração, é funcionalidade permanente** (§15). Alguém vai achar uma pasta antiga em dezembro e vai querer carregar.
+
 - [ ] Localizar linhas por **rótulo** e por **padrão de numeração**, nunca por número de linha fixo
 - [ ] Reconstruir a árvore pela profundidade + ordem, **descartando a numeração gravada**
 - [ ] Detectar as colunas de proponente dinamicamente (não assumir E/F/G)
@@ -63,8 +65,14 @@ Isso corta bastante trabalho dos 4 dias.
 - [ ] **Nunca importar `Redução total`** — derivar sempre
 - [ ] Separar revisão do fornecedor (`REV02`) de rodada de negociação (`R01`)
 - [ ] Relatório de importação: o que entrou, o que foi ignorado e por quê
+- [ ] **Idempotência por hash** do arquivo — reimportar não duplica
+- [ ] `ORIGEM` em todo registro (`app` / `import_sheets` / `import_pdf` / `manual`) e origem visível na tela
+- [ ] `desfazerImportacao(id)` — importação ruim sai inteira
+- [ ] Aceitar **importação parcial**: equalização só com cabeçalho e total é válida
+- [ ] Aceitar **orçamento avulso** — `Propostas` com `equalizacao_id` nulo
+- [ ] Aba `Pendencias`: o que o parser não resolveu vai para revisão humana, não é descartado
 
-**Pronto quando**: importar o template oficial em branco sem erro, importar pelo menos um arquivo preenchido real, e o relatório listar cada linha ignorada com motivo.
+**Pronto quando**: importar o template oficial em branco sem erro; importar um arquivo preenchido real; **importar o mesmo arquivo duas vezes e a base não mudar na segunda**; e o relatório listar cada linha ignorada com motivo.
 
 **Risco**: 🔴 **alto e bloqueante** — depende de achar os originais em Sheets/xlsx. A pasta compartilhada tem PDFs exportados. Se só houver PDF, o parser muda de natureza e o custo sobe bastante.
 

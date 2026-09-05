@@ -1203,3 +1203,65 @@ Assim `Café Melitta 500g` a R$ 18/pacote e um café a R$ 32/kg viram R$ 36/kg e
 O **achado do acervo** que eu recomendei levar ao comitê — *"pagamos 3 preços diferentes pelo mesmo serviço em 3 Megas"* — é literalmente a versão manual desta tela.
 
 Se der para montar uma versão crua dela até terça, o achado deixa de ser um slide e vira **a ferramenta mostrando sozinha**. É bem mais forte.
+
+---
+
+## 15. Ingestão contínua — a base cresce com o passado, não só com o futuro
+
+> Requisito do Guilherme, 05/09/2026: *"faça de uma maneira que no futuro vou colocar mais orçamentos do passado e/ou equalizações — vamos poder aumentar nossa base de conhecimento."*
+
+Isso muda a natureza do importador: **não é script de migração que roda uma vez e morre. É funcionalidade permanente.** Alguém vai achar uma pasta antiga em dezembro e vai querer carregar.
+
+### 15.1 O que isso exige
+
+| Requisito | Por quê | Como |
+| :--- | :--- | :--- |
+| **Idempotência por arquivo** | reimportar o mesmo arquivo não pode duplicar ponto de preço | `hash` do conteúdo + nome na aba `Importacoes` |
+| **Rastreio da origem** | toda linha sabe de que arquivo veio, quando e por quem | `ORIGEM_ARQUIVO`, `IMPORTACAO_ID` em cada registro |
+| **Reversibilidade** | importação ruim tem que sair inteira | `desfazerImportacao(id)` remove exatamente aquelas linhas |
+| **Versão do parser** | o parser melhora; dá para reprocessar o que veio do antigo | `PARSER_VERSAO` no registro |
+| **Fila de revisão** | o que o parser não resolveu não pode sumir calado | aba `Pendencias` com o motivo, para humano resolver |
+
+### 15.2 🔴 Confiança do dado — a coluna que impede a base de apodrecer
+
+Uma equalização digitada no app é confiável. Uma extraída de PDF de 2024 é palpite educado. **Se as duas entrarem iguais na base, a análise mente com cara de certeza.**
+
+```
+ORIGEM ∈ { app · import_sheets · import_xlsx · import_pdf · manual }
+```
+
+Toda consulta de preço filtra ou pondera por isso, e a tela **mostra a origem**. Um alerta de variação disparado por preço extraído de PDF mal lido é pior que não ter alerta — queima a confiança na ferramenta inteira, e confiança não volta.
+
+### 15.3 Importação parcial é o caso normal, não a exceção
+
+Arquivo antigo frequentemente só tem cabeçalho e total, sem detalhe de item. **Isso ainda vale muito**: é um ponto de preço no nível do documento.
+
+→ O modelo precisa aceitar equalização **sem linhas de EAP**. Nada de exigir completude, ou 80% do acervo é rejeitado.
+
+Níveis de completude que a base deve tolerar:
+
+| Nível | O que se aproveita |
+| :--- | :--- |
+| Só cabeçalho e total | quem, quando, quanto, qual Mega |
+| + proponentes | quem cotou e o total de cada um |
+| + itens | comparação por item |
+| + qtd e unidade | preço unitário — o eixo entre Megas |
+
+### 15.4 Orçamento avulso é um ponto de preço válido
+
+Ele disse *"orçamentos do passado **e/ou** equalizações"*. São coisas diferentes, e a distinção importa:
+
+- **Equalização** = comparação entre propostas
+- **Orçamento** = uma proposta só, sem comparação
+
+Um orçamento sozinho **não tem com o que comparar, mas é uma observação de preço legítima** — fornecedor, data, item, quantidade, unidade, preço unitário. E a pasta compartilhada tem **7 orçamentos para 5 equalizações**: há mais orçamento solto do que equalização por aí.
+
+Mais: o orçamento do fornecedor é o **único documento do lote que sempre traz qtd + unidade + unitário** (§8.1). Em termos de qualidade de dado, ele é melhor fonte que a própria equalização.
+
+> ⚠️ **Ajuste no schema**: `Propostas` precisa aceitar `equalizacao_id` **nulo**. Eu havia modelado proposta como filha de equalização — está errado. Proposta é entidade própria; equalização é a comparação de várias.
+
+### 15.5 Efeito no argumento do projeto
+
+Isso transforma a natureza do que a companhia tem. Hoje, cada arquivo numa pasta é uma ilha. Com ingestão contínua, **todo documento que alguém encontrar torna a base mais inteligente** — e a ferramenta melhora sem ninguém programar nada.
+
+É também a resposta honesta para "e se o piloto rodar poucas equalizações até outubro?". O valor não depende só do que for criado no piloto: depende também do que for **resgatado do passado**.

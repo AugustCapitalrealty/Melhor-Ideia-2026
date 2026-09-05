@@ -146,6 +146,21 @@ Duas coisas anotadas: falta `UNIDADE_BASE` + `FATOR_BASE` no catálogo (sem isso
 
 Registrado em §14 e como **Fase 4C**.
 
+### Requisito novo — ingestão contínua
+
+*"Faça de uma maneira que no futuro vou colocar mais orçamentos do passado e/ou equalizações."*
+
+Muda a natureza do importador: **funcionalidade permanente, não script de migração**. Exige idempotência por hash, rastreio de origem, reversibilidade, versão de parser e fila de revisão.
+
+Dois ajustes que caíram do requisito:
+
+| Ajuste | Motivo |
+| :--- | :--- |
+| Coluna `ORIGEM` em todo registro | Dado de PDF de 2024 não tem a mesma confiança de dado digitado no app. Se entrarem iguais, a análise mente com cara de certeza |
+| ~~`Propostas` é filha de `Equalizacoes`~~ → **`equalizacao_id` pode ser nulo** | Orçamento avulso é ponto de preço legítimo. A pasta tem 7 orçamentos para 5 equalizações — e o orçamento é o único documento que **sempre** traz qtd + unidade + unitário |
+
+Também dá a resposta honesta para "e se o piloto rodar poucas equalizações?": o valor não depende só do que for criado, depende do que for **resgatado do passado**.
+
 ---
 
 ## Próxima entrada
