@@ -400,11 +400,21 @@ function cfClassificarNos_(nos, pendencias) {
     if (!filhos.length) {
       no.tipo = 'item';
     } else if (temPreco && !filhosComPreco) {
-      no.tipo = 'item';                    // verba fechada; filhos são escopo
+      no.tipo = 'item';                    // verba fechada
       no.escopoDescritivo = true;
+      // Os filhos descrevem o que está incluso na verba. Não são itens
+      // cotáveis — contá-los como "sem cotação" gera falso positivo.
+      filhos.forEach(function (f) { f.tipo = 'escopo'; });
     } else {
       no.tipo = 'grupo';
     }
+  });
+
+  // Reclassificar pode ter marcado como escopo um nó que já era grupo.
+  nos.forEach(function (no) {
+    if (no.tipo !== 'escopo') return;
+    const filhos = porPai[no.id] || [];
+    if (filhos.length) filhos.forEach(function (f) { f.tipo = 'escopo'; });
   });
 }
 
@@ -445,6 +455,11 @@ function cfValidar_(grid, idx, colunas, eap, proponentes, pendencias) {
         return acc + (p && p.valor !== null ? p.valor : 0);
       }, 0);
       if (Math.abs(soma - preco.valor) > TOL) {
+        const periodo = cfDetectarPeriodicidade_(no, filhos, preco.valor, soma);
+        if (periodo) {
+          no.derivacaoPeriodica = periodo;
+          return;                          // não é defeito: é anual x mensal
+        }
         saida.divergencias.push({
           tipo: 'soma_do_grupo',
           no: no.codigoOriginal + ' ' + no.descricao,
@@ -476,8 +491,20 @@ function cfValidar_(grid, idx, colunas, eap, proponentes, pendencias) {
     }
   });
 
-  // 3) cesta incompleta — comparar totais de cestas diferentes engana
-  const itens = eap.filter(function (n) { return n.tipo === 'item'; });
+  // 3) blocos alternativos: um vende kit integrado, outro vende componentes
+  const alternativos = cfDetectarBlocosAlternativos_(eap, colunas.length);
+  if (alternativos.length) {
+    saida.blocosAlternativos = alternativos;
+  }
+  const idsAlternativos = {};
+  alternativos.forEach(function (b) {
+    b.nos.forEach(function (id) { idsAlternativos[id] = true; });
+  });
+
+  // 4) cesta incompleta — só sobre itens que TODOS deveriam cotar
+  const itens = eap.filter(function (n) {
+    return n.tipo === 'item' && !idsAlternativos[n.id];
+  });
   colunas.forEach(function (col, i) {
     const naoCotados = itens.filter(function (n) {
       return n.precos[i] && n.precos[i].status === 'nao_cotado';
@@ -500,6 +527,83 @@ function cfValidar_(grid, idx, colunas, eap, proponentes, pendencias) {
   });
 
   return saida;
+}
+
+/**
+ * Detecta blocos que os proponentes cotam de forma mutuamente exclusiva.
+ *
+ * No arquivo de maio: CAS e Alma cotaram sensores, medidores e monitoramento
+ * separados; a GreenPulse cotou um KIT integrado. Nenhum "deixou de cotar" —
+ * são arquiteturas de solução diferentes. Marcar isso como cesta incompleta
+ * é ruído, e ruído numa demo mata a credibilidade da ferramenta.
+ */
+function cfDetectarBlocosAlternativos_(eap, totalProponentes) {
+  const porPai = {};
+  eap.forEach(function (n) { if (n.idPai) (porPai[n.idPai] = porPai[n.idPai] || []).push(n); });
+
+  // Quem cotou alguma coisa dentro de cada grupo?
+  const grupos = eap.filter(function (n) { return n.tipo === 'grupo'; }).map(function (g) {
+    const descendentes = [];
+    (function coletar(id) {
+      (porPai[id] || []).forEach(function (f) { descendentes.push(f); coletar(f.id); });
+    })(g.id);
+
+    const cotaram = {};
+    descendentes.forEach(function (d) {
+      (d.precos || []).forEach(function (p, i) {
+        if (p.status === 'cotado') cotaram[i] = true;
+      });
+    });
+    return { no: g, cotaram: Object.keys(cotaram).map(Number).sort(), descendentes: descendentes };
+  }).filter(function (g) { return g.cotaram.length > 0 && g.cotaram.length < totalProponentes; });
+
+  const blocos = [];
+  for (let a = 0; a < grupos.length; a++) {
+    for (let b = a + 1; b < grupos.length; b++) {
+      const A = grupos[a].cotaram, B = grupos[b].cotaram;
+      const intersecao = A.filter(function (x) { return B.indexOf(x) >= 0; });
+      const uniao = A.concat(B.filter(function (x) { return A.indexOf(x) < 0; }));
+      // disjuntos e, juntos, cobrindo todo mundo → são alternativas
+      if (intersecao.length === 0 && uniao.length === totalProponentes) {
+        const nos = grupos[a].descendentes.concat(grupos[b].descendentes)
+          .map(function (n) { return n.id; });
+        nos.push(grupos[a].no.id, grupos[b].no.id);
+        blocos.push({
+          grupos: [grupos[a].no.codigoOriginal + ' ' + grupos[a].no.descricao,
+                   grupos[b].no.codigoOriginal + ' ' + grupos[b].no.descricao],
+          nos: nos
+        });
+      }
+    }
+  }
+  return blocos;
+}
+
+/**
+ * O pai nem sempre é a soma dos filhos.
+ *
+ * "1. SERVIÇO DE MONITORAMENTO - ANUAL = R$ 828,00" com filho
+ * "1.1 MENSAL = R$ 69,00" não está errado: 828 = 69 x 12. O pai é uma
+ * DERIVAÇÃO do filho, não um somatório. Tratar como defeito seria um
+ * falso positivo constrangedor na frente de quem montou a planilha.
+ */
+function cfDetectarPeriodicidade_(no, filhos, declarado, soma) {
+  if (!soma || !declarado) return null;
+
+  const fator = declarado / soma;
+  const inteiro = Math.round(fator);
+  if (inteiro < 2 || inteiro > 36) return null;
+  if (Math.abs(fator - inteiro) > 0.005) return null;
+
+  const textoPai = cfNormalizar_(no.descricao);
+  const textoFilhos = filhos.map(function (f) { return cfNormalizar_(f.descricao); }).join(' ');
+
+  const paiPeriodo   = /\b(anual|ano|semestral|trimestral)\b/.test(textoPai);
+  const filhoPeriodo = /\b(mensal|mes|meses|mensalidade|diaria|dia)\b/.test(textoFilhos);
+
+  if (!paiPeriodo && !filhoPeriodo) return null;
+
+  return { fator: inteiro, declarado: declarado, base: soma };
 }
 
 /**
@@ -603,9 +707,25 @@ function cfImprimirAnalise_(r) {
       Logger.log('      Comparar o total deste proponente com os outros engana.');
     });
 
+    (e.validacao.blocosAlternativos || []).forEach(function (b) {
+      Logger.log('   ℹ SOLUÇÕES ALTERNATIVAS: "' + b.grupos[0] + '" e "' + b.grupos[1] + '"');
+      Logger.log('      Proponentes cotaram arquiteturas diferentes. Compare pelo total, não item a item.');
+    });
+
+    e.eap.filter(function (n) { return n.derivacaoPeriodica; }).forEach(function (n) {
+      Logger.log('   ℹ PERIODICIDADE: "' + n.codigoOriginal + ' ' + n.descricao +
+                 '" = filho x ' + n.derivacaoPeriodica.fator + '. Não é erro de soma.');
+    });
+
     const outras = causas.filter(function (c) { return c.tipo !== 'filho_fora_da_soma_do_pai'; });
     outras.forEach(function (c) {
-      Logger.log('   ⚠ ' + c.tipo + ' (prop. ' + c.proponente + '): ' + JSON.stringify(c.bruto));
+      const d = c.bruto || {};
+      Logger.log('   ⚠ ' + String(c.tipo).replace(/_/g, ' ').toUpperCase() +
+                 ' (prop. ' + c.proponente + ')' +
+                 (d.no ? ' em "' + d.no + '"' : '') +
+                 (d.declarado !== undefined ? ': declarado R$ ' + Number(d.declarado).toFixed(2) : '') +
+                 (d.somaDosFilhos !== undefined ? ', filhos somam R$ ' + Number(d.somaDosFilhos).toFixed(2) : '') +
+                 (d.somaDasRaizes !== undefined ? ', raízes somam R$ ' + Number(d.somaDasRaizes).toFixed(2) : ''));
     });
     if (e.pendencias.length) Logger.log('   ' + e.pendencias.length + ' pendência(s) de revisão');
     Logger.log('');
