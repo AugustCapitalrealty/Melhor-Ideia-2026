@@ -1,0 +1,489 @@
+/**
+ * Capital Fornecedores — leitura de equalizações em Google Sheets
+ *
+ * Escrito contra dois arquivos reais (19/05/2026 e 12/08/2026), não contra
+ * o template em branco. As duas planilhas têm o mesmo layout em LINHAS
+ * DIFERENTES — por isso tudo aqui é localizado por RÓTULO, nunca por
+ * número de linha.
+ *
+ * Comece por analisarEqualizacao(fileId): ela lê e relata sem gravar nada.
+ */
+
+// ─────────────────────────────────────────────────────────────
+//  Mapa dos rótulos
+// ─────────────────────────────────────────────────────────────
+
+/** Cabeçalho: o valor fica na LINHA DE BAIXO do rótulo. */
+const CF_ROTULOS_CABECALHO = {
+  empresa:            'empresa:',
+  empreendimento:     'empreendimento:',
+  projeto:            'projeto:',
+  grupoCentroCusto:   'grupo centro de custo:',
+  dataEqualizacao:    'data da equalizacao:',
+  parecerFavoravel:   'favoravel a contratacao e por que?'
+};
+
+/** Por proponente: o valor fica À DIREITA, nas colunas E, F, G… */
+const CF_ROTULOS_PROPONENTE = {
+  codFornecedor:      'cod. fornecedor:',
+  razaoSocial:        'razao:',
+  contatoNome:        'contato:',
+  cidadeUf:           'cidade/estado:',
+  contatoTel:         'telefone:',
+  cnpj:               'cnpj:',
+  contatoEmail:       'email:',
+  numeroProposta:     'numero da proposta:',
+  dataProposta:       'data da proposta:',
+  condicoesPagamento: 'condicoes de pagamento:',
+  leadTime:           'lead time para inicio:',
+  prazoExecucao:      'prazo de execucao:',
+  validade:           'validade proposta:',
+  faturamentoDireto:  'faturamento direto:',
+  nomeCentroCusto:    'nome centro de custo:',
+  dataPrevInicio:     'data prevista para inicio:',
+  dataPrevTermino:    'data prevista para termino:',
+  propostaInicial:    'proposta inicial:',
+  propostaR01:        'proposta r01:',
+  propostaR02:        'proposta r02:',
+  reducaoTotal:       'reducao total da negociacao:',
+  notasCr:            'notas capital realty:'
+};
+
+const CF_ROTULO_VALOR_TOTAL   = 'valor total';
+const CF_ROTULO_DETALHAMENTO  = 'detalhar o servico a ser aprovado:';
+const CF_ROTULO_ANCORA        = 'informacoes obrigatorias';
+
+/** Código de EAP: "1.", "1.1", "1.1.1", "01.", "02.01.03" */
+const CF_RE_CODIGO_EAP = /^\d{1,3}(\.\d{1,3})*\.?$/;
+
+// ─────────────────────────────────────────────────────────────
+//  Entrada
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Lê um arquivo e relata o que encontrou, SEM GRAVAR NADA.
+ * É por aqui que se confere um arquivo novo antes de importar.
+ */
+function analisarEqualizacao(fileId) {
+  const ss = SpreadsheetApp.openById(fileId);
+  const resultado = { arquivo: ss.getName(), id: fileId, equalizacoes: [], ignoradas: [] };
+
+  ss.getSheets().forEach(function (aba) {
+    const grid = aba.getDataRange().getValues();
+    if (!cfPareceEqualizacao_(grid)) {
+      resultado.ignoradas.push({ aba: aba.getName(), motivo: 'não parece uma equalização' });
+      return;
+    }
+    try {
+      resultado.equalizacoes.push(cfLerAba_(grid, aba.getName()));
+    } catch (erro) {
+      resultado.ignoradas.push({ aba: aba.getName(), motivo: String(erro) });
+    }
+  });
+
+  cfImprimirAnalise_(resultado);
+  return resultado;
+}
+
+/** Reconhece a planilha pela âncora do template ou pelo rótulo Razão:. */
+function cfPareceEqualizacao_(grid) {
+  const alvo = [CF_ROTULO_ANCORA, CF_ROTULOS_PROPONENTE.razaoSocial];
+  for (let l = 0; l < Math.min(grid.length, 30); l++) {
+    for (let c = 0; c < grid[l].length; c++) {
+      if (alvo.indexOf(cfNormalizar_(grid[l][c])) >= 0) return true;
+    }
+  }
+  return false;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Leitura de uma aba
+// ─────────────────────────────────────────────────────────────
+
+function cfLerAba_(grid, nomeAba) {
+  const pendencias = [];
+  const idx = cfIndexarRotulos_(grid);
+
+  const colunas = cfDetectarColunasProponente_(grid, idx, pendencias);
+  if (!colunas.length) throw new Error('não achei nenhuma coluna de proponente');
+
+  const cabecalho  = cfLerCabecalho_(grid, idx);
+  const proponentes = cfLerProponentes_(grid, idx, colunas, pendencias);
+  const eap        = cfLerEap_(grid, colunas, pendencias);
+  const validacao  = cfValidar_(grid, idx, colunas, eap, proponentes, pendencias);
+
+  return {
+    aba: nomeAba,
+    cabecalho: cabecalho,
+    proponentes: proponentes,
+    eap: eap,
+    validacao: validacao,
+    pendencias: pendencias
+  };
+}
+
+/**
+ * Índice de rótulo → posição. Guarda a PRIMEIRA ocorrência: os rótulos
+ * do rodapé vêm mesclados de B a D e repetem o texto em cada célula.
+ */
+function cfIndexarRotulos_(grid) {
+  const idx = {};
+  for (let l = 0; l < grid.length; l++) {
+    for (let c = 0; c < grid[l].length; c++) {
+      const chave = cfNormalizar_(grid[l][c]);
+      if (chave && !idx[chave]) idx[chave] = { linha: l, coluna: c };
+    }
+  }
+  return idx;
+}
+
+/**
+ * Descobre quais colunas são de proponente.
+ *
+ * NÃO assume E, F, G: parte da linha do rótulo "Razão:" e pega todas as
+ * colunas à direita que tenham conteúdo. Assim 4, 5 ou 7 proponentes
+ * funcionam sem mudar nada.
+ */
+function cfDetectarColunasProponente_(grid, idx, pendencias) {
+  const ancora = idx[CF_ROTULOS_PROPONENTE.razaoSocial] || idx[CF_ROTULOS_PROPONENTE.cnpj];
+  if (!ancora) return [];
+
+  const linha = grid[ancora.linha] || [];
+  const colunas = [];
+  for (let c = ancora.coluna + 1; c < linha.length; c++) {
+    if (String(linha[c] || '').trim() !== '') colunas.push(c);
+  }
+
+  // Coluna vazia no meio: o fornecedor existe mas a Razão ficou em branco.
+  const linhaCnpj = idx[CF_ROTULOS_PROPONENTE.cnpj] ? grid[idx[CF_ROTULOS_PROPONENTE.cnpj].linha] : null;
+  if (linhaCnpj) {
+    for (let c = ancora.coluna + 1; c < linhaCnpj.length; c++) {
+      if (String(linhaCnpj[c] || '').trim() !== '' && colunas.indexOf(c) < 0) {
+        colunas.push(c);
+        pendencias.push({ tipo: 'proponente_sem_razao', descricao: 'Coluna ' + (c + 1) + ' tem CNPJ mas não tem Razão Social.' });
+      }
+    }
+  }
+  return colunas.sort(function (a, b) { return a - b; });
+}
+
+/** Cabeçalho: valor na linha DE BAIXO do rótulo. */
+function cfLerCabecalho_(grid, idx) {
+  const saida = {};
+  Object.keys(CF_ROTULOS_CABECALHO).forEach(function (campo) {
+    const pos = idx[CF_ROTULOS_CABECALHO[campo]];
+    if (!pos) { saida[campo] = null; return; }
+    const abaixo = grid[pos.linha + 1];
+    saida[campo] = abaixo ? String(abaixo[pos.coluna] || '').trim() || null : null;
+  });
+  if (saida.dataEqualizacao) saida.dataEqualizacao = cfData_(saida.dataEqualizacao);
+  return saida;
+}
+
+/** Proponentes: valor À DIREITA do rótulo, uma coluna por proponente. */
+function cfLerProponentes_(grid, idx, colunas, pendencias) {
+  const lista = colunas.map(function (col, i) { return { ordem: i + 1, coluna: col }; });
+
+  Object.keys(CF_ROTULOS_PROPONENTE).forEach(function (campo) {
+    const pos = idx[CF_ROTULOS_PROPONENTE[campo]];
+    if (!pos) return;
+    const linha = grid[pos.linha] || [];
+    lista.forEach(function (p) {
+      const bruto = linha[p.coluna];
+      p[campo] = (bruto === null || bruto === undefined || String(bruto).trim() === '') ? null : bruto;
+    });
+  });
+
+  lista.forEach(function (p) {
+    p.cnpjLimpo   = cfSoDigitos_(p.cnpj);
+    p.razaoSocial = p.razaoSocial ? String(p.razaoSocial).trim() : null;
+
+    if (p.cnpjLimpo && p.cnpjLimpo.length !== 14) {
+      pendencias.push({
+        tipo: 'cnpj_invalido',
+        descricao: 'CNPJ com ' + p.cnpjLimpo.length + ' dígitos no proponente ' + p.ordem + '.',
+        dadoBruto: String(p.cnpj)
+      });
+    }
+    // "Golden Phone / Carryer" com dois CNPJs numa coluna só — acontece.
+    if (p.cnpjLimpo.length > 14) {
+      pendencias.push({ tipo: 'multiplas_empresas', descricao: 'A coluna ' + p.ordem + ' parece ter mais de uma empresa.', dadoBruto: String(p.cnpj) });
+    }
+    if (p.contatoEmail && String(p.contatoEmail).indexOf('@') < 0) {
+      pendencias.push({ tipo: 'email_invalido', descricao: 'E-mail sem @ no proponente ' + p.ordem + '.', dadoBruto: String(p.contatoEmail) });
+    }
+
+    ['propostaInicial', 'propostaR01', 'propostaR02', 'reducaoTotal'].forEach(function (c) {
+      p[c] = cfNumero_(p[c]);
+    });
+    ['dataProposta', 'dataPrevInicio', 'dataPrevTermino'].forEach(function (c) {
+      p[c] = cfData_(p[c]);
+    });
+
+    // "Redução total" vem quebrada quando a inicial está vazia: a fórmula
+    // copia o total e reporta 100% de economia. Derivamos sempre.
+    const ultima = p.propostaR02 || p.propostaR01;
+    p.reducaoCalculada = (p.propostaInicial && ultima) ? p.propostaInicial - ultima : 0;
+    if (p.reducaoTotal && !p.propostaInicial) {
+      pendencias.push({
+        tipo: 'reducao_invalida',
+        descricao: 'Proponente ' + p.ordem + ': "Redução total" preenchida sem Proposta inicial. Ignorada.',
+        dadoBruto: String(p.reducaoTotal)
+      });
+      p.reducaoTotal = null;
+    }
+  });
+
+  // Mesmo CNPJ em duas colunas (aconteceu com a Eletrobarras).
+  const vistos = {};
+  lista.forEach(function (p) {
+    if (!p.cnpjLimpo) return;
+    if (vistos[p.cnpjLimpo]) {
+      pendencias.push({ tipo: 'cnpj_duplicado', descricao: 'CNPJ repetido nas colunas ' + vistos[p.cnpjLimpo] + ' e ' + p.ordem + '.', dadoBruto: p.cnpj });
+    } else {
+      vistos[p.cnpjLimpo] = p.ordem;
+    }
+  });
+
+  return lista;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Árvore
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Monta a árvore pela PROFUNDIDADE do código (contagem de pontos) e pela
+ * ordem de aparição — o código gravado só é guardado para auditoria.
+ *
+ * Efeito colateral proposital: "2.1" com filhos numerados "2.2.1" entra
+ * errado e sai certo, porque a posição manda e o número não.
+ */
+function cfLerEap_(grid, colunas, pendencias) {
+  const nos = [];
+  const pilha = [];
+  let seq = 0;
+
+  for (let l = 0; l < grid.length; l++) {
+    const codigo = String(grid[l][1] || '').trim();     // coluna B
+    if (!CF_RE_CODIGO_EAP.test(codigo)) continue;
+
+    const descricao = String(grid[l][2] || '').trim();  // coluna C
+    const profundidade = codigo.replace(/\.$/, '').split('.').length - 1;
+
+    const precos = colunas.map(function (col, i) {
+      return cfLerPreco_(grid[l][col], i + 1);
+    });
+
+    if (!descricao && precos.every(function (p) { return p.valor === null; })) {
+      continue;   // linha de placeholder ("1.2.2" sem nada) — some sem alarde
+    }
+
+    while (pilha.length && pilha[pilha.length - 1].profundidade >= profundidade) pilha.pop();
+
+    const no = {
+      id: 'no' + (++seq),
+      idPai: pilha.length ? pilha[pilha.length - 1].id : null,
+      ordem: seq,
+      profundidade: profundidade,
+      codigoOriginal: codigo,
+      descricao: descricao,
+      precos: precos,
+      linha: l + 1
+    };
+    nos.push(no);
+    pilha.push(no);
+  }
+
+  cfClassificarNos_(nos, pendencias);
+  return nos;
+}
+
+/**
+ * Lê uma célula de preço.
+ *
+ * Preço não é sempre número: "INCLUSO", "R$ -" e vazio são três coisas
+ * diferentes, e ler vazio como zero já fez uma proposta parecer
+ * R$ 182 mil mais barata do que era.
+ */
+function cfLerPreco_(bruto, ordemProponente) {
+  const texto = String(bruto === null || bruto === undefined ? '' : bruto).trim();
+
+  if (texto === '') return { proponente: ordemProponente, valor: null, status: 'nao_cotado', bruto: '' };
+  if (/^incluso/i.test(texto)) return { proponente: ordemProponente, valor: null, status: 'incluso_em_outro_item', bruto: texto };
+  if (/^n\/?a$/i.test(texto) || /^nao se aplica/i.test(cfNormalizar_(texto))) {
+    return { proponente: ordemProponente, valor: null, status: 'nao_aplicavel', bruto: texto };
+  }
+  // "R$ -" é "não cotou", diferente de "cotou por zero"
+  if (/^r?\$?\s*[-–—]\s*$/i.test(texto)) return { proponente: ordemProponente, valor: null, status: 'nao_cotado', bruto: texto };
+
+  const valor = cfNumero_(texto);
+  if (valor === null) return { proponente: ordemProponente, valor: null, status: 'nao_cotado', bruto: texto };
+  return { proponente: ordemProponente, valor: valor, status: 'cotado', bruto: texto };
+}
+
+/**
+ * Decide o que é grupo e o que é item.
+ *
+ * A regra "folha tem preço, pai é soma" não basta: no arquivo de maio,
+ * "1.2 MÃO DE OBRA LOCAL" tem R$ 2.200,00 e os cinco filhos estão vazios
+ * — é verba fechada com o escopo detalhado embaixo.
+ */
+function cfClassificarNos_(nos, pendencias) {
+  const porPai = {};
+  nos.forEach(function (n) {
+    if (!n.idPai) return;
+    (porPai[n.idPai] = porPai[n.idPai] || []).push(n);
+  });
+
+  nos.forEach(function (no) {
+    const filhos = porPai[no.id] || [];
+    const temPreco = no.precos.some(function (p) { return p.valor !== null; });
+    const filhosComPreco = filhos.some(function (f) {
+      return f.precos.some(function (p) { return p.valor !== null; });
+    });
+
+    if (!filhos.length) {
+      no.tipo = 'item';
+    } else if (temPreco && !filhosComPreco) {
+      no.tipo = 'item';                    // verba fechada; filhos são escopo
+      no.escopoDescritivo = true;
+    } else {
+      no.tipo = 'grupo';
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Validação
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Confere as somas. É aqui que o app pega, sozinho, o que passou por gente:
+ * no arquivo de 12/08 o grupo "1." diz R$ 4.050,55 e o VALOR TOTAL diz
+ * R$ 4.765,55, porque a fórmula do pai esqueceu o "1.2".
+ */
+function cfValidar_(grid, idx, colunas, eap, proponentes, pendencias) {
+  const TOL = 0.01;
+  const saida = { totaisDeclarados: [], divergencias: [] };
+
+  const posTotal = idx[CF_ROTULO_VALOR_TOTAL];
+  if (posTotal) {
+    const linha = grid[posTotal.linha] || [];
+    colunas.forEach(function (col, i) {
+      saida.totaisDeclarados.push({ proponente: i + 1, valor: cfNumero_(linha[col]) });
+    });
+  }
+
+  const porPai = {};
+  eap.forEach(function (n) {
+    if (n.idPai) (porPai[n.idPai] = porPai[n.idPai] || []).push(n);
+  });
+
+  // 1) pai declarado x soma dos filhos
+  eap.forEach(function (no) {
+    if (no.tipo !== 'grupo') return;
+    const filhos = porPai[no.id] || [];
+    no.precos.forEach(function (preco, i) {
+      if (preco.valor === null) return;
+      const soma = filhos.reduce(function (acc, f) {
+        const p = f.precos[i];
+        return acc + (p && p.valor !== null ? p.valor : 0);
+      }, 0);
+      if (Math.abs(soma - preco.valor) > TOL) {
+        saida.divergencias.push({
+          tipo: 'soma_do_grupo',
+          no: no.codigoOriginal + ' ' + no.descricao,
+          proponente: i + 1,
+          declarado: preco.valor,
+          somaDosFilhos: soma,
+          diferenca: preco.valor - soma
+        });
+      }
+    });
+  });
+
+  // 2) VALOR TOTAL x soma das raízes
+  const raizes = eap.filter(function (n) { return !n.idPai; });
+  saida.totaisDeclarados.forEach(function (t, i) {
+    if (t.valor === null) return;
+    const soma = raizes.reduce(function (acc, r) {
+      const p = r.precos[i];
+      return acc + (p && p.valor !== null ? p.valor : 0);
+    }, 0);
+    if (Math.abs(soma - t.valor) > TOL) {
+      saida.divergencias.push({
+        tipo: 'valor_total',
+        proponente: t.proponente,
+        declarado: t.valor,
+        somaDasRaizes: soma,
+        diferenca: t.valor - soma
+      });
+    }
+  });
+
+  // 3) cesta incompleta — comparar totais de cestas diferentes engana
+  const itens = eap.filter(function (n) { return n.tipo === 'item'; });
+  colunas.forEach(function (col, i) {
+    const naoCotados = itens.filter(function (n) {
+      return n.precos[i] && n.precos[i].status === 'nao_cotado';
+    });
+    if (naoCotados.length && naoCotados.length < itens.length) {
+      saida.divergencias.push({
+        tipo: 'cesta_incompleta',
+        proponente: i + 1,
+        naoCotados: naoCotados.length,
+        deUmTotalDe: itens.length,
+        itens: naoCotados.slice(0, 5).map(function (n) { return n.codigoOriginal + ' ' + n.descricao; })
+      });
+    }
+  });
+
+  saida.divergencias.forEach(function (d) {
+    pendencias.push({ tipo: 'divergencia_' + d.tipo, descricao: JSON.stringify(d) });
+  });
+
+  return saida;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Relatório
+// ─────────────────────────────────────────────────────────────
+
+function cfImprimirAnalise_(r) {
+  Logger.log('── ' + r.arquivo + ' ──');
+  Logger.log(r.equalizacoes.length + ' equalização(ões) · ' + r.ignoradas.length + ' aba(s) ignorada(s)\n');
+
+  r.equalizacoes.forEach(function (e) {
+    const itens = e.eap.filter(function (n) { return n.tipo === 'item'; }).length;
+    Logger.log('▸ ' + e.aba);
+    Logger.log('   ' + (e.cabecalho.empresa || '?') + ' · ' + (e.cabecalho.empreendimento || '?'));
+    Logger.log('   ' + e.proponentes.length + ' proponentes · ' + e.eap.length + ' nós (' + itens + ' itens)');
+
+    e.proponentes.forEach(function (p) {
+      const t = e.validacao.totaisDeclarados.filter(function (x) { return x.proponente === p.ordem; })[0];
+      Logger.log('     ' + p.ordem + '. ' + (p.razaoSocial || '(sem razão)') +
+                 '  ' + (t && t.valor !== null ? 'R$ ' + t.valor.toFixed(2) : '—'));
+    });
+
+    if (e.validacao.divergencias.length) {
+      Logger.log('   ⚠ ' + e.validacao.divergencias.length + ' divergência(s):');
+      e.validacao.divergencias.forEach(function (d) {
+        if (d.tipo === 'soma_do_grupo') {
+          Logger.log('     • ' + d.no + ' (prop. ' + d.proponente + '): declarado R$ ' +
+                     d.declarado.toFixed(2) + ', filhos somam R$ ' + d.somaDosFilhos.toFixed(2));
+        } else if (d.tipo === 'valor_total') {
+          Logger.log('     • VALOR TOTAL (prop. ' + d.proponente + '): declarado R$ ' +
+                     d.declarado.toFixed(2) + ', raízes somam R$ ' + d.somaDasRaizes.toFixed(2));
+        } else {
+          Logger.log('     • cesta incompleta (prop. ' + d.proponente + '): ' +
+                     d.naoCotados + ' de ' + d.deUmTotalDe + ' itens sem cotação');
+        }
+      });
+    }
+    if (e.pendencias.length) Logger.log('   ' + e.pendencias.length + ' pendência(s) de revisão');
+    Logger.log('');
+  });
+
+  r.ignoradas.forEach(function (i) { Logger.log('· ignorada: ' + i.aba + ' — ' + i.motivo); });
+}

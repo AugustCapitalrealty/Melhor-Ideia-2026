@@ -1284,3 +1284,97 @@ Mais: o orçamento do fornecedor é o **único documento do lote que sempre traz
 Isso transforma a natureza do que a companhia tem. Hoje, cada arquivo numa pasta é uma ilha. Com ingestão contínua, **todo documento que alguém encontrar torna a base mais inteligente** — e a ferramenta melhora sem ninguém programar nada.
 
 É também a resposta honesta para "e se o piloto rodar poucas equalizações até outubro?". O valor não depende só do que for criado no piloto: depende também do que for **resgatado do passado**.
+
+---
+
+## 16. Duas equalizações reais em Sheets — o que muda no parser
+
+**Fonte**: `META UTILITIES` (19/05/2026, 3 abas) e `EQUIPAMENTOS/SERVIÇO` (12/08/2026, 1 aba). Ambas Demercado, Mega Curitiba.
+
+### 16.1 🔴 O bug de fórmula, ao vivo, num arquivo de agosto
+
+Arquivo de 12/08/2026, aba única:
+
+```
+1.    EQUIPAMENTOS ........ R$ 4.050,55   ← o pai
+1.1     SENSORES .......... R$ 4.050,55
+1.1.1     CAIXA 400X400X200 . R$ 594,50
+  ...  (soma dos filhos de 1.1 = 4.050,55 ✓)
+1.2     SERVIÇO ........... R$   715,00   ← FORA da conta do pai
+1.2.1     MÃO DE OBRA ..... R$   715,00
+VALOR TOTAL ............... R$ 4.765,55   ← 4.050,55 + 715,00
+```
+
+**O grupo `1.` diz R$ 4.050,55; deveria dizer R$ 4.765,55.** A fórmula do pai pegou só `1.1` e esqueceu `1.2` — é o `=E13+E16+E19` do template acontecendo numa equalização real e recente.
+
+> Prova viva de que numeração e soma manuais apodrecem. É o slide de abertura, com data de agosto de 2026.
+
+### 16.2 Uma planilha pode conter VÁRIAS equalizações
+
+O arquivo de maio tem **3 abas**, cada uma uma equalização do mesmo projeto: `EQUIPAMENTOS` · `SERVIÇO DE MONITORAMENTO - ANUAL` · `MÃO DE OBRA INSTALAÇÃO`.
+
+→ O importador percorre **todas as abas** e trata cada uma como equalização independente, ligadas pelo mesmo projeto.
+
+### 16.3 ⚠️ Nó pai PODE ter preço próprio — a regra "folha tem preço" não basta
+
+```
+1.2   MÃO DE OBRA LOCAL ......... R$ 2.200,00   ← preço fechado aqui
+1.2.1   INFRAESTRUTURA .......... (vazio)
+1.2.2   PASSAR CABOS ............ (vazio)
+1.2.3   INSTALAÇÃO DE PAINEL .... (vazio)
+```
+
+Os filhos descrevem escopo, não têm preço. O pai é **verba fechada**.
+
+→ `TIPO` do nó não é só posição na árvore. Um nó com filhos ainda é `item` se ele carrega preço e os filhos não. O importador infere: *filhos sem valor + pai com valor = item de verba com escopo detalhado*.
+
+### 16.4 Proponentes cotam ARQUITETURAS diferentes na mesma tabela
+
+```
+                        CAS        GreenPulse   Alma IoT
+1.1 SENSORES         1.664,70       R$ -       10.754,70
+1.2 MEDIDORES        2.943,00       R$ -        3.098,70
+1.3 MONITORAMENTO    3.096,00       R$ -        3.177,90
+1.4 KIT INTEGRADO      R$ -      12.885,00        —
+```
+
+Não é cesta incompleta: a GreenPulse vende **kit integrado**, os outros vendem **componentes separados**. Comparar linha a linha não faz sentido; comparar total, sim.
+
+→ O app precisa detectar **blocos mutuamente exclusivos** e comparar no nível que faz sentido, avisando que a decomposição difere.
+
+### 16.5 Sujeira que o parser tem que aguentar
+
+| O que aparece | Exemplo real |
+| :--- | :--- |
+| CNPJ malformado | `57.679.2520001-06` — falta ponto e barra |
+| **Duas empresas numa coluna só** | `Golden Phone Telecom Ltda / Carryer Telecom Ltda` com dois CNPJs |
+| E-mail sem `@` | `goldentelecom.com.br` |
+| Dois e-mails na mesma célula | separados por espaço |
+| Telefone múltiplo | `11 3264-0000 / 3267-2227 / 997671-4803` |
+| Traço como nulo | `Contato: -` |
+| Mesmo fornecedor em duas colunas | `Eletrobarras` em E e G, mesmo CNPJ e mesmo valor |
+| Linhas de EAP vazias | `1.2.2` e `1.2.3` sem descrição e sem valor |
+| Validade com erro de digitação | `3 dias`, `3 dia`, `N/A` |
+| Prazo sem unidade | `90`, `60`, `1` |
+| `Faturamento Direto` = `N/A` | confirma que não é booleano |
+| Data da proposta **depois** da equalização | proposta 24/08, equalização 12/08 |
+| Data prevista **antes** da equalização | início 08/06, equalização 12/08 |
+
+### 16.6 `Redução total` nem sempre está quebrado
+
+No arquivo de agosto está **correto**: Golden fez `inicial 4.900,55 → R01 4.765,55`, redução `R$ 135,00`. Os outros dois mostram `R$ -`, sem negociação.
+
+No de maio está **quebrado** nas três abas: `Proposta inicial` vazia e a redução repetindo o total.
+
+→ Regra do importador: **derivar sempre**. Se `inicial` estiver vazia, redução é zero — nunca o total.
+
+### 16.7 Onde os valores ficam — a regra de leitura
+
+| Bloco | Onde está o valor |
+| :--- | :--- |
+| Cabeçalho (col B e C) | **na linha de baixo** do rótulo |
+| Proponentes (rótulo em D) | **à direita**, nas colunas E, F, G… |
+| EAP | código em B, descrição em C, valores nas colunas dos proponentes |
+| Rodapé | rótulo mesclado de B a D, valores à direita |
+
+→ Confirma a decisão de **localizar por rótulo, nunca por número de linha**. As duas planilhas têm o mesmo layout mas linhas diferentes.
