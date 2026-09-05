@@ -47,10 +47,33 @@ Para eliminar a subjetividade e garantir agilidade operacional para os gestores 
 
 ---
 
-### 3. Automatização do Fluxo Pós-Ordem de Compra
-- **Gatilho sem Fricção**: No momento em que a medição ou Ordem de Compra de Facilities for dada como concluída no Fluig/Mega, o gestor responsável pelo recebimento recebe uma notificação com link direto para o formulário no Web App.
-- **Preenchimento em 1 Minuto**: Interface responsiva e ergonômica (desenvolvida sob princípios de design fluido e moderno), permitindo que o fiscal avalie o prestador diretamente do smartphone no próprio Mega.
-- **Garantia de Adesão**: Condicionamento do encerramento final da medição ao registro da avaliação, assegurando taxa de resposta superior a 90%.
+### 3. Ativação do Fluxo de Avaliação — em duas frentes
+
+A avaliação de prestadores fracassou no passado por ser um formulário isolado, passivo e desconectado do momento da decisão de compra. A correção não está em criar mais uma obrigação de preenchimento, e sim em **capturar a informação onde ela já existe naturalmente**.
+
+**Frente 1 — No fechamento da equalização (atrito zero, disponível desde o início)**
+
+Ao homologar uma cotação, o comprador registra, em segundos, o comportamento de cada proponente: respondeu ao convite, apresentou proposta completa, honrou a validade e o prazo declarados, foi ágil na negociação.
+
+Este dado hoje **não é medido em lugar nenhum** — e é justamente o que já se sabe no momento em que se fecha a compra. Ele passa a alimentar automaticamente o histórico do fornecedor, sem exigir nenhuma etapa nova de ninguém.
+
+**Frente 2 — Após a execução do serviço (avaliação de desempenho)**
+
+Concluída a entrega, o gestor responsável recebe por e-mail um formulário curto e responsivo, preenchível pelo celular no próprio Mega em menos de um minuto, com os cinco critérios ponderados descritos no item 2.
+
+A adesão será sustentada por três mecanismos que **estão sob nossa governança direta**, sem depender de alteração em sistemas de terceiros:
+
+- **Lembrete automático** ao gestor enquanto a avaliação estiver pendente;
+- **Painel de pendências** por empreendimento, visível à coordenação;
+- **Efeito prático imediato**: a nota do fornecedor aparece na tela do comprador na cotação seguinte — quem avalia colhe o benefício na próxima contratação.
+
+**Sobre a integração com o Fluig**
+
+O ciclo de avaliação **já é obrigação contratual**: os contratos vigentes determinam que a Nota Fiscal só seja emitida após a Ordem de Compra, que o número da OC conste obrigatoriamente na Nota, e que o Acordo de Nível de Serviço seja apresentado mensalmente junto com o faturamento.
+
+Nossa entrega nesta fase é **tornar esse ciclo operável e mensurável**, com os dados centralizados e disponíveis para consulta.
+
+A automação do disparo a partir do encerramento da medição no Fluig/Mega — bem como qualquer condicionamento no fluxo de aprovação — depende de alteração em processo de outra área e será proposta formalmente em fase posterior, com o envolvimento de TI e Suprimentos. **Optamos deliberadamente por não colocar essa dependência no caminho crítico da implementação de 2026**, garantindo que a solução entregue valor mensurável dentro do prazo do concurso.
 
 ---
 

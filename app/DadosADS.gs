@@ -80,3 +80,8 @@ const CF_ORC_ADS = [
     }
   }
 ];
+
+/** Importa o orçamento de limpeza de piso da ADS. */
+function importarADS() {
+  return importarOrcamentos_(CF_ORC_ADS, true);
+}

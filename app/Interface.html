@@ -68,12 +68,17 @@ tr:last-child td{border-bottom:0}
 td.v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;padding-left:16px}
 tr.menor td.v{color:var(--ok)}
 tr.maior td.v{color:var(--critico)}
+th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);padding:0 0 8px;border-bottom:1px solid var(--linha)}
+th.c{text-align:center}
+th.r{text-align:right}
+td.un{text-align:center;font-size:13px;color:var(--suave);white-space:nowrap;padding:0 12px}
 .tag{
   display:inline-block;margin-left:8px;padding:1px 7px;border-radius:4px;
   font-size:11px;font-weight:600;vertical-align:1px;
 }
 .tag.ok{background:#E4F2EA;color:var(--ok)}
 .tag.av{background:#FAEEDF;color:var(--alerta)}
+.tag.emp{background:#E8EDF5;color:var(--royal)}
 
 .faixa{
   margin-top:12px;padding-top:11px;border-top:1px solid var(--linha);
@@ -200,19 +205,30 @@ function desenhar(r) {
     var linhas = g.precos.map(function (p, i) {
       var cls = g.precos.length > 1 && i === 0 ? 'menor'
               : (g.precos.length > 1 && i === g.precos.length - 1 ? 'maior' : '');
+      var qtdUn = (p.quantidade !== null && p.quantidade !== undefined && p.quantidade !== '')
+        ? esc(p.quantidade) + (p.unidade ? ' ' + esc(p.unidade) : '')
+        : (p.unidade ? esc(p.unidade) : '—');
       return '<tr class="' + cls + '"><td>' + esc(p.fornecedor) +
-             (p.fonte ? ' <a href="https://drive.google.com/file/d/' + esc(p.fonte) + '/view" target="_blank" class="fonte-link" title="Abrir fonte">📄</a>' : '') +
+             (p.fonte ? ' <a href="https://drive.google.com/file/d/' + esc(p.fonte) + '/view" target="_blank" class="fonte-link" title="Abrir fonte no Google Drive">📄</a>' : '') +
+             (p.empresa ? '<span class="tag emp">' + esc(p.empresa) + '</span>' : '') +
              (p.situacao ? '<span class="tag ok">' + esc(p.situacao) + '</span>' : '') +
              (p.semCadastro ? '<span class="tag av">sem cadastro</span>' : '') +
-             '</td><td class="v">' + moeda(p.valor) + '</td></tr>';
+             '</td><td class="un">' + qtdUn + '</td>' +
+             '<td class="v">' + moeda(p.valor) + '</td></tr>';
     }).join('');
+
+    var cabecalho = '<thead><tr>' +
+      '<th>Fornecedor</th>' +
+      '<th class="c" style="width:130px">Qtd / Unidade</th>' +
+      '<th class="r" style="width:120px">Preço Cotado</th>' +
+      '</tr></thead>';
 
     var meta = [g.empreendimento, g.area, g.data].filter(Boolean).map(esc).join(' · ');
 
     html += '<div class="item">' +
       '<h3><span class="cod">' + esc(g.codigo) + '</span>' + esc(g.descricao) + '</h3>' +
       '<div class="meta">' + meta + '</div>' +
-      '<table>' + linhas + '</table>' +
+      '<table>' + cabecalho + '<tbody>' + linhas + '</tbody></table>' +
       (g.precos.length > 1
         ? '<div class="faixa"><span>' + moeda(g.minimo) + ' a ' + moeda(g.maximo) + '</span>' +
           (g.variacao !== null && g.variacao !== undefined
@@ -231,7 +247,9 @@ function desenhar(r) {
                '</td><td class="v">' + moeda(o.minimo) + '</td></tr>';
       }).join('');
       html += '<div class="serie"><h2>O mesmo item ao longo do tempo</h2>' +
-              '<h3>' + esc(s.descricao) + '</h3><table>' + linhas + '</table></div>';
+              '<h3>' + esc(s.descricao) + '</h3><table>' +
+              '<thead><tr><th>Período · Empreendimento</th><th class="r" style="width:120px">Menor Preço</th></tr></thead>' +
+              '<tbody>' + linhas + '</tbody></table></div>';
     });
   } else if (r.grupos.length > 1) {
     html += '<div class="aviso">Estes são itens diferentes — não existe faixa única que faça' +

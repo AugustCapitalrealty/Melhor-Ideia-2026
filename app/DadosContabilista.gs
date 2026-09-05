@@ -218,3 +218,8 @@ const CF_ORC_CONTABILISTA = [
     "icmsDestacado": "119,62"
   }
 ];
+
+/** Importa o orçamento da Contabilista. */
+function importarContabilista() {
+  return importarOrcamentos_(CF_ORC_CONTABILISTA, true);
+}

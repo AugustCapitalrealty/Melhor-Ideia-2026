@@ -440,3 +440,8 @@ const CF_ORC_SVARGAS = [
     "clienteNomeDocumento": "DEMERCADO INVESTIMENTOS LTDA"
   }
 ];
+
+/** Importa os três orçamentos da S. Vargas. */
+function importarSVargas() {
+  return importarOrcamentos_(CF_ORC_SVARGAS, true);
+}

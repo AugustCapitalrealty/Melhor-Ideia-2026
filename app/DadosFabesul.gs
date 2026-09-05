@@ -221,3 +221,8 @@ const CF_ORC_FABESUL = [
     "prazoEntregaDocumento": "A COMBINAR"
   }
 ];
+
+/** Importa os três orçamentos da Fabesul. */
+function importarFabesul() {
+  return importarOrcamentos_(CF_ORC_FABESUL, true);
+}

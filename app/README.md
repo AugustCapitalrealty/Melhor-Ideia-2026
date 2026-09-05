@@ -34,15 +34,25 @@ auxiliares de `Util.gs` separadamente: selecione as funções de entrada acima.
 
 | Arquivo | Papel |
 | :--- | :--- |
-| `Config.gs` | **Única fonte da verdade do schema.** 21 abas, 213 colunas |
+| `Config.gs` | **Única fonte da verdade do schema.** 21 abas, 224 colunas (Schema v3) |
 | `Util.gs` | Trava, normalização de texto, número BR, data, ID, hash, log |
 | `Schema.gs` | `setupBaseDeDados()` e `verificarConfiguracao()` |
 | `Import.gs` | `analisarEqualizacao(fileId)` — lê uma equalização e relata **sem gravar** |
+| `ImportOrcamento.gs` | Ingestão de propostas avulsas e orçamentos extraídos de PDF |
+| `Dados*.gs` | Dados estruturados dos 21 orçamentos (7 fornecedores) |
 | `Dados.gs` | Acesso genérico às abas: leitura em lote, inserção, remoção |
 | `Persistencia.gs` | `importarEqualizacao()` e `desfazerImportacao()` |
 | `Consulta.gs` | `consultarPreco(termo)` e `panoramaDaBase()` — o histórico respondendo |
-| `Codigo.gs` | `doGet()` e a API do navegador |
-| `Interface.html` | A tela |
+| `Codigo.gs` | `doGet()` e a API do navegador (`apiConsultar`, `apiPanorama`) |
+| `Interface.html` | A tela de busca e consulta histórica |
+
+## Carga do Acervo Histórico
+
+Para carregar os **21 orçamentos e 274 linhas de itens** consolidados dos 7 fornecedores:
+1. No editor do Apps Script, selecione a função **`importarTodosOsOrcamentos`**
+2. Clique em **Executar** e acompanhe o log no console
+3. Para importar fornecedores individualmente, use as funções: `importarCanaveral()`, `importarBasePapeis()`, `importarSVargas()`, `importarLitoral()`, `importarFabesul()`, `importarContabilista()`, `importarADS()`.
+
 
 ## Publicar o web app
 

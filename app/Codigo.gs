@@ -6,7 +6,7 @@
  * divergiriam e ninguém saberia qual está certo.
  */
 
-const CF_VERSAO_APP = '2026-09-05.1';
+const CF_VERSAO_APP = '2026-09-05.3';
 
 function doGet(e) {
   const pagina = (e && e.parameter && e.parameter.page) || 'consulta';
@@ -48,11 +48,15 @@ function apiConsultar(termo) {
               return {
                 fornecedor: p.fornecedor,
                 valor: p.valor,
+                unidade: p.unidade || '',
+                quantidade: (p.quantidade !== null && p.quantidade !== undefined && p.quantidade !== '') ? p.quantidade : null,
                 vencedora: !!p.vencedora,
                 semCadastro: !!p.semCadastro,
                 fonte: p.fonte || '',
                 revisao: p.revisao || '',
                 cnpjEmpresa: p.cnpjEmpresa || '',
+                empresa: (p.cnpjEmpresa && p.cnpjEmpresa.indexOf('08.601.964') >= 0) ? 'Demercado'
+                       : ((p.cnpjEmpresa && p.cnpjEmpresa.indexOf('03.015.145') >= 0) ? 'Capital Realty' : ''),
                 situacao: p.vencedora ? 'selecionado na equalização' : (p.origem === 'import_pdf' ? 'cotado (avulso)' : 'cotado')
               };
             })

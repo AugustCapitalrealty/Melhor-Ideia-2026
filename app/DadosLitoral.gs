@@ -902,3 +902,8 @@ const CF_ORC_LITORAL = [
     "clienteNomeDocumento": "CONSUMIDOR"
   }
 ];
+
+/** Importa os quatro orçamentos da Litoral. */
+function importarLitoral() {
+  return importarOrcamentos_(CF_ORC_LITORAL, true);
+}

@@ -161,10 +161,21 @@ function importarBasePapeis() {
   return importarOrcamentos_(CF_COT_BASEPAPEIS, true);
 }
 
-/** Importa tudo que foi extraído de PDF. */
+/** Importa tudo que foi extraído de PDF (21 orçamentos, 7 fornecedores, 274 itens). */
 function importarTodosOsOrcamentos() {
-  Logger.log('════ Canaveral ════');
+  Logger.log('════ 1/7: Canaveral (4 orçamentos, Itajaí) ════');
   importarOrcamentos_(CF_ORC_CANAVERAL, true);
-  Logger.log('\n════ Base Papéis ════');
+  Logger.log('\n════ 2/7: Base Papéis (5 cotações, Esteio/Curitiba) ════');
   importarOrcamentos_(CF_COT_BASEPAPEIS, true);
+  Logger.log('\n════ 3/7: S. Vargas (3 orçamentos, Curitiba) ════');
+  importarOrcamentos_(CF_ORC_SVARGAS, true);
+  Logger.log('\n════ 4/7: Litoral (4 orçamentos, Itajaí) ════');
+  importarOrcamentos_(CF_ORC_LITORAL, true);
+  Logger.log('\n════ 5/7: Fabesul (3 orçamentos, Curitiba) ════');
+  importarOrcamentos_(CF_ORC_FABESUL, true);
+  Logger.log('\n════ 6/7: Contabilista (1 orçamento, Curitiba) ════');
+  importarOrcamentos_(CF_ORC_CONTABILISTA, true);
+  Logger.log('\n════ 7/7: ADS (1 orçamento global, Esteio) ════');
+  importarOrcamentos_(CF_ORC_ADS, true);
+  Logger.log('\n Concluída carga unificada de todos os 21 orçamentos do acervo.');
 }
