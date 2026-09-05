@@ -9,7 +9,7 @@
     "test:correcoes": "node tests/validar-correcoes.cjs",
     "test:defeitos": "node tests/reproduzir-defeitos.cjs",
     "baseline": "node tests/snapshot-baseline.cjs",
-    "push": "npm test && clasp push",
+    "push": "npm test && clasp push -f",
     "status": "clasp show-file-status"
   },
   "engines": {
