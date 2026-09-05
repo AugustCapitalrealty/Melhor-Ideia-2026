@@ -498,7 +498,9 @@ E os números não fecham com o orçamento disponível:
 
 Mesma quantidade, unitário 28% maior, 7 meses de diferença — a OC veio de outro orçamento, que não está na pasta. E extraiu **1 item de um orçamento de 11**, redigitando a descrição e perdendo o código do fornecedor.
 
-→ **O vínculo equalização → OC precisa ser criado pelo app. Não existe no legado e não é reconstituível retroativamente.** Isso reforça guardar `NUMERO_OC` desde a v1.
+→ **O vínculo equalização → OC não existe nos arquivos.** Guardar `NUMERO_OC` desde a v1 continua valendo.
+
+> ⚠️ **CORRIGIDO em 05/09 (Guilherme)**: eu havia escrito que "auditoria hoje é impossível". **Exagero.** Quando alguém sobe o processo no Fluig, anexa tudo corretamente — o dossiê existe lá. O problema real não é perda de rastreabilidade, é **redigitação**: o mesmo dado é digitado no orçamento, na equalização e de novo na OC. É tempo e erro (o unitário da bobina saiu 28% diferente), não buraco de auditoria.
 
 ---
 
@@ -962,3 +964,71 @@ O app cria a pasta, guarda tudo dentro e devolve **o link da pasta**, não o lin
 
 Herdar permissão de pasta é ótimo para o deck e o PDF — e **perigoso para a análise interna**. A coluna `ANALISE CR` (§9.10) nunca pode sair na planilha ou no PDF que o fornecedor recebe. A regra dos três canais de nota vale também na hora de exportar: o snapshot compartilhado com fornecedor sai **sem** o canal interno.
 
+### 11.4 A base de fornecedores que se constrói sozinha
+
+> Ideia do Guilherme, 05/09/2026: *"Equalização gera dados dos fornecedores. Depois que finaliza, preenche algum dado — como foi, quem fechou, se rolou tudo certo, uma certa avaliação. E vai se auto-aumentando com a participação dos colaboradores que fazem equalização."*
+
+**O princípio**: ninguém é encarregado de manter cadastro de fornecedor. O cadastro **acumula como subproduto** de fazer equalização. Cada cotação enriquece a base para a próxima — e quanto mais gente usa, melhor fica para todo mundo.
+
+Isso é o oposto do que costuma fracassar. Cadastro que depende de alguém alimentar morre; cadastro que se alimenta do trabalho que a pessoa já ia fazer, não.
+
+E responde a devolutiva do comitê **sem criar processo novo**: a avaliação deixa de ser um formulário à parte que alguém precisa lembrar de preencher, e vira o **passo de fechamento da própria equalização** — a pessoa já está ali.
+
+#### Os dois momentos de avaliação — e por que são diferentes
+
+| | Quando | O que se sabe | Atrito |
+| :--- | :--- | :--- | :---: |
+| **A — Comportamento na cotação** | ao fechar a equalização | respondeu? mandou completo? honrou a validade? foi fácil negociar? | **zero** — está fresco na cabeça do comprador |
+| **B — Execução do serviço** | depois da entrega / OC | prazo, qualidade, segurança, limpeza | exige um toque depois |
+
+**A é subestimada e é de graça.** Ninguém mede hoje, e o comprador sabe na hora. E os documentos provam que esse dado existe e se perde:
+
+- `Não conseguiu apresentar proposta a tempo` (Engkoch) · `não é interessante atendermos somente a disciplina de fundações` (Engecap) — §9.17
+- A Petry deixou **uma seção inteira em branco** e mesmo assim foi somada e comparada — §9.9
+- A coluna do Monopólio no EQU **não bate com o EAP que ele mesmo entregou** (5% de diferença no unitário) — §9.6
+- `Validade proposta` aparece como `Não informado`, `N/A`, `Não possui` — §8.12
+
+Tudo isso é comportamento de cotação, visível no momento da equalização, e hoje não vira dado.
+
+**B é o que o comitê pediu.** Fica, mínimo e por e-mail, sem Fluig.
+
+#### O que se acumula sem ninguém digitar nada a mais
+
+| Dado | De onde vem |
+| :--- | :--- |
+| CNPJ, razão social, cidade/UF, situação | BrasilAPI, na primeira vez |
+| Contato, telefone, e-mail | digitado uma vez, reaproveitado sempre |
+| Categorias que o fornecedor atende | dos itens que ele cotou |
+| Faixa de preço praticada por item | do histórico de propostas |
+| Taxa de resposta a convite | convites × propostas recebidas |
+| Taxa de vitória | propostas × equalizações vencidas |
+| Completude das propostas | itens cotados × itens da cesta |
+| Aderência à validade e ao prazo | campos da própria proposta |
+
+> Nada disso é campo novo para o comprador. É consequência de ter os dados estruturados em vez de espalhados em PDF.
+
+---
+
+## 12. O que estamos resolvendo — enunciado do Guilherme
+
+> *"A ideia é ganhar tempo na equalização, ela ser mais agradável e comparativa aos olhos, e reduzir trabalhos manuais desnecessários."*
+
+Esse é o eixo. Vale registrar porque a análise de campo achou defeitos graves e é fácil o projeto derivar para um discurso de auditoria — que não é o que ele é.
+
+| Objetivo | Como o app entrega | Evidência de campo |
+| :--- | :--- | :--- |
+| **Ganhar tempo** | O dado do fornecedor chega pronto e para de ser redigitado três vezes | §8.1, §8.13 |
+| **Comparação agradável aos olhos** | N colunas, alinhamento por item, destaque de quem está fora da faixa, cesta incompleta marcada | §8.4, §8.10 |
+| **Menos trabalho manual** | Sem transpor 4 planilhas à mão; sem refazer numeração; sem conferir soma | §9.11, §1.3 |
+| **Padronização** | Um formulário só, com os mesmos campos e a mesma nomenclatura em todos os Megas | §5, §8.6, §8.11 |
+| **Governança como consequência** | Vem de graça da padronização — não é o produto, é o efeito | — |
+
+### 12.1 ⚠️ Cuidado político com o achado da Fase 7
+
+O achado de §9.8 — proponentes comparados em rodadas e escopos diferentes numa concorrência de R$ 1,2 milhão — é a evidência mais forte do projeto **e a mais delicada**: é uma decisão real, recente, de colegas da Engenharia.
+
+**Como usar**: *"o formato induz o erro"*. O template de 3 colunas, a numeração manual e a transposição à mão produzem esse resultado com qualquer pessoa competente.
+
+**Como não usar**: *"a Engenharia errou"*. Vira briga, e a Engenharia é justamente quem mais tem a ganhar com a ferramenta — eles já fazem benchmark de preço por metro de estaca à mão (§9.17).
+
+O mérito não é apontar o erro. É que **o formato novo torna o erro impossível**.

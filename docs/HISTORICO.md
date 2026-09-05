@@ -106,6 +106,24 @@ O histórico continua sendo o motor. O que mudou é o argumento de abertura — 
 
 ---
 
+### Correções do Guilherme no fim do dia
+
+| O que eu disse | Correção | Efeito |
+| :--- | :--- | :--- |
+| *"Auditoria hoje é impossível — a OC não aponta para cotação nenhuma"* | **Exagero.** Quem sobe o processo no Fluig anexa tudo corretamente; o dossiê existe | O problema real é **redigitação**, não perda de rastreabilidade. Corrigido em §8.13 |
+| Tese de abertura: *"a comparação está errada"* | O eixo é **ganhar tempo, comparação agradável aos olhos, menos trabalho manual** | Achados de campo viram munição sobre o **formato**, não acusação. Novo §12 |
+| Fluig como integração | **Futuro**, confirmado de novo | — |
+
+### Ideia nova — base de fornecedores que se constrói sozinha
+
+*"Equalização gera dados dos fornecedores. Depois que finaliza, preenche como foi, quem fechou. E vai se auto-aumentando com a participação dos colaboradores."*
+
+Ninguém mantém cadastro — ele **acumula como subproduto** de fazer equalização. E responde a devolutiva do comitê sem criar processo novo: a avaliação vira o passo de fechamento da própria equalização.
+
+Desdobramento registrado em §11.4: são **dois** momentos distintos — comportamento na cotação (atrito zero, ninguém mede hoje) e execução do serviço (o que o comitê pediu, fica por e-mail).
+
+---
+
 ## Próxima entrada
 
 *(a preencher conforme avançamos)*

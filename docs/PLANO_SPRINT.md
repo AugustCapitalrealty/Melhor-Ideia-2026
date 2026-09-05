@@ -24,13 +24,13 @@
 
 **Versão inicial**: "o histórico de preço é o produto".
 
-**Versão atual, mais forte**, porque temos prova documental:
+**Versão atual** — enunciado do Guilherme, e é o eixo do projeto:
 
-> **A comparação de compras da companhia está errada hoje.** Não é sobre trocar uma planilha — é sobre a decisão estar sendo tomada sobre comparações inválidas, e nós temos os documentos.
+> **Ganhar tempo na equalização, torná-la mais agradável e comparativa aos olhos, e reduzir trabalho manual desnecessário.** A padronização vem junto, e a governança vem de graça como consequência.
 
-Isso não é crítica a ninguém: é o limite físico do Excel com 3 colunas fixas. Mas muda a conversa de *"fiz uma ferramenta bonita"* para *"achei um problema de controle e resolvi"*.
+O histórico de preço continua sendo o motor. A pesquisa de campo deu munição forte — mas ela serve para mostrar **por que o formato importa**, não para acusar ninguém. Ver §12.1 da base.
 
-O histórico de preço continua sendo o motor. O que mudou é o argumento de abertura.
+E o cadastro de fornecedor **se constrói sozinho**: cada equalização enriquece a base para a próxima, sem ninguém encarregado de manter cadastro (§11.4).
 
 ### 2.1 As provas (todas em §8 e §9 da base de conhecimento)
 
@@ -93,7 +93,8 @@ O histórico de preço continua sendo o motor. O que mudou é o argumento de abe
 **10/09 → 10/10 — piloto e melhorias**
 - [ ] **Medir o baseline antes do primeiro uso.** Cronometrar 3 equalizações no método atual. Irreversível: depois que alguém usar o app, o "antes" não existe mais.
 - [ ] Registrar todo alerta que virou renegociação — esse log **é** o saving atribuível
-- [ ] Avaliação pós-OC: 5 campos, uma tela, e-mail manual. Sem Fluig.
+- [ ] **Fechamento da equalização captura o comportamento de cotação** — quem fechou, respondeu no prazo, mandou completo, honrou a validade. Atrito zero: a pessoa já está ali (§11.4)
+- [ ] Avaliação pós-execução: 5 campos, uma tela, e-mail manual. Sem Fluig.
 - [ ] Gerador de Slides (portar de `Teste-RH-`, §10 da base)
 - [ ] Refino visual — por último
 - [ ] **30/09**: última chance de usar a consultoria do comitê
