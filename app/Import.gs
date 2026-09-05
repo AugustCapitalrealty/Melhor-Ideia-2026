@@ -539,43 +539,81 @@ function cfValidar_(grid, idx, colunas, eap, proponentes, pendencias) {
  */
 function cfDetectarBlocosAlternativos_(eap, totalProponentes) {
   const porPai = {};
-  eap.forEach(function (n) { if (n.idPai) (porPai[n.idPai] = porPai[n.idPai] || []).push(n); });
+  eap.forEach(function (n) { (porPai[n.idPai || '@raiz'] = porPai[n.idPai || '@raiz'] || []).push(n); });
 
-  // Quem cotou alguma coisa dentro de cada grupo?
-  const grupos = eap.filter(function (n) { return n.tipo === 'grupo'; }).map(function (g) {
-    const descendentes = [];
-    (function coletar(id) {
-      (porPai[id] || []).forEach(function (f) { descendentes.push(f); coletar(f.id); });
-    })(g.id);
+  const porId = {};
+  eap.forEach(function (n) { porId[n.id] = n; });
 
-    const cotaram = {};
-    descendentes.forEach(function (d) {
-      (d.precos || []).forEach(function (p, i) {
-        if (p.status === 'cotado') cotaram[i] = true;
-      });
-    });
-    return { no: g, cotaram: Object.keys(cotaram).map(Number).sort(), descendentes: descendentes };
-  }).filter(function (g) { return g.cotaram.length > 0 && g.cotaram.length < totalProponentes; });
+  /** Quem cotou alguma coisa neste nó ou abaixo dele. */
+  function cobertura(no) {
+    const set = {};
+    (function varrer(n) {
+      (n.precos || []).forEach(function (p, i) { if (p.status === 'cotado') set[i] = true; });
+      (porPai[n.id] || []).forEach(varrer);
+    })(no);
+    return Object.keys(set).map(Number).sort(function (a, b) { return a - b; });
+  }
+
+  function descendentes(no) {
+    const lista = [no.id];
+    (porPai[no.id] || []).forEach(function (f) { lista.push.apply(lista, descendentes(f)); });
+    return lista;
+  }
 
   const blocos = [];
-  for (let a = 0; a < grupos.length; a++) {
-    for (let b = a + 1; b < grupos.length; b++) {
-      const A = grupos[a].cotaram, B = grupos[b].cotaram;
-      const intersecao = A.filter(function (x) { return B.indexOf(x) >= 0; });
-      const uniao = A.concat(B.filter(function (x) { return A.indexOf(x) < 0; }));
-      // disjuntos e, juntos, cobrindo todo mundo → são alternativas
-      if (intersecao.length === 0 && uniao.length === totalProponentes) {
-        const nos = grupos[a].descendentes.concat(grupos[b].descendentes)
-          .map(function (n) { return n.id; });
-        nos.push(grupos[a].no.id, grupos[b].no.id);
-        blocos.push({
-          grupos: [grupos[a].no.codigoOriginal + ' ' + grupos[a].no.descricao,
-                   grupos[b].no.codigoOriginal + ' ' + grupos[b].no.descricao],
-          nos: nos
-        });
-      }
-    }
-  }
+
+  Object.keys(porPai).forEach(function (idPai) {
+    const irmaos = porPai[idPai].filter(function (n) { return n.tipo !== 'escopo'; });
+    if (irmaos.length < 2) return;
+
+    // Agrupa irmãos pela MESMA assinatura de cobertura. Em "Equipamentos",
+    // 1.1/1.2/1.3 são cotados pelos mesmos dois proponentes e 1.4 pelo terceiro:
+    // são duas assinaturas, não seis pares.
+    const porAssinatura = {};
+    irmaos.forEach(function (n) {
+      const cob = cobertura(n);
+      if (!cob.length) return;
+      const chave = cob.join(',');
+      (porAssinatura[chave] = porAssinatura[chave] || { cobertura: cob, nos: [] }).nos.push(n);
+    });
+
+    const assinaturas = Object.keys(porAssinatura).map(function (k) { return porAssinatura[k]; });
+    if (assinaturas.length < 2) return;
+
+    // Alternativas de verdade: coberturas disjuntas que, juntas, dão todos.
+    const vistos = {};
+    let disjuntas = true;
+    let uniao = 0;
+    assinaturas.forEach(function (a) {
+      a.cobertura.forEach(function (p) {
+        if (vistos[p]) disjuntas = false;
+        vistos[p] = true;
+      });
+      uniao = Object.keys(vistos).length;
+    });
+    if (!disjuntas || uniao !== totalProponentes) return;
+
+    const nos = [];
+    const rotulos = [];
+    assinaturas.forEach(function (a) {
+      a.nos.forEach(function (n) {
+        nos.push.apply(nos, descendentes(n));
+        rotulos.push(n.codigoOriginal + ' ' + n.descricao);
+      });
+    });
+
+    blocos.push({
+      grupos: rotulos,
+      caminhos: assinaturas.map(function (a) {
+        return {
+          proponentes: a.cobertura.map(function (i) { return i + 1; }),
+          itens: a.nos.map(function (n) { return n.codigoOriginal + ' ' + n.descricao; })
+        };
+      }),
+      nos: nos
+    });
+  });
+
   return blocos;
 }
 
@@ -708,8 +746,11 @@ function cfImprimirAnalise_(r) {
     });
 
     (e.validacao.blocosAlternativos || []).forEach(function (b) {
-      Logger.log('   ℹ SOLUÇÕES ALTERNATIVAS: "' + b.grupos[0] + '" e "' + b.grupos[1] + '"');
-      Logger.log('      Proponentes cotaram arquiteturas diferentes. Compare pelo total, não item a item.');
+      Logger.log('   ℹ SOLUÇÕES ALTERNATIVAS — proponentes cotaram caminhos diferentes:');
+      b.caminhos.forEach(function (c) {
+        Logger.log('      prop. ' + c.proponentes.join(', ') + ' → ' + c.itens.join(' + '));
+      });
+      Logger.log('      Compare pelo total, não item a item.');
     });
 
     e.eap.filter(function (n) { return n.derivacaoPeriodica; }).forEach(function (n) {
