@@ -172,6 +172,31 @@ function apiEqualizacoes() {
   }
 }
 
+/** Os Megas e as empresas, para os seletores da tela de criação. */
+function apiOpcoes() {
+  try {
+    return { ok: true, empreendimentos: CF_EMPREENDIMENTOS, empresas: CF_EMPRESAS };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/**
+ * Cria uma equalização a partir da tela.
+ *
+ * Único ponto de escrita exposto ao navegador, por isso passa por
+ * cfExigeAutorizacao_: a ausência de botão na interface não é controle de
+ * acesso — google.script.run é chamável de qualquer aba aberta.
+ */
+function apiCriarEqualizacao(dados) {
+  try {
+    cfExigeAutorizacao_();
+    return { ok: true, resultado: cfCriarEqualizacao_(dados) };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
 /**
  * O comparativo de uma equalização.
  * cfMapaEqualizacao_ já devolve tudo serializável — datas viram texto lá,

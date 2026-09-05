@@ -482,3 +482,74 @@ try {
   console.log(`✗ FALHA na Correção 13: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 14 — gravação da equalização criada na tela
+//
+//  Primeiro caminho de escrita vindo do navegador. Três regras que, se
+//  quebrarem, corrompem a base silenciosamente: hierarquia pelo nível,
+//  grupo sem preço, e branco virando nao_cotado em vez de zero.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxNovo = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  const gravado = {};
+  let seq = 0;
+
+  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxNovo, { filename: f });
+  });
+
+  // Depois da carga: `function` no vm vira propriedade do global, então
+  // Util.gs sobrescreveria qualquer dublê definido antes.
+  ctxNovo.cfLerTudo_ = () => [];
+  ctxNovo.cfInserir_ = (aba, linhas) => { gravado[aba] = (gravado[aba] || []).concat(linhas); };
+  ctxNovo.cfComTrava_ = (fn) => fn();
+  ctxNovo.cfUsuario_ = () => 'guilherme.marques@capitalrealty.com.br';
+  ctxNovo.cfLog_ = () => {};
+  ctxNovo.cfNovoId_ = (p) => p + '-' + (++seq);
+
+  const r = ctxNovo.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO ITAJAÍ',
+    projeto: 'Limpeza', area: 'Facilities', data: '05/09/2026',
+    proponentes: [{ nome: 'Alfa Ltda', cnpj: '11.222.333/0001-81' }, { nome: 'Beta ME', cnpj: '' }],
+    itens: [
+      { tipo: 'grupo', nivel: 0, descricao: 'MATERIAIS', precos: ['99', '99'] },
+      { tipo: 'item',  nivel: 1, descricao: 'Detergente', quantidade: '10', unidade: 'un',
+        precos: ['5,50', ''] }
+    ]
+  });
+
+  const eap = gravado.EAP, precos = gravado.Precos;
+
+  assert.equal(eap.length, 2);
+  assert.equal(eap[0].ID_PAI, '', 'o grupo de nível 0 é raiz');
+  assert.equal(eap[1].ID_PAI, eap[0].ID, 'o item de nível 1 devia pendurar no grupo acima');
+
+  // Grupo agrega. Preço nele faria o total contar duas vezes.
+  assert.equal(precos.length, 2, `grupo não pode gerar preço — vieram ${precos.length} linhas`);
+  assert.ok(precos.every(p => p.ID_EAP === eap[1].ID), 'todo preço devia ser do item, não do grupo');
+
+  const cotado = precos.filter(p => p.STATUS_PRECO === 'cotado')[0];
+  assert.equal(cotado.PRECO_UNITARIO, 5.5, 'vírgula decimal do formato BR precisa virar número');
+  assert.equal(cotado.VALOR_TOTAL, 55, 'total é unitário × quantidade');
+
+  const semCotar = precos.filter(p => p.STATUS_PRECO === 'nao_cotado')[0];
+  assert.equal(semCotar.PRECO_UNITARIO, '',
+    'preço em branco vira nao_cotado com valor vazio — zero mentiria que cotou de graça');
+
+  assert.equal(gravado.Propostas[0].VALOR_TOTAL_CALCULADO, 55);
+  assert.equal(gravado.Propostas[1].VALOR_TOTAL_CALCULADO, 0);
+  assert.equal(gravado.Fornecedores.length, 1, 'só o proponente com CNPJ válido entra no cadastro');
+
+  // Empreendimento é lista fechada: nunca se deduz, nunca se aceita texto solto.
+  assert.throws(() => ctxNovo.cfCriarEqualizacao_({
+    empreendimento: 'Mega Qualquer',
+    proponentes: [{ nome: 'X' }], itens: [{ tipo: 'item', descricao: 'Y', precos: [''] }]
+  }), /não é um dos Megas/, 'empreendimento fora da lista devia ser recusado');
+
+  console.log('✓ CORREÇÃO VERIFICADA: equalização criada na tela grava hierarquia e preços corretos');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 14: ${e.message}`);
+  process.exitCode = 1;
+}

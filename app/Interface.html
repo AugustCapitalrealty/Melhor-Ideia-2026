@@ -170,6 +170,78 @@ table.mapa tfoot .desc{background:var(--superficie)}
   font-size:12.5px;color:var(--suave);margin:-6px 0 12px;
   padding:7px 10px;background:var(--superficie);border:1px dashed var(--linha);border-radius:6px;
 }
+
+/* ── Liquid Glass ──
+   Superfície translúcida com desfoque do que está atrás. O brilho da borda
+   superior é o que dá a leitura de vidro: sem ele vira só um cinza claro. */
+.vidro{
+  background:linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.58));
+  backdrop-filter:blur(22px) saturate(180%);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 10px 34px -18px rgba(21,30,73,.45);
+  border-radius:14px;
+}
+body.criando{
+  background:
+    radial-gradient(900px 500px at 12% -8%,  rgba(6,92,169,.16), transparent 60%),
+    radial-gradient(760px 460px at 96% 4%,   rgba(21,30,73,.14),  transparent 62%),
+    var(--fundo);
+  background-attachment:fixed;
+}
+
+/* ── formulário da nova cotação ── */
+.bloco{padding:20px 22px;margin-bottom:18px}
+.bloco h2{
+  margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--royal);
+}
+.campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.campo label{display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:5px}
+.campo input,.campo select,.campo textarea{
+  width:100%;padding:10px 12px;font-size:14.5px;font-family:inherit;
+  border:1.5px solid rgba(21,30,73,.14);border-radius:9px;
+  background:rgba(255,255,255,.75);color:var(--texto);
+}
+.campo input:focus,.campo select:focus,.campo textarea:focus{
+  outline:none;border-color:var(--acao);background:#fff;
+  box-shadow:0 0 0 3px rgba(6,92,169,.14);
+}
+.linha-prop{display:grid;grid-template-columns:1.6fr 1fr auto;gap:10px;margin-bottom:10px;align-items:end}
+.bt{
+  padding:9px 16px;font-size:14px;font-weight:600;font-family:inherit;
+  border:1px solid rgba(21,30,73,.16);border-radius:9px;
+  background:rgba(255,255,255,.8);color:var(--royal);cursor:pointer;
+}
+.bt:hover{background:#fff;border-color:var(--acao)}
+.bt.primario{background:var(--royal);border-color:var(--royal);color:#fff}
+.bt.primario:hover{background:var(--acao);border-color:var(--acao)}
+.bt.some{color:var(--critico);border-color:rgba(176,48,36,.25)}
+.bt:disabled{opacity:.45;cursor:default}
+.acoes{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+
+table.grade{width:100%;border-collapse:separate;border-spacing:0}
+table.grade th{
+  font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);
+  text-align:left;padding:0 8px 8px;border-bottom:1px solid rgba(21,30,73,.12);
+}
+table.grade td{padding:5px 4px;vertical-align:middle}
+table.grade input,table.grade select{
+  width:100%;padding:8px 10px;font-size:14px;font-family:inherit;
+  border:1.5px solid rgba(21,30,73,.12);border-radius:8px;background:rgba(255,255,255,.7);
+}
+table.grade input:focus,table.grade select:focus{
+  outline:none;border-color:var(--acao);background:#fff;box-shadow:0 0 0 3px rgba(6,92,169,.12);
+}
+table.grade input.preco{text-align:right;font-variant-numeric:tabular-nums}
+tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,241,248,.85)}
+.grade-rolo{overflow-x:auto}
+.totais{
+  display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;padding-top:14px;
+  border-top:1px solid rgba(21,30,73,.12);font-size:14px;
+}
+.totais b{color:var(--noturno);font-variant-numeric:tabular-nums}
+@media(max-width:560px){ .linha-prop{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -184,6 +256,7 @@ table.mapa tfoot .desc{background:var(--superficie)}
   <div class="abas" role="tablist">
     <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
     <button id="ab-mapa"     role="tab" aria-selected="false" onclick="aba('mapa')">Mapa de equalização</button>
+    <button id="ab-nova"     role="tab" aria-selected="false" onclick="aba('nova')">Nova cotação</button>
   </div>
 
   <section id="v-consulta">
@@ -204,6 +277,57 @@ table.mapa tfoot .desc{background:var(--superficie)}
       </select>
     </div>
     <div id="mapa"></div>
+  </section>
+
+  <section id="v-nova" hidden>
+    <div class="bloco vidro">
+      <h2>A compra</h2>
+      <div class="campos">
+        <div class="campo">
+          <label for="nEmp">Empreendimento</label>
+          <select id="nEmp"><option value="">selecione o Mega…</option></select>
+        </div>
+        <div class="campo">
+          <label for="nEmpresa">Empresa contratante</label>
+          <select id="nEmpresa"></select>
+        </div>
+        <div class="campo">
+          <label for="nProjeto">Projeto</label>
+          <input id="nProjeto" placeholder="META UTILITIES — PLANEJAMENTO E GESTÃO">
+        </div>
+        <div class="campo">
+          <label for="nArea">Área</label>
+          <input id="nArea" placeholder="Facilities, Equipamentos, Mão de obra…">
+        </div>
+        <div class="campo">
+          <label for="nData">Data da equalização</label>
+          <input id="nData" type="date">
+        </div>
+      </div>
+    </div>
+
+    <div class="bloco vidro">
+      <h2>Proponentes</h2>
+      <div id="props"></div>
+      <div class="acoes">
+        <button class="bt" onclick="addProponente()">+ Proponente</button>
+      </div>
+    </div>
+
+    <div class="bloco vidro">
+      <h2>Itens e preços</h2>
+      <div class="grade-rolo"><table class="grade" id="grade"></table></div>
+      <div class="acoes">
+        <button class="bt" onclick="addItem('item')">+ Item</button>
+        <button class="bt" onclick="addItem('grupo')">+ Grupo</button>
+      </div>
+      <div class="totais" id="totais"></div>
+    </div>
+
+    <div class="acoes">
+      <button class="bt primario" id="btSalvar" onclick="salvarEqualizacao()">Salvar equalização</button>
+      <span id="salvoMsg"></span>
+    </div>
   </section>
 
   <footer id="rodape">carregando…</footer>
@@ -370,15 +494,22 @@ function desenhar(r) {
 var equalizacoesCarregadas = false;
 
 function aba(nome) {
-  document.getElementById('v-consulta').hidden = nome !== 'consulta';
-  document.getElementById('v-mapa').hidden     = nome !== 'mapa';
-  document.getElementById('ab-consulta').setAttribute('aria-selected', nome === 'consulta');
-  document.getElementById('ab-mapa').setAttribute('aria-selected', nome === 'mapa');
+  ['consulta', 'mapa', 'nova'].forEach(function (n) {
+    document.getElementById('v-' + n).hidden = n !== nome;
+    document.getElementById('ab-' + n).setAttribute('aria-selected', n === nome);
+  });
+
+  // O fundo com profundidade só existe onde há vidro sobre ele.
+  document.body.classList.toggle('criando', nome === 'nova');
 
   // Carrega só quando a aba é aberta pela primeira vez.
   if (nome === 'mapa' && !equalizacoesCarregadas) {
     equalizacoesCarregadas = true;
     carregarEqualizacoes();
+  }
+  if (nome === 'nova' && !opcoesCarregadas) {
+    opcoesCarregadas = true;
+    carregarOpcoes();
   }
 }
 
@@ -487,6 +618,176 @@ function rotuloStatus(s) {
   if (s === 'excluido') return 'excluído';
   if (s === 'nao_aplicavel') return 'n/a';
   return 'não cotou';
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Nova cotação
+// ─────────────────────────────────────────────────────────────
+
+var opcoesCarregadas = false;
+var proponentes = [];
+var itens = [];
+
+function carregarOpcoes() {
+  google.script.run.withSuccessHandler(function (r) {
+    if (!r.ok) return;
+    document.getElementById('nEmp').innerHTML =
+      '<option value="">selecione o Mega…</option>' +
+      r.empreendimentos.map(function (e) {
+        return '<option value="' + esc(e) + '">' + esc(e) + '</option>';
+      }).join('');
+    document.getElementById('nEmpresa').innerHTML = r.empresas.map(function (e) {
+      return '<option value="' + esc(e.cnpj) + '">' + esc(e.nome) + '</option>';
+    }).join('');
+  }).apiOpcoes();
+
+  document.getElementById('nData').valueAsDate = new Date();
+  addProponente(); addProponente(); addProponente();   // três é o mínimo usual
+  addItem('grupo'); addItem('item');
+}
+
+function addProponente() {
+  proponentes.push({ nome: '', cnpj: '' });
+  itens.forEach(function (i) { i.precos.push(''); });
+  desenharProponentes(); desenharGrade();
+}
+
+function removerProponente(i) {
+  proponentes.splice(i, 1);
+  itens.forEach(function (it) { it.precos.splice(i, 1); });
+  desenharProponentes(); desenharGrade();
+}
+
+function desenharProponentes() {
+  document.getElementById('props').innerHTML = proponentes.map(function (p, i) {
+    return '<div class="linha-prop">' +
+      '<div class="campo"><label>Proponente ' + (i + 1) + '</label>' +
+      '<input value="' + esc(p.nome) + '" placeholder="razão social"' +
+      ' oninput="proponentes[' + i + '].nome=this.value"></div>' +
+      '<div class="campo"><label>CNPJ</label>' +
+      '<input value="' + esc(p.cnpj) + '" placeholder="00.000.000/0001-00"' +
+      ' oninput="proponentes[' + i + '].cnpj=this.value"></div>' +
+      '<button class="bt some" onclick="removerProponente(' + i + ')" ' +
+      (proponentes.length < 2 ? 'disabled' : '') + '>remover</button>' +
+      '</div>';
+  }).join('');
+}
+
+function addItem(tipo) {
+  itens.push({
+    tipo: tipo, nivel: tipo === 'grupo' ? 0 : 1, descricao: '',
+    quantidade: '', unidade: '',
+    precos: proponentes.map(function () { return ''; })
+  });
+  desenharGrade();
+}
+
+function removerItem(i) { itens.splice(i, 1); desenharGrade(); }
+
+function desenharGrade() {
+  var cab = '<thead><tr><th style="width:44px">Nív.</th><th>Descrição</th>' +
+    '<th style="width:90px">Qtd</th><th style="width:90px">Un.</th>' +
+    proponentes.map(function (p, i) {
+      return '<th style="width:130px">' + esc(p.nome || ('Proponente ' + (i + 1))) + '</th>';
+    }).join('') + '<th style="width:40px"></th></tr></thead>';
+
+  var corpo = itens.map(function (it, i) {
+    var precos = it.tipo === 'grupo'
+      // Grupo agrega e não recebe preço: gravar aqui contaria duas vezes.
+      ? proponentes.map(function () { return '<td></td>'; }).join('')
+      : proponentes.map(function (p, j) {
+          return '<td><input class="preco" inputmode="decimal" value="' + esc(it.precos[j]) + '"' +
+                 ' placeholder="—" oninput="itens[' + i + '].precos[' + j + ']=this.value;calcular()"></td>';
+        }).join('');
+
+    var niveis = [0, 1, 2, 3].map(function (n) {
+      return '<option value="' + n + '"' + (it.nivel === n ? ' selected' : '') + '>' + n + '</option>';
+    }).join('');
+
+    return '<tr class="' + (it.tipo === 'grupo' ? 'eh-grupo' : '') + '">' +
+      '<td><select onchange="itens[' + i + '].nivel=Number(this.value)">' + niveis + '</select></td>' +
+      '<td><input class="desc" value="' + esc(it.descricao) + '" placeholder="' +
+        (it.tipo === 'grupo' ? 'NOME DO GRUPO' : 'descrição do item') +
+        '" oninput="itens[' + i + '].descricao=this.value"></td>' +
+      '<td><input value="' + esc(it.quantidade) + '" inputmode="decimal"' +
+        ' oninput="itens[' + i + '].quantidade=this.value;calcular()"></td>' +
+      '<td><input value="' + esc(it.unidade) + '" placeholder="un"' +
+        ' oninput="itens[' + i + '].unidade=this.value"></td>' +
+      precos +
+      '<td><button class="bt some" style="padding:6px 9px" onclick="removerItem(' + i + ')">×</button></td>' +
+      '</tr>';
+  }).join('');
+
+  document.getElementById('grade').innerHTML = cab + '<tbody>' + corpo + '</tbody>';
+  calcular();
+}
+
+function num(v) {
+  if (v === null || v === undefined || String(v).trim() === '') return null;
+  var n = Number(String(v).replace(/\./g, '').replace(',', '.'));
+  return isNaN(n) ? null : n;
+}
+
+function calcular() {
+  var totais = proponentes.map(function () { return 0; });
+  var cotou = proponentes.map(function () { return 0; });
+  var itensReais = itens.filter(function (i) { return i.tipo !== 'grupo'; }).length;
+
+  itens.forEach(function (it) {
+    if (it.tipo === 'grupo') return;
+    var q = num(it.quantidade);
+    it.precos.forEach(function (p, j) {
+      var v = num(p);
+      if (v === null) return;
+      totais[j] += v * (q === null ? 1 : q);
+      cotou[j] += 1;
+    });
+  });
+
+  var menor = null;
+  totais.forEach(function (t, j) {
+    if (cotou[j] === 0) return;
+    if (menor === null || t < totais[menor]) menor = j;
+  });
+
+  document.getElementById('totais').innerHTML = proponentes.map(function (p, j) {
+    // A cesta incompleta aparece junto do total: o mais barato pode ser
+    // só o que deixou item sem cotar.
+    var falta = itensReais - cotou[j];
+    return '<span>' + esc(p.nome || ('Proponente ' + (j + 1))) + ': <b' +
+      (menor === j ? ' style="color:var(--ok)"' : '') + '>' + moeda(totais[j]) + '</b>' +
+      (falta > 0 ? ' <small style="color:var(--alerta)">(' + falta + ' sem cotar)</small>' : '') +
+      '</span>';
+  }).join('');
+}
+
+function salvarEqualizacao() {
+  var bt = document.getElementById('btSalvar');
+  var msg = document.getElementById('salvoMsg');
+  bt.disabled = true;
+  msg.innerHTML = 'gravando…';
+
+  google.script.run
+    .withSuccessHandler(function (r) {
+      bt.disabled = false;
+      if (!r.ok) { msg.innerHTML = '<span style="color:var(--critico)">' + esc(r.erro) + '</span>'; return; }
+      msg.innerHTML = '<span style="color:var(--ok)">Gravada: ' + esc(r.resultado.id) + ' · ' +
+        r.resultado.nos + ' nós · ' + r.resultado.precos + ' preços</span>';
+      equalizacoesCarregadas = false;   // o seletor do mapa precisa recarregar
+    })
+    .withFailureHandler(function (e) {
+      bt.disabled = false;
+      msg.innerHTML = '<span style="color:var(--critico)">' + esc(e.message) + '</span>';
+    })
+    .apiCriarEqualizacao({
+      empreendimento: document.getElementById('nEmp').value,
+      empresaCnpj: document.getElementById('nEmpresa').value,
+      projeto: document.getElementById('nProjeto').value,
+      area: document.getElementById('nArea').value,
+      data: document.getElementById('nData').value,
+      proponentes: proponentes,
+      itens: itens
+    });
 }
 </script>
 </body>

@@ -155,3 +155,174 @@ function cfPendenciasDaEqualizacao_(idEq) {
     .filter(function (p) { return idsImportacao[p.ID_IMPORTACAO] && p.RESOLVIDA !== true; })
     .map(function (p) { return { tipo: p.TIPO, descricao: p.DESCRICAO }; });
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Criar equalização pela tela
+//
+//  Primeiro caminho de escrita vindo do navegador. Tudo numa transação só:
+//  ou entra equalização, proponentes, árvore e preços, ou não entra nada.
+//  Gravar pela metade aqui é pior que falhar — sobra uma equalização órfã
+//  que ninguém sabe se está completa.
+// ─────────────────────────────────────────────────────────────
+
+/** Os Megas. Lista fechada de propósito: empreendimento nunca se deduz. */
+const CF_EMPREENDIMENTOS = [
+  'MEGA CENTRO LOGÍSTICO CURITIBA',
+  'MEGA CENTRO LOGÍSTICO ESTEIO',
+  'MEGA CENTRO LOGÍSTICO ITAJAÍ'
+];
+
+const CF_EMPRESAS = [
+  { cnpj: '', nome: 'DEMERCADO INVESTIMENTOS S.A.' },
+  { cnpj: '', nome: 'CAPITAL REALTY' }
+];
+
+function cfCriarEqualizacao_(d) {
+  if (!d) throw new Error('Nada recebido.');
+  if (!d.empreendimento) throw new Error('Escolha o empreendimento.');
+  if (CF_EMPREENDIMENTOS.indexOf(d.empreendimento) < 0) {
+    throw new Error('Empreendimento "' + d.empreendimento + '" não é um dos Megas.');
+  }
+
+  const proponentes = (d.proponentes || []).filter(function (p) {
+    return (p.nome && String(p.nome).trim()) || cfSoDigitos_(p.cnpj);
+  });
+  if (!proponentes.length) throw new Error('Inclua ao menos um proponente.');
+
+  const itens = (d.itens || []).filter(function (i) {
+    return i.descricao && String(i.descricao).trim();
+  });
+  if (!itens.length) throw new Error('Inclua ao menos um item.');
+
+  const idEq = cfNovoId_('EQU');
+  const agora = new Date();
+  const usuario = cfUsuario_();
+
+  // ── proponentes
+  const idsProposta = proponentes.map(function () { return cfNovoId_('PRP'); });
+  const totais = proponentes.map(function () { return 0; });
+
+  // ── árvore: o nível vira ID_PAI. Pilha guarda o último id de cada nível.
+  const pilha = {};
+  const linhasEap = [];
+  const linhasPreco = [];
+
+  itens.forEach(function (item, ordem) {
+    const nivel = Number(item.nivel) || 0;
+    const idNo = cfNovoId_('EAP');
+    pilha[nivel] = idNo;
+
+    linhasEap.push({
+      ID: idNo,
+      ID_EQUALIZACAO: idEq,
+      ID_PAI: nivel > 0 ? (pilha[nivel - 1] || '') : '',
+      ORDEM: ordem + 1,
+      TIPO: item.tipo === 'grupo' ? 'grupo' : 'item',
+      DESCRICAO: String(item.descricao).trim(),
+      QUANTIDADE_REFERENCIA: cfNumero_(item.quantidade),
+      UNIDADE_REFERENCIA: item.unidade || '',
+      CODIGO_ORIGINAL: item.codigo || ''
+    });
+
+    // Grupo agrega; preço só existe em item. Gravar preço no grupo faz o
+    // total contar duas vezes na hora de somar.
+    if (item.tipo === 'grupo') return;
+
+    proponentes.forEach(function (p, i) {
+      const valor = cfNumero_((item.precos || [])[i]);
+      const cotou = valor !== null && valor !== undefined && String((item.precos || [])[i]).trim() !== '';
+      const qtd = cfNumero_(item.quantidade);
+      const total = cotou ? valor * (qtd === null ? 1 : qtd) : null;
+      if (cotou) totais[i] += total;
+
+      linhasPreco.push({
+        ID: cfNovoId_('PRC'),
+        ID_EAP: idNo,
+        ID_PROPOSTA: idsProposta[i],
+        ID_EQUALIZACAO: idEq,
+        QUANTIDADE: qtd,
+        UNIDADE: item.unidade || '',
+        PRECO_UNITARIO: cotou ? valor : '',
+        VALOR_TOTAL: cotou ? total : '',
+        STATUS_PRECO: cotou ? 'cotado' : 'nao_cotado',
+        CNPJ: cfSoDigitos_(p.cnpj),
+        ID_EMPREENDIMENTO: d.empreendimento,
+        DATA: agora,
+        ORIGEM: 'app'
+      });
+    });
+  });
+
+  return cfComTrava_(function () {
+    cfInserir_('Equalizacoes', [{
+      ID: idEq,
+      CNPJ_EMPRESA: cfSoDigitos_(d.empresaCnpj),
+      ID_EMPREENDIMENTO: d.empreendimento,
+      PROJETO: d.projeto || '',
+      AREA: d.area || '',
+      DATA_EQUALIZACAO: cfData_(d.data) || agora,
+      STATUS: 'em_cotacao',
+      PREMISSAS: d.premissas || '',
+      ORIGEM: 'app',
+      CRIADO_POR: usuario,
+      CRIADO_EM: agora,
+      ATUALIZADO_EM: agora
+    }]);
+
+    cfInserir_('Propostas', proponentes.map(function (p, i) {
+      return {
+        ID: idsProposta[i],
+        ID_EQUALIZACAO: idEq,
+        CNPJ: cfSoDigitos_(p.cnpj),
+        RAZAO_SOCIAL_INFORMADA: String(p.nome || '').trim(),
+        ORDEM: i + 1,
+        RODADA: 'inicial',
+        NUMERO_PROPOSTA: p.numero || '',
+        DATA_PROPOSTA: cfData_(p.data) || '',
+        CONDICOES_PAGAMENTO: p.condicoes || '',
+        VALOR_TOTAL_CALCULADO: totais[i],
+        ORIGEM: 'app'
+      };
+    }));
+
+    cfInserir_('EAP', linhasEap);
+    if (linhasPreco.length) cfInserir_('Precos', linhasPreco);
+
+    // Fornecedor novo entra no cadastro: sem isso o mapa mostra "(sem
+    // identificação)" e a próxima cotação redigita tudo de novo.
+    cfCadastrarProponentes_(proponentes);
+
+    cfLog_('criar_equalizacao', 'equalizacao', idEq, JSON.stringify({
+      proponentes: proponentes.length, nos: linhasEap.length, precos: linhasPreco.length
+    }));
+
+    return {
+      id: idEq,
+      proponentes: proponentes.length,
+      nos: linhasEap.length,
+      precos: linhasPreco.length
+    };
+  }, 120);
+}
+
+/** Cadastra quem ainda não existe. Não sobrescreve dado já enriquecido. */
+function cfCadastrarProponentes_(proponentes) {
+  const existentes = {};
+  cfLerTudo_('Fornecedores').forEach(function (f) { existentes[cfSoDigitos_(f.CNPJ)] = true; });
+
+  const novos = [];
+  proponentes.forEach(function (p) {
+    const cnpj = cfSoDigitos_(p.cnpj);
+    if (!cnpj || cnpj.length !== 14 || existentes[cnpj]) return;
+    existentes[cnpj] = true;
+    novos.push({
+      CNPJ: cnpj,
+      RAZAO_SOCIAL: String(p.nome || '').trim(),
+      ORIGEM: 'app',
+      ATUALIZADO_EM: new Date()
+    });
+  });
+
+  if (novos.length) cfInserir_('Fornecedores', novos);
+  return novos.length;
+}
