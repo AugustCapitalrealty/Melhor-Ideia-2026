@@ -1,0 +1,18 @@
+{
+  "name": "capital-fornecedores",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de Equalizacao Inteligente e Avaliacao Continua de Prestadores de Servico — Apps Script",
+  "scripts": {
+    "test": "node tests/ciclo-completo.cjs && node tests/validar-correcoes.cjs && node tests/reproduzir-defeitos.cjs",
+    "test:ciclo": "node tests/ciclo-completo.cjs",
+    "test:correcoes": "node tests/validar-correcoes.cjs",
+    "test:defeitos": "node tests/reproduzir-defeitos.cjs",
+    "baseline": "node tests/snapshot-baseline.cjs",
+    "push": "npm test && clasp push",
+    "status": "clasp show-file-status"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
