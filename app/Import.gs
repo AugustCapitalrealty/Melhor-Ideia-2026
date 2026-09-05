@@ -63,7 +63,7 @@ const CF_RE_CODIGO_EAP = /^\d{1,3}(\.\d{1,3})*\.?$/;
  * não batia com o código: no Apps Script se cola arquivo à mão, e não há
  * como saber o que está carregado. Agora o relatório diz.
  */
-const CF_VERSAO_IMPORT = '2026-09-05.6 blocos-por-assinatura';
+const CF_VERSAO_IMPORT = '2026-09-05.7 le-valor-exibido';
 
 // ─────────────────────────────────────────────────────────────
 //  Entrada
@@ -86,13 +86,18 @@ function analisarEqualizacao(fileId) {
   const resultado = { arquivo: ss.getName(), id: fileId, equalizacoes: [], ignoradas: [] };
 
   ss.getSheets().forEach(function (aba) {
-    const grid = aba.getDataRange().getValues();
+    const faixa = aba.getDataRange();
+    const grid = faixa.getValues();
+    // O valor exibido é indispensável: uma célula com "R$ -" é o número 0
+    // com formato contábil. Só olhando getValues() não dá para separar
+    // "não cotou" de "cotou por zero".
+    const exibido = faixa.getDisplayValues();
     if (!cfPareceEqualizacao_(grid)) {
       resultado.ignoradas.push({ aba: aba.getName(), motivo: 'não parece uma equalização' });
       return;
     }
     try {
-      resultado.equalizacoes.push(cfLerAba_(grid, aba.getName()));
+      resultado.equalizacoes.push(cfLerAba_(grid, exibido, aba.getName()));
     } catch (erro) {
       resultado.ignoradas.push({ aba: aba.getName(), motivo: String(erro) });
     }
@@ -145,7 +150,7 @@ function cfPareceEqualizacao_(grid) {
 //  Leitura de uma aba
 // ─────────────────────────────────────────────────────────────
 
-function cfLerAba_(grid, nomeAba) {
+function cfLerAba_(grid, exibido, nomeAba) {
   const pendencias = [];
   const idx = cfIndexarRotulos_(grid);
 
@@ -159,7 +164,7 @@ function cfLerAba_(grid, nomeAba) {
 
   const cabecalho  = cfLerCabecalho_(grid, idx);
   const proponentes = cfLerProponentes_(grid, idx, colunas, pendencias);
-  const eap        = cfLerEap_(grid, colunas, pendencias);
+  const eap        = cfLerEap_(grid, exibido, colunas, pendencias);
   const validacao  = cfValidar_(grid, idx, colunas, eap, proponentes, pendencias);
 
   return {
@@ -322,7 +327,7 @@ function cfLerProponentes_(grid, idx, colunas, pendencias) {
  * Efeito colateral proposital: "2.1" com filhos numerados "2.2.1" entra
  * errado e sai certo, porque a posição manda e o número não.
  */
-function cfLerEap_(grid, colunas, pendencias) {
+function cfLerEap_(grid, exibido, colunas, pendencias) {
   const nos = [];
   const pilha = [];
   let seq = 0;
@@ -334,8 +339,9 @@ function cfLerEap_(grid, colunas, pendencias) {
     const descricao = String(grid[l][2] || '').trim();  // coluna C
     const profundidade = codigo.replace(/\.$/, '').split('.').length - 1;
 
+    const linhaExibida = exibido[l] || [];
     const precos = colunas.map(function (col, i) {
-      return cfLerPreco_(grid[l][col], i + 1);
+      return cfLerPreco_(grid[l][col], linhaExibida[col], i + 1);
     });
 
     if (!descricao && precos.every(function (p) { return p.valor === null; })) {
@@ -369,20 +375,28 @@ function cfLerEap_(grid, colunas, pendencias) {
  * diferentes, e ler vazio como zero já fez uma proposta parecer
  * R$ 182 mil mais barata do que era.
  */
-function cfLerPreco_(bruto, ordemProponente) {
+function cfLerPreco_(bruto, exibido, ordemProponente) {
   const texto = String(bruto === null || bruto === undefined ? '' : bruto).trim();
+  const tela  = String(exibido === null || exibido === undefined ? '' : exibido).trim();
 
-  if (texto === '') return { proponente: ordemProponente, valor: null, status: 'nao_cotado', bruto: '' };
-  if (/^incluso/i.test(texto)) return { proponente: ordemProponente, valor: null, status: 'incluso_em_outro_item', bruto: texto };
-  if (/^n\/?a$/i.test(texto) || /^nao se aplica/i.test(cfNormalizar_(texto))) {
-    return { proponente: ordemProponente, valor: null, status: 'nao_aplicavel', bruto: texto };
+  function r(valor, status) {
+    return { proponente: ordemProponente, valor: valor, status: status, bruto: tela || texto };
   }
-  // "R$ -" é "não cotou", diferente de "cotou por zero"
-  if (/^r?\$?\s*[-–—]\s*$/i.test(texto)) return { proponente: ordemProponente, valor: null, status: 'nao_cotado', bruto: texto };
 
-  const valor = cfNumero_(texto);
-  if (valor === null) return { proponente: ordemProponente, valor: null, status: 'nao_cotado', bruto: texto };
-  return { proponente: ordemProponente, valor: valor, status: 'cotado', bruto: texto };
+  if (texto === '' && tela === '') return r(null, 'nao_cotado');
+
+  const alvo = tela || texto;
+
+  if (/^incluso/i.test(alvo)) return r(null, 'incluso_em_outro_item');
+  if (/^n\/?a$/i.test(alvo)) return r(null, 'nao_aplicavel');
+
+  // "R$ -" é o traço contábil: célula zerada ou sem cotação, nunca um preço.
+  // Só o valor EXIBIDO distingue isso de um zero digitado de propósito.
+  if (/^r?\$?\s*[-–—]\s*$/i.test(alvo)) return r(null, 'nao_cotado');
+
+  const valor = cfNumero_(texto !== '' ? texto : alvo);
+  if (valor === null) return r(null, 'nao_cotado');
+  return r(valor, 'cotado');
 }
 
 /**
@@ -557,7 +571,11 @@ function cfDetectarBlocosAlternativos_(eap, totalProponentes) {
   function cobertura(no) {
     const set = {};
     (function varrer(n) {
-      (n.precos || []).forEach(function (p, i) { if (p.status === 'cotado') set[i] = true; });
+      // Só nó de item conta. Linha de grupo traz resultado de fórmula — e as
+      // fórmulas desta planilha são exatamente o que não é confiável aqui.
+      if (n.tipo === 'item') {
+        (n.precos || []).forEach(function (p, i) { if (p.status === 'cotado') set[i] = true; });
+      }
       (porPai[n.id] || []).forEach(varrer);
     })(no);
     return Object.keys(set).map(Number).sort(function (a, b) { return a - b; });
