@@ -112,7 +112,7 @@ O histórico continua sendo o motor. O que mudou é o argumento de abertura — 
 | :--- | :--- | :--- |
 | *"Auditoria hoje é impossível — a OC não aponta para cotação nenhuma"* | **Exagero.** Quem sobe o processo no Fluig anexa tudo corretamente; o dossiê existe | O problema real é **redigitação**, não perda de rastreabilidade. Corrigido em §8.13 |
 | Tese de abertura: *"a comparação está errada"* | O eixo é **ganhar tempo, comparação agradável aos olhos, menos trabalho manual** | Achados de campo viram munição sobre o **formato**, não acusação. Novo §12 |
-| Fluig como integração | **Futuro**, confirmado de novo | — |
+| Fluig como integração | **Futuro**, confirmado três vezes (05/09) | Roadmap em §11.1.1, com o levantamento que precede o código. O condicionamento da medição só volta com decisão formal de processo |
 
 ### Ideia nova — base de fornecedores que se constrói sozinha
 

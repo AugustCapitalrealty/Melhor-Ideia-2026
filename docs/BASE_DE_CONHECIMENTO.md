@@ -897,6 +897,7 @@ Motivo: proteger o sprint de 4 dias. A v1 entrega a equalização com histórico
 
 | Item | O que é | Por que vale |
 | :--- | :--- | :--- |
+| **Integração Fluig** | Disparo automático da avaliação a partir do encerramento da medição | ⚪ **Confirmado como futuro em 05/09.** Ver 11.1.1 antes de retomar |
 | **Cadastro de contratos LPU** | Contrato → itens → preço unitário fixo → vigência → empreendimento | Preço de referência **contratual**, não estatístico |
 | **Equalização pré-preenchida por contrato** | Item sob contrato não se cota: aplica-se o preço e confirma-se com o fornecedor | Acelera drasticamente a compra pequena recorrente |
 | **Alerta de preço fora do contrato** | Proposta acima da LPU vigente = descumprimento, não "preço ruim" | Controle, não sugestão |
@@ -904,6 +905,21 @@ Motivo: proteger o sprint de 4 dias. A v1 entrega a equalização com histórico
 | **Cálculo de glosa** | Desconto proporcional na NF do mês seguinte | Saving contratualmente exigível |
 | **IQF alimentado pelo SLA** | Substitui os 5 critérios subjetivos do plano original | Objetivo em vez de opinião |
 | **Condições comerciais normalizadas** | Regra dos dias 10/20, 48h úteis, multa 15% viram campo estruturado | Torna "condições de pagamento" comparável entre proponentes |
+
+### 11.1.1 Fluig — o que levantar quando for a hora
+
+Decisão de 05/09: fica para depois. Quando retomar, **o levantamento vem antes do código** — nada aqui é decisão técnica isolada.
+
+| Levantar | Por quê |
+| :--- | :--- |
+| Quem é dono do processo de medição no Fluig | Alterar o fluxo não é alçada de TI sozinha; envolve Suprimentos e Financeiro |
+| O Fluig da casa expõe API, webhook ou base consultável | Define se é integração ou alteração de workflow — custos muito diferentes |
+| Existe consultoria TOTVS contratada | Se sim, é demanda de backlog; se não, é projeto |
+| Qual o SLA de mudança nesse fluxo | Dimensiona o prazo real |
+
+⚠️ **O condicionamento do encerramento da medição não volta sem decisão formal.** Travar o encerramento significa travar liberação de pagamento a fornecedor — com o contrato do Canaveral prevendo pagamento nos dias 10 e 20 e multa de 15%. É decisão de processo, não de sistema.
+
+O substituto já entregue é mais barato e não depende de ninguém: lembrete automático, painel de pendências por Mega, e a nota aparecendo na tela do comprador na cotação seguinte. **Incentivo em vez de obrigação.**
 
 ### 11.2 O que a v1 precisa deixar pronto para não virar reescrita
 
