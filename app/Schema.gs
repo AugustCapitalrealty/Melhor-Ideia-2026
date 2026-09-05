@@ -173,10 +173,15 @@ function cfFormatarAba_(aba, def) {
     } else if (base === 'enum') {
       const valores = CF_ENUM[col.tipo.slice(5)];
       if (valores && valores.length) {
+        // setAllowInvalid(true): a validação orienta quem digita, mas não
+        // pode bloquear escrita do app. Com false, o Sheets rejeita o
+        // setValues inteiro quando UMA linha tem o enum vazio — e enum
+        // opcional vazio é estado legítimo aqui. Foi assim que a faxina
+        // apagou Propostas: limpou a aba e não conseguiu reescrever.
         faixa.setDataValidation(
           SpreadsheetApp.newDataValidation()
             .requireValueInList(valores, true)
-            .setAllowInvalid(false)
+            .setAllowInvalid(true)
             .setHelpText('Valores aceitos: ' + valores.join(' · '))
             .build()
         );

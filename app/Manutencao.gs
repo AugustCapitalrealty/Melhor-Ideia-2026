@@ -31,9 +31,9 @@ function simularLimpezaFantasma() {
 /**
  * Faz a limpeza de verdade.
  *
- * Reescreve cada aba com apenas as linhas que têm registro, usando
- * clearContent + setValues — mesma técnica de cfApagarPor_, que preserva
- * formatação, notas e validação das colunas.
+ * Reescreve cada aba com apenas as linhas que têm registro: grava os reais
+ * no topo e só então limpa a sobra. clearContent preserva formatação, notas
+ * e validação das colunas — o mesmo que cfApagarPor_ faz.
  */
 function limparLinhasFantasma() {
   return cfComTrava_(function () {
@@ -70,9 +70,18 @@ function cfLimpezaFantasma_(aplicar) {
     totalFantasmas += fantasmas;
 
     if (aplicar) {
-      faixa.clearContent();
+      // Escreve primeiro, apaga depois — nunca o contrário.
+      //
+      // A ordem inversa custou 11 propostas: a aba foi limpa, o setValues
+      // seguinte bateu na validação da coluna ORIGEM e a exceção abortou
+      // tudo, deixando a aba vazia. Escrevendo antes, uma falha aqui não
+      // destrói nada: os dados originais continuam onde estavam.
       if (reais.length) {
         aba.getRange(2, 1, reais.length, cab.length).setValues(reais);
+      }
+      const sobra = dados.length - reais.length;
+      if (sobra > 0) {
+        aba.getRange(2 + reais.length, 1, sobra, cab.length).clearContent();
       }
     }
   });
@@ -99,4 +108,58 @@ function cfRelatarLimpeza_(r, rotulo) {
   if (!r.aplicado) Logger.log('Nada foi alterado. Rode limparLinhasFantasma() para aplicar.');
 
   return r;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Validação de enum nas abas já existentes
+//
+//  cfFormatarAba_ só roda quando a aba é criada ou ganha coluna, então
+//  mudar Schema.gs não alcança a base instalada. Esta rotina reaplica
+//  apenas as validações de enum, agora com setAllowInvalid(true).
+//
+//  De propósito não mexe nas colunas booleanas: reaplicar a validação de
+//  checkbox recriaria as linhas fantasma nas abas que já foram limpas.
+// ─────────────────────────────────────────────────────────────
+
+function reaplicarValidacoesEnum() {
+  return cfComTrava_(function () {
+    const ss = cfPlanilha_();
+    let colunas = 0;
+    let abas = 0;
+
+    CF_SCHEMA.forEach(function (def) {
+      const aba = ss.getSheetByName(def.nome);
+      if (!aba) return;
+
+      const linhas = Math.max(aba.getMaxRows() - 1, 1);
+      let mexeu = false;
+
+      def.colunas.forEach(function (col, i) {
+        if (col.tipo.split(':')[0] !== 'enum') return;
+
+        const valores = CF_ENUM[col.tipo.slice(5)];
+        if (!valores || !valores.length) return;
+
+        aba.getRange(2, i + 1, linhas, 1).setDataValidation(
+          SpreadsheetApp.newDataValidation()
+            .requireValueInList(valores, true)
+            .setAllowInvalid(true)
+            .setHelpText('Valores aceitos: ' + valores.join(' · '))
+            .build()
+        );
+
+        Logger.log('  ' + def.nome + '.' + col.campo);
+        colunas++;
+        mexeu = true;
+      });
+
+      if (mexeu) abas++;
+    });
+
+    Logger.log('');
+    Logger.log(colunas + ' colunas enum liberadas em ' + abas + ' abas.');
+    cfLog_('reaplicar_validacao_enum', 'planilha', '', JSON.stringify({ colunas: colunas, abas: abas }));
+
+    return { colunas: colunas, abas: abas };
+  }, 300);
 }

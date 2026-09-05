@@ -194,3 +194,59 @@ try {
   console.log(`✗ FALHA na Correção 8: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 9 — a faxina não pode apagar antes de escrever
+//
+//  A primeira versão fazia clearContent() e depois setValues(). Quando a
+//  validação da coluna ORIGEM rejeitou a escrita, a aba Propostas já tinha
+//  sido limpa: 11 registros perdidos. A ordem inversa é o que garante que
+//  uma falha na escrita não destrua nada.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxMan = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  const CABECALHO = ['ID', 'ORIGEM', 'VENCEDORA'];
+  const GRADE = [CABECALHO,
+    ['PROP-1', 'app', true],
+    ['PROP-2', '', false]           // ORIGEM vazia: era o que a validação barrava
+  ].concat(Array.from({ length: 5 }, () => ['', '', false]));
+
+  const ops = [];
+  const abaFalsa = {
+    getLastRow: () => GRADE.length,
+    getLastColumn: () => CABECALHO.length,
+    getMaxRows: () => GRADE.length,
+    getRange: (linha, coluna, nLinhas, nColunas) => ({
+      getValues: () => GRADE.slice(linha - 1, linha - 1 + nLinhas)
+        .map(l => l.slice(coluna - 1, coluna - 1 + nColunas)),
+      setValues: (m) => ops.push({ op: 'setValues', linha, n: m.length }),
+      clearContent: () => ops.push({ op: 'clearContent', linha, n: nLinhas })
+    })
+  };
+
+  ctxMan.cfPlanilha_ = () => ({
+    getSheetByName: (n) => (n === 'Propostas' ? abaFalsa : null)
+  });
+
+  ['Util.gs', 'Config.gs', 'Dados.gs', 'Manutencao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxMan, { filename: f });
+  });
+
+  const r = ctxMan.cfLimpezaFantasma_(true);
+
+  assert.equal(r.abas.length, 1);
+  assert.equal(r.abas[0].reais, 2, 'as duas linhas com ID deviam contar como registro');
+  assert.equal(r.abas[0].fantasmas, 5);
+
+  assert.equal(ops.length, 2, `esperava setValues + clearContent, veio ${JSON.stringify(ops)}`);
+  assert.equal(ops[0].op, 'setValues',
+    'clearContent veio primeiro — uma falha na escrita apagaria a aba, que foi o defeito original');
+  assert.equal(ops[1].op, 'clearContent');
+  assert.equal(ops[1].linha, 4, 'a limpeza deve começar depois do último registro reescrito');
+
+  console.log('✓ CORREÇÃO VERIFICADA: faxina escreve antes de apagar');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 9: ${e.message}`);
+  process.exitCode = 1;
+}
