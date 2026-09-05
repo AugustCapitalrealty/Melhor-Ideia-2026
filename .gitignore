@@ -1,0 +1,9 @@
+# Credenciais OAuth do clasp — NUNCA versionar
+.clasprc.json
+creds.json
+client_secret*.json
+*-credentials.json
+
+# Node
+node_modules/
+npm-debug.log*

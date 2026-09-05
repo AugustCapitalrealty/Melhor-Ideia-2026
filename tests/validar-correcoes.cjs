@@ -96,3 +96,54 @@ try {
 } catch (e) {
   console.log(`✗ Erro na Correção 6: ${e.message}`);
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 7 — linhas fantasma de checkbox
+//
+//  cfFormatarAba_ aplica validação de checkbox na aba inteira, e o Sheets
+//  passa a devolver FALSE em toda linha em branco. Antes da correção,
+//  cfLerTudo_ aceitava essas linhas como registro: uma base recém-criada
+//  reportava ~1000 fornecedores e ~1000 pendências em aberto.
+//
+//  Contexto isolado de propósito: os testes acima substituem cfLerTudo_
+//  por um dublê, e aqui a função real é justamente o que está sob teste.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxDados = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  const CABECALHO = ['CNPJ', 'RAZAO_SOCIAL', 'APELIDO', 'GRAFIAS_ALTERNATIVAS', 'ATIVA'];
+  const REAIS = [
+    ['00000000000191', 'Demercado S.A.', 'Demercado', '', true],
+    ['11222333000181', 'Capital Realty', 'Capital', '', false]
+  ];
+  const FANTASMAS = Array.from({ length: 997 }, () => ['', '', '', '', false]);
+  const GRADE = [CABECALHO].concat(REAIS, FANTASMAS);
+
+  const abaFalsa = {
+    getLastRow: () => GRADE.length,
+    getLastColumn: () => CABECALHO.length,
+    getRange: (linha, coluna, nLinhas, nColunas) => ({
+      getValues: () => GRADE.slice(linha - 1, linha - 1 + nLinhas)
+        .map(l => l.slice(coluna - 1, coluna - 1 + nColunas))
+    })
+  };
+
+  ctxDados.cfPlanilha_ = () => ({ getSheetByName: () => abaFalsa });
+  vm.runInContext(fs.readFileSync(path.join(root, 'app', 'Dados.gs'), 'utf8'),
+                  ctxDados, { filename: 'Dados.gs' });
+
+  const lidas = ctxDados.cfLerTudo_('Empresas');
+
+  assert.equal(lidas.length, 2,
+    `esperava 2 registros reais, veio ${lidas.length} (as 997 linhas de checkbox vazio voltaram como registro)`);
+  assert.equal(lidas[0].CNPJ, '00000000000191');
+
+  // A segunda linha tem ATIVA=false e precisa sobreviver: ela é real porque
+  // tem CNPJ. O filtro descarta a linha só quando NADA além de false existe.
+  assert.equal(lidas[1].ATIVA, false, 'registro real com checkbox desmarcado foi descartado junto');
+
+  console.log('✓ CORREÇÃO VERIFICADA: linhas de checkbox vazio não viram registro fantasma');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 7: ${e.message}`);
+  process.exitCode = 1;
+}

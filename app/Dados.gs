@@ -40,7 +40,15 @@ function cfLerTudo_(nome) {
     cab.forEach(function (campo, c) { obj[campo] = linha[c]; });
     return obj;
   }).filter(function (o) {
-    return cab.some(function (campo) { return o[campo] !== '' && o[campo] !== null; });
+    // `false` conta como vazio de propósito. A validação de checkbox que
+    // cfFormatarAba_ aplica na aba inteira faz o Sheets devolver FALSE em
+    // toda linha em branco — sem isto, uma aba recém-criada vira ~1000
+    // registros fantasma, e cada um deles conta como pendência em aberto.
+    // Registro de verdade sempre tem ID ou chave preenchida.
+    return cab.some(function (campo) {
+      const v = o[campo];
+      return v !== '' && v !== null && v !== false;
+    });
   });
 }
 
