@@ -56,6 +56,15 @@ const CF_ROTULO_ANCORA        = 'informacoes obrigatorias';
 /** Código de EAP: "1.", "1.1", "1.1.1", "01.", "02.01.03" */
 const CF_RE_CODIGO_EAP = /^\d{1,3}(\.\d{1,3})*\.?$/;
 
+/**
+ * Carimbo da versão deste arquivo.
+ *
+ * Existe porque a gente perdeu tempo tentando entender por que o resultado
+ * não batia com o código: no Apps Script se cola arquivo à mão, e não há
+ * como saber o que está carregado. Agora o relatório diz.
+ */
+const CF_VERSAO_IMPORT = '2026-09-05.6 blocos-por-assinatura';
+
 // ─────────────────────────────────────────────────────────────
 //  Entrada
 // ─────────────────────────────────────────────────────────────
@@ -699,6 +708,7 @@ function cfDiagnosticar_(validacao, eap) {
 
 function cfImprimirAnalise_(r) {
   Logger.log('── ' + r.arquivo + ' ──');
+  Logger.log('leitor ' + CF_VERSAO_IMPORT);
   Logger.log(r.equalizacoes.length + ' equalização(ões) · ' + r.ignoradas.length + ' aba(s) ignorada(s)\n');
 
   r.equalizacoes.forEach(function (e) {
@@ -781,6 +791,28 @@ function cfImprimirAnalise_(r) {
 //  O menu do Apps Script não passa argumentos. Estas funções existem
 //  só para dar um clique e ver o resultado no Log (Ctrl+Enter).
 // ─────────────────────────────────────────────────────────────
+
+/**
+ * Diz o que está efetivamente carregado no editor.
+ * Rode isto antes de reportar comportamento estranho.
+ */
+function verificarVersoes() {
+  Logger.log('Import.gs:  ' + (typeof CF_VERSAO_IMPORT !== 'undefined' ? CF_VERSAO_IMPORT : 'ANTIGO (sem carimbo)'));
+  Logger.log('Config.gs:  schema v' + (typeof CF_SCHEMA_VERSAO !== 'undefined' ? CF_SCHEMA_VERSAO : '?') +
+             ' · ' + (typeof CF_SCHEMA !== 'undefined' ? CF_SCHEMA.length + ' abas' : 'AUSENTE'));
+  Logger.log('');
+  [['cfBuscar_', 'busca de rótulo normalizada'],
+   ['cfDetectarBlocosAlternativos_', 'soluções alternativas'],
+   ['cfDetectarPeriodicidade_', 'anual x mensal'],
+   ['cfDiagnosticar_', 'causa-raiz'],
+   ['cfInserir_', 'Dados.gs'],
+   ['importarEqualizacao', 'Persistencia.gs']
+  ].forEach(function (par) {
+    const existe = eval('typeof ' + par[0]) === 'function';
+    Logger.log((existe ? '  ok  ' : '  --  ') + par[0] + '   (' + par[1] + ')');
+  });
+  Logger.log('\nSe algo estiver como "--", o arquivo correspondente não foi colado no editor.');
+}
 
 /** Equalização de 12/08/2026 — a que tem o bug de soma no grupo "1.". */
 function testarLeitura() {
