@@ -1309,6 +1309,26 @@ VALOR TOTAL ............... R$ 4.765,55   ← 4.050,55 + 715,00
 
 > Prova viva de que numeração e soma manuais apodrecem. É o slide de abertura, com data de agosto de 2026.
 
+### 16.1.1 ✅ Confirmado em execução — 05/09, 07:57
+
+O leitor rodou sobre `EQU_20260812-MEGA-CURITIBA_WIFI_CASA_DE_BOMBAS` e achou sozinho:
+
+```
+3 proponentes · 11 nós (8 itens)
+  1. Golden Phone / Carryer .... R$ 4.765,55
+  2. DCOMPIT ................... R$ 4.836,10
+  3. CCLINKTECNOLOGIAESERVIÇOS . R$ 5.106,00
+
+⚠ grupo "1. EQUIPAMENTOS": declarado R$ 4.050,55, filhos somam R$ 4.765,55
+⚠ cesta incompleta (prop. 3): 1 de 8 itens sem cotação
+```
+
+**O defeito aparece nos TRÊS proponentes** — R$ 715,00 deixados de fora em cada coluna. Não é erro de um fornecedor: é a fórmula do grupo `1.` esquecendo o `1.2 SERVIÇO`, defeito estrutural da planilha.
+
+E há uma nuance que muda a narrativa: **o `VALOR TOTAL` está correto** (R$ 4.765,55 = equipamentos + serviço). O que está errado é a **hierarquia** — `1.2 SERVIÇO` foi numerado como filho de `1. EQUIPAMENTOS`, quando é outro grupo. Numeração derivada da posição conserta isso na origem.
+
+> Este é o slide de abertura, com data de agosto de 2026 e o app achando sozinho.
+
 ### 16.2 Uma planilha pode conter VÁRIAS equalizações
 
 O arquivo de maio tem **3 abas**, cada uma uma equalização do mesmo projeto: `EQUIPAMENTOS` · `SERVIÇO DE MONITORAMENTO - ANUAL` · `MÃO DE OBRA INSTALAÇÃO`.

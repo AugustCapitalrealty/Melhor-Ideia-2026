@@ -493,11 +493,62 @@ function cfValidar_(grid, idx, colunas, eap, proponentes, pendencias) {
     }
   });
 
+  saida.diagnostico = cfDiagnosticar_(saida, eap);
+
   saida.divergencias.forEach(function (d) {
     pendencias.push({ tipo: 'divergencia_' + d.tipo, descricao: JSON.stringify(d) });
   });
 
   return saida;
+}
+
+/**
+ * Junta as divergências em causas-raiz.
+ *
+ * "Grupo 1. declara menos que os filhos" e "VALOR TOTAL não bate com as
+ * raízes" costumam ser o MESMO defeito visto de dois lados: um filho ficou
+ * de fora da fórmula do pai. Relatar duas vezes por proponente vira ruído.
+ */
+function cfDiagnosticar_(validacao, eap) {
+  const TOL = 0.01;
+  const causas = [];
+  const usadas = {};
+
+  validacao.divergencias.forEach(function (g, gi) {
+    if (g.tipo !== 'soma_do_grupo') return;
+    const par = validacao.divergencias.filter(function (t, ti) {
+      return t.tipo === 'valor_total' && t.proponente === g.proponente &&
+             Math.abs(Math.abs(t.diferenca) - Math.abs(g.diferenca)) < TOL && !usadas[ti];
+    })[0];
+
+    if (par) {
+      usadas[validacao.divergencias.indexOf(par)] = true;
+      usadas[gi] = true;
+      causas.push({
+        tipo: 'filho_fora_da_soma_do_pai',
+        proponente: g.proponente,
+        no: g.no,
+        valorEsquecido: Math.abs(g.diferenca),
+        explicacao: 'O grupo "' + g.no + '" não inclui um filho na própria soma. ' +
+                    'O VALOR TOTAL está correto; a hierarquia é que está errada.'
+      });
+    }
+  });
+
+  validacao.divergencias.forEach(function (d, i) {
+    if (usadas[i] || d.tipo === 'cesta_incompleta') return;
+    causas.push({ tipo: d.tipo, proponente: d.proponente, explicacao: null, bruto: d });
+  });
+
+  // Mesma causa em todos os proponentes = defeito estrutural da planilha,
+  // não erro de um fornecedor.
+  const porTipo = {};
+  causas.forEach(function (c) { (porTipo[c.tipo + '|' + (c.no || '')] = porTipo[c.tipo + '|' + (c.no || '')] || []).push(c); });
+  Object.keys(porTipo).forEach(function (k) {
+    if (porTipo[k].length > 1) porTipo[k].forEach(function (c) { c.estrutural = porTipo[k].length; });
+  });
+
+  return causas;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -520,21 +571,34 @@ function cfImprimirAnalise_(r) {
                  '  ' + (t && t.valor !== null ? 'R$ ' + t.valor.toFixed(2) : '—'));
     });
 
-    if (e.validacao.divergencias.length) {
-      Logger.log('   ⚠ ' + e.validacao.divergencias.length + ' divergência(s):');
-      e.validacao.divergencias.forEach(function (d) {
-        if (d.tipo === 'soma_do_grupo') {
-          Logger.log('     • ' + d.no + ' (prop. ' + d.proponente + '): declarado R$ ' +
-                     d.declarado.toFixed(2) + ', filhos somam R$ ' + d.somaDosFilhos.toFixed(2));
-        } else if (d.tipo === 'valor_total') {
-          Logger.log('     • VALOR TOTAL (prop. ' + d.proponente + '): declarado R$ ' +
-                     d.declarado.toFixed(2) + ', raízes somam R$ ' + d.somaDasRaizes.toFixed(2));
-        } else {
-          Logger.log('     • cesta incompleta (prop. ' + d.proponente + '): ' +
-                     d.naoCotados + ' de ' + d.deUmTotalDe + ' itens sem cotação');
-        }
-      });
-    }
+    const causas = e.validacao.diagnostico || [];
+    const estruturais = {};
+    causas.forEach(function (c) {
+      if (c.tipo !== 'filho_fora_da_soma_do_pai') return;
+      const k = c.no + '|' + c.valorEsquecido.toFixed(2);
+      (estruturais[k] = estruturais[k] || []).push(c.proponente);
+    });
+
+    Object.keys(estruturais).forEach(function (k) {
+      const c = causas.filter(function (x) { return x.no + '|' + x.valorEsquecido.toFixed(2) === k; })[0];
+      const quantos = estruturais[k].length;
+      Logger.log('   ⚠ DEFEITO DE FÓRMULA' + (quantos > 1 ? ' (nos ' + quantos + ' proponentes)' : ''));
+      Logger.log('      ' + c.explicacao);
+      Logger.log('      Valor deixado de fora: R$ ' + c.valorEsquecido.toFixed(2));
+    });
+
+    const cestas = e.validacao.divergencias.filter(function (d) { return d.tipo === 'cesta_incompleta'; });
+    cestas.forEach(function (d) {
+      Logger.log('   ⚠ CESTA INCOMPLETA (prop. ' + d.proponente + '): ' + d.naoCotados +
+                 ' de ' + d.deUmTotalDe + ' itens sem cotação');
+      d.itens.forEach(function (i) { Logger.log('      · ' + i); });
+      Logger.log('      Comparar o total deste proponente com os outros engana.');
+    });
+
+    const outras = causas.filter(function (c) { return c.tipo !== 'filho_fora_da_soma_do_pai'; });
+    outras.forEach(function (c) {
+      Logger.log('   ⚠ ' + c.tipo + ' (prop. ' + c.proponente + '): ' + JSON.stringify(c.bruto));
+    });
     if (e.pendencias.length) Logger.log('   ' + e.pendencias.length + ' pendência(s) de revisão');
     Logger.log('');
   });
