@@ -228,7 +228,6 @@ const CF_SCHEMA = [
     { campo: 'ID_EQUALIZACAO',      tipo: 'texto', largura: 150, nota: 'VAZIO = orçamento avulso' },
     { campo: 'CNPJ',                tipo: 'texto', largura: 150 },
     { campo: 'ORDEM',               tipo: 'inteiro', largura: 80 },
-    { campo: 'RAZAO_SOCIAL_INFORMADA', tipo: 'texto', largura: 300, nota: 'o nome como veio no documento — pode divergir do cadastro, e sobrevive a CNPJ inválido' },
     { campo: 'RODADA',              tipo: 'texto', largura: 100, nota: 'inicial, R01, R02… sem teto' },
     { campo: 'ID_BASELINE',         tipo: 'texto', largura: 120 },
     { campo: 'NUMERO_PROPOSTA',     tipo: 'texto', largura: 160 },
@@ -249,6 +248,11 @@ const CF_SCHEMA = [
     { campo: 'OBSERVACAO',          tipo: 'texto', largura: 380 },
     { campo: 'ORIGEM',              tipo: 'enum:origem', largura: 120 },
     { campo: 'ID_IMPORTACAO',       tipo: 'texto', largura: 120 },
+    // Fica AQUI, e não lá em cima ao lado de ORDEM, porque é esta a posição
+    // que a aba tem: cfGarantirAba_ acrescenta coluna nova sempre no fim.
+    // Declarada no meio, ela desalinhava cfFormatarAba_ da coluna 5 em diante
+    // — o checkbox e os formatos de data e moeda caíam uma coluna adiante.
+    { campo: 'RAZAO_SOCIAL_INFORMADA', tipo: 'texto', largura: 300, nota: 'o nome como veio no documento — pode divergir do cadastro, e sobrevive a CNPJ inválido' },
     { campo: 'ID_FONTE',            tipo: 'texto', largura: 150, nota: 'ID do arquivo-fonte no Drive' },
     { campo: 'REVISAO_DOCUMENTO',   tipo: 'texto', largura: 130, nota: 'Revisão do documento do fornecedor' },
     { campo: 'REVISAO_IMPORTACAO',  tipo: 'inteiro', largura: 100, nota: 'Contador de reimportação' },

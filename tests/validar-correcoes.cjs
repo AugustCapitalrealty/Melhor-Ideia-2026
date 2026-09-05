@@ -250,3 +250,75 @@ try {
   console.log(`✗ FALHA na Correção 9: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 10 — formato segue o nome da coluna, não o índice
+//
+//  RAZAO_SOCIAL_INFORMADA foi declarada na posição 5, mas cfGarantirAba_
+//  acrescenta coluna nova no fim da aba — ela ficou na 25. cfFormatarAba_
+//  usava o índice da declaração, então da coluna 5 em diante todo formato
+//  caiu uma casa adiante: checkbox em VALOR_FATURAMENTO_DIRETO, formato de
+//  data em VALOR_TOTAL_DECLARADO. O total passou a voltar como Date.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxFmt = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  const aplicados = { formato: {}, checkbox: [], largura: {} };
+  const validacaoFalsa = {
+    requireCheckbox: () => ({ build: () => ({ tipo: 'checkbox' }) }),
+    requireValueInList: () => ({
+      setAllowInvalid: () => ({ setHelpText: () => ({ build: () => ({ tipo: 'lista' }) }) })
+    })
+  };
+  ctxFmt.SpreadsheetApp = { newDataValidation: () => validacaoFalsa };
+
+  // O cabeçalho REAL está fora da ordem declarada: B foi para o fim.
+  const CABECALHO_REAL = ['A', 'C', 'B'];
+
+  const abaFalsa = {
+    getMaxRows: () => 10,
+    getLastColumn: () => CABECALHO_REAL.length,
+    setFrozenRows: () => {}, setRowHeight: () => {},
+    setColumnWidth: (c, w) => { aplicados.largura[c] = w; },
+    getRange: (linha, coluna) => ({
+      getValues: () => [CABECALHO_REAL],
+      setFontWeight: function () { return this; }, setBackground: function () { return this; },
+      setFontColor: function () { return this; }, setVerticalAlignment: function () { return this; },
+      setWrap: function () { return this; },
+      getCell: () => ({ setNote: () => {} }),
+      setNumberFormat: (f) => { aplicados.formato[coluna] = f; },
+      setDataValidation: (v) => { if (v.tipo === 'checkbox') aplicados.checkbox.push(coluna); }
+    })
+  };
+
+  ['Util.gs', 'Config.gs', 'Schema.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxFmt, { filename: f });
+  });
+
+  ctxFmt.cfFormatarAba_(abaFalsa, {
+    nome: 'T',
+    colunas: [
+      { campo: 'A', tipo: 'texto',    largura: 100 },
+      { campo: 'B', tipo: 'booleano', largura: 200 },   // declarada em 2, está em 3
+      { campo: 'C', tipo: 'data',     largura: 300 }    // declarada em 3, está em 2
+    ]
+  });
+
+  assert.deepEqual(aplicados.checkbox, [3],
+    `checkbox foi para a coluna ${aplicados.checkbox} — devia seguir o nome "B", que está na 3`);
+  assert.ok(aplicados.formato[2], 'a coluna 2 ("C", tipo data) ficou sem formato');
+  assert.equal(aplicados.largura[2], 300, 'largura de "C" foi para a coluna errada');
+  assert.equal(aplicados.largura[3], 200, 'largura de "B" foi para a coluna errada');
+
+  // Guarda direta contra a reincidência: a declaração precisa refletir a aba.
+  // CF_SCHEMA é `const`: vira binding léxico, não propriedade do global do vm.
+  const props = vm.runInContext('CF_SCHEMA', ctxFmt)
+    .find(d => d.nome === 'Propostas').colunas.map(c => c.campo);
+  assert.ok(props.indexOf('RAZAO_SOCIAL_INFORMADA') > props.indexOf('ID_IMPORTACAO'),
+    'RAZAO_SOCIAL_INFORMADA voltou para o meio da declaração — coluna nova vai no fim');
+
+  console.log('✓ CORREÇÃO VERIFICADA: formato de coluna segue o nome, não a ordem declarada');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 10: ${e.message}`);
+  process.exitCode = 1;
+}

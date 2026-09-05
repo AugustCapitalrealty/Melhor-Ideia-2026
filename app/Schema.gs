@@ -159,8 +159,20 @@ function cfFormatarAba_(aba, def) {
 
   const linhas = Math.max(aba.getMaxRows() - 1, 1);
 
-  def.colunas.forEach(function (col, i) {
-    const c = i + 1;
+  // A posição vem do cabeçalho REAL da aba, não do índice na declaração.
+  //
+  // As duas listas divergem sempre que alguém declara coluna nova no meio:
+  // cfGarantirAba_ acrescenta no fim da aba, então da coluna divergente em
+  // diante todo formato caía uma casa adiante. Foi o que pôs checkbox em
+  // VALOR_FATURAMENTO_DIRETO e formato de data em VALOR_TOTAL_DECLARADO,
+  // fazendo o total voltar como Date. Por nome, a ordem deixa de importar.
+  const cabecalhoReal = aba.getRange(1, 1, 1, Math.max(aba.getLastColumn(), 1))
+    .getValues()[0]
+    .map(function (v) { return String(v || '').trim(); });
+
+  def.colunas.forEach(function (col) {
+    const c = cabecalhoReal.indexOf(col.campo) + 1;
+    if (!c) return;               // declarada mas ainda não criada na aba
     if (col.largura) aba.setColumnWidth(c, col.largura);
 
     const faixa = aba.getRange(2, c, linhas, 1);
