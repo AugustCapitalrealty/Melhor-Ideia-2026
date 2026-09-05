@@ -40,6 +40,7 @@ auxiliares de `Util.gs` separadamente: selecione as funções de entrada acima.
 | `Import.gs` | `analisarEqualizacao(fileId)` — lê uma equalização e relata **sem gravar** |
 | `Dados.gs` | Acesso genérico às abas: leitura em lote, inserção, remoção |
 | `Persistencia.gs` | `importarEqualizacao()` e `desfazerImportacao()` |
+| `Consulta.gs` | `consultarPreco(termo)` e `panoramaDaBase()` — o histórico respondendo |
 
 ## Regra ao mexer no schema
 
