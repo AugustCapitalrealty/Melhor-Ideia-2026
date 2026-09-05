@@ -1398,3 +1398,40 @@ No de maio está **quebrado** nas três abas: `Proposta inicial` vazia e a redu�
 | Rodapé | rótulo mesclado de B a D, valores à direita |
 
 → Confirma a decisão de **localizar por rótulo, nunca por número de linha**. As duas planilhas têm o mesmo layout mas linhas diferentes.
+
+---
+
+## 17. Armadilhas de leitura do Sheets — aprendidas apanhando
+
+Três coisas que só apareceram rodando contra planilha de verdade, e que custaram uma hora cada.
+
+### 17.1 🔴 `R$ -` é o número zero, não texto
+
+Célula com traço contábil **não devolve string**. `getValues()` devolve `0`.
+
+O leitor marcava "cotado por zero", a cobertura de todos os grupos ficava idêntica, e a detecção de soluções alternativas parava de achar qualquer coisa — **piorando** em vez de melhorar depois de uma correção que estava certa.
+
+→ Ler `getDisplayValues()` junto e usar o **valor exibido** para separar o traço contábil de um zero digitado de propósito. Uma leitura de faixa a mais por aba; barata.
+
+### 17.2 Linha de grupo carrega resultado de fórmula — e a fórmula é o que não é confiável
+
+Usar o valor de um nó de grupo para decidir *quem cotou o quê* é construir em cima justamente do que sabemos estar quebrado (§16.1).
+
+→ Cobertura e histórico contam **só nós do tipo `item`**.
+
+### 17.3 Sem carimbo de versão, você depura código que não está rodando
+
+No Apps Script se cola arquivo à mão. Passamos três ciclos corrigindo uma função que já estava correta, porque o editor tinha outra versão.
+
+→ `CF_VERSAO_IMPORT` impresso no cabeçalho de todo relatório, e `verificarVersoes()` listando o que está carregado. **Hábito, não remendo.**
+
+### 17.4 Estado validado — 05/09/2026, 08:15
+
+Leitor `2026-09-05.7`, dois arquivos reais, quatro equalizações, **zero falso positivo**:
+
+| Aba | Achado |
+| :--- | :--- |
+| WiFi 12/08 — Equipamentos | defeito de fórmula nos 3 proponentes (R$ 715 / 912 / 2.200 fora da conta) · 1 cesta incompleta real |
+| Meta 19/05 — Equipamentos | kit integrado × componentes separados |
+| Meta 19/05 — Mensalidade | anual = mensal × 12 |
+| Meta 19/05 — Mão de obra | mão de obra do fornecedor × mão de obra local |

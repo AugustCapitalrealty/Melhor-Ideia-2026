@@ -184,6 +184,14 @@ Também dá a resposta honesta para "e se o piloto rodar poucas equalizações?"
 - 🟠 Baseline de tempo precisa ser medido **antes** de o piloto começar
 - 🟡 Dependência solo — mitigada pela documentação
 
+### Fase 1 — leitor validado (08:15)
+
+Leitor rodando limpo em dois arquivos reais, quatro equalizações, zero falso positivo. Três falsos positivos foram eliminados no caminho: periodicidade (anual × mensal), verba fechada com filhos descritivos, e soluções alternativas.
+
+Três armadilhas técnicas registradas em §17 da base — a mais cara foi `R$ -` ser o número zero e não texto.
+
+**Falta na Fase 1**: rodar a gravação (`importarEqualizacao`), já commitada.
+
 ---
 
 ## Próxima entrada
