@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+:root{
+  --noturno:#151E49; --royal:#003D7B; --acao:#065CA9;
+  --fundo:#F4F6FA; --superficie:#FFFFFF; --superficie2:#EDF1F8;
+  --linha:#D6DEEC; --texto:#1B2340; --suave:#5D6883;
+  --ok:#1F7A4C; --alerta:#A85B12; --critico:#B03024;
+  --sombra:0 1px 2px rgba(21,30,73,.06), 0 8px 24px -14px rgba(21,30,73,.2);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--fundo); color:var(--texto);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:940px;margin:0 auto;padding:0 20px 80px}
+
+header{padding:34px 0 22px;border-bottom:2px solid var(--noturno);margin-bottom:26px}
+.marca{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--suave);margin-bottom:8px}
+h1{margin:0;font-size:30px;letter-spacing:-.02em;color:var(--noturno);font-weight:700}
+.sub{margin:6px 0 0;color:var(--suave);font-size:15px}
+
+.busca{display:flex;gap:10px;margin:24px 0 8px}
+.busca input{
+  flex:1;padding:14px 16px;font-size:16px;border:1.5px solid var(--linha);
+  border-radius:8px;background:var(--superficie);color:var(--texto);
+}
+.busca input:focus{outline:none;border-color:var(--acao);box-shadow:0 0 0 3px rgba(6,92,169,.12)}
+.busca button{
+  padding:14px 24px;font-size:15px;font-weight:600;border:0;border-radius:8px;
+  background:var(--royal);color:#fff;cursor:pointer;
+}
+.busca button:hover{background:var(--acao)}
+.busca button:disabled{opacity:.5;cursor:default}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.chip{
+  padding:6px 12px;font-size:13px;border:1px solid var(--linha);border-radius:999px;
+  background:var(--superficie);color:var(--royal);cursor:pointer;
+}
+.chip:hover{border-color:var(--acao);background:var(--superficie2)}
+
+.painel{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:1px;background:var(--linha);border:1px solid var(--linha);
+  border-radius:6px;overflow:hidden;margin-bottom:8px;
+}
+.stat{background:var(--superficie);padding:14px 16px}
+.stat b{display:block;font-size:26px;line-height:1.1;color:var(--noturno);font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:12px;color:var(--suave);margin-top:4px}
+.periodo{font-size:13px;color:var(--suave);margin:0 0 26px}
+
+.item{
+  background:var(--superficie);border:1px solid var(--linha);border-radius:8px;
+  padding:18px 20px;margin-bottom:14px;box-shadow:var(--sombra);
+}
+.item h3{margin:0 0 3px;font-size:17px;color:var(--noturno);font-weight:600}
+.item .meta{font-size:12.5px;color:var(--suave);margin-bottom:14px}
+.item .cod{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--acao);margin-right:6px}
+
+table{width:100%;border-collapse:collapse}
+td{padding:7px 0;border-bottom:1px solid var(--superficie2);font-size:14.5px;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;padding-left:16px}
+tr.menor td.v{color:var(--ok)}
+tr.maior td.v{color:var(--critico)}
+.tag{
+  display:inline-block;margin-left:8px;padding:1px 7px;border-radius:4px;
+  font-size:11px;font-weight:600;vertical-align:1px;
+}
+.tag.ok{background:#E4F2EA;color:var(--ok)}
+.tag.av{background:#FAEEDF;color:var(--alerta)}
+
+.faixa{
+  margin-top:12px;padding-top:11px;border-top:1px solid var(--linha);
+  font-size:13.5px;color:var(--suave);display:flex;justify-content:space-between;
+  align-items:center;gap:12px;flex-wrap:wrap;
+}
+.faixa .var{font-weight:700}
+.var.baixa{color:var(--ok)} .var.media{color:var(--alerta)} .var.alta{color:var(--critico)}
+
+.serie{background:var(--superficie2);border:1px solid var(--linha);border-radius:8px;padding:18px 20px;margin-top:22px}
+.serie h2{margin:0 0 12px;font-size:15px;color:var(--noturno);text-transform:uppercase;letter-spacing:.06em}
+
+.aviso{
+  background:var(--superficie);border:1px solid var(--linha);border-left:3px solid var(--acao);
+  border-radius:0 8px 8px 0;padding:16px 18px;color:var(--suave);font-size:14.5px;
+}
+.erro{border-left-color:var(--critico);color:var(--critico)}
+.carregando{text-align:center;padding:40px;color:var(--suave)}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-size:12px;color:var(--suave)}
+@media(max-width:560px){
+  .busca{flex-direction:column}
+  h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="marca">Capital Realty &amp; Demercado</div>
+    <h1>Capital Fornecedores</h1>
+    <p class="sub">O que já pagamos por isso?</p>
+  </header>
+
+  <div class="busca">
+    <input id="q" type="search" placeholder="antena, mão de obra, sensor, cabo…" autocomplete="off">
+    <button id="btn" onclick="buscar()">Consultar</button>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div id="painel"></div>
+  <div id="saida"></div>
+
+  <footer id="rodape">carregando…</footer>
+</div>
+
+<script>
+var moeda = function (v) {
+  if (v === null || v === undefined) return '—';
+  return 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+};
+var esc = function (s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+};
+
+function classeVariacao(p){ return p < 15 ? 'baixa' : (p < 60 ? 'media' : 'alta'); }
+
+// ── panorama ──
+google.script.run.withSuccessHandler(function (p) {
+  if (!p.ok) { document.getElementById('painel').innerHTML =
+      '<div class="aviso erro">' + esc(p.erro) + '</div>'; return; }
+
+  document.getElementById('painel').innerHTML =
+    '<div class="painel">' +
+      stat(p.precos, 'pontos de preço') +
+      stat(p.equalizacoes, 'equalizações') +
+      stat(p.fornecedores, 'fornecedores') +
+      stat(p.empreendimentos, 'empreendimentos') +
+      stat(p.pendencias, 'pendências') +
+    '</div>' +
+    (p.periodo ? '<p class="periodo">Cotações de ' + esc(p.periodo) + '</p>' : '');
+
+  document.getElementById('chips').innerHTML = (p.sugestoes || []).map(function (s) {
+    return '<span class="chip" onclick="buscar(this.textContent)">' + esc(s) + '</span>';
+  }).join('');
+
+  document.getElementById('rodape').textContent =
+    'Capital Fornecedores · web ' + p.versao + ' · dados importados do acervo de equalizações';
+}).apiPanorama();
+
+function stat(n, r){ return '<div class="stat"><b>' + n + '</b><span>' + r + '</span></div>'; }
+
+// ── busca ──
+function buscar(termo) {
+  var q = document.getElementById('q');
+  if (termo) q.value = termo;
+  var t = q.value.trim();
+  if (!t) { q.focus(); return; }
+
+  document.getElementById('btn').disabled = true;
+  document.getElementById('saida').innerHTML = '<div class="carregando">consultando o histórico…</div>';
+
+  google.script.run
+    .withSuccessHandler(desenhar)
+    .withFailureHandler(function (e) {
+      document.getElementById('btn').disabled = false;
+      document.getElementById('saida').innerHTML = '<div class="aviso erro">' + esc(e.message) + '</div>';
+    })
+    .apiConsultar(t);
+}
+
+document.getElementById('q').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') buscar();
+});
+
+function desenhar(r) {
+  document.getElementById('btn').disabled = false;
+  var el = document.getElementById('saida');
+
+  if (!r.ok) { el.innerHTML = '<div class="aviso erro">' + esc(r.erro) + '</div>'; return; }
+  if (!r.pontos) {
+    el.innerHTML = '<div class="aviso">Nada encontrado para <b>' + esc(r.termo) + '</b>.' +
+      ' A busca casa por palavra — tente um termo mais curto.</div>';
+    return;
+  }
+
+  var html = '';
+
+  r.grupos.forEach(function (g) {
+    var linhas = g.precos.map(function (p, i) {
+      var cls = g.precos.length > 1 && i === 0 ? 'menor'
+              : (g.precos.length > 1 && i === g.precos.length - 1 ? 'maior' : '');
+      return '<tr class="' + cls + '"><td>' + esc(p.fornecedor) +
+             (p.vencedora ? '<span class="tag ok">contratado</span>' : '') +
+             (p.semCadastro ? '<span class="tag av">sem cadastro</span>' : '') +
+             '</td><td class="v">' + moeda(p.valor) + '</td></tr>';
+    }).join('');
+
+    var meta = [g.empreendimento, g.area, g.data].filter(Boolean).map(esc).join(' · ');
+
+    html += '<div class="item">' +
+      '<h3><span class="cod">' + esc(g.codigo) + '</span>' + esc(g.descricao) + '</h3>' +
+      '<div class="meta">' + meta + '</div>' +
+      '<table>' + linhas + '</table>' +
+      (g.precos.length > 1
+        ? '<div class="faixa"><span>' + moeda(g.minimo) + ' a ' + moeda(g.maximo) + '</span>' +
+          (g.variacao !== null && g.variacao !== undefined
+            ? '<span class="var ' + classeVariacao(g.variacao) + '">' +
+              Math.round(g.variacao) + '% entre o menor e o maior</span>' : '') +
+          '</div>'
+        : '') +
+      '</div>';
+  });
+
+  if (r.series && r.series.length) {
+    r.series.forEach(function (s) {
+      var linhas = s.ocorrencias.map(function (o) {
+        return '<tr><td>' + esc(o.data) + ' · ' + esc(o.empreendimento) +
+               '</td><td class="v">' + moeda(o.minimo) + '</td></tr>';
+      }).join('');
+      html += '<div class="serie"><h2>O mesmo item ao longo do tempo</h2>' +
+              '<h3>' + esc(s.descricao) + '</h3><table>' + linhas + '</table></div>';
+    });
+  } else if (r.grupos.length > 1) {
+    html += '<div class="aviso">Estes são itens diferentes — não existe faixa única que faça' +
+            ' sentido entre eles. A série de preço aparece quando o <b>mesmo</b> item voltar' +
+            ' em outra equalização.</div>';
+  }
+
+  el.innerHTML = html;
+}
+</script>
+</body>
+</html>

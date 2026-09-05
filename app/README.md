@@ -41,6 +41,19 @@ auxiliares de `Util.gs` separadamente: selecione as funções de entrada acima.
 | `Dados.gs` | Acesso genérico às abas: leitura em lote, inserção, remoção |
 | `Persistencia.gs` | `importarEqualizacao()` e `desfazerImportacao()` |
 | `Consulta.gs` | `consultarPreco(termo)` e `panoramaDaBase()` — o histórico respondendo |
+| `Codigo.gs` | `doGet()` e a API do navegador |
+| `Interface.html` | A tela |
+
+## Publicar o web app
+
+1. No editor, **＋ → HTML**, nomeie `Interface`, cole o `Interface.html`
+2. **Implantar → Nova implantação → Aplicativo da Web**
+3. Executar como: **Eu** · Quem tem acesso: **Qualquer pessoa da organização**
+4. Copie a URL. `urlDoWebApp()` também imprime ela no Log
+
+⚠️ **Salvar ≠ implantar.** Salvar atualiza o que *você* executa pelo menu; para o
+que os outros veem, é preciso **Implantar → Gerenciar implantações → editar → Nova versão**.
+"Nova implantação" cria uma URL diferente — é o erro mais comum.
 
 ## Regra ao mexer no schema
 
