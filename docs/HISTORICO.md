@@ -1,0 +1,111 @@
+# Histórico — Capital Fornecedores
+
+> Registro cronológico do que decidimos, do que mudou de ideia e por quê.
+> **Regra**: decisão revertida não é apagada. Fica riscada, com o motivo.
+> Documentos irmãos: [PLANO_SPRINT.md](PLANO_SPRINT.md) · [BASE_DE_CONHECIMENTO.md](BASE_DE_CONHECIMENTO.md)
+
+---
+
+## 05/09/2026 — sábado
+
+### Diagnóstico inicial
+
+Revisão dos 4 documentos existentes + regulamento + planilha template.
+
+**Achado que reorganizou tudo**: o plano no repositório descrevia 4 fases de fevereiro a dezembro, mas os commits eram de 04–05/09 e **não havia uma linha de código**. Faltavam 35 dias para o prazo de implementação (10/10) e 40 para o relatório (15/10).
+
+→ Plano de 11 meses reescrito como sprint de 40 dias.
+
+### Decisões de escopo
+
+| Decisão | Quem | Motivo |
+| :--- | :--- | :--- |
+| Sem BI separado — tudo dentro do web app | Guilherme | Uma URL só, sem segunda ferramenta para o comitê acessar |
+| Piloto em compras pequenas, não obra | acordado | Frequência gera volume de dado até outubro; obra dá 1–3 pontos no período |
+| LPU e SLA/glosa vão para a **v2.0** | Guilherme | Proteger o sprint de 4 dias. Já existe controle de performance de contratos na casa |
+| App em Apps Script compartilhado no Workspace | Guilherme | Infra existente, custo zero |
+| Item cadastrável dentro do app | Guilherme | Nunca bloquear o comprador |
+| CR e Demercado na mesma base, só o design muda | Guilherme | Separar partiria o histórico ao meio |
+| **Repositório como ambiente — tudo em `.md` aqui**, sem artefato | Guilherme | Histórico completo versionado no mesmo lugar do código |
+| Regra de cotação: 1 até R$ 1.000, **mínimo 3** acima — sem teto | Guilherme | Regra interna da companhia. Derruba de vez qualquer limite de proponentes |
+| Pasta por equalização no Drive, com link único — **futuro** | Guilherme | Estamos dentro do Workspace; resolve rastreabilidade da OC e compartilhamento de uma vez (§11.3) |
+
+### Pesquisa de campo — 3 agentes
+
+Analisados **28 documentos reais** da pasta compartilhada:
+- **Facilities**: 5 `EQU_`, 5 `Formulário de equalização`, 1 `Mapa de Equalização`, 7 orçamentos, 1 OC
+- **Engenharia**: 4 Sheets da Fase 7 (fundações, ~R$ 1,2M, 4 proponentes, 12 convidados) + carta proposta, memorial técnico
+- **Repositório** `AugustCapitalrealty/Teste-RH-`: motor de geração de Slides, com suítes de teste executadas
+
+Resultado consolidado em [BASE_DE_CONHECIMENTO.md](BASE_DE_CONHECIMENTO.md) — 868 linhas, 11 seções, tudo com citação literal da fonte.
+
+### Mudança de tese
+
+**Antes**: "o histórico de preço é o produto".
+**Depois**: *"a comparação de compras da companhia está errada hoje, e temos os documentos"*.
+
+O histórico continua sendo o motor. O que mudou é o argumento de abertura — e ele ficou muito mais forte porque é evidência, não promessa.
+
+### ~~Decisões travadas~~ que o campo derrubou
+
+| Decisão original | Status | Motivo |
+| :--- | :--- | :--- |
+| ~~`BDI` em campo separado no preço~~ | 🔴 **derrubada** | Zero ocorrências em 15 arquivos de Facilities e zero em Engenharia. BDI é **premissa de edital** (*"deverão estar inclusos... taxas, bdi"*), não número de linha. Vai para o cabeçalho: `regime_contratacao`, `bdi_incluso`, `premissas_texto`. (§9.4) |
+| ~~Árvore livre porque obra precisa de 4+ níveis~~ | 🟠 **justificativa corrigida** | Ambos param em **3 níveis**. A árvore continua certa por outro motivo: `codigo` se repete no mesmo arquivo (`02.03` é `ARMAÇÃO` **e** `APOIO CIVIL`) e não codifica posição (template vai `01.` → `03.`). (§9.5) |
+| ~~`quantidade` só no item~~ | 🟠 **desdobrada** | São **duas**: `quantidade_referencia` no item (a CR pede) e `quantidade` no preço (o proponente levanta). Divergem de verdade — CR pede `VB 1,00`, fornecedor cota `KG 7.844,51`. (§9.2) |
+| ~~"Formulário de equalização" é processo paralelo~~ | 🔵 **hipótese descartada** | Estrutura interna idêntica. É convenção regional de nome: Itajaí usa "Formulário", Curitiba/Esteio usa "EQU_". (§8.11) |
+| ~~`RV01` no nome do arquivo = rodada de negociação~~ | 🔵 **hipótese descartada** | É revisão do documento do **fornecedor**, eixo ortogonal à rodada. E é enganoso: `Orç Litoral 936,84` e `Orç Litoral 987,26 RV01` têm datas e conteúdos diferentes — não são revisão um do outro. (§8.8) |
+| ~~"Sempre 3 proponentes" é só costume~~ | 🟢 **explicado** | É regra da companhia (mínimo 3 acima de R$ 1.000) **combinada** com um template de 3 colunas. O piso virou teto: Facilities cotou exatamente 3 em 10 de 10; Engenharia, com layout de N colunas, cotou 4 de 12 convidados. (§7A.2) |
+| ~~Ninguém rastreia quem foi convidado e não cotou~~ | 🟢 **eu estava errado** | Engenharia rastreia — 12 empresas com trilha de convite/confirmação/proposta/visita e motivo literal de recusa. Falta em Facilities. (§9.17) |
+| ~~Benchmark de preço por unidade é novidade~~ | 🟢 **já existe** | Engenharia calcula à mão: `Valor por m de estaca: Fase 6 R$ 357,74 → Fase 7 R$ 365,87`, com valor alvo. Não escala — é isso que o app resolve. (§9.17) |
+
+### Decisões novas nascidas do campo
+
+| Decisão | Motivo |
+| :--- | :--- |
+| `STATUS_PRECO` (`cotado / excluído / incluso em outro item / não cotado`) | `INCLUSO`, `R$ -` e vazio são três coisas. Ler vazio como zero fez uma proposta parecer R$ 182 mil mais barata sem ter cotado nada (§9.9) |
+| `proposta` (fornecedor × rodada × data) e `baseline_escopo` como entidades | A equalização de R$ 1,2M compara a **inicial** de um com a **R02** de outro, sobre escopos diferentes (§9.8) |
+| Observação por **(item × proponente)** | Foi o que estourou o template real: 3 proponentes × (unit + total + observação) = 9 colunas. E a observação é o que decidiu a compra — *"NÃO emite laudo PMOC"* (§8.4) |
+| **Três canais de nota** com visibilidade separada | `ANALISE CR` é coluna interna que não vai no arquivo do fornecedor. Colapsar num campo só vaza análise interna (§9.10) |
+| `ajustes` e `clausulas` como tabelas próprias | Desconto comercial não pertence a item nenhum; e a matriz de responsabilidade da Pretech muda o que o preço cobre (§9.15, §9.16) |
+| `quantidade` **pode ser nula** | Preço contingente (`Faturamento mínimo diário — dia — R$ 16.000 — sem quantidade`) é justamente o que estoura orçamento de obra (§9.18) |
+| Unidade aceita **embalagem** | `PCT c/ 100 sacos`, `PCT c/ 4`, `5L`. Um modelo só com `un/kg/m²` compara errado (§2.4) |
+| **Nunca importar `Redução total`** | Quebrado em 5 de 10 documentos — reporta 100% de economia. Sempre derivar (§8.7) |
+| `setupBaseDeDados()` idempotente e aditivo | Schema vai mudar muito no sprint; e instalar num Drive novo vira um clique |
+| Planilha gerada é **snapshot sem fórmula**, nunca reimportada | Se virar fonte editável paralela, o problema da fórmula quebrada volta inteiro |
+| PDF via export URL com `UrlFetchApp` + OAuth token | Único caminho com controle de paisagem, ajuste à largura e escolha de aba |
+| Validação de cotação mínima na **homologação**, com limite em tabela | Hoje nada impede fechar R$ 50 mil com 2 cotações (§7A) |
+| **Modo simplificado até R$ 1.000** | 1 cotação basta pela regra. Se o app exigir o ritual completo, ninguém usa na compra pequena — que é o piloto |
+
+### Pendências abertas no fim do dia
+
+- 🔴 **Onde estão os originais das equalizações** (Sheets/xlsx, não PDF) — caminho crítico do importador
+- 🔴 Corrigir a promessa do Fluig em `RESPOSTA_AO_COMITE.md:53` antes de quarta
+- 🟠 Confirmar se a branch `claude/google-script-transformation-plan-puhawn` é o código no ar do `Teste-RH-`
+- 🟠 Medir o baseline de tempo **antes** de qualquer um usar o app
+- 🟡 Tabela de empreendimentos e apelidos (`MCtba` / `MEGA CURITIBA` / `MEGA` / `MEsteio` / `MItajai`)
+- 🟡 Mover IDs de produção do `Teste-RH-` para Script Properties
+- 🟡 Confirmar a regra de cotação: limite é exatamente R$ 1.000? Há faixas acima? Exceção por exclusividade/emergência? Vale igual para CR e Demercado? (§7A.4)
+
+### Documentos criados hoje
+
+| Arquivo | O que é |
+| :--- | :--- |
+| `docs/BASE_DE_CONHECIMENTO.md` | Tudo que descobrimos, com citação literal — 868 linhas |
+| `docs/PLANO_SPRINT.md` | O plano de 40 dias, substituindo o cronograma fev–dez |
+| `docs/HISTORICO.md` | Este arquivo |
+
+### Documentos que precisam de correção
+
+| Arquivo | Problema |
+| :--- | :--- |
+| `docs/PLANO_ESTRATEGICO_PROJETO.md` | Cronograma fev–dez que não aconteceu. **Substituído por `PLANO_SPRINT.md`** |
+| `docs/ARQUITETURA_TECNICA_E_FLUXO.md` | `VALORES_JSON`, 3 níveis fixos, BDI no preço, falta `Cód. Fornecedor` |
+| `docs/RESPOSTA_AO_COMITE.md` | Linha 53 promete condicionar medição via Fluig; contradiz a própria arquitetura |
+| `README.md` | Escreve "CAPITAL INFRAESTRUTURA LOGÍSTICA LTDA." — o nome real é `CAPITAL REALTY INFRAESTRUTURA LOGÍSTICA LTDA` (CNPJ 03.015.145/0001-54) |
+
+---
+
+## Próxima entrada
+
+*(a preencher conforme avançamos)*
