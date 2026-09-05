@@ -186,6 +186,10 @@ function cfGravarAnalise_(analise, idImportacao) {
         ID_EQUALIZACAO: idEq,
         CNPJ: cnpj,
         ORDEM: p.ordem,
+        // Guardado sempre, mesmo quando o CNPJ é recusado: o documento disse
+        // "Golden Phone Telecom Ltda / Carryer Telecom Ltda" e essa informação
+        // não pode se perder só porque a célula tinha duas empresas.
+        RAZAO_SOCIAL_INFORMADA: p.razaoSocial || '',
         RODADA: p.propostaR02 ? 'R02' : (p.propostaR01 ? 'R01' : 'inicial'),
         NUMERO_PROPOSTA: p.numeroProposta || '',
         DATA_PROPOSTA: p.dataProposta || '',

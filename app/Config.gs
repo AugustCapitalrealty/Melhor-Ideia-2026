@@ -18,7 +18,7 @@ const CF_PASTA_ID = '1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G';
 const CF_NOME_PLANILHA = 'Capital Fornecedores — Base';
 
 /** Sobe de 1 a cada mudança no schema. Gravado em Script Properties. */
-const CF_SCHEMA_VERSAO = 1;
+const CF_SCHEMA_VERSAO = 2;
 
 /** Versão do parser de importação. Gravada em cada linha importada,
  *  para dar para reprocessar o que veio de uma geração antiga. */
@@ -223,6 +223,7 @@ const CF_SCHEMA = [
     { campo: 'ID_EQUALIZACAO',      tipo: 'texto', largura: 150, nota: 'VAZIO = orçamento avulso' },
     { campo: 'CNPJ',                tipo: 'texto', largura: 150 },
     { campo: 'ORDEM',               tipo: 'inteiro', largura: 80 },
+    { campo: 'RAZAO_SOCIAL_INFORMADA', tipo: 'texto', largura: 300, nota: 'o nome como veio no documento — pode divergir do cadastro, e sobrevive a CNPJ inválido' },
     { campo: 'RODADA',              tipo: 'texto', largura: 100, nota: 'inicial, R01, R02… sem teto' },
     { campo: 'ID_BASELINE',         tipo: 'texto', largura: 120 },
     { campo: 'NUMERO_PROPOSTA',     tipo: 'texto', largura: 160 },

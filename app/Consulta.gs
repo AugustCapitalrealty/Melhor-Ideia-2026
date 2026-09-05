@@ -8,7 +8,7 @@
  * é mais rápido que qualquer alternativa dentro do Apps Script.
  */
 
-const CF_VERSAO_CONSULTA = '2026-09-05.1';
+const CF_VERSAO_CONSULTA = '2026-09-05.2';
 
 // ─────────────────────────────────────────────────────────────
 //  Carga
@@ -46,7 +46,10 @@ function cfCarregarPrecos_() {
       unidade: String(p.UNIDADE || ''),
       quantidade: p.QUANTIDADE === '' ? null : p.QUANTIDADE,
       cnpj: String(p.CNPJ || ''),
-      fornecedor: String(forn.RAZAO_SOCIAL || prop.CNPJ || '—'),
+      // Cadastro primeiro; se o CNPJ foi recusado, vale o nome do documento.
+      fornecedor: String(forn.RAZAO_SOCIAL || prop.RAZAO_SOCIAL_INFORMADA ||
+                         cfFormatarCnpj_(p.CNPJ) || 'fornecedor não identificado'),
+      semCadastro: !forn.RAZAO_SOCIAL,
       empreendimento: String(p.ID_EMPREENDIMENTO || ''),
       uf: String(p.UF || ''),
       data: p.DATA instanceof Date ? p.DATA : cfData_(p.DATA),
@@ -207,7 +210,8 @@ function cfImprimirConsulta_(r) {
     Logger.log('   ' + [g.empreendimento, g.area, quando].filter(String).join(' · '));
     g.precos.sort(function (a, b) { return a.valor - b.valor; }).forEach(function (p) {
       Logger.log('      ' + cfPad_(p.fornecedor, 34) + ' R$ ' + cfMoeda_(p.valor) +
-                 (p.vencedora ? '   ✓ contratado' : ''));
+                 (p.vencedora ? '   ✓ contratado' : '') +
+                 (p.semCadastro ? '   (sem cadastro)' : ''));
     });
     Logger.log('');
   });
