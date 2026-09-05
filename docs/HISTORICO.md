@@ -179,7 +179,7 @@ Também dá a resposta honesta para "e se o piloto rodar poucas equalizações?"
 
 ### Riscos que continuam abertos
 
-- 🔴 Corrigir com o comitê as **duas promessas que não se cumprem** (gatilho Fluig e condicionamento da medição) — antes que eles cobrem
+- 🟠 Corrigir com o comitê as duas promessas que não se cumprem — **texto substituto pronto em [CORRECAO_MINUTA_COMITE.md](CORRECAO_MINUTA_COMITE.md)**, falta enviar (janela de consultoria fecha 30/09)
 - 🟠 Escopo cresceu muito num dia; alguma coisa vai ficar de fora e é melhor escolher qual
 - 🟠 Baseline de tempo precisa ser medido **antes** de o piloto começar
 - 🟡 Dependência solo — mitigada pela documentação
