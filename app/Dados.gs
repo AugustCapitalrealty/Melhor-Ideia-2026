@@ -65,7 +65,17 @@ function cfInserir_(nome, objetos) {
   return matriz.length;
 }
 
-/** Apaga as linhas em que `campo` bate com `valor`. De baixo para cima. */
+/**
+ * Apaga as linhas em que `campo` bate com `valor`.
+ *
+ * Lê tudo, filtra em memória e reescreve — três operações, independente do
+ * tamanho. A versão anterior chamava deleteRow numa laço e levava meio
+ * segundo por linha: desfazer 102 linhas custou 56 segundos, e o Apps Script
+ * corta a execução em 6 minutos. Com algumas dezenas de arquivos importados
+ * o desfazer simplesmente não terminaria.
+ *
+ * clearContent preserva formatação e validação de lista das colunas.
+ */
 function cfApagarPor_(nome, campo, valor) {
   const aba = cfAba_(nome);
   const linhas = aba.getLastRow() - 1;
@@ -75,13 +85,16 @@ function cfApagarPor_(nome, campo, valor) {
   const col = cab.indexOf(campo);
   if (col < 0) return 0;
 
-  const valores = aba.getRange(2, col + 1, linhas, 1).getValues();
-  const alvos = [];
-  for (let i = valores.length - 1; i >= 0; i--) {
-    if (String(valores[i][0]) === String(valor)) alvos.push(i + 2);
-  }
-  alvos.forEach(function (l) { aba.deleteRow(l); });
-  return alvos.length;
+  const faixa = aba.getRange(2, 1, linhas, cab.length);
+  const dados = faixa.getValues();
+  const manter = dados.filter(function (l) { return String(l[col]) !== String(valor); });
+
+  const removidos = dados.length - manter.length;
+  if (!removidos) return 0;
+
+  faixa.clearContent();
+  if (manter.length) aba.getRange(2, 1, manter.length, cab.length).setValues(manter);
+  return removidos;
 }
 
 /** Índice campo → objeto, para upsert sem varrer a aba N vezes. */
