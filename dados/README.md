@@ -39,7 +39,13 @@ A empresa é identificada por documento: Curitiba possui documentos de Capital R
 
 O [inventário por arquivo](inventario_drive.json) registra as 37 entradas da pasta principal: 21 PDFs de orçamento consolidados, 11 PDFs de equalização, 1 contrato, 1 ordem de compra, 1 modelo Google Sheets e 2 subpastas. A equalização da ADS foi usada como evidência complementar, sem repetir seus valores no histórico.
 
-A subpasta Engenharia contém 9 arquivos inventariados (5 PDFs e 4 Google Sheets), ainda sem extração para este histórico. Equalizações, contrato e ordem de compra também não foram consolidados como novas cotações: é necessário verificar seus vínculos e versões para evitar duplicar as propostas. A subpasta PLANO não foi percorrida nesta etapa. Assim, os 21 orçamentos cobrem a pasta principal e os três Megas identificados; não representam cobertura integral de todo o conteúdo das subpastas.
+A auditoria posterior percorreu também Engenharia (9 arquivos) e PLANO (1 base Google), totalizando **45 arquivos e duas subpastas**. Todos receberam classificação. Equalizações, documentos de Engenharia, contrato e ordem de compra ainda não integram este consolidado de 21 orçamentos; a base Google contém outros conjuntos já importados que exigem conciliação.
+
+A [revisão adicional de serviços e Engenharia](../docs/REVISAO_ACERVO_SERVICOS.md) identifica propostas de PMOC, lavagem de piso, society, reservatório, bicicletário, fundações e mais cotações de materiais. Ela registra valores, diferenças de escopo e possíveis duplicatas; essas propostas ainda não integram os arquivos consolidados acima.
+
+A [auditoria completa](../docs/AUDITORIA_COBERTURA_COMPLETA.md) e sua [planilha de pendências por arquivo](auditoria_cobertura.xlsx) ampliam essa revisão: **31 cotações candidatas ausentes**, 28 preços contratuais da Canaveral e Wi-Fi/utilities já presentes no Google, mas ausentes do consolidado local. Duas fontes referenciadas exigem acesso. Os números representam tipos diferentes de registro e não devem ser somados como compras.
+
+Para reproduzir a planilha de auditoria a partir do retrato [auditoria_cobertura.json](auditoria_cobertura.json), execute `python3 tools/gerar-planilha-cobertura.py`. Esse comando não atualiza o Drive nem o histórico de preços.
 
 ## Reprodução e integração
 

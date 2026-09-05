@@ -1,0 +1,3004 @@
+{
+  "consulta_em": "2026-09-05",
+  "escopo": "Auditoria de cobertura; não incorpora automaticamente propostas ao histórico nem grava no Google.",
+  "resumo": {
+    "arquivos_na_pasta_e_subpastas": 45,
+    "pastas": 2,
+    "arquivos_no_historico_local": 21,
+    "arquivos_restantes_classificados": 24,
+    "fontes_referenciadas_com_acesso_pendente": 2,
+    "cotacoes_candidatas_ausentes": 31,
+    "cotacoes_em_mapas_principais": 26,
+    "proponentes_com_valor_engenharia": 5,
+    "precos_fixos_contratuais_canaveral": 28
+  },
+  "arquivos": [
+    {
+      "id": "1qoZfkify3uuKAwqoPs9ftHqtrB6mQ4hV",
+      "nome": "Engenharia",
+      "tipo": "application/vnd.google-apps.folder",
+      "pasta": "principal",
+      "url": "https://drive.google.com/drive/folders/1qoZfkify3uuKAwqoPs9ftHqtrB6mQ4hV",
+      "historico_local": "nao_aplicavel",
+      "status": "pasta_percorrida",
+      "achado": "Listagem pública lida nesta auditoria.",
+      "acao": "Nenhuma subpasta encontrada além de Engenharia e PLANO."
+    },
+    {
+      "id": "1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G",
+      "nome": "PLANO",
+      "tipo": "application/vnd.google-apps.folder",
+      "pasta": "principal",
+      "url": "https://drive.google.com/drive/folders/1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G",
+      "historico_local": "nao_aplicavel",
+      "status": "pasta_percorrida",
+      "achado": "Listagem pública lida nesta auditoria.",
+      "acao": "Nenhuma subpasta encontrada além de Engenharia e PLANO."
+    },
+    {
+      "id": "12mXnIavWt7kbGxUEYg9OZs3xncOPd7cT",
+      "nome": "1459.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/12mXnIavWt7kbGxUEYg9OZs3xncOPd7cT/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosFabesul.gs",
+      "linhas": 1,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK",
+      "nome": "Contrato de prestação de serviços_0187.2026_Canaveral_MItajai_e anexos-Manifesto.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "historico_contratual_pendente",
+      "achado": "Contrato Canaveral 0187.2026, Itajaí/Capital Realty. Anexo p.8 contém 28 preços fixos.",
+      "acao": "Criar histórico de preços contratuais e relacionar cotações/OC; não somar tabela como compra."
+    },
+    {
+      "id": "18jmD4kEixd92plqJ8_9DsYMtQgGGIwkz",
+      "nome": "CotacaoBasePapeis_177258.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/18jmD4kEixd92plqJ8_9DsYMtQgGGIwkz/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosBasePapeis.gs",
+      "linhas": 15,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1pziA36BWAe_wi6TWtQ4ZvhuOH7XRGry8",
+      "nome": "CotacaoBasePapeis_178511.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1pziA36BWAe_wi6TWtQ4ZvhuOH7XRGry8/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosBasePapeis.gs",
+      "linhas": 17,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "18CitFo1BwX0cLhZGpbg_S6BmearfeF70",
+      "nome": "CotacaoBasePapeis_182188.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/18CitFo1BwX0cLhZGpbg_S6BmearfeF70/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosBasePapeis.gs",
+      "linhas": 19,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1LXwNr3leKFiZ48S0rEVa0zaBIAe5-4uL",
+      "nome": "CotacaoBasePapeis_188139-492,05.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1LXwNr3leKFiZ48S0rEVa0zaBIAe5-4uL/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosBasePapeis.gs",
+      "linhas": 14,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "13dChJSNUck2U4PYIxRtsbI7kHKgZ3wzt",
+      "nome": "demer.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/13dChJSNUck2U4PYIxRtsbI7kHKgZ3wzt/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosSVargas.gs",
+      "linhas": 14,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1CXBO4ng4RBtY-5mvW5W2dzfeMXdJz2yG",
+      "nome": "demercado (4).pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1CXBO4ng4RBtY-5mvW5W2dzfeMXdJz2yG/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosSVargas.gs",
+      "linhas": 3,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "13TlCoVY2uvsqrH0xyQG-G131GPetPfrs",
+      "nome": "demercado (7).pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/13TlCoVY2uvsqrH0xyQG-G131GPetPfrs/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosSVargas.gs",
+      "linhas": 11,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1QC9cc_vtQKoKfh_TA6mJTXcO9l-G0bbA",
+      "nome": "EQU_20260202-MEsteio_ArmazémB_Piso.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1QC9cc_vtQKoKfh_TA6mJTXcO9l-G0bbA/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_vinculo_pendente",
+      "achado": "Mapa fevereiro do piso Esteio:3propostas também representadas no mapa abril. ADS já consolidada; data de RP divergente.",
+      "acao": "Vincular fonte complementar e resolver revisão/data; não contar 3 propostas novamente.",
+      "fontes_relacionadas": [
+        "1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf",
+        "1QC9cc_vtQKoKfh_TA6mJTXcO9l-G0bbA"
+      ]
+    },
+    {
+      "id": "1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf",
+      "nome": "EQU_20260406-MEGA_LAVAGEM DE PISO_PROPRIEDADES.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_extracao_pendente",
+      "achado": "Lavagem de piso B2 / Esteio:3 participações no mapa; auditoria estruturada disponível.",
+      "acao": "Incorporar por proponente/escopo e conferir revisões; não repetir fontes relacionadas.",
+      "fontes_relacionadas": [
+        "1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf",
+        "1QC9cc_vtQKoKfh_TA6mJTXcO9l-G0bbA"
+      ]
+    },
+    {
+      "id": "1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST",
+      "nome": "EQU_20260415-MCtba_Revitalização Campo de Society_Facilities.xlsx - Google Planilhas.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_extracao_pendente",
+      "achado": "Revitalização de society / Curitiba:3 participações no mapa; auditoria estruturada disponível.",
+      "acao": "Incorporar por proponente/escopo e conferir revisões; não repetir fontes relacionadas.",
+      "fontes_relacionadas": [
+        "1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST"
+      ]
+    },
+    {
+      "id": "1TZDBilsJB54rq56yE8HQesn1I7m2GPX8",
+      "nome": "EQU_20260827-MEGA CURITIBA_Revitalização Reservatório Metálico 138.000l.xlsx - Google Planilhas.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1TZDBilsJB54rq56yE8HQesn1I7m2GPX8/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_extracao_pendente",
+      "achado": "Reservatório metálico 138.000 L / Curitiba:3 participações no mapa; auditoria estruturada disponível.",
+      "acao": "Incorporar por proponente/escopo e conferir revisões; não repetir fontes relacionadas.",
+      "fontes_relacionadas": [
+        "1TZDBilsJB54rq56yE8HQesn1I7m2GPX8"
+      ]
+    },
+    {
+      "id": "1_Xdbc83uCrQZl_w94TZ5zivNvZnyRx8hnJQ_ALIRaWI",
+      "nome": "EQU_AAAAMMDD-MEGA_PROJETO_ÁREA",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1_Xdbc83uCrQZl_w94TZ5zivNvZnyRx8hnJQ_ALIRaWI/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "modelo_sem_cotacao",
+      "achado": "Modelo com abas Demercado/CR, sem proponentes ou preços preenchidos.",
+      "acao": "Manter como modelo; não converter zeros de fórmulas em histórico."
+    },
+    {
+      "id": "157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N",
+      "nome": "Formulário de equalização - Bicicletário externo.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_extracao_pendente",
+      "achado": "Ampliação do bicicletário / Itajaí:3 participações no mapa; auditoria estruturada disponível.",
+      "acao": "Incorporar por proponente/escopo e conferir revisões; não repetir fontes relacionadas.",
+      "fontes_relacionadas": [
+        "157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N"
+      ]
+    },
+    {
+      "id": "1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB",
+      "nome": "Formulário de equalização - Material de consumo - Google Planilhas (1).pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_extracao_pendente",
+      "achado": "Material de consumo — abril / Curitiba:3 participações no mapa; auditoria estruturada disponível.",
+      "acao": "Incorporar por proponente/escopo e conferir revisões; não repetir fontes relacionadas.",
+      "fontes_relacionadas": [
+        "1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB",
+        "1eUCTS00JCOGVnF3UTy_193KR09yNiN4B"
+      ]
+    },
+    {
+      "id": "1eUCTS00JCOGVnF3UTy_193KR09yNiN4B",
+      "nome": "Formulário de equalização - Material de consumo - Google Planilhas.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1eUCTS00JCOGVnF3UTy_193KR09yNiN4B/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "representacao_duplicada",
+      "achado": "Texto extraído idêntico ao outro mapa Curitiba/abril.",
+      "acao": "Vincular 3 propostas à fonte irmã, sem nova contagem.",
+      "fontes_relacionadas": [
+        "1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB",
+        "1eUCTS00JCOGVnF3UTy_193KR09yNiN4B"
+      ]
+    },
+    {
+      "id": "1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI",
+      "nome": "Formulário de equalização - Material de consumo (1).pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_extracao_pendente",
+      "achado": "Material de consumo — julho / Itajaí:3 participações no mapa; auditoria estruturada disponível.",
+      "acao": "Incorporar por proponente/escopo e conferir revisões; não repetir fontes relacionadas.",
+      "fontes_relacionadas": [
+        "1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI"
+      ]
+    },
+    {
+      "id": "12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5",
+      "nome": "Formulário de equalização - Material de consumo.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_extracao_pendente",
+      "achado": "Material de consumo — junho / Curitiba:3 participações no mapa; auditoria estruturada disponível.",
+      "acao": "Incorporar por proponente/escopo e conferir revisões; não repetir fontes relacionadas.",
+      "fontes_relacionadas": [
+        "12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5"
+      ]
+    },
+    {
+      "id": "1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx",
+      "nome": "Formulário de equalização - PMOC RV01.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_extracao_pendente",
+      "achado": "PMOC e ar-condicionado / Itajaí:3 participações no mapa; auditoria estruturada disponível.",
+      "acao": "Incorporar por proponente/escopo e conferir revisões; não repetir fontes relacionadas.",
+      "fontes_relacionadas": [
+        "1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx"
+      ]
+    },
+    {
+      "id": "1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j",
+      "nome": "MCtba - Mapa de Equalização Manut Preventiva + Emissão de PMOC_v02.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_extracao_pendente",
+      "achado": "PMOC e ar-condicionado / Curitiba:3 participações no mapa; auditoria estruturada disponível.",
+      "acao": "Incorporar por proponente/escopo e conferir revisões; não repetir fontes relacionadas.",
+      "fontes_relacionadas": [
+        "1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j"
+      ]
+    },
+    {
+      "id": "1Eb2Z25e9EDerAAFrsZ9tuH5E8x5Au3T6",
+      "nome": "OC 034925 Fabesul - 671,52.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1Eb2Z25e9EDerAAFrsZ9tuH5E8x5Au3T6/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "comprovante_vinculo_pendente",
+      "achado": "OC Fabesul 034925: Curitiba/Demercado, 48 bobinas a R$13,99, total R$671,52; coincide com proposta 7503081 já consolidada.",
+      "acao": "Vincular à cotação existente como ordem de compra, sem duplicar preço ou inferir pagamento."
+    },
+    {
+      "id": "1zYv7vMJZDTRVdd_bIaVoHQk-0RwqCWH-",
+      "nome": "Orç Canaveral - 1.595,72.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1zYv7vMJZDTRVdd_bIaVoHQk-0RwqCWH-/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosCanaveral.gs",
+      "linhas": 18,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1QWdX6jaXs1VqBFsmNA-ERQODePq24Gcr",
+      "nome": "Orç Canaveral - 4.391,45.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1QWdX6jaXs1VqBFsmNA-ERQODePq24Gcr/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosCanaveral.gs",
+      "linhas": 22,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1S7qGBciD_bC57bzhw4VpcAI2vOy6Egos",
+      "nome": "Orç Canaveral - 528,39.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1S7qGBciD_bC57bzhw4VpcAI2vOy6Egos/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosCanaveral.gs",
+      "linhas": 10,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1wmFtKzI4ISOTAVn1LvGdYEYIAkW-qQ03",
+      "nome": "Orç Canaveral - 999,79.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1wmFtKzI4ISOTAVn1LvGdYEYIAkW-qQ03/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosCanaveral.gs",
+      "linhas": 8,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1HASD5KQ9v63zL_oUIEaEv1EOKkjNYd51",
+      "nome": "Orç Contabilista R$975,37.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1HASD5KQ9v63zL_oUIEaEv1EOKkjNYd51/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosContabilista.gs",
+      "linhas": 19,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1wVQnMpniyzk44CnPbthmhWzCe_ZOff9r",
+      "nome": "ORÇ FABESUL R$671,52 (BOBINAS TOTENS).pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1wVQnMpniyzk44CnPbthmhWzCe_ZOff9r/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosFabesul.gs",
+      "linhas": 1,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "16XM5uniW7hC6WDJTILPAlc4CqU6X-K0v",
+      "nome": "Orç Fabesul R$719,42.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/16XM5uniW7hC6WDJTILPAlc4CqU6X-K0v/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosFabesul.gs",
+      "linhas": 10,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1ETsvvpStTPid5Hv_xqQioC82ij5ub8Lh",
+      "nome": "Orç Litoral - 1.110,16.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1ETsvvpStTPid5Hv_xqQioC82ij5ub8Lh/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosLitoral.gs",
+      "linhas": 17,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1FAuAX7biqwxP40b-eJ8kD1i3MbuLtZOZ",
+      "nome": "Orç Litoral - 936,84.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1FAuAX7biqwxP40b-eJ8kD1i3MbuLtZOZ/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosLitoral.gs",
+      "linhas": 19,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1qNohQs4nU6o3BEKb3BI99DFVH0i7ntjA",
+      "nome": "Orç Litoral - 981,57.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1qNohQs4nU6o3BEKb3BI99DFVH0i7ntjA/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosLitoral.gs",
+      "linhas": 21,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1n5ogbYLhHQxFOcMMpmgCnTJ1tXmFyGWC",
+      "nome": "Orç Litoral - 987,26 RV01.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1n5ogbYLhHQxFOcMMpmgCnTJ1tXmFyGWC/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosLitoral.gs",
+      "linhas": 18,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1dOcriJeFcqaaVzagTSQubH6Sc0O3-ixq",
+      "nome": "Orç. ADS_10.000,00 Limpeza piso_REV01.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1dOcriJeFcqaaVzagTSQubH6Sc0O3-ixq/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosADS.gs",
+      "linhas": 3,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1EVSMzEPsL1J4R3cflIRWJoXDEBfzpykf",
+      "nome": "Orç. Base Papéis Armazém B2-609,58.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1EVSMzEPsL1J4R3cflIRWJoXDEBfzpykf/view",
+      "historico_local": "presente",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosBasePapeis.gs",
+      "linhas": 14,
+      "achado": "Documento presente nos21 orçamentos / 274 linhas locais.",
+      "acao": "Conciliar com aplicativo antes de importar."
+    },
+    {
+      "id": "1Wf9GFdIMYSjaJKwflYsG6DKxihqaCtp7",
+      "nome": "CAPITAL REALTY - MEGA CURITIBA FASE 7 1101.4 (2).pdf",
+      "tipo": "application/pdf",
+      "pasta": "engenharia",
+      "url": "https://drive.google.com/file/d/1Wf9GFdIMYSjaJKwflYsG6DKxihqaCtp7/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "cotacao_engenharia_pendente",
+      "achado": "Pretech: parcelas de R$127.296 e R$104.224, total calculado R$231.520. Escopo parcial diante do mapa.",
+      "acao": "Vincular à proposta 1101.4/25 do mapa; conservar quantidades, revisão e exclusões."
+    },
+    {
+      "id": "1CClhR1bEGVpSKQXIYB1uJNLSxTJT9KKA",
+      "nome": "CARTA PROPOSTA MEGA CURITIBA - FASE 7 - ARMAZEM 4+7+8 Capital Realty__R02.pdf",
+      "tipo": "application/pdf",
+      "pasta": "engenharia",
+      "url": "https://drive.google.com/file/d/1CClhR1bEGVpSKQXIYB1uJNLSxTJT9KKA/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "cotacao_engenharia_pendente",
+      "achado": "JB Acabamentos: carta R02 com anexo R03, R$925.112; destinatária Demercado.",
+      "acao": "Vincular EAP R03 e coluna JB do mapa; não contar representações como novas propostas."
+    },
+    {
+      "id": "1dvkmA-hsMX8pAKoQrAW4LuD6gacsARrX",
+      "nome": "Cartao_de_Assinaturas_DM_JB_ACABAMENTOS_assinado (1) (1).pdf",
+      "tipo": "application/pdf",
+      "pasta": "engenharia",
+      "url": "https://drive.google.com/file/d/1dvkmA-hsMX8pAKoQrAW4LuD6gacsARrX/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "referencia_cadastral",
+      "achado": "Cartão de assinaturas vincula Demercado e JB; cita contrato 35.552.025; não traz preços.",
+      "acao": "Aproveitar identidade jurídica/vínculo documental; não transportar dados pessoais para histórico de preços."
+    },
+    {
+      "id": "1IXi9g9tG3-dh4vPR5kAB_a-y5GMlqKsuaxBQv6sNL08",
+      "nome": "MCtba F7_EQU Fund Profunda_R01",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "engenharia",
+      "url": "https://drive.google.com/file/d/1IXi9g9tG3-dh4vPR5kAB_a-y5GMlqKsuaxBQv6sNL08/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "equalizacao_engenharia_pendente",
+      "achado": "Cinco proponentes com valores no Resumo; quatro no detalhamento; negociação e cadastro de convidados em outras abas.",
+      "acao": "Extrair todas as abas preservando propostas, composição, referências e revisões. Aude/Maggi sem valor nesta fonte."
+    },
+    {
+      "id": "1Nt5qOpwkhEqLAEfhIH4vK92JGIf2K_xrcvenKR1l_z8",
+      "nome": "MCtba-F7_EAP FUNDAÇÃO_R02",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "engenharia",
+      "url": "https://drive.google.com/file/d/1Nt5qOpwkhEqLAEfhIH4vK92JGIf2K_xrcvenKR1l_z8/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "baseline_sem_cotacao",
+      "achado": "Arquivo R02 indica revisão 03 e data 03/02/2026, empresa PROPONENTE; quantitativos de referência, preços não preenchidos.",
+      "acao": "Usar como escopo/baseline. Zeros calculados não são cotações grátis."
+    },
+    {
+      "id": "1MMLiJ1wQfztGzCPo3NtaviaZSFt-0y-lsannNnaGsng",
+      "nome": "MCtba-F7_EAP FUNDAÇÃO_R03",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "engenharia",
+      "url": "https://drive.google.com/file/d/1MMLiJ1wQfztGzCPo3NtaviaZSFt-0y-lsannNnaGsng/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "cotacao_engenharia_pendente",
+      "achado": "JB R03 de 26/01/2026, total R$925.112; mesmo anexo da carta PDF.",
+      "acao": "Extrair composição material e mão de obra; vincular carta PDF."
+    },
+    {
+      "id": "16wqN-RQN65gbjGnUaJ_uzfJn434aDjG8",
+      "nome": "MCtba-F7_MEMORIAL TECNICO_FUNDAÇÃO_R02 (1).pdf",
+      "tipo": "application/pdf",
+      "pasta": "engenharia",
+      "url": "https://drive.google.com/file/d/16wqN-RQN65gbjGnUaJ_uzfJn434aDjG8/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "referencia_escopo",
+      "achado": "Memorial de 19 páginas, Demercado, Fase7, armazéns08/09 e ampliação04.",
+      "acao": "Usar para conferir inclusões e exclusões; não gerar preço a partir do edital."
+    },
+    {
+      "id": "1hkUW-snSRt8P_mZTSkDyBFHLqXjmE5A9fhz5yUlwfDs",
+      "nome": "Monopolio-MCtba-F7_EAP FUNDAÇÃO_R01",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "engenharia",
+      "url": "https://drive.google.com/file/d/1hkUW-snSRt8P_mZTSkDyBFHLqXjmE5A9fhz5yUlwfDs/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "cotacao_engenharia_pendente",
+      "achado": "EAP denominada Monopólio: R$1.085.426,14; data 26/12/2026; cabeçalho PROPONENTE / revisão 00.",
+      "acao": "Vincular PDF e comparar com R$1.221.270,95 do mapa. Confirmar versão/data e preservar erros de fórmula."
+    },
+    {
+      "id": "1b_Ewbi4_e48Fje2iRP9Cm3Q8J4GftwmP",
+      "nome": "Monopolio-MCtba-F7_EAP FUNDAÇÃO_R01.pdf",
+      "tipo": "application/pdf",
+      "pasta": "engenharia",
+      "url": "https://drive.google.com/file/d/1b_Ewbi4_e48Fje2iRP9Cm3Q8J4GftwmP/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "cotacao_engenharia_pendente",
+      "achado": "PDF da EAP denominada Monopólio, total R$1.085.426,14; coincide com planilha, mas diverge do mapa.",
+      "acao": "Relacionar representações, sem duplicar cotação."
+    },
+    {
+      "id": "1PLuAqtKz2dscfSfAekfEGTAZTAzT8m0R0FfaJ9PmSnc",
+      "nome": "Planilha",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "plano",
+      "url": "https://drive.google.com/file/d/1PLuAqtKz2dscfSfAekfEGTAZTAzT8m0R0FfaJ9PmSnc/view",
+      "historico_local": "ausente_ou_pendente",
+      "status": "base_google_conciliacao_pendente",
+      "achado": "Base existente: 2 importações, 4 equalizações, 12 registros de proposta, 78 linhas de preços (43 cotado / 35 nao_cotado). Wi-Fi e utilities não estão no consolidado local.",
+      "acao": "Conciliar fontes e corrigir dados incompletos; não reimportar como novos orçamentos."
+    }
+  ],
+  "fontes_referenciadas": [
+    {
+      "id": "1iOz9t7xjk19UxCkEP7t-v1yzCOk6HMTR4Qfp9mfCNF4",
+      "nome": "EQU_20260812-MEGA-CURITIBA_WIFI_CASA_DE_BOMBAS",
+      "url": "https://docs.google.com/spreadsheets/d/1iOz9t7xjk19UxCkEP7t-v1yzCOk6HMTR4Qfp9mfCNF4/edit",
+      "origem": "Referência encontrada em PLANO/Planilha, aba Importacoes",
+      "acesso_fonte": "HTTP401; original não acessível publicamente",
+      "historico_google": "importacao_existente",
+      "historico_local": "ausente",
+      "acao": "Obter acesso à fonte e conciliar os registros já importados."
+    },
+    {
+      "id": "1TaqCghQpf2xmNWhiSX0u7orW4Sw_9lum8Qiid9rv_I4",
+      "nome": "EQU_20260515-MEGA-CURITIBA_MONITORAMENTO-UTILITIES-AGUA_FACILITIES",
+      "url": "https://docs.google.com/spreadsheets/d/1TaqCghQpf2xmNWhiSX0u7orW4Sw_9lum8Qiid9rv_I4/edit",
+      "origem": "Referência encontrada em PLANO/Planilha, aba Importacoes",
+      "acesso_fonte": "HTTP401; original não acessível publicamente",
+      "historico_google": "importacao_existente",
+      "historico_local": "ausente",
+      "acao": "Obter acesso à fonte e conciliar os registros já importados."
+    }
+  ],
+  "cotacoes_candidatas": [
+    {
+      "categoria": "PMOC e ar-condicionado",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "fornecedor": "Perri Multisserviços",
+      "cnpj": "19.031.001/0001-21",
+      "numero": "Não possui",
+      "data_literal": "29/06/2026",
+      "valor_documento": 9120.0,
+      "natureza": "anual",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "PMOC e ar-condicionado",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "fornecedor": "Só Ar Refrigeração",
+      "cnpj": "20.376.762/0001-02",
+      "numero": "Não possui",
+      "data_literal": "29/06/2026",
+      "valor_documento": 10200.0,
+      "natureza": "anual",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "PMOC e ar-condicionado",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "fornecedor": "Eletro Altimas LTDA",
+      "cnpj": "83.186.551/0001-19",
+      "numero": "Não possui",
+      "data_literal": "01/07/2026",
+      "valor_documento": 15000.0,
+      "natureza": "anual",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "PMOC e ar-condicionado",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "LF Serviços Terceirizados",
+      "cnpj": "43.747.242/0001-56",
+      "numero": "12-2025",
+      "data_literal": "01/12/2025",
+      "valor_documento": 5232.0,
+      "natureza": "anual",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "PMOC e ar-condicionado",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Climatizar Ltda",
+      "cnpj": "75.214.171/0001-12",
+      "numero": "010/2026",
+      "data_literal": "11/03/2026",
+      "valor_documento": 4000.0,
+      "natureza": "anual",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "PMOC e ar-condicionado",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Climasul Ar Condicionado Ltda.",
+      "cnpj": "82.605.288/0001-92",
+      "numero": "PMC-10636-0",
+      "data_literal": "09/03/2026",
+      "valor_documento": 11280.0,
+      "natureza": "anual",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Lavagem de piso B2",
+      "mega": "Esteio",
+      "empresa": "Capital Realty",
+      "fornecedor": "CSM ENGENHARIA",
+      "cnpj": "44.427.816/0001-71",
+      "numero": "175-2026 Rev.00",
+      "data_literal": "27/01/2026",
+      "valor_documento": 33150.0,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Lavagem de piso B2",
+      "mega": "Esteio",
+      "empresa": "Capital Realty",
+      "fornecedor": "IMUNIZADORA RP",
+      "cnpj": "15.661.459/0001-03",
+      "numero": "N/E",
+      "data_literal": "23/01/2026",
+      "valor_documento": 10500.0,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Revitalização de society",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "NORTE SUL METALÚRGICA",
+      "cnpj": "57.593.262/0001-24",
+      "numero": "N/A",
+      "data_literal": "10/04/2026",
+      "valor_documento": 15300.0,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Revitalização de society",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "E&M8 - Engenharia e Manutenção",
+      "cnpj": "29.972.558/0001-10",
+      "numero": "PC-2026.401.01.04",
+      "data_literal": "01/04/2026",
+      "valor_documento": 17350.0,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Revitalização de society",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Irmãos Ferreira Serviços de Acabamento na Construção Civil",
+      "cnpj": "19.466.418/0001-17",
+      "numero": "21.497/2026",
+      "data_literal": "02/04/2026",
+      "valor_documento": 48520.0,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Reservatório metálico 138.000 L",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "SA SOLUÇÃO AMBIENTAL",
+      "cnpj": "09.165.932/0001-69",
+      "numero": "5.101",
+      "data_literal": "30/07/2026",
+      "valor_documento": 70000.0,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1TZDBilsJB54rq56yE8HQesn1I7m2GPX8/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Reservatório metálico 138.000 L",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "ADS MANUT. E CONSERV. PREDIAL",
+      "cnpj": "41.398.529/0001-92",
+      "numero": "N/A",
+      "data_literal": "28/07/2026",
+      "valor_documento": 72028.8,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1TZDBilsJB54rq56yE8HQesn1I7m2GPX8/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Reservatório metálico 138.000 L",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "NORTE SUL METALURGIGA",
+      "cnpj": "57.593.262/0001-24",
+      "numero": "N/A",
+      "data_literal": "26/08/2026",
+      "valor_documento": 80563.38,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1TZDBilsJB54rq56yE8HQesn1I7m2GPX8/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Ampliação do bicicletário",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "fornecedor": "Perri Multisserviços",
+      "cnpj": "19.031.001/0001-21",
+      "numero": "0041",
+      "data_literal": "06/07/2026",
+      "valor_documento": 11500.0,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Ampliação do bicicletário",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "fornecedor": "Metallic Estruturas Metálicas",
+      "cnpj": "54.801.272/0001-10",
+      "numero": "225",
+      "data_literal": "25/06/2026",
+      "valor_documento": 12500.0,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Ampliação do bicicletário",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "fornecedor": "Murano Glass Store",
+      "cnpj": "44.983.675 0001-73",
+      "numero": "JM 178/26",
+      "data_literal": "29/06/2026",
+      "valor_documento": 14358.0,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Material de consumo — abril",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Contabilista Suprimentos Para Escritório",
+      "cnpj": "77.765.840/0001-70",
+      "numero": "1/062959",
+      "data_literal": "28/04/2026",
+      "valor_documento": 1687.47,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Material de consumo — abril",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Essenza Comercial",
+      "cnpj": "22.748.778/0001-16",
+      "numero": "32678",
+      "data_literal": "28/04/2026",
+      "valor_documento": 2178.89,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Material de consumo — abril",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Fabesul",
+      "cnpj": "89.054.050/0006-70",
+      "numero": "7582147",
+      "data_literal": "28/04/2026",
+      "valor_documento": 1622.2,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Material de consumo — julho",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "fornecedor": "Canaveral Produtos de Higiene e Limpeza",
+      "cnpj": "07.052.432/0001-95",
+      "numero": "0",
+      "data_literal": "30/06/2026",
+      "valor_documento": 3227.8,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Material de consumo — julho",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "fornecedor": "Papersul Materiais de Escritório e Limpeza LTDA",
+      "cnpj": "13.406.484/0001-15",
+      "numero": "67158",
+      "data_literal": "30/06/2026",
+      "valor_documento": 3236.92,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Material de consumo — julho",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "fornecedor": "RC Pápeis",
+      "cnpj": "11.286.755/0001-10",
+      "numero": "199372",
+      "data_literal": "01/07/2026",
+      "valor_documento": 3306.22,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Material de consumo — junho",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Contabilista Suprimentos Para Escritório",
+      "cnpj": "77.765.840/0001-70",
+      "numero": "1/118.325",
+      "data_literal": "01/06/2026",
+      "valor_documento": 1467.63,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Material de consumo — junho",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Essenza Comercial",
+      "cnpj": "22.748.778/0001-16",
+      "numero": "33205",
+      "data_literal": "16/06/2026",
+      "valor_documento": 1547.0,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Material de consumo — junho",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Fabesul",
+      "cnpj": "89.054.050/0006-70",
+      "numero": "7610467",
+      "data_literal": "02/06/2026",
+      "valor_documento": 1249.95,
+      "natureza": "total_cotado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://drive.google.com/file/d/12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5/view",
+      "observacao": "Preservar escopo e revisões; valores de equalização não comprovam pagamento."
+    },
+    {
+      "categoria": "Fundações profundas — Fase 7",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Monopólio",
+      "cnpj": "34.897.810/0001-04",
+      "numero": "n/a",
+      "data_literal": "2026-12-26 00:00:00",
+      "valor_documento": 1221270.95,
+      "natureza": "total_equalizado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://docs.google.com/spreadsheets/d/1IXi9g9tG3-dh4vPR5kAB_a-y5GMlqKsuaxBQv6sNL08/edit",
+      "observacao": "EAP/PDF: R$ 1.085.426,14; mapa: R$ 1.221.270,95. Data 26/12/2026; revisão pendente."
+    },
+    {
+      "categoria": "Fundações profundas — Fase 7",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "JB Acabamentos",
+      "cnpj": "20.718.153/0001-86",
+      "numero": "122625_R02",
+      "data_literal": "2026-01-26 00:00:00",
+      "valor_documento": 925112.0,
+      "natureza": "total_equalizado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://docs.google.com/spreadsheets/d/1IXi9g9tG3-dh4vPR5kAB_a-y5GMlqKsuaxBQv6sNL08/edit",
+      "observacao": "Vincular EAP R03 e carta R02. Mesmo total global, divergência de revisão/nomes de armazéns."
+    },
+    {
+      "categoria": "Fundações profundas — Fase 7",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Pretech",
+      "cnpj": "73.367.955/0001-55",
+      "numero": "1101.4/25",
+      "data_literal": "2026-02-03 00:00:00",
+      "valor_documento": 740000,
+      "natureza": "total_equalizado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://docs.google.com/spreadsheets/d/1IXi9g9tG3-dh4vPR5kAB_a-y5GMlqKsuaxBQv6sNL08/edit",
+      "observacao": "R$ 740.000 no Resumo; R$ 778.077,50 no detalhamento; PDF soma R$ 231.520 com escopo parcial. Não tratar como três contratos."
+    },
+    {
+      "categoria": "Fundações profundas — Fase 7",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "Petry fundações",
+      "cnpj": "",
+      "numero": "20261004.0",
+      "data_literal": "2026-01-26 00:00:00",
+      "valor_documento": 868187.22,
+      "natureza": "total_equalizado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://docs.google.com/spreadsheets/d/1IXi9g9tG3-dh4vPR5kAB_a-y5GMlqKsuaxBQv6sNL08/edit",
+      "observacao": "CNPJ ausente; preservar faturamento direto, itens inclusos e escopo."
+    },
+    {
+      "categoria": "Fundações profundas — Fase 7",
+      "mega": "Curitiba",
+      "empresa": "Demercado",
+      "fornecedor": "União Fundações",
+      "cnpj": "",
+      "numero": "",
+      "data_literal": "2026-01-30 00:00:00",
+      "valor_documento": 598500,
+      "natureza": "total_equalizado",
+      "situacao": "candidata_ausente_consolidado",
+      "fonte_url": "https://docs.google.com/spreadsheets/d/1IXi9g9tG3-dh4vPR5kAB_a-y5GMlqKsuaxBQv6sNL08/edit",
+      "observacao": "CNPJ e número ausentes; aba Proponentes informa apenas perfuração. Escopo parcial."
+    }
+  ],
+  "precos_contratuais_canaveral": [
+    {
+      "codigo_anexo": "1",
+      "descricao": "Adesivo para vaso Coala Lavanda (refil)",
+      "preco_literal": "15,00",
+      "preco_contratual": 15.0,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "2",
+      "descricao": "Adesivo para vaso Coala Lavanda (aplicador + refil)",
+      "preco_literal": "19,90",
+      "preco_contratual": 19.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "3",
+      "descricao": "Água Sanitária 5L Q Boa",
+      "preco_literal": "18,90",
+      "preco_contratual": 18.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "4",
+      "descricao": "Alcool Líquido 1L Itajuba/Vale",
+      "preco_literal": "8,85",
+      "preco_contratual": 8.85,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "5",
+      "descricao": "Bom Ar Leveuze 400ml Capim Limão",
+      "preco_literal": "9,90",
+      "preco_contratual": 9.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "6",
+      "descricao": "Desinfetante Canaveral Lavanda 5L",
+      "preco_literal": "15,00",
+      "preco_contratual": 15.0,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "7",
+      "descricao": "Coala 120ml (aromatizante)",
+      "preco_literal": "14,90",
+      "preco_contratual": 14.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "8",
+      "descricao": "Detergente clorado Gel Guimarães 5L",
+      "preco_literal": "39,90",
+      "preco_contratual": 39.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "9",
+      "descricao": "Tela aromatizante mictório",
+      "preco_literal": "6,99",
+      "preco_contratual": 6.99,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "10",
+      "descricao": "Detergente de louça Ypê 5L",
+      "preco_literal": "27,50",
+      "preco_contratual": 27.5,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "12",
+      "descricao": "Desinfetante Bact Germ Canaveral 1L",
+      "preco_literal": "15,00",
+      "preco_contratual": 15.0,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "13",
+      "descricao": "Detergente Multiuso Pink Canaveral Super Concentrado 5L",
+      "preco_literal": "29,90",
+      "preco_contratual": 29.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "14",
+      "descricao": "Esponja Louça Condor PCT c/ 4",
+      "preco_literal": "3,40",
+      "preco_contratual": 3.4,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "16",
+      "descricao": "Fibra branca para rodo",
+      "preco_literal": "1,99",
+      "preco_contratual": 1.99,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "17",
+      "descricao": "Luva verniz Bompack Azul",
+      "preco_literal": "7,99",
+      "preco_contratual": 7.99,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "18",
+      "descricao": "Fibra verde para rodo",
+      "preco_literal": "2,25",
+      "preco_contratual": 2.25,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "19",
+      "descricao": "Lustra móveis Polwax 200ml Lavanda",
+      "preco_literal": "6,99",
+      "preco_contratual": 6.99,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "20",
+      "descricao": "Pastilha para vaso sanitário Coala Lavanda",
+      "preco_literal": "5,50",
+      "preco_contratual": 5.5,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "21",
+      "descricao": "Papel higiênico (PCT c/ 8 Rolos - 300m)",
+      "preco_literal": "89,90",
+      "preco_contratual": 89.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "23",
+      "descricao": "Papel toalha (PCT c/ 6 Rolos - 200m)",
+      "preco_literal": "172,50",
+      "preco_contratual": 172.5,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "25",
+      "descricao": "Sabonete Líquido Premisse Algas Marinhas (5L)",
+      "preco_literal": "89,90",
+      "preco_contratual": 89.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "27",
+      "descricao": "Saco de lixo 100L 0,10micras (PCT c/ 100 sacos) azul",
+      "preco_literal": "79,90",
+      "preco_contratual": 79.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "28",
+      "descricao": "Saco de lixo 60L (PCT c/ 100 sacos) azul",
+      "preco_literal": "25,00",
+      "preco_contratual": 25.0,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "29",
+      "descricao": "Saco de lixo 40L (PCT c/ 100 sacos) azul",
+      "preco_literal": "19,90",
+      "preco_contratual": 19.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "30",
+      "descricao": "Saco de lixo 100L 0,10micras(PCT c/ 100 sacos) marrom",
+      "preco_literal": "79,90",
+      "preco_contratual": 79.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "31",
+      "descricao": "Saco de lixo 60L (PCT c/ 100 sacos) marrom",
+      "preco_literal": "25,00",
+      "preco_contratual": 25.0,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "32",
+      "descricao": "Saco de lixo 40L (PCT c/ 100 sacos) marrom",
+      "preco_literal": "19,90",
+      "preco_contratual": 19.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    },
+    {
+      "codigo_anexo": "33",
+      "descricao": "Saponáceo CIF 250ml",
+      "preco_literal": "11,90",
+      "preco_contratual": 11.9,
+      "fonte_url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "pagina": 8,
+      "natureza": "preco_fixo_contratual",
+      "contrato": "0187.2026",
+      "data_instrumento": "2026-08-07",
+      "mega": "Itajaí",
+      "empresa": "Capital Realty",
+      "situacao": "ausente_historico_contratual",
+      "quantidade_comprada": null
+    }
+  ],
+  "auditoria_mapas": {
+    "escopo": "11 mapas PDF da pasta principal; comparação com os 21 orçamentos do histórico local. Não são comprovantes de pagamento. Não alterado histórico.",
+    "contagem": {
+      "pdfs_analisados": 11,
+      "participacoes_brutas": 33,
+      "conjuntos_unicos_provisorios": 9,
+      "participacoes_distintas_provisorias": 27,
+      "participacoes_ja_no_historico": 1,
+      "participacoes_ausentes_do_historico": 26,
+      "observacao": "Deduplica os dois PDFs idênticos de consumo abril e os dois mapas do piso Esteio. Neste último, mesma cotação de Ederson/Imunizadora RP permanece hipótese forte com divergência de data a resolver. Não conta versões de negociação como novas contratações.",
+      "valores_de_linha_consumo_validados": 234,
+      "linhas_descricao_consumo": 80,
+      "totais_consumo_validados": 9,
+      "campos_sem_valor_consumo": 6
+    },
+    "conjuntos": [
+      {
+        "chave_auditoria": "pmoc-rv01",
+        "fonte_ids": [
+          "1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx"
+        ],
+        "participacoes": [
+          {
+            "ordem_proponente": 1,
+            "fornecedor_literal": "Perri Multisserviços",
+            "cnpj_literal": "19.031.001/0001-21",
+            "numero_proposta_literal": "Não possui",
+            "data_proposta_literal": "29/06/2026",
+            "total_literal": "R$ 9.120,00",
+            "total_decimal": "9120.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 2,
+            "fornecedor_literal": "Só Ar Refrigeração",
+            "cnpj_literal": "20.376.762/0001-02",
+            "numero_proposta_literal": "Não possui",
+            "data_proposta_literal": "29/06/2026",
+            "total_literal": "R$ 10.200,00",
+            "total_decimal": "10200.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 3,
+            "fornecedor_literal": "Eletro Altimas LTDA",
+            "cnpj_literal": "83.186.551/0001-19",
+            "numero_proposta_literal": "Não possui",
+            "data_proposta_literal": "01/07/2026",
+            "total_literal": "R$ 15.000,00",
+            "total_decimal": "15000.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          }
+        ],
+        "linhas_consumo": [],
+        "evidencias_literais": [
+          "Data da equalização: | Grupo Centro de Custo: | CNPJ: | 19.031.001/0001-21 | 20.376.762/0001-02 | 83.186.551/0001-19",
+          "01/07/2026 | Manutenção de Imóveis | Email: | perrimultisservicos@gmail.com | sóarrefrigeração@gmail.com | pmoc@altimas.com.br",
+          "Data da Proposta: | 29/06/2026 | 29/06/2026 | 01/07/2026",
+          "Validade proposta: | Não possui | Não possui | 08/07/2026",
+          "Data prevista para início: | 01/08/2026 | 01/08/2026 | 01/08/2026",
+          "Data prevista para término: | 01/08/2027 | 01/08/2027 | 01/08/2027",
+          "Proposta inicial: | R$ 14.400,00 | R$ 18.000,00 | R$ 23.400,00",
+          "Proposta R01:",
+          "Proposta R02:"
+        ],
+        "fontes": [
+          {
+            "id": "1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx",
+            "nome": "Formulário de equalização - PMOC RV01.pdf",
+            "url": "https://drive.google.com/file/d/1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx/view"
+          }
+        ],
+        "categoria": "PMOC e ar-condicionado",
+        "mega": "Itajaí",
+        "empresa": "Capital Realty"
+      },
+      {
+        "chave_auditoria": "pmoc-curitiba",
+        "fonte_ids": [
+          "1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j"
+        ],
+        "participacoes": [
+          {
+            "ordem_proponente": 1,
+            "fornecedor_literal": "LF Serviços Terceirizados",
+            "cnpj_literal": "43.747.242/0001-56",
+            "numero_proposta_literal": "12-2025",
+            "data_proposta_literal": "01/12/2025",
+            "total_literal": "R$ 5.232,00",
+            "total_decimal": "5232.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 2,
+            "fornecedor_literal": "Climatizar Ltda",
+            "cnpj_literal": "75.214.171/0001-12",
+            "numero_proposta_literal": "010/2026",
+            "data_proposta_literal": "11/03/2026",
+            "total_literal": "R$ 4.000,00",
+            "total_decimal": "4000.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 3,
+            "fornecedor_literal": "Climasul Ar Condicionado Ltda.",
+            "cnpj_literal": "82.605.288/0001-92",
+            "numero_proposta_literal": "PMC-10636-0",
+            "data_proposta_literal": "09/03/2026",
+            "total_literal": "R$ 11.280,00",
+            "total_decimal": "11280.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          }
+        ],
+        "linhas_consumo": [],
+        "evidencias_literais": [
+          "Data da equalização: | Grupo Centro de Custo: | CNPJ: | 43.747.242/0001-56 | 75.214.171/0001-12 | 82.605.288/0001-92",
+          "11/03/2026 | Email: | arcondicionadomaxiar@gmail.com | climatizar@climatizar.com.br | comercial@climasul.com.br",
+          "Data da Proposta: | 01/12/2025 | 11/03/2026 | 09/03/2026",
+          "31/12/2026 | 31/12/2026",
+          "Proposta inicial: | R$ 2.616,00 | R$ 5.400,00 | R$ 11.280,00",
+          "Proposta R01: | R$ 4.000,00",
+          "Proposta R02:"
+        ],
+        "fontes": [
+          {
+            "id": "1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j",
+            "nome": "MCtba - Mapa de Equalização Manut Preventiva + Emissão de PMOC_v02.pdf",
+            "url": "https://drive.google.com/file/d/1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j/view"
+          }
+        ],
+        "categoria": "PMOC e ar-condicionado",
+        "mega": "Curitiba",
+        "empresa": "Demercado"
+      },
+      {
+        "chave_auditoria": "lavagem",
+        "fonte_ids": [
+          "1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf",
+          "1QC9cc_vtQKoKfh_TA6mJTXcO9l-G0bbA"
+        ],
+        "participacoes": [
+          {
+            "ordem_proponente": 1,
+            "fornecedor_literal": "ADS MANUTENÇÃO E CONSERVAÇÃO LTDA",
+            "cnpj_literal": "41.398.529/0001-92",
+            "numero_proposta_literal": "N/E",
+            "data_proposta_literal": "25/01/2026",
+            "total_literal": "R$ 10.000,00",
+            "total_decimal": "10000.00",
+            "situacao_historico": "ja_presente_com_fonte_complementar",
+            "arquivos_historico_correspondentes": [
+              "1dOcriJeFcqaaVzagTSQubH6Sc0O3-ixq"
+            ]
+          },
+          {
+            "ordem_proponente": 2,
+            "fornecedor_literal": "CSM ENGENHARIA",
+            "cnpj_literal": "44.427.816/0001-71",
+            "numero_proposta_literal": "175-2026 Rev.00",
+            "data_proposta_literal": "27/01/2026",
+            "total_literal": "R$ 33.150,00",
+            "total_decimal": "33150.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 3,
+            "fornecedor_literal": "IMUNIZADORA RP",
+            "cnpj_literal": "15.661.459/0001-03",
+            "numero_proposta_literal": "N/E",
+            "data_proposta_literal": "23/01/2026",
+            "total_literal": "R$ 10.500,00",
+            "total_decimal": "10500.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          }
+        ],
+        "linhas_consumo": [],
+        "evidencias_literais": [
+          "Data da equalização: | Grupo Centro de Custo: | CNPJ: | 41.398.529/0001-92 | 44.427.816/0001-71 | 15.661.459/0001-03",
+          "06/04/2026 | 3.07 - PISO DE CONCRETO INDUSTRIAL | Email: | adsmanutencoes74@gmail.com | csm.construtora.civil@gmail.com | imunizadorarp@bol.com.br",
+          "Data da Proposta: | 25/01/2026 | 27/01/2026 | 23/01/2026",
+          "Data prevista para início: | 06/04/2026 | 06/04/2026 | 06/04/2026",
+          "Data prevista para término: | 10/04/2026 | 21/04/2026 | 13/04/2026",
+          "Proposta inicial: | (R$ | 12.790,00)",
+          "Proposta R01: | (R$ | 10.000,00)",
+          "Proposta R02:"
+        ],
+        "fontes": [
+          {
+            "id": "1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf",
+            "nome": "EQU_20260406-MEGA_LAVAGEM DE PISO_PROPRIEDADES.pdf",
+            "url": "https://drive.google.com/file/d/1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf/view"
+          },
+          {
+            "id": "1QC9cc_vtQKoKfh_TA6mJTXcO9l-G0bbA",
+            "nome": "EQU_20260202-MEsteio_ArmazémB_Piso.pdf",
+            "url": "https://drive.google.com/file/d/1QC9cc_vtQKoKfh_TA6mJTXcO9l-G0bbA/view"
+          }
+        ],
+        "categoria": "Lavagem de piso B2",
+        "mega": "Esteio",
+        "empresa": "Capital Realty"
+      },
+      {
+        "chave_auditoria": "society",
+        "fonte_ids": [
+          "1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST"
+        ],
+        "participacoes": [
+          {
+            "ordem_proponente": 1,
+            "fornecedor_literal": "NORTE SUL METALÚRGICA",
+            "cnpj_literal": "57.593.262/0001-24",
+            "numero_proposta_literal": "N/A",
+            "data_proposta_literal": "10/04/2026",
+            "total_literal": "R$ 15.300,00",
+            "total_decimal": "15300.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 2,
+            "fornecedor_literal": "E&M8 - Engenharia e Manutenção",
+            "cnpj_literal": "29.972.558/0001-10",
+            "numero_proposta_literal": "PC-2026.401.01.04",
+            "data_proposta_literal": "01/04/2026",
+            "total_literal": "R$ 17.350,00",
+            "total_decimal": "17350.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 3,
+            "fornecedor_literal": "Irmãos Ferreira Serviços de Acabamento na Construção Civil",
+            "cnpj_literal": "19.466.418/0001-17",
+            "numero_proposta_literal": "21.497/2026",
+            "data_proposta_literal": "02/04/2026",
+            "total_literal": "R$ 48.520,00",
+            "total_decimal": "48520.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          }
+        ],
+        "linhas_consumo": [],
+        "evidencias_literais": [
+          "Data da equalização: | Grupo Centro de Custo: | CNPJ: | 57.593.262/0001-24 | 29.972.558/0001-10 | 19.466.418/0001-17",
+          "02/04/2026 | MEGA CENTRO LOGÍSTICO CURITIBA | Email: | nortesulmetalurgica3@gmail.com | thiago.iankoski@hotmail.com | irmaosferreira.construtora@gmail.com",
+          "Data da Proposta: | 10/04/2026 | 01/04/2026 | 02/04/2026",
+          "Data prevista para início: | 20/04/2026 | 20/04/2026 | 06/04/2026",
+          "Data prevista para término: | 04/05/2026 | 25/04/2026 | 10/04/2026",
+          "Proposta inicial: | R$ 15.300,00 | R$ 17.350,00 | R$ 48.520,00",
+          "Proposta R01:",
+          "Proposta R02:"
+        ],
+        "fontes": [
+          {
+            "id": "1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST",
+            "nome": "EQU_20260415-MCtba_Revitalização Campo de Society_Facilities.xlsx - Google Planilhas.pdf",
+            "url": "https://drive.google.com/file/d/1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST/view"
+          }
+        ],
+        "categoria": "Revitalização de society",
+        "mega": "Curitiba",
+        "empresa": "Demercado"
+      },
+      {
+        "chave_auditoria": "reservatorio",
+        "fonte_ids": [
+          "1TZDBilsJB54rq56yE8HQesn1I7m2GPX8"
+        ],
+        "participacoes": [
+          {
+            "ordem_proponente": 1,
+            "fornecedor_literal": "SA SOLUÇÃO AMBIENTAL",
+            "cnpj_literal": "09.165.932/0001-69",
+            "numero_proposta_literal": "5.101",
+            "data_proposta_literal": "30/07/2026",
+            "total_literal": "R$ 70.000,00",
+            "total_decimal": "70000.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 2,
+            "fornecedor_literal": "ADS MANUT. E CONSERV. PREDIAL",
+            "cnpj_literal": "41.398.529/0001-92",
+            "numero_proposta_literal": "N/A",
+            "data_proposta_literal": "28/07/2026",
+            "total_literal": "R$ 72.028,80",
+            "total_decimal": "72028.80",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 3,
+            "fornecedor_literal": "NORTE SUL METALURGIGA",
+            "cnpj_literal": "57.593.262/0001-24",
+            "numero_proposta_literal": "N/A",
+            "data_proposta_literal": "26/08/2026",
+            "total_literal": "R$ 80.563,38",
+            "total_decimal": "80563.38",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          }
+        ],
+        "linhas_consumo": [],
+        "evidencias_literais": [
+          "Data da equalização: | Grupo Centro de Custo: | CNPJ: | 09.165.932/0001-69 | 41.398.529/0001-92 | 57.593.262/0001-24",
+          "31/07/2026 | Mega Curitiba | Email: | sasolucaoa@gmail.com | adsmanutencoes74@gmail.com | nortesulmetalurgica3@gmail.com",
+          "Data da Proposta: | 30/07/2026 | 28/07/2026 | 26/08/2026",
+          "Lead time para início: | 10/08/2026 | 10/08/2026 | 01/09/2026",
+          "Data prevista para início: | 10/08/2026 | 10/08/2026 | 01/09/2026",
+          "Data prevista para término: | 10/09/2026 | 10/09/2026 | 10/10/2026",
+          "Proposta inicial: | -R$ | 73.952,00--R$ | 75.030,00--R$ | 80.563,38-",
+          "Proposta R01: | (R$ | 70.000,00)(R$ | 72.028,80)(R$ | 70.000,00)",
+          "Proposta R02:"
+        ],
+        "fontes": [
+          {
+            "id": "1TZDBilsJB54rq56yE8HQesn1I7m2GPX8",
+            "nome": "EQU_20260827-MEGA CURITIBA_Revitalização Reservatório Metálico 138.000l.xlsx - Google Planilhas.pdf",
+            "url": "https://drive.google.com/file/d/1TZDBilsJB54rq56yE8HQesn1I7m2GPX8/view"
+          }
+        ],
+        "categoria": "Reservatório metálico 138.000 L",
+        "mega": "Curitiba",
+        "empresa": "Demercado"
+      },
+      {
+        "chave_auditoria": "bicicletario",
+        "fonte_ids": [
+          "157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N"
+        ],
+        "participacoes": [
+          {
+            "ordem_proponente": 1,
+            "fornecedor_literal": "Perri Multisserviços",
+            "cnpj_literal": "19.031.001/0001-21",
+            "numero_proposta_literal": "0041",
+            "data_proposta_literal": "06/07/2026",
+            "total_literal": "R$ 11.500,00",
+            "total_decimal": "11500.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 2,
+            "fornecedor_literal": "Metallic Estruturas Metálicas",
+            "cnpj_literal": "54.801.272/0001-10",
+            "numero_proposta_literal": "225",
+            "data_proposta_literal": "25/06/2026",
+            "total_literal": "R$ 12.500,00",
+            "total_decimal": "12500.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          },
+          {
+            "ordem_proponente": 3,
+            "fornecedor_literal": "Murano Glass Store",
+            "cnpj_literal": "44.983.675 0001-73",
+            "numero_proposta_literal": "JM 178/26",
+            "data_proposta_literal": "29/06/2026",
+            "total_literal": "R$ 14.358,00",
+            "total_decimal": "14358.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": []
+          }
+        ],
+        "linhas_consumo": [],
+        "evidencias_literais": [
+          "Data da equalização: | Grupo Centro de Custo: | CNPJ: | 19.031.001/0001-21 | 54.801.272/0001-10 | 44.983.675 0001-73",
+          "06/07/2026 | Manutenção de Imóveis | Email: | perrimultisservicos@gmail.com | metallicestruturametalica@gmail.com | murano@glassstore.com.br",
+          "Data da Proposta: | 06/07/2026 | 25/06/2026 | 29/06/2026",
+          "Validade proposta: | Não possui | Não possui | 04/07/2026",
+          "Data prevista para início: | 20/07/2026 | 20/07/2026 | 20/07/2026",
+          "Data prevista para término: | 04/08/2026 | 04/08/2026 | 04/08/2026",
+          "Proposta inicial:",
+          "Proposta R01:",
+          "Proposta R02:"
+        ],
+        "fontes": [
+          {
+            "id": "157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N",
+            "nome": "Formulário de equalização - Bicicletário externo.pdf",
+            "url": "https://drive.google.com/file/d/157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N/view"
+          }
+        ],
+        "categoria": "Ampliação do bicicletário",
+        "mega": "Itajaí",
+        "empresa": "Capital Realty"
+      },
+      {
+        "chave_auditoria": "consumo1",
+        "fonte_ids": [
+          "1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB",
+          "1eUCTS00JCOGVnF3UTy_193KR09yNiN4B"
+        ],
+        "participacoes": [
+          {
+            "ordem_proponente": 1,
+            "fornecedor_literal": "Contabilista Suprimentos Para Escritório",
+            "cnpj_literal": "77.765.840/0001-70",
+            "numero_proposta_literal": "1/062959",
+            "data_proposta_literal": "28/04/2026",
+            "total_literal": "R$ 1.687,47",
+            "total_decimal": "1687.47",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": [],
+            "linhas_com_valor": 25,
+            "linhas_sem_valor": 0,
+            "soma_linhas_decimal": "1687.47"
+          },
+          {
+            "ordem_proponente": 2,
+            "fornecedor_literal": "Essenza Comercial",
+            "cnpj_literal": "22.748.778/0001-16",
+            "numero_proposta_literal": "32678",
+            "data_proposta_literal": "28/04/2026",
+            "total_literal": "R$ 2.178,89",
+            "total_decimal": "2178.89",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": [],
+            "linhas_com_valor": 25,
+            "linhas_sem_valor": 0,
+            "soma_linhas_decimal": "2178.89"
+          },
+          {
+            "ordem_proponente": 3,
+            "fornecedor_literal": "Fabesul",
+            "cnpj_literal": "89.054.050/0006-70",
+            "numero_proposta_literal": "7582147",
+            "data_proposta_literal": "28/04/2026",
+            "total_literal": "R$ 1.622,20",
+            "total_decimal": "1622.20",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": [],
+            "linhas_com_valor": 22,
+            "linhas_sem_valor": 3,
+            "soma_linhas_decimal": "1622.20"
+          }
+        ],
+        "linhas_consumo": [
+          {
+            "codigo_literal": "1.1.1",
+            "descricao_literal": "Açucar",
+            "valores_literais_por_proponente": [
+              "29,00",
+              "182,50",
+              "32,40"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.2",
+            "descricao_literal": "Adoçante",
+            "valores_literais_por_proponente": [
+              "2,90",
+              "36,26",
+              "4,69"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.3",
+            "descricao_literal": "Água Sanitária 5L",
+            "valores_literais_por_proponente": [
+              "64,80",
+              "63,92",
+              "104,32"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.4",
+            "descricao_literal": "Alcool Gel 5L",
+            "valores_literais_por_proponente": [
+              "42,90",
+              "48,85",
+              "39,06"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.5",
+            "descricao_literal": "Alcool Líquido 1L",
+            "valores_literais_por_proponente": [
+              "30,60",
+              "30,00",
+              "23,72"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.6",
+            "descricao_literal": "Bom Ar 360ml",
+            "valores_literais_por_proponente": [
+              "109,20",
+              "61,80",
+              "48,42"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.7",
+            "descricao_literal": "Café Melitta 500g",
+            "valores_literais_por_proponente": [
+              "524,00",
+              "640,00",
+              "554,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.8",
+            "descricao_literal": "Filtro de café",
+            "valores_literais_por_proponente": [
+              "19,74",
+              "29,28",
+              "21,12"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.9",
+            "descricao_literal": "Desinfetante 5L",
+            "valores_literais_por_proponente": [
+              "28,20",
+              "29,94",
+              "56,04"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.10",
+            "descricao_literal": "Coala 120ml (Erva Doce)",
+            "valores_literais_por_proponente": [
+              "129,90",
+              "140,40",
+              "126,50"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.11",
+            "descricao_literal": "Adesivo para vaso",
+            "valores_literais_por_proponente": [
+              "24,90",
+              "27,66",
+              "25,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.12",
+            "descricao_literal": "Tela aromatizante mictório",
+            "valores_literais_por_proponente": [
+              "13,60",
+              "12,24",
+              "16,76"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.13",
+            "descricao_literal": "Detergente 500ml",
+            "valores_literais_por_proponente": [
+              "20,40",
+              "35,76",
+              "36,96"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.14",
+            "descricao_literal": "Veja 500ml (Original)",
+            "valores_literais_por_proponente": [
+              "48,80",
+              "62,64",
+              "60,60"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.15",
+            "descricao_literal": "Esponja Louça PCT c/ 4",
+            "valores_literais_por_proponente": [
+              "16,05",
+              "26,58",
+              "16,38"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.16",
+            "descricao_literal": "Luva de limpeza reforçada (amarela M)",
+            "valores_literais_por_proponente": [
+              "32,50",
+              "47,10",
+              "48,05"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.17",
+            "descricao_literal": "Pano de chão",
+            "valores_literais_por_proponente": [
+              "26,34",
+              "44,40",
+              "18,36"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.18",
+            "descricao_literal": "Pano de prato",
+            "valores_literais_por_proponente": [
+              "29,94",
+              "28,08",
+              "16,98"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.19",
+            "descricao_literal": "Sabão em pedra (PCT c/ 5un)",
+            "valores_literais_por_proponente": [
+              "9,50",
+              "11,18",
+              null
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.20",
+            "descricao_literal": "Sabão em Pó (CX c/ 1kg)",
+            "valores_literais_por_proponente": [
+              "24,40",
+              "30,28",
+              "47,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.21",
+            "descricao_literal": "Saco de lixo 200L (PCT c/ 100 sacos)",
+            "valores_literais_por_proponente": [
+              "291,80",
+              "242,14",
+              "232,36"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.22",
+            "descricao_literal": "Sapolio (500g)",
+            "valores_literais_por_proponente": [
+              "66,00",
+              "132,40",
+              "60,40"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.23",
+            "descricao_literal": "Soda (1kg)",
+            "valores_literais_por_proponente": [
+              "47,20",
+              "39,80",
+              null
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.24",
+            "descricao_literal": "Hipoclorito (5L)",
+            "valores_literais_por_proponente": [
+              "27,00",
+              "64,40",
+              null
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.25",
+            "descricao_literal": "Limpador de piso (5L)",
+            "valores_literais_por_proponente": [
+              "27,80",
+              "111,28",
+              "30,68"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          }
+        ],
+        "evidencias_literais": [
+          "Data da equalização: | Grupo Centro de Custo: | CNPJ: | 77.765.840/0001-70 | 22.748.778/0001-16 | 89.054.050/0006-70",
+          "28/04/2026 | Limpeza e conservação | Email: | vendas8090@contabilista.com.br | vendas3@essenza.com.br | andresa@fabesul.com.br",
+          "Data da Proposta: | 28/04/2026 | 28/04/2026 | 28/04/2026",
+          "Lead time para início: | 28/04/2026 | 28/04/2026 | 28/04/2026",
+          "Validade proposta: | 05/05/2026 | 05/05/2026 | 12/05/2026",
+          "Data prevista para início: | 04/05/2026 | 04/05/2026 | 04/05/2026",
+          "Data prevista para término: | 04/05/2026 | 04/05/2026 | 04/05/2026",
+          "Proposta inicial:",
+          "Proposta R01:",
+          "Proposta R02:"
+        ],
+        "fontes": [
+          {
+            "id": "1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB",
+            "nome": "Formulário de equalização - Material de consumo - Google Planilhas (1).pdf",
+            "url": "https://drive.google.com/file/d/1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB/view"
+          },
+          {
+            "id": "1eUCTS00JCOGVnF3UTy_193KR09yNiN4B",
+            "nome": "Formulário de equalização - Material de consumo - Google Planilhas.pdf",
+            "url": "https://drive.google.com/file/d/1eUCTS00JCOGVnF3UTy_193KR09yNiN4B/view"
+          }
+        ],
+        "categoria": "Material de consumo — abril",
+        "mega": "Curitiba",
+        "empresa": "Demercado"
+      },
+      {
+        "chave_auditoria": "consumo3",
+        "fonte_ids": [
+          "1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI"
+        ],
+        "participacoes": [
+          {
+            "ordem_proponente": 1,
+            "fornecedor_literal": "Canaveral Produtos de Higiene e Limpeza",
+            "cnpj_literal": "07.052.432/0001-95",
+            "numero_proposta_literal": "0",
+            "data_proposta_literal": "30/06/2026",
+            "total_literal": "R$ 3.227,80",
+            "total_decimal": "3227.80",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": [],
+            "linhas_com_valor": 30,
+            "linhas_sem_valor": 0,
+            "soma_linhas_decimal": "3227.80"
+          },
+          {
+            "ordem_proponente": 2,
+            "fornecedor_literal": "Papersul Materiais de Escritório e Limpeza LTDA",
+            "cnpj_literal": "13.406.484/0001-15",
+            "numero_proposta_literal": "67158",
+            "data_proposta_literal": "30/06/2026",
+            "total_literal": "R$ 3.236,92",
+            "total_decimal": "3236.92",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": [],
+            "linhas_com_valor": 30,
+            "linhas_sem_valor": 0,
+            "soma_linhas_decimal": "3236.92"
+          },
+          {
+            "ordem_proponente": 3,
+            "fornecedor_literal": "RC Pápeis",
+            "cnpj_literal": "11.286.755/0001-10",
+            "numero_proposta_literal": "199372",
+            "data_proposta_literal": "01/07/2026",
+            "total_literal": "R$ 3.306,22",
+            "total_decimal": "3306.22",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": [],
+            "linhas_com_valor": 30,
+            "linhas_sem_valor": 0,
+            "soma_linhas_decimal": "3306.22"
+          }
+        ],
+        "linhas_consumo": [
+          {
+            "codigo_literal": "1.1.1",
+            "descricao_literal": "Açucar 1KG",
+            "valores_literais_por_proponente": [
+              "24,50",
+              "20,50",
+              "29,90"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.2",
+            "descricao_literal": "Pano de chão",
+            "valores_literais_por_proponente": [
+              "16,50",
+              "14,40",
+              "13,17"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.3",
+            "descricao_literal": "Álcool líquido 70% 1L",
+            "valores_literais_por_proponente": [
+              "31,96",
+              "34,00",
+              "31,16"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.4",
+            "descricao_literal": "Bom ar Capim Limão 400ML",
+            "valores_literais_por_proponente": [
+              "69,30",
+              "69,30",
+              "73,50"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.5",
+            "descricao_literal": "Café Melita 500G",
+            "valores_literais_por_proponente": [
+              "502,60",
+              "502,60",
+              "587,86"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.6",
+            "descricao_literal": "Saponáceo/sapólio",
+            "valores_literais_por_proponente": [
+              "21,80",
+              "17,98",
+              "43,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.7",
+            "descricao_literal": "Aromatizante Coala 120ML",
+            "valores_literais_por_proponente": [
+              "29,80",
+              "23,80",
+              "33,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.8",
+            "descricao_literal": "Desinfetante Lavanda 5L",
+            "valores_literais_por_proponente": [
+              "27,80",
+              "17,80",
+              "19,50"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.9",
+            "descricao_literal": "Detergente clorado 5L",
+            "valores_literais_por_proponente": [
+              "70,00",
+              "59,98",
+              "73,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.10",
+            "descricao_literal": "Esponja c/ 4",
+            "valores_literais_por_proponente": [
+              "10,20",
+              "10,50",
+              "11,97"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.11",
+            "descricao_literal": "Filtro de café 103",
+            "valores_literais_por_proponente": [
+              "27,50",
+              "19,95",
+              "22,95"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.13",
+            "descricao_literal": "Papel Higiênico Rolão c/ 8",
+            "valores_literais_por_proponente": [
+              "636,90",
+              "769,89",
+              "669,90"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.14",
+            "descricao_literal": "Papel Toalha Bobina c/ 6",
+            "valores_literais_por_proponente": [
+              "770,00",
+              "811,30",
+              "804,30"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.15",
+            "descricao_literal": "Pastilha adesiva",
+            "valores_literais_por_proponente": [
+              "113,40",
+              "27,00",
+              "54,54"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.17",
+            "descricao_literal": "Saco de lixo marrom 100L",
+            "valores_literais_por_proponente": [
+              "279,60",
+              "251,96",
+              "279,60"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.18",
+            "descricao_literal": "Saco de lixo azul 100L",
+            "valores_literais_por_proponente": [
+              "139,80",
+              "139,80",
+              "123,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.19",
+            "descricao_literal": "Saco de lixo marrom 60L",
+            "valores_literais_por_proponente": [
+              "75,00",
+              "59,70",
+              "53,70"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.20",
+            "descricao_literal": "Saco de lixo marrom 300L",
+            "valores_literais_por_proponente": [
+              "85,00",
+              "89,90",
+              "101,90"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.21",
+            "descricao_literal": "Borrifador",
+            "valores_literais_por_proponente": [
+              "8,99",
+              "4,99",
+              "5,90"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.22",
+            "descricao_literal": "Tela de mictório",
+            "valores_literais_por_proponente": [
+              "33,00",
+              "21,00",
+              "23,40"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.23",
+            "descricao_literal": "Sabonete líquido 5L",
+            "valores_literais_por_proponente": [
+              "37,00",
+              "37,00",
+              "35,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.24",
+            "descricao_literal": "Água Sanitária 5L",
+            "valores_literais_por_proponente": [
+              "37,80",
+              "15,98",
+              "37,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.25",
+            "descricao_literal": "Sabão em pó 1kg",
+            "valores_literais_por_proponente": [
+              "4,99",
+              "12,90",
+              "12,90"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.26",
+            "descricao_literal": "Aromatizador automático",
+            "valores_literais_por_proponente": [
+              "39,90",
+              "84,90",
+              "39,90"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.28",
+            "descricao_literal": "Lustra móveis",
+            "valores_literais_por_proponente": [
+              "11,98",
+              "11,80",
+              "12,50"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.32",
+            "descricao_literal": "Vassoura",
+            "valores_literais_por_proponente": [
+              "13,90",
+              "8,99",
+              "14,99"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.33",
+            "descricao_literal": "Refil Gel Adesivo Pato c/ 6",
+            "valores_literais_por_proponente": [
+              "79,60",
+              "75,60",
+              "51,60"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.34",
+            "descricao_literal": "Luva verniz Tam. G",
+            "valores_literais_por_proponente": [
+              "7,99",
+              "4,10",
+              "6,09"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.35",
+            "descricao_literal": "Inseticida SBP",
+            "valores_literais_por_proponente": [
+              "11,99",
+              "10,90",
+              "24,59"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.36",
+            "descricao_literal": "Fibra verde para rodo",
+            "valores_literais_por_proponente": [
+              "9,00",
+              "8,40",
+              "11,60"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          }
+        ],
+        "evidencias_literais": [
+          "Data da equalização: | Grupo Centro de Custo: | CNPJ: | 07.052.432/0001-95 | 13.406.484/0001-15 | 11.286.755/0001-10",
+          "01/07/2026 | Material de Consumo | Email: | adm@canaveral.com.br | nfe@escrisuldistribuidora.com.br | rcpapeis@rcpapeis.com.br",
+          "Data da Proposta: | 30/06/2026 | 30/06/2026 | 01/07/2026",
+          "Data prevista para início: | 06/07/2026 | 06/07/2026 | 06/07/2026",
+          "Data prevista para término: | 07/07/2026 | 07/07/2026 | 07/07/2026",
+          "Proposta inicial:",
+          "Proposta R01:",
+          "Proposta R02:"
+        ],
+        "fontes": [
+          {
+            "id": "1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI",
+            "nome": "Formulário de equalização - Material de consumo (1).pdf",
+            "url": "https://drive.google.com/file/d/1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI/view"
+          }
+        ],
+        "categoria": "Material de consumo — julho",
+        "mega": "Itajaí",
+        "empresa": "Capital Realty"
+      },
+      {
+        "chave_auditoria": "consumo4",
+        "fonte_ids": [
+          "12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5"
+        ],
+        "participacoes": [
+          {
+            "ordem_proponente": 1,
+            "fornecedor_literal": "Contabilista Suprimentos Para Escritório",
+            "cnpj_literal": "77.765.840/0001-70",
+            "numero_proposta_literal": "1/118.325",
+            "data_proposta_literal": "01/06/2026",
+            "total_literal": "R$ 1.467,63",
+            "total_decimal": "1467.63",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": [],
+            "linhas_com_valor": 25,
+            "linhas_sem_valor": 0,
+            "soma_linhas_decimal": "1467.63"
+          },
+          {
+            "ordem_proponente": 2,
+            "fornecedor_literal": "Essenza Comercial",
+            "cnpj_literal": "22.748.778/0001-16",
+            "numero_proposta_literal": "33205",
+            "data_proposta_literal": "16/06/2026",
+            "total_literal": "R$ 1.547,00",
+            "total_decimal": "1547.00",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": [],
+            "linhas_com_valor": 25,
+            "linhas_sem_valor": 0,
+            "soma_linhas_decimal": "1547.00"
+          },
+          {
+            "ordem_proponente": 3,
+            "fornecedor_literal": "Fabesul",
+            "cnpj_literal": "89.054.050/0006-70",
+            "numero_proposta_literal": "7610467",
+            "data_proposta_literal": "02/06/2026",
+            "total_literal": "R$ 1.249,95",
+            "total_decimal": "1249.95",
+            "situacao_historico": "ausente",
+            "arquivos_historico_correspondentes": [],
+            "linhas_com_valor": 22,
+            "linhas_sem_valor": 3,
+            "soma_linhas_decimal": "1249.95"
+          }
+        ],
+        "linhas_consumo": [
+          {
+            "codigo_literal": "1.1.1",
+            "descricao_literal": "Açucar",
+            "valores_literais_por_proponente": [
+              "29,00",
+              "36,50",
+              "30,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.2",
+            "descricao_literal": "Adesivo para vaso",
+            "valores_literais_por_proponente": [
+              "24,60",
+              "27,66",
+              "26,64"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.3",
+            "descricao_literal": "Adoçante",
+            "valores_literais_por_proponente": [
+              "2,90",
+              "5,18",
+              "4,69"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.4",
+            "descricao_literal": "Água Sanitária 5L (DA ILHA)",
+            "valores_literais_por_proponente": [
+              "50,80",
+              "35,96",
+              "51,48"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.5",
+            "descricao_literal": "Álcool Gel 5L",
+            "valores_literais_por_proponente": [
+              "42,99",
+              "48,85",
+              null
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.6",
+            "descricao_literal": "Álcool Líquido 1L",
+            "valores_literais_por_proponente": [
+              "20,80",
+              "15,00",
+              "12,92"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.7",
+            "descricao_literal": "Bom Ar 360ml",
+            "valores_literais_por_proponente": [
+              "73,60",
+              "45,80",
+              "32,28"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.8",
+            "descricao_literal": "Café Melitta 500g",
+            "valores_literais_por_proponente": [
+              "393,00",
+              "470,25",
+              "398,10"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.9",
+            "descricao_literal": "Coala 120ml (Erva Doce)",
+            "valores_literais_por_proponente": [
+              "149,00",
+              "137,90",
+              "144,20"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.10",
+            "descricao_literal": "Desinfetante 5L",
+            "valores_literais_por_proponente": [
+              "28,20",
+              "29,94",
+              "54,60"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.11",
+            "descricao_literal": "Detergente 500ml (YPÊ)",
+            "valores_literais_por_proponente": [
+              "21,60",
+              "23,84",
+              "27,84"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.12",
+            "descricao_literal": "Esponja Louça PCT c/ 4",
+            "valores_literais_por_proponente": [
+              "11,40",
+              "11,52",
+              "11,46"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.13",
+            "descricao_literal": "Filtro de café",
+            "valores_literais_por_proponente": [
+              "16,40",
+              "19,52",
+              "14,08"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.14",
+            "descricao_literal": "Hipoclorito (5L)",
+            "valores_literais_por_proponente": [
+              "27,00",
+              "85,66",
+              null
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.15",
+            "descricao_literal": "Limpador de piso (5L)",
+            "valores_literais_por_proponente": [
+              "47,70",
+              "71,37",
+              "46,02"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.16",
+            "descricao_literal": "Luva de limpeza reforçada (amarela M)",
+            "valores_literais_por_proponente": [
+              "32,50",
+              "47,10",
+              "48,05"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.17",
+            "descricao_literal": "Pano de chão",
+            "valores_literais_por_proponente": [
+              "43,90",
+              "34,50",
+              "30,60"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.18",
+            "descricao_literal": "Pano de prato",
+            "valores_literais_por_proponente": [
+              "24,95",
+              "23,40",
+              "14,15"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.19",
+            "descricao_literal": "Sabão em pedra (PCT c/ 5un)",
+            "valores_literais_por_proponente": [
+              "10,99",
+              "10,65",
+              "15,72"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.20",
+            "descricao_literal": "Sabão em Pó (CX c/ 1kg)",
+            "valores_literais_por_proponente": [
+              "27,20",
+              "30,28",
+              "47,80"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.21",
+            "descricao_literal": "Saco de lixo 200L (PCT c/ 100 sacos)",
+            "valores_literais_por_proponente": [
+              "231,60",
+              "165,12",
+              "148,28"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.22",
+            "descricao_literal": "Sapolio (500g)",
+            "valores_literais_por_proponente": [
+              "39,60",
+              "65,94",
+              "36,24"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.23",
+            "descricao_literal": "Soda (1kg)",
+            "valores_literais_por_proponente": [
+              "70,80",
+              "55,74",
+              null
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.24",
+            "descricao_literal": "Tela aromatizante mictório",
+            "valores_literais_por_proponente": [
+              "20,70",
+              "18,36",
+              "24,48"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          },
+          {
+            "codigo_literal": "1.1.25",
+            "descricao_literal": "Veja 500ml (Original)",
+            "valores_literais_por_proponente": [
+              "26,40",
+              "30,96",
+              "29,52"
+            ],
+            "natureza_valor": "total_linha_sem_quantidade_ou_preco_unitario"
+          }
+        ],
+        "evidencias_literais": [
+          "Data da equalização: | Grupo Centro de Custo: | CNPJ: | 77.765.840/0001-70 | 22.748.778/0001-16 | 89.054.050/0006-70",
+          "03/06/2026 | Limpeza e conservação | Email: | vendas8090@contabilista.com.br | vendas3@essenza.com.br | andresa@fabesul.com.br",
+          "Data da Proposta: | 01/06/2026 | 16/06/2026 | 02/06/2026",
+          "Lead time para início: | 08/06/2026 | 08/06/2026 | 08/06/2026",
+          "Validade proposta: | 07/06/2026 | 23/06/2026 | 16/06/2026",
+          "Data prevista para início: | 22/06/2026 | 22/06/2026 | 22/06/2026",
+          "Data prevista para término: | 22/06/2026 | 22/06/2026 | 22/06/2026",
+          "Proposta inicial:",
+          "Proposta R01:",
+          "Proposta R02:"
+        ],
+        "fontes": [
+          {
+            "id": "12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5",
+            "nome": "Formulário de equalização - Material de consumo.pdf",
+            "url": "https://drive.google.com/file/d/12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5/view"
+          }
+        ],
+        "categoria": "Material de consumo — junho",
+        "mega": "Curitiba",
+        "empresa": "Demercado"
+      }
+    ],
+    "duplicacoes": [
+      {
+        "tipo": "texto_identico",
+        "arquivos_locais": [
+          "consumo1",
+          "consumo2"
+        ],
+        "sha256_texto": "4e29aef2528f3776f70480fc0edb086f619c83f0a5e41a42bb9d7b20bf358ef1",
+        "efeito": "3 participações repetidas removidas da contagem."
+      },
+      {
+        "tipo": "mesmas_participacoes_com_datas_divergentes",
+        "arquivos_locais": [
+          "lavagem",
+          "equalizacao-esteio-piso"
+        ],
+        "efeito": "3 participações vinculadas ao mesmo conjunto de piso; ADS já no histórico. CSM mesmo CNPJ, proposta 175-2026 Rev.00, data 27/01/2026 e R$33.150,00. Ederson/Imunizadora RP mesmo CNPJ e R$10.500,00, mas datas 23/06/2026 e 23/01/2026."
+      }
+    ],
+    "divergencias_e_revisoes": [
+      {
+        "conjunto": "pmoc-rv01",
+        "detalhe": "Valores iniciais Perri R$14.400,00; Só Ar R$18.000,00; Altimas R$23.400,00. Totais atuais R$9.120,00 / R$10.200,00 / R$15.000,00. R01/R02 sem valores. Preservar inicial e atual como registros de versão relacionados, sem nova data inferida."
+      },
+      {
+        "conjunto": "pmoc-curitiba",
+        "detalhe": "LF inicial R$2.616,00 versus total anual R$5.232,00; documento declara 2 visitas/ano sem PMOC. Não é redução nem necessariamente revisão comparável: base anualizada. Climatizar inicial R$5.400,00 e R01/atual R$4.000,00, 3 visitas com PMOC/ART. Climasul inicial/atual R$11.280,00, 12 visitas com PMOC/ART. Escopos distintos."
+      },
+      {
+        "conjunto": "lavagem",
+        "detalhe": "ADS inicial R$12.790,00; mapa abril R01 R$10.000,00; mapa fevereiro numero REV02 e proposta PDF REV01. Ederson no fevereiro data23/06/2026 (posterior à equalização02/02/2026), abril23/01/2026; preservar divergência. Fevereiro histórico inicial EdersonR$10.000,00 versus itemR$10.500,00. Campo total só preenchido ADS, demais valores vêm da linha item. Não usar redução total automática como economia."
+      },
+      {
+        "conjunto": "society",
+        "detalhe": "Equalização02/04/2026, Norte Sul proposta10/04/2026 e nome arquivo20260415: registrar todas as datas; não substituir automaticamente. Iniciais coincidem com atuais."
+      },
+      {
+        "conjunto": "reservatorio",
+        "detalhe": "Equalização31/07/2026, Norte Sul proposta26/08/2026 e arquivo20260827. SA inicialR$73.952,00/R01R$70.000,00; ADS inicialR$75.030,00/R01R$72.028,80; Norte Sul inicial/total R$80.563,38 mas R01R$70.000,00. Total não atualizado para R01 Norte Sul; preservar versões sem decidir valor contratado."
+      },
+      {
+        "conjunto": "consumo4",
+        "detalhe": "Equalização03/06/2026 mas proposta Essenza16/06/2026, leadtime08/06/2026; metadado PDF criado16/06/2026. Registrar literalmente, sem inventar correção."
+      },
+      {
+        "conjunto": "consumo1,consumo3,consumo4,bicicletario",
+        "detalhe": "Histórico inicial/R01/R02 sem valores, mas redução total mostra totais negativos. Fórmula de modelo sem evidência de negociação; não publicar como economia."
+      },
+      {
+        "conjunto": "consumo1,consumo4",
+        "detalhe": "Fabesul tem3 itens sem valor em cada mapa. Não tratar traço como zero nem comparar total da cesta incompleta à completa sem qualificação."
+      }
+    ]
+  },
+  "base_google": {
+    "fonte_url": "https://drive.google.com/file/d/1PLuAqtKz2dscfSfAekfEGTAZTAzT8m0R0FfaJ9PmSnc/view",
+    "importacoes": 2,
+    "equalizacoes": 4,
+    "registros_proposta": 12,
+    "linhas_preco": 78,
+    "status_preco": {
+      "cotado": 43,
+      "nao_cotado": 35
+    },
+    "pendencias": 19,
+    "empresas_cadastradas": 0,
+    "empreendimentos_cadastrados": 0,
+    "observacoes": [
+      "Contagem por ID preenchido: as 1000 linhas com checkbox não são 1000 cadastros.",
+      "Wi-Fi da casa de bombas e utilities água já existem na base, mas não no consolidado local.",
+      "Os 12 registros de proposta incluem seções de equipamentos/mensalidade/mão de obra; não são 12 contratos distintos.",
+      "As 4 equalizações estão sem CNPJ_EMPRESA; há proposta de Wi-Fi sem CNPJ de fornecedor.",
+      "Mensalidades declaradas 828 / 12.596,40 / 30.492 correspondem a 12 vezes os valores calculados 69 / 1.049,70 / 2.541; preservar período antes de comparar.",
+      "Mão de obra Eletrobarras aparece em 2 colunas com R$ 2.200; investigar vínculo antes de somar."
+    ]
+  },
+  "engenharia_convidados_sem_preco": [
+    "Aude",
+    "Maggi"
+  ],
+  "engenharia_declinaram_ou_nao_apresentaram": [
+    "Dual D Engenharia",
+    "Campanelli",
+    "Engecap",
+    "Engkoch"
+  ]
+}
