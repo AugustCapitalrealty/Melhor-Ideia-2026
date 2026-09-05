@@ -136,3 +136,7 @@ try {
 }
 
 console.log(`\n${checks.pass} de ${checks.pass + checks.fail} verificações passaram`);
+if (checks.fail > 0) {
+  console.error(`\nERRO: ${checks.fail} verificações falharam no ciclo completo.`);
+  process.exit(1);
+}

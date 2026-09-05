@@ -1,0 +1,3 @@
+# Ignora markdown e outros não-código no deploy do Apps Script
+**/*.md
+app/README.md

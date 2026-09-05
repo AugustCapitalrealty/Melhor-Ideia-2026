@@ -192,6 +192,23 @@ Três armadilhas técnicas registradas em §17 da base — a mais cara foi `R$ -
 
 **Falta na Fase 1**: rodar a gravação (`importarEqualizacao`), já commitada.
 
+### Tarde 05/09 — Schema v3, Correções P0 e Automação com Clasp
+
+- **Schema v3 & Migração Aditiva**: 21 abas e 224 colunas com `setupBaseDeDados` e `migrarParaSchemaV3`.
+- **Correções de Confiabilidade (P0)**:
+  - Rollback em `desfazerImportacao` contemplando propostas avulsas (`EAP`, `Propostas`, `Precos`).
+  - Resolução semântica de entidades: `cfResolverEmpresa_` (Demercado vs Capital Realty) e `cfResolverEmpreendimento_` (normalização de Megas).
+  - Hash v2 cobrindo empresa e empreendimento canônicos.
+  - Preço global preservado (total sem unitário não vira `nao_cotado`).
+  - Agrupamento de avulsos por `idProposta` na consulta, impedindo falsas fusões.
+- **Suíte de Testes Automatizados (36/36)**:
+  - Validação de ciclo completo (`ciclo-completo.cjs`), correção de defeitos (`validar-correcoes.cjs`) e reprodução (`reproduzir-defeitos.cjs`).
+- **Carga dos 21 Orçamentos**:
+  - 7 fornecedores consolidados e função unificada `importarTodosOsOrcamentos()`.
+- **Adoção do Clasp (Fim do Copia-e-Cola)**:
+  - Configurado `.clasp.json` e scripts npm (`npm test`, `npm run push`, `npm run status`).
+  - O comando `npm run push` encadeia a suíte de testes antes do `clasp push`, criando um portão de proteção automático contra quebras.
+
 ---
 
 ## Próxima entrada

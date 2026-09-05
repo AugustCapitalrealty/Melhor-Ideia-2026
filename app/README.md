@@ -1,6 +1,32 @@
 # app/ — Google Apps Script
 
-## Instalar
+## Deploy via Clasp (Novo fluxo automatizado)
+
+O envio do código local para o Google Apps Script agora é feito diretamente via **Clasp**, sem necessidade de copiar e colar arquivos manualmente:
+
+1. **Verificar status dos arquivos rastreados:**
+   ```bash
+   npm run status
+   ```
+2. **Testar e enviar para o Apps Script:**
+   ```bash
+   npm run push
+   ```
+   *(Roda a suíte de testes e, só se ela passar, executa o `clasp push`.)*
+3. **Abrir o editor do script no navegador:**
+   ```bash
+   npx clasp open-script
+   ```
+
+O `clasp push` sobrescreve o conteúdo remoto com os arquivos locais. Antes de
+enviar algo que você não tenha certeza, crie um ponto de retorno com
+`npx clasp create-version "descrição"` — a versão fica no histórico do próprio
+Apps Script e se restaura pelo editor.
+
+### Instalação manual inicial (legado / fallback)
+
+Só é necessário se o clasp não estiver disponível — sem Node instalado, por
+exemplo, ou com o login expirado.
 
 1. Abra a planilha da base:
    https://docs.google.com/spreadsheets/d/1PLuAqtKz2dscfSfAekfEGTAZTAzT8m0R0FfaJ9PmSnc
@@ -12,19 +38,8 @@
 6. Execute **`setupBaseDeDados`** e autorize
 7. Veja o resultado no Log — **Ctrl+Enter**
 
-Depois, execute nesta sequência:
-
-1. `verificarConfiguracao()` — confira a URL da planilha, schema instalado `v1`
-   e as 21 abas marcadas como `ok`. Isso confirma a instalação, não os dados.
-2. `setupBaseDeDados()` novamente — todas as abas devem indicar `sem mudança`.
-3. Repita `setupBaseDeDados()` mais uma vez para conferir o mesmo resultado.
-
-O setup cria a estrutura vazia; ainda não importa equalizações nem preenche
-cadastros. O código usa primeiro a planilha à qual o script está vinculado,
-por isso abra o Apps Script a partir da planilha da base indicada acima.
-
-O push para o GitHub não atualiza este projeto no Apps Script: copie os arquivos
-atualizados para o editor antes de executar. Não há sincronização configurada.
+O código usa primeiro a planilha à qual o script está vinculado, por isso abra
+o Apps Script a partir da planilha da base indicada acima.
 
 ## Ordem dos arquivos
 
@@ -42,6 +57,8 @@ auxiliares de `Util.gs` separadamente: selecione as funções de entrada acima.
 | `Dados*.gs` | Dados estruturados dos 21 orçamentos (7 fornecedores) |
 | `Dados.gs` | Acesso genérico às abas: leitura em lote, inserção, remoção |
 | `Persistencia.gs` | `importarEqualizacao()` e `desfazerImportacao()` |
+| `Migracao.gs` | `migrarParaSchemaV3()` — migração aditiva de schema |
+| `Manutencao.gs` | `simularLimpezaFantasma()` e `limparLinhasFantasma()` — faxina da base |
 | `Consulta.gs` | `consultarPreco(termo)` e `panoramaDaBase()` — o histórico respondendo |
 | `Codigo.gs` | `doGet()` e a API do navegador (`apiConsultar`, `apiPanorama`) |
 | `Interface.html` | A tela de busca e consulta histórica |
