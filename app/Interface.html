@@ -105,6 +105,60 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-s
 .fonte-link { text-decoration: none; font-size: .85em; opacity: .7; }
 .fonte-link:hover { opacity: 1; }
 .filtrado { display: block; margin-top: 8px; font-size: 12px; color: var(--suave); }
+
+/* ── navegação entre as duas telas ── */
+.abas{
+  display:inline-flex;gap:2px;padding:2px;margin:22px 0 4px;
+  background:var(--superficie2);border:1px solid var(--linha);border-radius:8px;
+}
+.abas button{
+  padding:8px 18px;font-size:14px;font-weight:600;border:0;border-radius:6px;
+  background:transparent;color:var(--suave);cursor:pointer;
+}
+.abas button[aria-selected="true"]{background:var(--superficie);color:var(--noturno);box-shadow:var(--sombra)}
+
+/* ── mapa de equalização ── */
+.eq-sel{display:flex;gap:10px;align-items:center;margin:20px 0 18px;flex-wrap:wrap}
+.eq-sel select{
+  flex:1;min-width:260px;padding:12px 14px;font-size:15px;border:1.5px solid var(--linha);
+  border-radius:8px;background:var(--superficie);color:var(--texto);
+}
+.eq-cab{
+  background:var(--superficie);border:1px solid var(--linha);border-radius:8px;
+  padding:16px 20px;margin-bottom:16px;box-shadow:var(--sombra);
+}
+.eq-cab h2{margin:0 0 4px;font-size:18px;color:var(--noturno);font-weight:600}
+.eq-cab .meta{font-size:13px;color:var(--suave)}
+
+/* A matriz rola sozinha: a página nunca rola de lado. */
+.mapa-rolo{overflow-x:auto;border:1px solid var(--linha);border-radius:8px;background:var(--superficie)}
+table.mapa{border-collapse:separate;border-spacing:0;min-width:100%}
+table.mapa th,table.mapa td{padding:9px 14px;border-bottom:1px solid var(--superficie2);white-space:nowrap}
+table.mapa thead th{
+  position:sticky;top:0;z-index:2;background:var(--noturno);color:#fff;
+  font-size:11px;text-transform:uppercase;letter-spacing:.05em;text-align:right;
+}
+table.mapa thead th small{display:block;font-weight:400;text-transform:none;letter-spacing:0;opacity:.75}
+/* A descrição fica fixa à esquerda — sem isso a linha some ao rolar. */
+table.mapa .desc{
+  position:sticky;left:0;z-index:1;text-align:left;white-space:normal;
+  min-width:260px;max-width:380px;background:var(--superficie);
+}
+table.mapa thead .desc{z-index:3;background:var(--noturno)}
+table.mapa tr.grupo td{background:var(--superficie2);font-weight:600;color:var(--noturno)}
+table.mapa tr.grupo .desc{background:var(--superficie2)}
+table.mapa td.preco{text-align:right;font-variant-numeric:tabular-nums}
+table.mapa td.preco.menor{color:var(--ok);font-weight:700}
+table.mapa td.preco.vazio{color:var(--linha)}
+table.mapa td.preco.nao{color:var(--suave);font-size:12.5px;font-style:italic}
+table.mapa tfoot td{
+  border-top:2px solid var(--noturno);border-bottom:0;font-weight:700;
+  background:var(--superficie);color:var(--noturno);
+}
+table.mapa tfoot .desc{background:var(--superficie)}
+.cod-eap{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--acao);margin-right:8px}
+.legenda{font-size:12.5px;color:var(--suave);margin-top:12px;display:flex;gap:18px;flex-wrap:wrap}
+.legenda b{color:var(--ok)}
 </style>
 </head>
 <body>
@@ -116,14 +170,30 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-s
     <p class="sub">O que já pagamos por isso?</p>
   </header>
 
-  <div class="busca">
-    <input id="q" type="search" placeholder="antena, mão de obra, sensor, cabo…" autocomplete="off">
-    <button id="btn" onclick="buscar()">Consultar</button>
+  <div class="abas" role="tablist">
+    <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
+    <button id="ab-mapa"     role="tab" aria-selected="false" onclick="aba('mapa')">Mapa de equalização</button>
   </div>
-  <div class="chips" id="chips"></div>
 
-  <div id="painel"></div>
-  <div id="saida"></div>
+  <section id="v-consulta">
+    <div class="busca">
+      <input id="q" type="search" placeholder="antena, mão de obra, sensor, cabo…" autocomplete="off">
+      <button id="btn" onclick="buscar()">Consultar</button>
+    </div>
+    <div class="chips" id="chips"></div>
+
+    <div id="painel"></div>
+    <div id="saida"></div>
+  </section>
+
+  <section id="v-mapa" hidden>
+    <div class="eq-sel">
+      <select id="eqSel" onchange="abrirMapa(this.value)">
+        <option value="">carregando equalizações…</option>
+      </select>
+    </div>
+    <div id="mapa"></div>
+  </section>
 
   <footer id="rodape">carregando…</footer>
 </div>
@@ -258,6 +328,132 @@ function desenhar(r) {
   }
 
   el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Mapa de equalização
+// ─────────────────────────────────────────────────────────────
+
+var equalizacoesCarregadas = false;
+
+function aba(nome) {
+  document.getElementById('v-consulta').hidden = nome !== 'consulta';
+  document.getElementById('v-mapa').hidden     = nome !== 'mapa';
+  document.getElementById('ab-consulta').setAttribute('aria-selected', nome === 'consulta');
+  document.getElementById('ab-mapa').setAttribute('aria-selected', nome === 'mapa');
+
+  // Carrega só quando a aba é aberta pela primeira vez.
+  if (nome === 'mapa' && !equalizacoesCarregadas) {
+    equalizacoesCarregadas = true;
+    carregarEqualizacoes();
+  }
+}
+
+function carregarEqualizacoes() {
+  google.script.run
+    .withSuccessHandler(function (r) {
+      var sel = document.getElementById('eqSel');
+      if (!r.ok) {
+        document.getElementById('mapa').innerHTML = '<div class="aviso erro">' + esc(r.erro) + '</div>';
+        return;
+      }
+      if (!r.equalizacoes.length) {
+        sel.innerHTML = '<option value="">nenhuma equalização na base</option>';
+        document.getElementById('mapa').innerHTML =
+          '<div class="aviso">A base ainda não tem equalizações. Os 21 orçamentos do acervo' +
+          ' são propostas avulsas — aparecem na consulta de preço, não aqui.</div>';
+        return;
+      }
+      sel.innerHTML = r.equalizacoes.map(function (e) {
+        var rot = [e.data, e.empreendimento, e.area].filter(Boolean).join(' · ') +
+                  ' (' + e.proponentes + ' proponentes)';
+        return '<option value="' + esc(e.id) + '">' + esc(rot) + '</option>';
+      }).join('');
+      abrirMapa(r.equalizacoes[0].id);
+    })
+    .withFailureHandler(function (e) {
+      document.getElementById('mapa').innerHTML = '<div class="aviso erro">' + esc(e.message) + '</div>';
+    })
+    .apiEqualizacoes();
+}
+
+function abrirMapa(id) {
+  if (!id) return;
+  document.getElementById('mapa').innerHTML = '<div class="carregando">montando o comparativo…</div>';
+  google.script.run
+    .withSuccessHandler(desenharMapa)
+    .withFailureHandler(function (e) {
+      document.getElementById('mapa').innerHTML = '<div class="aviso erro">' + esc(e.message) + '</div>';
+    })
+    .apiMapa(id);
+}
+
+function desenharMapa(m) {
+  var el = document.getElementById('mapa');
+  if (!m.ok) { el.innerHTML = '<div class="aviso erro">' + esc(m.erro) + '</div>'; return; }
+
+  var eq = m.equalizacao;
+  var props = m.proponentes;
+
+  var cabecalho = '<tr><th class="desc">Item</th>' + props.map(function (p) {
+    return '<th>' + esc(p.nome) +
+           (p.rodada ? '<small>' + esc(p.rodada) + '</small>' : '') + '</th>';
+  }).join('') + '</tr>';
+
+  var corpo = m.linhas.map(function (l) {
+    var recuo = 'padding-left:' + (14 + l.nivel * 18) + 'px';
+    var qtd = (l.quantidade !== null && l.quantidade !== undefined && l.quantidade !== '')
+      ? ' <span style="color:var(--suave);font-size:12.5px">(' + esc(l.quantidade) +
+        (l.unidade ? ' ' + esc(l.unidade) : '') + ')</span>'
+      : '';
+
+    var celulas = props.map(function (p) {
+      var c = l.precos[p.id];
+      if (!c) return '<td class="preco vazio">·</td>';
+      if (c.status !== 'cotado' || c.valor === null) {
+        // "não cotou" é diferente de "cotou por zero" — e nunca vence a linha.
+        return '<td class="preco nao">' + esc(rotuloStatus(c.status)) + '</td>';
+      }
+      return '<td class="preco' + (l.menor === p.id ? ' menor' : '') + '">' + moeda(c.valor) + '</td>';
+    }).join('');
+
+    return '<tr class="' + (l.tipo === 'grupo' ? 'grupo' : '') + '">' +
+           '<td class="desc" style="' + recuo + '">' +
+           (l.codigo ? '<span class="cod-eap">' + esc(l.codigo) + '</span>' : '') +
+           esc(l.descricao) + qtd + '</td>' + celulas + '</tr>';
+  }).join('');
+
+  var rodape = '<tr><td class="desc">Total declarado</td>' + props.map(function (p) {
+    return '<td class="preco">' + moeda(p.total) + '</td>';
+  }).join('') + '</tr>';
+
+  var meta = [eq.empreendimento, eq.projeto, eq.area, eq.data, eq.status].filter(Boolean).map(esc).join(' · ');
+
+  var avisos = (m.pendencias || []).length
+    ? '<div class="aviso" style="margin-bottom:16px"><b>' + m.pendencias.length +
+      ' pendência(s) desta importação</b> — mudam como o comparativo deve ser lido:<ul style="margin:8px 0 0;padding-left:18px">' +
+      m.pendencias.slice(0, 6).map(function (p) { return '<li>' + esc(p.descricao) + '</li>'; }).join('') +
+      '</ul></div>'
+    : '';
+
+  el.innerHTML =
+    '<div class="eq-cab"><h2>' + esc(eq.projeto || eq.id) + '</h2>' +
+    '<div class="meta">' + meta + '</div></div>' +
+    avisos +
+    '<div class="mapa-rolo"><table class="mapa">' +
+      '<thead>' + cabecalho + '</thead>' +
+      '<tbody>' + corpo + '</tbody>' +
+      '<tfoot>' + rodape + '</tfoot>' +
+    '</table></div>' +
+    '<div class="legenda"><span><b>verde</b> = menor preço da linha, entre quem cotou</span>' +
+    '<span>· = fornecedor não recebeu esta linha</span></div>';
+}
+
+function rotuloStatus(s) {
+  if (s === 'incluso_em_outro_item') return 'incluso';
+  if (s === 'excluido') return 'excluído';
+  if (s === 'nao_aplicavel') return 'n/a';
+  return 'não cotou';
 }
 </script>
 </body>

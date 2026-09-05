@@ -386,3 +386,66 @@ try {
   console.log(`✗ FALHA na Correção 11: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 12 — o menor da linha só sai de quem cotou
+//
+//  No mapa de equalização, "não cotou" é gravado como preço com
+//  STATUS_PRECO != cotado. Se o menor fosse escolhido pelo valor bruto,
+//  um zero de quem não cotou ganharia de quem cotou de verdade — e o
+//  comparativo apontaria o fornecedor errado como mais barato.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxEq = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  const tabelas = {
+    Equalizacoes: [{ ID: 'EQ1', ID_EMPREENDIMENTO: 'MEGA ESTEIO', PROJETO: 'Limpeza',
+                     AREA: 'Facilities', DATA_EQUALIZACAO: new Date(2026, 5, 1),
+                     STATUS: 'homologada', ID_IMPORTACAO: 'IMP1' }],
+    Propostas: [
+      { ID: 'P1', ID_EQUALIZACAO: 'EQ1', CNPJ: '11222333000181', ORDEM: 1, VALOR_TOTAL_DECLARADO: 100 },
+      { ID: 'P2', ID_EQUALIZACAO: 'EQ1', CNPJ: '',               ORDEM: 2,
+        RAZAO_SOCIAL_INFORMADA: 'Sem cadastro Ltda', VALOR_TOTAL_DECLARADO: 90 }
+    ],
+    Fornecedores: [{ CNPJ: '11222333000181', RAZAO_SOCIAL: 'Fornecedor Um' }],
+    EAP: [
+      { ID: 'N1', ID_EQUALIZACAO: 'EQ1', ID_PAI: '',   ORDEM: 1, TIPO: 'grupo', DESCRICAO: 'MATERIAIS' },
+      { ID: 'N2', ID_EQUALIZACAO: 'EQ1', ID_PAI: 'N1', ORDEM: 2, TIPO: 'item',  DESCRICAO: 'Detergente' }
+    ],
+    Precos: [
+      { ID_EAP: 'N2', ID_PROPOSTA: 'P1', ID_EQUALIZACAO: 'EQ1', PRECO_UNITARIO: 50, STATUS_PRECO: 'cotado' },
+      // Zero, mas não cotado: não pode vencer a linha.
+      { ID_EAP: 'N2', ID_PROPOSTA: 'P2', ID_EQUALIZACAO: 'EQ1', PRECO_UNITARIO: 0,  STATUS_PRECO: 'nao_cotado' }
+    ],
+    Pendencias: [{ ID_IMPORTACAO: 'IMP1', TIPO: 'cesta_incompleta',
+                   DESCRICAO: 'Proponente 2: 1 de 1 itens sem cotação', RESOLVIDA: false }]
+  };
+
+  ctxEq.cfLerTudo_ = (nome) => tabelas[nome] || [];
+  ctxEq.cfDataTexto_ = (d) => (d ? '01/06/2026' : null);
+
+  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxEq, { filename: f });
+  });
+
+  const m = ctxEq.cfMapaEqualizacao_('EQ1');
+
+  const linhaItem = m.linhas.filter(l => l.tipo === 'item')[0];
+  assert.equal(linhaItem.menor, 'P1',
+    `menor da linha veio ${linhaItem.menor} — o zero de quem não cotou venceu quem cotou`);
+
+  assert.equal(m.linhas.length, 2, 'a árvore devia trazer o grupo e o item');
+  assert.equal(m.linhas[0].nivel, 0, 'o grupo é raiz');
+  assert.equal(m.linhas[1].nivel, 1, 'o item é filho do grupo');
+
+  assert.equal(m.proponentes[0].nome, 'Fornecedor Um', 'o nome do cadastro devia prevalecer');
+  assert.equal(m.proponentes[1].nome, 'Sem cadastro Ltda',
+    'sem CNPJ no cadastro, o nome informado no documento precisa sobreviver');
+
+  assert.equal(m.pendencias.length, 1, 'as pendências da importação precisam chegar ao mapa');
+
+  console.log('✓ CORREÇÃO VERIFICADA: menor do mapa sai só de quem cotou');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 12: ${e.message}`);
+  process.exitCode = 1;
+}

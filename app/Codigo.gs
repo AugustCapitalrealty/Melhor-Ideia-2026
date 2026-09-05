@@ -127,6 +127,34 @@ function cfDataTexto_(d) {
   return Utilities.formatDate(d, 'America/Sao_Paulo', 'dd/MM/yyyy');
 }
 
+// ─────────────────────────────────────────────────────────────
+//  Mapa de equalização — leitura
+// ─────────────────────────────────────────────────────────────
+
+/** As equalizações disponíveis, para o seletor da tela. */
+function apiEqualizacoes() {
+  try {
+    return { ok: true, equalizacoes: cfListarEqualizacoes_() };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/**
+ * O comparativo de uma equalização.
+ * cfMapaEqualizacao_ já devolve tudo serializável — datas viram texto lá,
+ * porque Date não atravessa google.script.run de forma confiável.
+ */
+function apiMapa(idEqualizacao) {
+  try {
+    const m = cfMapaEqualizacao_(idEqualizacao);
+    m.ok = true;
+    return m;
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
 /**
  * Verificação de autorização no servidor (Etapa 7).
  * Operações de gravação, migração e rollback (desfazer) não estão
