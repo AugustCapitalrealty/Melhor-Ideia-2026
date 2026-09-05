@@ -55,8 +55,13 @@ function cfSoDigitos_(valor) {
 /** Formata CNPJ para exibição. Devolve o original se não tiver 14 dígitos. */
 function cfFormatarCnpj_(valor) {
   const d = cfSoDigitos_(valor);
-  if (d.length !== 14) return String(valor || '');
-  return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  if (d.length === 14) {
+    return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  }
+  // Mais de 14 dígitos costuma ser duas empresas coladas na mesma célula.
+  // Mostrar 28 dígitos seguidos não ajuda ninguém.
+  if (d.length > 14) return 'CNPJ irregular (' + d.length + ' dígitos)';
+  return d ? 'CNPJ incompleto' : '';
 }
 
 // ─────────────────────────────────────────────────────────────

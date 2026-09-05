@@ -336,10 +336,37 @@ function cfImprimirEscrita_(idImportacao, analise, c) {
 //  Atalhos para o menu Executar
 // ─────────────────────────────────────────────────────────────
 
+/** Os arquivos já conhecidos. Acrescente aqui conforme aparecerem. */
+const CF_ACERVO = [
+  { nome: 'WiFi Casa de Bombas (12/08)', id: '1iOz9t7xjk19UxCkEP7t-v1yzCOk6HMTR4Qfp9mfCNF4' },
+  { nome: 'Monitoramento Utilities (19/05)', id: '1TaqCghQpf2xmNWhiSX0u7orW4Sw_9lum8Qiid9rv_I4' }
+];
+
 function importarWifiCasaDeBombas() {
-  return importarEqualizacao('1iOz9t7xjk19UxCkEP7t-v1yzCOk6HMTR4Qfp9mfCNF4');
+  return importarEqualizacao(CF_ACERVO[0].id);
 }
 
 function importarMonitoramentoUtilities() {
-  return importarEqualizacao('1TaqCghQpf2xmNWhiSX0u7orW4Sw_9lum8Qiid9rv_I4');
+  return importarEqualizacao(CF_ACERVO[1].id);
+}
+
+/**
+ * Reimporta todo o acervo conhecido, desfazendo o que já existia.
+ *
+ * É o que se roda depois de mudar o schema ou o parser: os dados antigos
+ * ficam com o formato novo sem ninguém precisar apagar aba na mão.
+ */
+function reimportarAcervo() {
+  const resultados = [];
+  CF_ACERVO.forEach(function (arq) {
+    Logger.log('\n════ ' + arq.nome + ' ════');
+    try {
+      resultados.push({ arquivo: arq.nome, resultado: importarEqualizacao(arq.id, true) });
+    } catch (erro) {
+      Logger.log('  falhou: ' + erro);
+      resultados.push({ arquivo: arq.nome, erro: String(erro) });
+    }
+  });
+  Logger.log('\n' + resultados.length + ' arquivo(s) processado(s).');
+  return resultados;
 }
