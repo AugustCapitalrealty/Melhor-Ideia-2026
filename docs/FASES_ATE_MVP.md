@@ -14,13 +14,14 @@
 | **2** | Cadastros e catálogo | consultar fornecedor e item | ✅ sim |
 | **3** | Tela de equalização | criar cotação nova | ❌ não |
 | **4** | Motor de comparação | **o valor do produto** | ⚠️ só a consulta de preço |
-| **4B** | Presets e linhagem | **a promessa de tempo** | ❌ não |
+| **4B** | Presets e linhagem — eixo do tempo | **a promessa de tempo** | ❌ não |
+| **4C** | Visão de gestão — eixo entre Megas | a leitura da diretoria | ⚠️ versão crua ajuda muito |
 | **5** | Saídas — planilha, PDF, pasta | o entregável que circula | ❌ não |
 | **6** | Fechamento e base viva | o ciclo fechar e a base crescer | ❌ não |
 | **7** | Gerador de apresentação | o deck | ❌ não |
 | **8** | Avaliação pós-execução | a devolutiva do comitê | ❌ não |
 
-**MVP = fases 0 a 6, incluindo a 4B.** Com isso um comprador de verdade usa a ferramenta do início ao fim.
+**MVP = fases 0 a 6, incluindo 4B e 4C.** Com isso um comprador de verdade usa a ferramenta do início ao fim.
 Fases 7 e 8 completam a narrativa do concurso, mas não são o que faz alguém usar.
 
 ### 🎯 O alívio de escopo para quarta
@@ -149,6 +150,24 @@ Isso corta bastante trabalho dos 4 dias.
 
 ---
 
+## Fase 4C — Visão de gestão
+
+**Objetivo**: responder *"onde pagamos menos pela mesma coisa?"* entre empreendimentos.
+
+- [ ] `UNIDADE_BASE` + `FATOR_BASE` no catálogo — sem isso compara pacote com quilo (§14.4)
+- [ ] Consulta por item ou categoria: linha por Mega com preço unitário normalizado, fornecedor, data e volume
+- [ ] Dispersão: menor, maior, % de diferença, dentro de janela de tempo
+- [ ] **Classificar a causa**: mesmo fornecedor / fornecedores diferentes / escala / momento
+- [ ] Detectar **mesmo CNPJ com preços diferentes por Mega** — a vitória mais fácil
+- [ ] Sugerir **compra conjunta** onde o volume justifica
+- [ ] "Potencial máximo identificado" — rotulado como teto, **nunca como saving**
+
+**Pronto quando**: escolher uma categoria e a tela dizer, sozinha, em qual Mega se paga mais, quanto é a diferença e **qual das quatro causas** explica.
+
+**Risco**: baixo tecnicamente — o schema já sustenta a consulta. O risco é de leitura: apresentar teto teórico como economia derruba a credibilidade do mesmo jeito que o saving de negociação derrubaria.
+
+---
+
 ## Fase 5 — Saídas
 
 **Objetivo**: o entregável que circula de verdade.
@@ -220,7 +239,7 @@ Isso corta bastante trabalho dos 4 dias.
 ```
 0 → 1 → 2 → [fatia da 4: consulta de preço]  ═══► COMITÊ (qua 09/09)
                     │
-                    └→ 3 → 4 (completa) → 4B → 5 → 6  ═══► MVP, piloto rodando
+                    └→ 3 → 4 (completa) → 4B → 4C → 5 → 6  ═══► MVP, piloto rodando
                                                 │
                                                 └→ 7 → 8  ═══► RELATÓRIO (15/10)
 ```

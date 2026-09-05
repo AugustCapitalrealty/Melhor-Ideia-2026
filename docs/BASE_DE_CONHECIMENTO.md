@@ -1137,3 +1137,69 @@ Uma equalização mensal de material de consumo tem ~30 itens × 3 proponentes. 
 Com preset: os 30 itens já estão lá, as unidades já estão lá, os preços de referência já estão lá. Preenche-se quantidade e confirma-se preço.
 
 > Isso deixa de ser estimativa e passa a ser aritmética — dá para cronometrar antes e depois, com as duas coisas na mesa.
+
+---
+
+## 14. Visão de gestão — comparação entre Megas
+
+> Ideia do Guilherme, 05/09/2026: *"Uma tela de gestão. Por exemplo: tem 3 Megas, onde o café é mais barato?"*
+
+### 14.1 Os três eixos de comparação
+
+Com esta ideia o produto fica legível. É o **mesmo motor** olhando para três direções:
+
+| Eixo | Pergunta | Chave de identidade |
+| :--- | :--- | :--- |
+| **Entre proponentes** — uma cotação | quem está mais barato **agora**? | item da equalização |
+| **Ao longo do tempo** — uma série (§13) | como este item variou? | linhagem de preset — exata |
+| **Entre empreendimentos** — todas as séries | onde pagamos menos pela mesma coisa? | catálogo canônico — aproximada |
+
+O terceiro eixo é o que a diretoria enxerga primeiro, porque é o único que compara **Megas entre si**.
+
+### 14.2 O que a tela precisa responder — e o que ela não pode fazer
+
+A versão ingênua mostra `Curitiba R$ 25 · Itajaí R$ 28 · Esteio R$ 31` e alguém conclui *"compra tudo em Curitiba"*. Errado: café não se transfere entre Megas, e o fornecedor barato pode nem atender a região.
+
+A tela útil responde **por que a diferença existe e o que dá para fazer**:
+
+| Causa | Como se detecta | Ação |
+| :--- | :--- | :--- |
+| **Mesmo fornecedor cobrando diferente** | mesmo CNPJ, preços distintos por Mega | 🟢 **A vitória mais fácil que existe** — é um telefonema |
+| Fornecedores diferentes | CNPJs distintos | O barato atende a região do caro? |
+| Escala | volumes muito diferentes | 🟢 **Compra conjunta** — consolidar volume entre Megas |
+| Momento | datas distantes | Não é diferença, é inflação. Comparar só dentro de janela |
+
+> **A compra conjunta é o prêmio.** Três Megas comprando o mesmo café separadamente, de fornecedores diferentes, é economia direta e atribuível à ferramenta — porque só se enxerga com os dados juntos.
+
+Já há indício disso no campo: `001305 — RESISTENCIA LORENZETTI ULTRA 5500 3T` custou `R$ 43,85` em 27/03 e `R$ 47,12` em 03/06 **do mesmo fornecedor** (§8.6). Ali é variação no tempo; entre Megas o mecanismo é o mesmo.
+
+### 14.3 ⚠️ O número que abre os olhos — e a armadilha nele
+
+*"Se todos os Megas pagassem o menor preço, seriam R$ X por ano."*
+
+É o número que faz a diretoria prestar atenção. E é **teto teórico, não economia** — ignora logística, região de atendimento e volume mínimo.
+
+> Apresentar como **"potencial máximo identificado"**, nunca como saving. É a mesma disciplina que aplicamos ao saving de negociação: número honesto resiste a pergunta difícil; número inflado morre na primeira.
+
+### 14.4 O que falta no schema para isto funcionar
+
+O grosso já está: `Precos` em formato longo com `ID_ITEM_CAT`, `EMPREENDIMENTO`, `UF`, `DATA`, `PRECO_UNITARIO` e `UNIDADE` desnormalizados **já é** a consulta desta tela. Uma leitura, um filtro em memória.
+
+**Falta uma coisa — normalização de unidade.** Sem ela a comparação mente:
+
+```
+Catalogo
+  UNIDADE_PADRAO   PCT        (como se compra)
+  UNIDADE_BASE     KG         (como se compara)
+  FATOR_BASE       0,5        (1 PCT = 0,5 KG)
+```
+
+Assim `Café Melitta 500g` a R$ 18/pacote e um café a R$ 32/kg viram R$ 36/kg e R$ 32/kg — comparáveis. Sem o fator, a tela compara pacote com quilo e diz o contrário do certo.
+
+É coluna nova no catálogo, barata agora e cara depois.
+
+### 14.5 Ligação com quarta-feira
+
+O **achado do acervo** que eu recomendei levar ao comitê — *"pagamos 3 preços diferentes pelo mesmo serviço em 3 Megas"* — é literalmente a versão manual desta tela.
+
+Se der para montar uma versão crua dela até terça, o achado deixa de ser um slide e vira **a ferramenta mostrando sozinha**. É bem mais forte.

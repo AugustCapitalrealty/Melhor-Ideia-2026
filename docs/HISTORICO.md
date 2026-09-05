@@ -134,6 +134,18 @@ Também é o que **sustenta a promessa de tempo**. Eu havia criticado o "−70%"
 
 Registrado em §13 da base e como **Fase 4B**, dentro do MVP, com exceção explícita à regra de corte.
 
+### Ideia nova — tela de gestão entre Megas
+
+*"Tem 3 Megas, onde o café é mais barato?"*
+
+Fecha a estrutura do produto: o **mesmo motor** olhando para três eixos — entre proponentes (uma cotação), ao longo do tempo (uma série, via preset) e entre empreendimentos (todas as séries, via catálogo).
+
+O prêmio não é o ranking, é a **causa**: mesmo fornecedor cobrando diferente por Mega é um telefonema; volumes diferentes viram **compra conjunta**, que é economia só enxergável com os dados juntos.
+
+Duas coisas anotadas: falta `UNIDADE_BASE` + `FATOR_BASE` no catálogo (sem isso compara pacote com quilo), e o número "se todos pagassem o menor" é **teto teórico**, nunca saving.
+
+Registrado em §14 e como **Fase 4C**.
+
 ---
 
 ## Próxima entrada
