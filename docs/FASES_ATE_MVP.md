@@ -14,12 +14,13 @@
 | **2** | Cadastros e catálogo | consultar fornecedor e item | ✅ sim |
 | **3** | Tela de equalização | criar cotação nova | ❌ não |
 | **4** | Motor de comparação | **o valor do produto** | ⚠️ só a consulta de preço |
+| **4B** | Presets e linhagem | **a promessa de tempo** | ❌ não |
 | **5** | Saídas — planilha, PDF, pasta | o entregável que circula | ❌ não |
 | **6** | Fechamento e base viva | o ciclo fechar e a base crescer | ❌ não |
 | **7** | Gerador de apresentação | o deck | ❌ não |
 | **8** | Avaliação pós-execução | a devolutiva do comitê | ❌ não |
 
-**MVP = fases 0 a 6.** Com isso um comprador de verdade usa a ferramenta do início ao fim.
+**MVP = fases 0 a 6, incluindo a 4B.** Com isso um comprador de verdade usa a ferramenta do início ao fim.
 Fases 7 e 8 completam a narrativa do concurso, mas não são o que faz alguém usar.
 
 ### 🎯 O alívio de escopo para quarta
@@ -128,6 +129,26 @@ Isso corta bastante trabalho dos 4 dias.
 
 ---
 
+## Fase 4B — Presets e linhagem
+
+**Objetivo**: a equalização recorrente nasce pronta — e a série histórica fica exata em vez de aproximada.
+
+- [ ] `Presets` e `PresetItens` versionados; criar preset **a partir de uma equalização existente**
+- [ ] Instanciar: nova equalização nasce com a árvore, itens e unidades do preset
+- [ ] Quantidade sugerida da última rodada, editável
+- [ ] Preço de referência pré-preenchido — `historico` na v1, `contrato` na v2
+- [ ] Linhagem: `preset_id`, `preset_versao`, `equalizacao_anterior_id`
+- [ ] Comparação com a rodada anterior **item a item**, nunca por total entre versões diferentes
+- [ ] **Decomposição preço × quantidade × escopo** (§13.4)
+- [ ] Convidados da última vez **sugeridos, nunca fixados**
+- [ ] Ranking de variação: quais itens mais mudaram na série
+
+**Pronto quando**: criar preset a partir de uma equalização real de material de consumo, instanciar a rodada seguinte, e a tela mostrar item a item quanto variou — com o efeito preço separado do efeito quantidade.
+
+**Risco**: baixo tecnicamente. O cuidado é conceitual: preset é ponto de partida, não decalque, e comparar totais entre versões diferentes reproduz o erro da Fase 7.
+
+---
+
 ## Fase 5 — Saídas
 
 **Objetivo**: o entregável que circula de verdade.
@@ -199,9 +220,11 @@ Isso corta bastante trabalho dos 4 dias.
 ```
 0 → 1 → 2 → [fatia da 4: consulta de preço]  ═══► COMITÊ (qua 09/09)
                     │
-                    └→ 3 → 4 (completa) → 5 → 6  ═══► MVP, piloto rodando
+                    └→ 3 → 4 (completa) → 4B → 5 → 6  ═══► MVP, piloto rodando
                                                 │
                                                 └→ 7 → 8  ═══► RELATÓRIO (15/10)
 ```
 
 **Regra de corte**: se o tempo apertar, corta-se de trás para frente. Nunca se corta a fase 4 — ela **é** o produto. E nunca se pula a fase 1: sem histórico, a fase 4 não tem o que mostrar.
+
+**Exceção à regra de corte**: a fase 4B é a que sustenta a promessa de ganho de tempo (§13.7). Cortá-la deixa o relatório de 15/10 sem mecanismo por trás do número — e o número vira estimativa outra vez.

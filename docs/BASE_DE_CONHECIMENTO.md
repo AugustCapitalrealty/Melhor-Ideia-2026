@@ -1032,3 +1032,108 @@ O achado de §9.8 — proponentes comparados em rodadas e escopos diferentes num
 **Como não usar**: *"a Engenharia errou"*. Vira briga, e a Engenharia é justamente quem mais tem a ganhar com a ferramenta — eles já fazem benchmark de preço por metro de estaca à mão (§9.17).
 
 O mérito não é apontar o erro. É que **o formato novo torna o erro impossível**.
+
+---
+
+## 13. Presets — a equalização recorrente
+
+> Ideia do Guilherme, 05/09/2026: *"Um Mega pede material de consumo todo mês — café, papel etc. Já abrir e ele vai preenchendo as unidades; se tiver LPU já puxa o preço. Ou um aumento de fase: já traz todos os itens da última fase, e conforme a pessoa vai preenchendo vai comparando com as fases antigas — a diretoria vai ter noção de quais itens mais variaram ao longo dos anos."*
+
+### 13.1 Por que isto é maior do que parece
+
+O preset resolve, **por construção**, o problema mais difícil que a pesquisa de campo achou.
+
+O catálogo canônico (§8.6) esbarra em descrições irreconciliáveis: `Café Melita 500G` × `Café Melitta 500g`; `Pastilha adesiva` × `Adesivo para vaso` (o mesmo produto, sem uma palavra em comum); e `Filtro de café` que é `1.1.8` em abril e `1.1.13` em junho — **o código não identifica o item, identifica a posição da linha**.
+
+Casar item por descrição é aproximação, e aproximação erra.
+
+**Com preset, o item não precisa ser reconhecido — ele é o mesmo registro.** A equalização de outubro nasce das mesmas linhas da de setembro. A comparação passa a ser exata em vez de difusa.
+
+> **O preset é a identidade do item ao longo do tempo.** É a chave estável que o legado nunca teve.
+
+### 13.2 Os dois usos, o mesmo mecanismo
+
+| | Compra recorrente | Nova fase de obra |
+| :--- | :--- | :--- |
+| Exemplo | material de consumo mensal do Mega | Fase 7 a partir da Fase 6 |
+| O preset traz | os ~30 itens, unidades e quantidades da última vez | a EAP inteira da fase anterior |
+| A pessoa faz | ajusta quantidades | ajusta escopo e quantitativos |
+| O preço vem de | LPU vigente *(v2)* ou último preço *(v1)* | último preço por unidade física |
+| A comparação mostra | variação mês a mês, item a item | variação entre fases, por unidade |
+
+Um mecanismo, dois mundos. É o que torna a feature valiosa nas pontas pequena e grande ao mesmo tempo.
+
+E a Engenharia **já faz isso à mão** (§9.17): `Valor por m de estaca — Fase 6 R$ 357,74 → Fase 7 R$ 365,87`, com valor alvo calculado. O preset automatiza um raciocínio que a casa já provou que quer ter.
+
+### 13.3 A linhagem
+
+Cada equalização registra de onde veio:
+
+```
+preset_id · preset_versao · equalizacao_anterior_id
+```
+
+Isso forma uma **corrente**. E é a corrente que torna consultável a pergunta da diretoria — *"quais itens mais variaram ao longo dos anos"* — como uma caminhada exata pela série, não uma busca aproximada em todo o histórico.
+
+```
+Material de consumo — Mega Curitiba
+  jan/26  →  mar/26  →  abr/26  →  jun/26  →  set/26
+    │          │          │          │          │
+    └──────────┴── mesma linha de item ────────┘
+```
+
+**Os dois mecanismos convivem e servem a perguntas diferentes:**
+
+| Mecanismo | Responde |
+| :--- | :--- |
+| **Linhagem de preset** | "como este item variou nesta série?" — exato |
+| **Catálogo canônico** | "pagamos preços diferentes por café entre os Megas?" — aproximado, entre séries |
+
+### 13.4 🔴 A decomposição que a diretoria vai pedir
+
+Se o total subiu 20%, foi **preço** ou **quantidade**? Essa é a primeira pergunta de qualquer diretor, e somar totais não responde.
+
+A separação honesta fixa uma variável de cada vez:
+
+```
+Efeito preço      = Σ (preço_novo − preço_velho) × quantidade_velha
+Efeito quantidade = Σ (qtd_nova − qtd_velha)     × preço_velho
+Efeito escopo     = itens que entraram ou saíram do preset
+```
+
+Sem isso, "o material de consumo subiu 20%" é uma frase sem informação — pode ser inflação, pode ser que o Mega encheu mais um armazém.
+
+> **Os três efeitos precisam aparecer separados na tela e no deck.** É o que diferencia um relatório de um número.
+
+### 13.5 Cuidados
+
+**Preset muda com o tempo.** Item entra, item sai. Mês 3 tem 30 itens, mês 9 tem 34.
+→ Preset é **versionado**, e a comparação é **por item**, nunca por total entre versões diferentes. Comparar totais entre escopos diferentes é exatamente o erro de §9.8.
+
+**Sazonalidade.** Consumo de dezembro não se compara com o de janeiro em quantidade.
+→ Variação de **preço** é sempre comparável; variação de **quantidade** precisa de contexto.
+
+**Nova fase não é cópia da anterior.** A Fase 7 tem armazéns que a Fase 6 não tinha.
+→ O preset é ponto de partida, não decalque. Adicionar e remover tem que ser trivial.
+
+**Risco de governança**: se o preset também trouxer sempre os mesmos fornecedores, nunca se testa o mercado.
+→ Sugerir os convidados da última vez, **nunca fixá-los**. E mostrar há quantas rodadas o mesmo fornecedor vence.
+
+### 13.6 Onde já encaixa no que decidimos
+
+Nada aqui exige mudar decisão travada:
+
+- `PRECO_REFERENCIA` + `ORIGEM_REFERENCIA` (§11.2) já estava previsto — o preset só passa a preencher `historico` na v1 e `contrato` na v2, sem mudar tela.
+- A árvore com `id_pai` e `ordem` já é o que se copia para instanciar um preset.
+- `quantidade` separada do item já permite trazer o item sem trazer a quantidade.
+- O **modo simplificado até R$ 1.000** (§7A.3) fica muito melhor: preset + 1 cotação + preço vindo pronto é uma compra recorrente resolvida em minutos.
+
+### 13.7 É isto que sustenta a promessa de tempo
+
+Eu havia criticado o "−70% de tempo" do plano original como chute (e era). **O preset dá o mecanismo.**
+
+Uma equalização mensal de material de consumo tem ~30 itens × 3 proponentes. Hoje: redigitar 30 descrições e preencher 90 células de preço, toda vez, do zero.
+
+Com preset: os 30 itens já estão lá, as unidades já estão lá, os preços de referência já estão lá. Preenche-se quantidade e confirma-se preço.
+
+> Isso deixa de ser estimativa e passa a ser aritmética — dá para cronometrar antes e depois, com as duas coisas na mesa.

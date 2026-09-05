@@ -122,6 +122,18 @@ Ninguém mantém cadastro — ele **acumula como subproduto** de fazer equaliza�
 
 Desdobramento registrado em §11.4: são **dois** momentos distintos — comportamento na cotação (atrito zero, ninguém mede hoje) e execução do serviço (o que o comitê pediu, fica por e-mail).
 
+### Ideia nova — presets (equalização recorrente)
+
+*"Um Mega pede material de consumo todo mês. Já abrir e ele vai preenchendo as unidades; se tiver LPU já puxa o preço. Ou um aumento de fase: já traz todos os itens da última fase e vai comparando — a diretoria vai ter noção de quais itens mais variaram ao longo dos anos."*
+
+**Resolve estruturalmente o problema mais difícil do projeto.** Casar item por descrição é aproximação e erra (`Pastilha adesiva` × `Adesivo para vaso`). Com preset, o item não precisa ser reconhecido: **é o mesmo registro**. O preset vira a identidade do item ao longo do tempo — a chave estável que o legado nunca teve.
+
+Um mecanismo, dois mundos: compra mensal recorrente e nova fase de obra. E a Engenharia já faz isso à mão (`R$/m de estaca, Fase 6 → Fase 7`).
+
+Também é o que **sustenta a promessa de tempo**. Eu havia criticado o "−70%" como chute, e era. O preset dá o mecanismo: 30 itens × 3 proponentes que hoje se redigita do zero passam a vir prontos. Vira aritmética cronometrável, não estimativa.
+
+Registrado em §13 da base e como **Fase 4B**, dentro do MVP, com exceção explícita à regra de corte.
+
 ---
 
 ## Próxima entrada
