@@ -487,3 +487,20 @@ function cfImprimirAnalise_(r) {
 
   r.ignoradas.forEach(function (i) { Logger.log('· ignorada: ' + i.aba + ' — ' + i.motivo); });
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Atalhos para rodar pelo menu Executar
+//
+//  O menu do Apps Script não passa argumentos. Estas funções existem
+//  só para dar um clique e ver o resultado no Log (Ctrl+Enter).
+// ─────────────────────────────────────────────────────────────
+
+/** Equalização de 12/08/2026 — a que tem o bug de soma no grupo "1.". */
+function testarLeitura() {
+  return analisarEqualizacao('1iOz9t7xjk19UxCkEP7t-v1yzCOk6HMTR4Qfp9mfCNF4');
+}
+
+/** Equalização de 19/05/2026 — três abas, uma por escopo. */
+function testarLeituraMeta() {
+  return analisarEqualizacao('1TaqCghQpf2xmNWhiSX0u7orW4Sw_9lum8Qiid9rv_I4');
+}

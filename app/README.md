@@ -37,6 +37,7 @@ auxiliares de `Util.gs` separadamente: selecione as funções de entrada acima.
 | `Config.gs` | **Única fonte da verdade do schema.** 21 abas, 213 colunas |
 | `Util.gs` | Trava, normalização de texto, número BR, data, ID, hash, log |
 | `Schema.gs` | `setupBaseDeDados()` e `verificarConfiguracao()` |
+| `Import.gs` | `analisarEqualizacao(fileId)` — lê uma equalização e relata **sem gravar** |
 
 ## Regra ao mexer no schema
 
