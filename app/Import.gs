@@ -65,7 +65,15 @@ const CF_RE_CODIGO_EAP = /^\d{1,3}(\.\d{1,3})*\.?$/;
  * É por aqui que se confere um arquivo novo antes de importar.
  */
 function analisarEqualizacao(fileId) {
-  const ss = SpreadsheetApp.openById(fileId);
+  const id = cfExtrairId_(fileId);
+
+  let ss;
+  try {
+    ss = SpreadsheetApp.openById(id);
+  } catch (erro) {
+    throw new Error('Não consegui abrir a planilha "' + id + '". ' +
+      'Confira se o ID está certo e se você tem acesso a ela. (' + erro + ')');
+  }
   const resultado = { arquivo: ss.getName(), id: fileId, equalizacoes: [], ignoradas: [] };
 
   ss.getSheets().forEach(function (aba) {
@@ -83,6 +91,34 @@ function analisarEqualizacao(fileId) {
 
   cfImprimirAnalise_(resultado);
   return resultado;
+}
+
+/**
+ * Aceita ID puro ou URL completa do Sheets.
+ *
+ * Falha com mensagem útil quando vem vazio — que é o que acontece ao rodar
+ * esta função pelo menu Executar, porque o Apps Script não passa argumentos.
+ */
+function cfExtrairId_(entrada) {
+  const texto = String(entrada === null || entrada === undefined ? '' : entrada).trim();
+
+  if (!texto) {
+    throw new Error(
+      'analisarEqualizacao() precisa do ID da planilha, e o menu "Executar" do ' +
+      'Apps Script não passa argumentos.\n\n' +
+      'Rode "testarLeitura" ou "testarLeituraMeta" — ou crie a sua:\n\n' +
+      '  function meuTeste() {\n' +
+      '    analisarEqualizacao("COLE_O_ID_AQUI");\n' +
+      '  }'
+    );
+  }
+
+  const naUrl = texto.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]{20,})/);
+  if (naUrl) return naUrl[1];
+
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(texto)) return texto;
+
+  throw new Error('Não reconheci "' + texto + '" como ID nem como URL de planilha do Google Sheets.');
 }
 
 /** Reconhece a planilha pela âncora do template ou pelo rótulo Razão:. */
