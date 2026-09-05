@@ -147,3 +147,50 @@ try {
   console.log(`✗ FALHA na Correção 7: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 8 — inserção não pode cair embaixo das fantasmas
+//
+//  cfInserir_ gravava em getLastRow() + 1. Numa aba com mil linhas de
+//  checkbox vazio isso significa gravar na linha 1001: foi assim que os
+//  dados reais da base foram parar embaixo de mil linhas em branco.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxIns = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  const CABECALHO = ['ID', 'DESCRICAO', 'ATIVA'];
+  const GRADE = [CABECALHO,
+    ['EQ-1', 'primeira', true],
+    ['EQ-2', 'segunda', false]
+  ].concat(Array.from({ length: 997 }, () => ['', '', false]));
+
+  let escrita = null;
+  const abaFalsa = {
+    getLastRow: () => GRADE.length,          // 1000 — inflado pelas fantasmas
+    getLastColumn: () => CABECALHO.length,
+    getRange: (linha, coluna, nLinhas, nColunas) => ({
+      getValues: () => GRADE.slice(linha - 1, linha - 1 + nLinhas)
+        .map(l => l.slice(coluna - 1, coluna - 1 + nColunas)),
+      setValues: (m) => { escrita = { linha, coluna, matriz: m }; }
+    })
+  };
+
+  ctxIns.cfPlanilha_ = () => ({ getSheetByName: () => abaFalsa });
+  vm.runInContext(fs.readFileSync(path.join(root, 'app', 'Dados.gs'), 'utf8'),
+                  ctxIns, { filename: 'Dados.gs' });
+
+  assert.equal(ctxIns.cfUltimaLinhaReal_('Equalizacoes'), 3,
+    'cfUltimaLinhaReal_ devia parar na última linha com registro, não no fim das fantasmas');
+
+  const n = ctxIns.cfInserir_('Equalizacoes', [{ ID: 'EQ-3', DESCRICAO: 'terceira' }]);
+
+  assert.equal(n, 1);
+  assert.equal(escrita.linha, 4,
+    `gravou na linha ${escrita.linha} em vez da 4 — a inserção ainda usa getLastRow()`);
+  assert.equal(escrita.matriz[0][0], 'EQ-3');
+
+  console.log('✓ CORREÇÃO VERIFICADA: inserção grava logo após o último registro real');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 8: ${e.message}`);
+  process.exitCode = 1;
+}

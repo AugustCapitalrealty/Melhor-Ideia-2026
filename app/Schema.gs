@@ -228,9 +228,11 @@ function verificarConfiguracao() {
   const existentes = ss.getSheets().map(function (a) { return a.getName(); });
   CF_SCHEMA.forEach(function (def) {
     const aba = ss.getSheetByName(def.nome);
-    const linhas = aba ? Math.max(aba.getLastRow() - 1, 0) : 0;
+    // Conta registros, não linhas: getLastRow() inclui as linhas fantasma
+    // de checkbox e chegou a relatar 999 numa aba sem nenhum dado.
+    const linhas = aba ? cfLerTudo_(def.nome).length : 0;
     Logger.log((aba ? '  ok  ' : '  --  ') + def.nome +
-               (aba ? '  (' + linhas + ' linha' + (linhas === 1 ? '' : 's') + ')' : '  AUSENTE'));
+               (aba ? '  (' + linhas + ' registro' + (linhas === 1 ? '' : 's') + ')' : '  AUSENTE'));
   });
 
   const extras = existentes.filter(function (n) {
