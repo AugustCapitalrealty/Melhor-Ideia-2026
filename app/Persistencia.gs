@@ -18,9 +18,13 @@
  * @param {boolean} forcar  regrava mesmo se o arquivo já tiver sido importado
  */
 function importarEqualizacao(entrada, forcar) {
+  // Valida ANTES de pegar a trava: erro de argumento não deve segurar
+  // o script por 300 segundos.
+  const idArquivo = cfExtrairId_(entrada);
+
   return cfComTrava_(function () {
-    const analise = analisarEqualizacao(entrada);
-    const id = cfExtrairId_(entrada);
+    const analise = analisarEqualizacao(idArquivo);
+    const id = idArquivo;
 
     const impressao = cfImpressaoDoArquivo_(analise);
     const jaImportado = cfLerTudo_('Importacoes').filter(function (i) {

@@ -63,7 +63,7 @@ const CF_RE_CODIGO_EAP = /^\d{1,3}(\.\d{1,3})*\.?$/;
  * não batia com o código: no Apps Script se cola arquivo à mão, e não há
  * como saber o que está carregado. Agora o relatório diz.
  */
-const CF_VERSAO_IMPORT = '2026-09-05.7 le-valor-exibido';
+const CF_VERSAO_IMPORT = '2026-09-05.8 mensagem-de-atalho';
 
 // ─────────────────────────────────────────────────────────────
 //  Entrada
@@ -118,12 +118,18 @@ function cfExtrairId_(entrada) {
 
   if (!texto) {
     throw new Error(
-      'analisarEqualizacao() precisa do ID da planilha, e o menu "Executar" do ' +
-      'Apps Script não passa argumentos.\n\n' +
-      'Rode "testarLeitura" ou "testarLeituraMeta" — ou crie a sua:\n\n' +
-      '  function meuTeste() {\n' +
-      '    analisarEqualizacao("COLE_O_ID_AQUI");\n' +
-      '  }'
+      'Faltou o ID da planilha. O menu "Executar" do Apps Script não passa ' +
+      'argumentos, então estas funções precisam ser chamadas por um atalho.\n\n' +
+      'Para LER sem gravar:\n' +
+      '   testarLeitura()                    — WiFi Casa de Bombas, 12/08\n' +
+      '   testarLeituraMeta()                — Meta Utilities, 19/05\n\n' +
+      'Para LER E GRAVAR:\n' +
+      '   importarWifiCasaDeBombas()\n' +
+      '   importarMonitoramentoUtilities()\n\n' +
+      'Ou crie o seu:\n' +
+      '   function meuTeste() {\n' +
+      '     importarEqualizacao("COLE_O_ID_OU_A_URL_AQUI");\n' +
+      '   }'
     );
   }
 
