@@ -63,10 +63,27 @@ function apiConsultar(termo) {
         };
       }),
       series: r.series.map(function (s) {
+        // Em ordem de data: sem isso "anterior" e "primeira" não significam
+        // nada. A ordem que chega vem do agrupamento, não do tempo.
+        const ocs = s.ocorrencias.slice().sort(function (a, b) {
+          return (a.data ? a.data.getTime() : 0) - (b.data ? b.data.getTime() : 0);
+        });
+        const primeira = ocs.filter(function (o) { return o.minimo !== null; })[0];
+        let anterior = null;
+
         return {
           descricao: s.descricao,
-          ocorrencias: s.ocorrencias.map(function (o) {
-            return { data: cfDataTexto_(o.data), empreendimento: o.empreendimento, minimo: o.minimo };
+          variantes: s.variantes && s.variantes.length > 1 ? s.variantes : null,
+          ocorrencias: ocs.map(function (o) {
+            const linha = {
+              data: cfDataTexto_(o.data),
+              empreendimento: o.empreendimento,
+              minimo: o.minimo,
+              vsAnterior: cfDelta_(o.minimo, anterior ? anterior.minimo : null),
+              vsPrimeira: cfDelta_(o.minimo, primeira && primeira !== o ? primeira.minimo : null)
+            };
+            if (o.minimo !== null) anterior = o;
+            return linha;
           })
         };
       })
@@ -125,6 +142,21 @@ function apiPanorama() {
 function cfDataTexto_(d) {
   if (!d) return null;
   return Utilities.formatDate(d, 'America/Sao_Paulo', 'dd/MM/yyyy');
+}
+
+/**
+ * Variação entre dois preços, para a série.
+ * Devolve o sinal junto do valor: quem lê a tela precisa ver "subiu" antes
+ * de precisar interpretar o número.
+ */
+function cfDelta_(atual, base) {
+  if (atual === null || atual === undefined || base === null || base === undefined) return null;
+  const dif = atual - base;
+  return {
+    sinal: dif > 0 ? '+' : (dif < 0 ? '−' : '='),
+    absoluto: dif,
+    percentual: base > 0 ? (dif / base) * 100 : null
+  };
 }
 
 // ─────────────────────────────────────────────────────────────

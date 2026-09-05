@@ -159,6 +159,17 @@ table.mapa tfoot .desc{background:var(--superficie)}
 .cod-eap{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--acao);margin-right:8px}
 .legenda{font-size:12.5px;color:var(--suave);margin-top:12px;display:flex;gap:18px;flex-wrap:wrap}
 .legenda b{color:var(--ok)}
+
+/* ── variação na série ── */
+.d-sobe{color:var(--critico);font-weight:700}
+.d-desce{color:var(--ok);font-weight:700}
+.d-igual{color:var(--suave);font-weight:600}
+.d-nulo{color:var(--linha)}
+.d-sobe small,.d-desce small{font-weight:600;opacity:.8}
+.variantes{
+  font-size:12.5px;color:var(--suave);margin:-6px 0 12px;
+  padding:7px 10px;background:var(--superficie);border:1px dashed var(--linha);border-radius:6px;
+}
 </style>
 </head>
 <body>
@@ -209,6 +220,17 @@ var esc = function (s) {
 };
 
 function classeVariacao(p){ return p < 15 ? 'baixa' : (p < 60 ? 'media' : 'alta'); }
+
+// Sinal antes do número: quem lê precisa ver "subiu" sem interpretar valor.
+function delta(d) {
+  if (!d) return '<span class="d-nulo">—</span>';
+  if (d.sinal === '=') return '<span class="d-igual">= manteve</span>';
+  var cls = d.sinal === '+' ? 'd-sobe' : 'd-desce';
+  var pct = d.percentual === null || d.percentual === undefined
+    ? '' : ' <small>(' + d.sinal + Math.abs(d.percentual).toFixed(1).replace('.', ',') + '%)</small>';
+  return '<span class="' + cls + '">' + d.sinal + ' ' +
+         moeda(Math.abs(d.absoluto)) + pct + '</span>';
+}
 
 // ── panorama ──
 google.script.run.withSuccessHandler(function (p) {
@@ -314,11 +336,22 @@ function desenhar(r) {
     r.series.forEach(function (s) {
       var linhas = s.ocorrencias.map(function (o) {
         return '<tr><td>' + esc(o.data) + ' · ' + esc(o.empreendimento) +
-               '</td><td class="v">' + moeda(o.minimo) + '</td></tr>';
+               '</td><td class="v">' + moeda(o.minimo) + '</td>' +
+               '<td class="v">' + delta(o.vsAnterior) + '</td>' +
+               '<td class="v">' + delta(o.vsPrimeira) + '</td></tr>';
       }).join('');
+
+      var variantes = s.variantes
+        ? '<div class="variantes">Agrupado como o mesmo item: ' +
+          s.variantes.map(esc).join(' · ') + '</div>'
+        : '';
+
       html += '<div class="serie"><h2>O mesmo item ao longo do tempo</h2>' +
-              '<h3>' + esc(s.descricao) + '</h3><table>' +
-              '<thead><tr><th>Período · Empreendimento</th><th class="r" style="width:120px">Menor Preço</th></tr></thead>' +
+              '<h3>' + esc(s.descricao) + '</h3>' + variantes + '<table>' +
+              '<thead><tr><th>Período · Empreendimento</th>' +
+              '<th class="r" style="width:110px">Menor Preço</th>' +
+              '<th class="r" style="width:130px">vs. anterior</th>' +
+              '<th class="r" style="width:130px">vs. primeira</th></tr></thead>' +
               '<tbody>' + linhas + '</tbody></table></div>';
     });
   } else if (r.grupos.length > 1) {

@@ -449,3 +449,36 @@ try {
   console.log(`✗ FALHA na Correção 12: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 13 — o mesmo produto escrito de dois jeitos é uma série só
+//
+//  "CAFE MELITA TRADICIONAL 500G" e "CAFE MELITTA TRADICIONAL 500 GR" são
+//  o mesmo café. Com cfNormalizar_ puro a série ficava partida em duas,
+//  cada uma contando meia história de preço.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxCh = vm.createContext({ Logger: { log: () => {} }, console: console });
+  vm.runInContext(fs.readFileSync(path.join(root, 'app', 'Util.gs'), 'utf8'), ctxCh, { filename: 'Util.gs' });
+  const chave = ctxCh.cfChaveItem_;
+
+  assert.equal(chave('CAFE MELITA TRADICIONAL 500G'),
+               chave('CAFE MELITTA TRADICIONAL 500 GR'),
+               'as duas grafias do café deviam cair na mesma chave');
+
+  assert.equal(chave('AGUA SANITARIA 5 LT'), chave('AGUA SANITARIA 5 LITROS'),
+               'lt e litros são a mesma unidade');
+  assert.equal(chave('ALCOOL 1L'), chave('ALCOOL 1 LT'));
+  assert.equal(chave('COPO 50 UND'), chave('COPO 50 UNIDADES'));
+
+  // O que NÃO pode juntar: produtos de verdade diferentes.
+  assert.notEqual(chave('CAFE MELITA TRADICIONAL 500G'), chave('CAFE MELITA TRADICIONAL 250G'),
+                  'gramaturas diferentes são produtos diferentes');
+  assert.notEqual(chave('DETERGENTE NEUTRO'), chave('DETERGENTE CLORADO'));
+  assert.notEqual(chave('PAPEL TOALHA'), chave('PAPEL HIGIENICO'));
+
+  console.log('✓ CORREÇÃO VERIFICADA: grafias do mesmo item caem na mesma chave de série');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 13: ${e.message}`);
+  process.exitCode = 1;
+}

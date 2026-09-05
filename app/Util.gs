@@ -47,6 +47,36 @@ function cfNormalizar_(texto) {
     .trim();
 }
 
+/**
+ * Chave de item para a série de preço.
+ *
+ * cfNormalizar_ sozinho não junta o mesmo produto escrito de dois jeitos.
+ * No acervo real: "CAFE MELITA TRADICIONAL 500G" e "CAFE MELITTA
+ * TRADICIONAL 500 GR" são o mesmo café, e a série ficava partida em dois.
+ *
+ * Duas tolerâncias, ambas conservadoras:
+ *   1. unidade de medida canônica — gr/grs/gramas → g, lt/litro → l
+ *   2. letra repetida colapsada — melitta → melita
+ *
+ * A segunda é a que pode juntar demais. Por isso a tela mostra as grafias
+ * que foram agrupadas: mesclar em silêncio é o que envenena histórico.
+ */
+function cfChaveItem_(texto) {
+  const mapa = {
+    gr: 'g', grs: 'g', grama: 'g', gramas: 'g',
+    lt: 'l', lts: 'l', litro: 'l', litros: 'l',
+    und: 'un', unid: 'un', unidade: 'un', unidades: 'un',
+    pct: 'pc', pcte: 'pc', pacote: 'pc', pacotes: 'pc'
+  };
+
+  return cfNormalizar_(texto)
+    .replace(/(\d)\s*(kg|mg|ml|gramas|grama|grs|gr|g|litros|litro|lts|lt|l|unidades|unidade|unid|und|un|pacotes|pacote|pcte|pct|pc)\b/g,
+      function (tudo, numero, unidade) { return numero + ' ' + (mapa[unidade] || unidade); })
+    .replace(/([a-z])\1+/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 /** CNPJ com só dígitos. O acervo tem "44.983.675 0001-73", sem a barra. */
 function cfSoDigitos_(valor) {
   return String(valor === null || valor === undefined ? '' : valor).replace(/\D/g, '');

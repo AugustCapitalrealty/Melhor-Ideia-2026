@@ -139,12 +139,25 @@ function cfAgruparPorItem_(achados, termo) {
   // ao longo do tempo que se sustenta.
   const porChave = {};
   grupos.forEach(function (g) {
-    const k = cfNormalizar_(g.descricao);
+    // cfChaveItem_ e não cfNormalizar_: o mesmo produto vem escrito de dois
+    // jeitos no acervo ("MELITA 500G" e "MELITTA 500 GR") e a série ficava
+    // partida em duas, cada uma mostrando meia história.
+    const k = cfChaveItem_(g.descricao);
     (porChave[k] = porChave[k] || []).push(g);
   });
   const series = Object.keys(porChave)
     .filter(function (k) { return porChave[k].length > 1; })
-    .map(function (k) { return { descricao: porChave[k][0].descricao, ocorrencias: porChave[k] }; });
+    .map(function (k) {
+      // As grafias distintas ficam visíveis: agrupar em silêncio esconde
+      // uma decisão que pode estar errada.
+      const vistas = {};
+      porChave[k].forEach(function (g) { vistas[g.descricao] = true; });
+      return {
+        descricao: porChave[k][0].descricao,
+        variantes: Object.keys(vistas),
+        ocorrencias: porChave[k]
+      };
+    });
 
   return { termo: termo, pontos: achados.length, grupos: grupos, series: series };
 }
