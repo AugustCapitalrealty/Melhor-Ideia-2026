@@ -1,0 +1,417 @@
+{
+  "consulta_em": "2026-09-05",
+  "pasta_raiz": "1O3ZhuqfzlHpnsrORdY9T3-w2Otb7aF2F",
+  "escopo": "Pasta principal e listagem da subpasta Engenharia; PLANO não percorrida.",
+  "arquivos": [
+    {
+      "id": "1qoZfkify3uuKAwqoPs9ftHqtrB6mQ4hV",
+      "nome": "Engenharia",
+      "tipo": "application/vnd.google-apps.folder",
+      "pasta": "principal",
+      "url": "https://drive.google.com/drive/folders/1qoZfkify3uuKAwqoPs9ftHqtrB6mQ4hV",
+      "status": "conteudo_inventariado"
+    },
+    {
+      "id": "1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G",
+      "nome": "PLANO",
+      "tipo": "application/vnd.google-apps.folder",
+      "pasta": "principal",
+      "url": "https://drive.google.com/drive/folders/1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G",
+      "status": "nao_percorrida"
+    },
+    {
+      "id": "12mXnIavWt7kbGxUEYg9OZs3xncOPd7cT",
+      "nome": "1459.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/12mXnIavWt7kbGxUEYg9OZs3xncOPd7cT/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosFabesul.gs",
+      "linhas": 1
+    },
+    {
+      "id": "1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK",
+      "nome": "Contrato de prestação de serviços_0187.2026_Canaveral_MItajai_e anexos-Manifesto.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1ZbwFdOZXPH5932c0hqkbhcse8Jyc6IRK/view",
+      "status": "contrato_vinculo_pendente"
+    },
+    {
+      "id": "18jmD4kEixd92plqJ8_9DsYMtQgGGIwkz",
+      "nome": "CotacaoBasePapeis_177258.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/18jmD4kEixd92plqJ8_9DsYMtQgGGIwkz/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosBasePapeis.gs",
+      "linhas": 15
+    },
+    {
+      "id": "1pziA36BWAe_wi6TWtQ4ZvhuOH7XRGry8",
+      "nome": "CotacaoBasePapeis_178511.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1pziA36BWAe_wi6TWtQ4ZvhuOH7XRGry8/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosBasePapeis.gs",
+      "linhas": 17
+    },
+    {
+      "id": "18CitFo1BwX0cLhZGpbg_S6BmearfeF70",
+      "nome": "CotacaoBasePapeis_182188.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/18CitFo1BwX0cLhZGpbg_S6BmearfeF70/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosBasePapeis.gs",
+      "linhas": 19
+    },
+    {
+      "id": "1LXwNr3leKFiZ48S0rEVa0zaBIAe5-4uL",
+      "nome": "CotacaoBasePapeis_188139-492,05.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1LXwNr3leKFiZ48S0rEVa0zaBIAe5-4uL/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosBasePapeis.gs",
+      "linhas": 14
+    },
+    {
+      "id": "13dChJSNUck2U4PYIxRtsbI7kHKgZ3wzt",
+      "nome": "demer.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/13dChJSNUck2U4PYIxRtsbI7kHKgZ3wzt/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosSVargas.gs",
+      "linhas": 14
+    },
+    {
+      "id": "1CXBO4ng4RBtY-5mvW5W2dzfeMXdJz2yG",
+      "nome": "demercado (4).pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1CXBO4ng4RBtY-5mvW5W2dzfeMXdJz2yG/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosSVargas.gs",
+      "linhas": 3
+    },
+    {
+      "id": "13TlCoVY2uvsqrH0xyQG-G131GPetPfrs",
+      "nome": "demercado (7).pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/13TlCoVY2uvsqrH0xyQG-G131GPetPfrs/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosSVargas.gs",
+      "linhas": 11
+    },
+    {
+      "id": "1QC9cc_vtQKoKfh_TA6mJTXcO9l-G0bbA",
+      "nome": "EQU_20260202-MEsteio_ArmazémB_Piso.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1QC9cc_vtQKoKfh_TA6mJTXcO9l-G0bbA/view",
+      "status": "equalizacao_evidencia_ads_sem_repetir_valores"
+    },
+    {
+      "id": "1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf",
+      "nome": "EQU_20260406-MEGA_LAVAGEM DE PISO_PROPRIEDADES.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1lBJxzFM1rabVFdp2sXlX9tb3_10E-2bf/view",
+      "status": "equalizacao_extracao_e_vinculo_pendentes"
+    },
+    {
+      "id": "1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST",
+      "nome": "EQU_20260415-MCtba_Revitalização Campo de Society_Facilities.xlsx - Google Planilhas.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1tTF0VWzO2ybwsaTnpMJsEdY_bSJirtST/view",
+      "status": "equalizacao_extracao_e_vinculo_pendentes"
+    },
+    {
+      "id": "1TZDBilsJB54rq56yE8HQesn1I7m2GPX8",
+      "nome": "EQU_20260827-MEGA CURITIBA_Revitalização Reservatório Metálico 138.000l.xlsx - Google Planilhas.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1TZDBilsJB54rq56yE8HQesn1I7m2GPX8/view",
+      "status": "equalizacao_extracao_e_vinculo_pendentes"
+    },
+    {
+      "id": "1_Xdbc83uCrQZl_w94TZ5zivNvZnyRx8hnJQ_ALIRaWI",
+      "nome": "EQU_AAAAMMDD-MEGA_PROJETO_ÁREA",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1_Xdbc83uCrQZl_w94TZ5zivNvZnyRx8hnJQ_ALIRaWI/view",
+      "status": "modelo_sem_extracao"
+    },
+    {
+      "id": "157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N",
+      "nome": "Formulário de equalização - Bicicletário externo.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/157eo_r2n4kg6VAWt-0yXOBdY7uu_5w2N/view",
+      "status": "equalizacao_extracao_e_vinculo_pendentes"
+    },
+    {
+      "id": "1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB",
+      "nome": "Formulário de equalização - Material de consumo - Google Planilhas (1).pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1rm8RKtbZ3j8YOJh5kJ0kR1PsBzewLCFB/view",
+      "status": "equalizacao_extracao_e_vinculo_pendentes"
+    },
+    {
+      "id": "1eUCTS00JCOGVnF3UTy_193KR09yNiN4B",
+      "nome": "Formulário de equalização - Material de consumo - Google Planilhas.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1eUCTS00JCOGVnF3UTy_193KR09yNiN4B/view",
+      "status": "equalizacao_extracao_e_vinculo_pendentes"
+    },
+    {
+      "id": "1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI",
+      "nome": "Formulário de equalização - Material de consumo (1).pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1NuUAuVXFtxEqG-Wk_zmqz6MGxNWcRMOI/view",
+      "status": "equalizacao_extracao_e_vinculo_pendentes"
+    },
+    {
+      "id": "12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5",
+      "nome": "Formulário de equalização - Material de consumo.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/12vEJU4NaS9bv5laqBsQd7XhjOFMxc7Q5/view",
+      "status": "equalizacao_extracao_e_vinculo_pendentes"
+    },
+    {
+      "id": "1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx",
+      "nome": "Formulário de equalização - PMOC RV01.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1dYwpCgRn_ht0yoKxOFvthO0vsTz5PRyx/view",
+      "status": "equalizacao_extracao_e_vinculo_pendentes"
+    },
+    {
+      "id": "1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j",
+      "nome": "MCtba - Mapa de Equalização Manut Preventiva + Emissão de PMOC_v02.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1mZWXEvDd3QwndfRcUBFk-ZxODPMgdp9j/view",
+      "status": "equalizacao_extracao_e_vinculo_pendentes"
+    },
+    {
+      "id": "1Eb2Z25e9EDerAAFrsZ9tuH5E8x5Au3T6",
+      "nome": "OC 034925 Fabesul - 671,52.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1Eb2Z25e9EDerAAFrsZ9tuH5E8x5Au3T6/view",
+      "status": "ordem_compra_vinculo_pendente"
+    },
+    {
+      "id": "1zYv7vMJZDTRVdd_bIaVoHQk-0RwqCWH-",
+      "nome": "Orç Canaveral - 1.595,72.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1zYv7vMJZDTRVdd_bIaVoHQk-0RwqCWH-/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosCanaveral.gs",
+      "linhas": 18
+    },
+    {
+      "id": "1QWdX6jaXs1VqBFsmNA-ERQODePq24Gcr",
+      "nome": "Orç Canaveral - 4.391,45.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1QWdX6jaXs1VqBFsmNA-ERQODePq24Gcr/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosCanaveral.gs",
+      "linhas": 22
+    },
+    {
+      "id": "1S7qGBciD_bC57bzhw4VpcAI2vOy6Egos",
+      "nome": "Orç Canaveral - 528,39.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1S7qGBciD_bC57bzhw4VpcAI2vOy6Egos/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosCanaveral.gs",
+      "linhas": 10
+    },
+    {
+      "id": "1wmFtKzI4ISOTAVn1LvGdYEYIAkW-qQ03",
+      "nome": "Orç Canaveral - 999,79.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1wmFtKzI4ISOTAVn1LvGdYEYIAkW-qQ03/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosCanaveral.gs",
+      "linhas": 8
+    },
+    {
+      "id": "1HASD5KQ9v63zL_oUIEaEv1EOKkjNYd51",
+      "nome": "Orç Contabilista R$975,37.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1HASD5KQ9v63zL_oUIEaEv1EOKkjNYd51/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosContabilista.gs",
+      "linhas": 19
+    },
+    {
+      "id": "1wVQnMpniyzk44CnPbthmhWzCe_ZOff9r",
+      "nome": "ORÇ FABESUL R$671,52 (BOBINAS TOTENS).pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1wVQnMpniyzk44CnPbthmhWzCe_ZOff9r/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosFabesul.gs",
+      "linhas": 1
+    },
+    {
+      "id": "16XM5uniW7hC6WDJTILPAlc4CqU6X-K0v",
+      "nome": "Orç Fabesul R$719,42.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/16XM5uniW7hC6WDJTILPAlc4CqU6X-K0v/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosFabesul.gs",
+      "linhas": 10
+    },
+    {
+      "id": "1ETsvvpStTPid5Hv_xqQioC82ij5ub8Lh",
+      "nome": "Orç Litoral - 1.110,16.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1ETsvvpStTPid5Hv_xqQioC82ij5ub8Lh/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosLitoral.gs",
+      "linhas": 17
+    },
+    {
+      "id": "1FAuAX7biqwxP40b-eJ8kD1i3MbuLtZOZ",
+      "nome": "Orç Litoral - 936,84.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1FAuAX7biqwxP40b-eJ8kD1i3MbuLtZOZ/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosLitoral.gs",
+      "linhas": 19
+    },
+    {
+      "id": "1qNohQs4nU6o3BEKb3BI99DFVH0i7ntjA",
+      "nome": "Orç Litoral - 981,57.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1qNohQs4nU6o3BEKb3BI99DFVH0i7ntjA/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosLitoral.gs",
+      "linhas": 21
+    },
+    {
+      "id": "1n5ogbYLhHQxFOcMMpmgCnTJ1tXmFyGWC",
+      "nome": "Orç Litoral - 987,26 RV01.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1n5ogbYLhHQxFOcMMpmgCnTJ1tXmFyGWC/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosLitoral.gs",
+      "linhas": 18
+    },
+    {
+      "id": "1dOcriJeFcqaaVzagTSQubH6Sc0O3-ixq",
+      "nome": "Orç. ADS_10.000,00 Limpeza piso_REV01.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1dOcriJeFcqaaVzagTSQubH6Sc0O3-ixq/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosADS.gs",
+      "linhas": 3
+    },
+    {
+      "id": "1EVSMzEPsL1J4R3cflIRWJoXDEBfzpykf",
+      "nome": "Orç. Base Papéis Armazém B2-609,58.pdf",
+      "tipo": "application/pdf",
+      "pasta": "principal",
+      "url": "https://drive.google.com/file/d/1EVSMzEPsL1J4R3cflIRWJoXDEBfzpykf/view",
+      "status": "orcamento_consolidado",
+      "extracao": "app/DadosBasePapeis.gs",
+      "linhas": 14
+    },
+    {
+      "id": "1Wf9GFdIMYSjaJKwflYsG6DKxihqaCtp7",
+      "nome": "CAPITAL REALTY - MEGA CURITIBA FASE 7 1101.4 (2).pdf",
+      "tipo": "application/pdf",
+      "pasta": "Engenharia",
+      "url": "https://drive.google.com/file/d/1Wf9GFdIMYSjaJKwflYsG6DKxihqaCtp7/view",
+      "status": "engenharia_extracao_pendente"
+    },
+    {
+      "id": "1CClhR1bEGVpSKQXIYB1uJNLSxTJT9KKA",
+      "nome": "CARTA PROPOSTA MEGA CURITIBA - FASE 7 - ARMAZEM 4+7+8 Capital Realty__R02.pdf",
+      "tipo": "application/pdf",
+      "pasta": "Engenharia",
+      "url": "https://drive.google.com/file/d/1CClhR1bEGVpSKQXIYB1uJNLSxTJT9KKA/view",
+      "status": "engenharia_extracao_pendente"
+    },
+    {
+      "id": "1dvkmA-hsMX8pAKoQrAW4LuD6gacsARrX",
+      "nome": "Cartao_de_Assinaturas_DM_JB_ACABAMENTOS_assinado (1) (1).pdf",
+      "tipo": "application/pdf",
+      "pasta": "Engenharia",
+      "url": "https://drive.google.com/file/d/1dvkmA-hsMX8pAKoQrAW4LuD6gacsARrX/view",
+      "status": "engenharia_extracao_pendente"
+    },
+    {
+      "id": "1IXi9g9tG3-dh4vPR5kAB_a-y5GMlqKsuaxBQv6sNL08",
+      "nome": "MCtba F7_EQU Fund Profunda_R01",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "Engenharia",
+      "url": "https://drive.google.com/file/d/1IXi9g9tG3-dh4vPR5kAB_a-y5GMlqKsuaxBQv6sNL08/view",
+      "status": "engenharia_extracao_pendente"
+    },
+    {
+      "id": "1Nt5qOpwkhEqLAEfhIH4vK92JGIf2K_xrcvenKR1l_z8",
+      "nome": "MCtba-F7_EAP FUNDAÇÃO_R02",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "Engenharia",
+      "url": "https://drive.google.com/file/d/1Nt5qOpwkhEqLAEfhIH4vK92JGIf2K_xrcvenKR1l_z8/view",
+      "status": "engenharia_extracao_pendente"
+    },
+    {
+      "id": "1MMLiJ1wQfztGzCPo3NtaviaZSFt-0y-lsannNnaGsng",
+      "nome": "MCtba-F7_EAP FUNDAÇÃO_R03",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "Engenharia",
+      "url": "https://drive.google.com/file/d/1MMLiJ1wQfztGzCPo3NtaviaZSFt-0y-lsannNnaGsng/view",
+      "status": "engenharia_extracao_pendente"
+    },
+    {
+      "id": "16wqN-RQN65gbjGnUaJ_uzfJn434aDjG8",
+      "nome": "MCtba-F7_MEMORIAL TECNICO_FUNDAÇÃO_R02 (1).pdf",
+      "tipo": "application/pdf",
+      "pasta": "Engenharia",
+      "url": "https://drive.google.com/file/d/16wqN-RQN65gbjGnUaJ_uzfJn434aDjG8/view",
+      "status": "engenharia_extracao_pendente"
+    },
+    {
+      "id": "1hkUW-snSRt8P_mZTSkDyBFHLqXjmE5A9fhz5yUlwfDs",
+      "nome": "Monopolio-MCtba-F7_EAP FUNDAÇÃO_R01",
+      "tipo": "application/vnd.google-apps.spreadsheet",
+      "pasta": "Engenharia",
+      "url": "https://drive.google.com/file/d/1hkUW-snSRt8P_mZTSkDyBFHLqXjmE5A9fhz5yUlwfDs/view",
+      "status": "engenharia_extracao_pendente"
+    },
+    {
+      "id": "1b_Ewbi4_e48Fje2iRP9Cm3Q8J4GftwmP",
+      "nome": "Monopolio-MCtba-F7_EAP FUNDAÇÃO_R01.pdf",
+      "tipo": "application/pdf",
+      "pasta": "Engenharia",
+      "url": "https://drive.google.com/file/d/1b_Ewbi4_e48Fje2iRP9Cm3Q8J4GftwmP/view",
+      "status": "engenharia_extracao_pendente"
+    }
+  ]
+}
