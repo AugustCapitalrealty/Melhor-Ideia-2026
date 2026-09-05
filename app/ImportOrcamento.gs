@@ -34,6 +34,15 @@ function importarOrcamento(orc, forcar) {
   }
 
   return cfComTrava_(function () {
+    // Recuperar importações interrompidas
+    var emAndamento = cfLerTudo_('Importacoes').filter(function(i) {
+      return i.STATUS === 'em_andamento';
+    });
+    emAndamento.forEach(function(i) {
+      Logger.log('Recuperando importação interrompida: ' + i.ID);
+      cfDesfazerImportacao_(i.ID, false);
+    });
+
     const impressao = cfHash_([
       orc.fornecedor && orc.fornecedor.cnpj, orc.numero, orc.data,
       orc.itens.map(function (i) {
@@ -50,7 +59,7 @@ function importarOrcamento(orc, forcar) {
                  ' já importado em ' + jaImportado.DATA + ' (' + jaImportado.ID + ').');
       return { status: 'ja_importado', importacao: jaImportado.ID };
     }
-    if (jaImportado && forcar) desfazerImportacao(jaImportado.ID);
+    if (jaImportado && forcar) cfDesfazerImportacao_(jaImportado.ID, false);
 
     const idImportacao = cfNovoId_('IMP');
     const contagem = cfGravarOrcamento_(orc, idImportacao);
@@ -60,6 +69,7 @@ function importarOrcamento(orc, forcar) {
       ARQUIVO_NOME: (orc.arquivo && orc.arquivo.nome) || ('Orçamento ' + (orc.numero || '')),
       ARQUIVO_ID: (orc.arquivo && orc.arquivo.id) || '',
       HASH: impressao,
+      HASH_VERSAO: 2,
       PARSER_VERSAO: CF_PARSER_VERSAO,
       ORIGEM: 'import_pdf',
       DATA: new Date(),
@@ -109,6 +119,8 @@ function cfGravarOrcamento_(orc, idImportacao) {
     ID: idProposta,
     ID_EQUALIZACAO: '',                       // avulso: não pertence a comparação
     CNPJ: cnpjValido,
+    CNPJ_EMPRESA: cfSoDigitos_(orc.cnpjEmpresa) || '',
+    ID_FONTE: (orc.arquivo && orc.arquivo.id) || '',
     RAZAO_SOCIAL_INFORMADA: forn.razaoSocial || '',
     ORDEM: 1,
     RODADA: 'inicial',
@@ -141,7 +153,8 @@ function cfGravarOrcamento_(orc, idImportacao) {
       UNIDADE_REFERENCIA: item.unidade || '',
       // Código do fornecedor: é o identificador mais estável que existe no
       // corpus. Nenhum documento interno tem chave de item.
-      CODIGO_ORIGINAL: item.codigoFornecedor || ''
+      CODIGO_ORIGINAL: item.codigoFornecedor || '',
+      ID_IMPORTACAO: idImportacao
     });
 
     linhasPreco.push({
@@ -152,13 +165,16 @@ function cfGravarOrcamento_(orc, idImportacao) {
       UNIDADE: item.unidade || '',
       PRECO_UNITARIO: unit === null ? '' : unit,
       VALOR_TOTAL: total === null ? '' : total,
-      STATUS_PRECO: unit === null ? 'nao_cotado' : 'cotado',
+      ORIGEM_CALCULO: (unit !== null || total !== null) ? 'informado' : 'ausente',
+      DESCONTO_PERCENTUAL: cfNumero_(item.descontoPct) || '',
+      STATUS_PRECO: (unit === null && total === null) ? 'nao_cotado' : 'cotado',
       CNPJ: cnpjValido,
       ID_EQUALIZACAO: '',
       ID_EMPREENDIMENTO: orc.empreendimento || '',
       UF: forn.uf || cfInferirUf_(orc.empreendimento),
       DATA: data || '',
-      ORIGEM: 'import_pdf'
+      ORIGEM: 'import_pdf',
+      ID_IMPORTACAO: idImportacao
     });
   });
 

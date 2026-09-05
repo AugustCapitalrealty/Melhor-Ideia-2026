@@ -97,6 +97,9 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-s
   .busca{flex-direction:column}
   h1{font-size:24px}
 }
+.fonte-link { text-decoration: none; font-size: .85em; opacity: .7; }
+.fonte-link:hover { opacity: 1; }
+.filtrado { display: block; margin-top: 8px; font-size: 12px; color: var(--suave); }
 </style>
 </head>
 <body>
@@ -198,7 +201,8 @@ function desenhar(r) {
       var cls = g.precos.length > 1 && i === 0 ? 'menor'
               : (g.precos.length > 1 && i === g.precos.length - 1 ? 'maior' : '');
       return '<tr class="' + cls + '"><td>' + esc(p.fornecedor) +
-             (p.vencedora ? '<span class="tag ok">contratado</span>' : '') +
+             (p.fonte ? ' <a href="https://drive.google.com/file/d/' + esc(p.fonte) + '/view" target="_blank" class="fonte-link" title="Abrir fonte">📄</a>' : '') +
+             (p.situacao ? '<span class="tag ok">' + esc(p.situacao) + '</span>' : '') +
              (p.semCadastro ? '<span class="tag av">sem cadastro</span>' : '') +
              '</td><td class="v">' + moeda(p.valor) + '</td></tr>';
     }).join('');
@@ -214,7 +218,8 @@ function desenhar(r) {
           (g.variacao !== null && g.variacao !== undefined
             ? '<span class="var ' + classeVariacao(g.variacao) + '">' +
               Math.round(g.variacao) + '% entre o menor e o maior</span>' : '') +
-          '</div>'
+          '</div>' +
+          (g.minimo === null ? '<small class="filtrado">Sem preços comparáveis neste grupo</small>' : '')
         : '') +
       '</div>';
   });

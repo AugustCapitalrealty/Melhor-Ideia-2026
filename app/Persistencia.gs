@@ -23,6 +23,15 @@ function importarEqualizacao(entrada, forcar) {
   const idArquivo = cfExtrairId_(entrada);
 
   return cfComTrava_(function () {
+    // Recuperar importações interrompidas
+    var emAndamento = cfLerTudo_('Importacoes').filter(function(i) {
+      return i.STATUS === 'em_andamento';
+    });
+    emAndamento.forEach(function(i) {
+      Logger.log('Recuperando importação interrompida: ' + i.ID);
+      cfDesfazerImportacao_(i.ID, false);
+    });
+
     const analise = analisarEqualizacao(idArquivo);
     const id = idArquivo;
 
@@ -38,24 +47,58 @@ function importarEqualizacao(entrada, forcar) {
       return { status: 'ja_importado', importacao: jaImportado.ID };
     }
     if (jaImportado && forcar) {
-      desfazerImportacao(jaImportado.ID);
+      cfDesfazerImportacao_(jaImportado.ID, false);
     }
 
     const idImportacao = cfNovoId_('IMP');
-    const escrita = cfGravarAnalise_(analise, idImportacao);
-
     cfInserir_('Importacoes', [{
       ID: idImportacao,
       ARQUIVO_NOME: analise.arquivo,
       ARQUIVO_ID: id,
       HASH: impressao,
+      HASH_VERSAO: 2,
       PARSER_VERSAO: CF_PARSER_VERSAO,
       ORIGEM: 'import_sheets',
       DATA: new Date(),
       USUARIO: cfUsuario_(),
-      STATUS: 'concluida',
-      RESUMO: JSON.stringify(escrita)
+      STATUS: 'em_andamento',
+      RESUMO: ''
     }]);
+
+    var escrita;
+    try {
+      escrita = cfGravarAnalise_(analise, idImportacao);
+      cfApagarPor_('Importacoes', 'ID', idImportacao);
+      cfInserir_('Importacoes', [{
+        ID: idImportacao,
+        ARQUIVO_NOME: analise.arquivo,
+        ARQUIVO_ID: id,
+        HASH: impressao,
+        HASH_VERSAO: 2,
+        PARSER_VERSAO: CF_PARSER_VERSAO,
+        ORIGEM: 'import_sheets',
+        DATA: new Date(),
+        USUARIO: cfUsuario_(),
+        STATUS: 'concluida',
+        RESUMO: JSON.stringify(escrita)
+      }]);
+    } catch (err) {
+      cfApagarPor_('Importacoes', 'ID', idImportacao);
+      cfInserir_('Importacoes', [{
+        ID: idImportacao,
+        ARQUIVO_NOME: analise.arquivo,
+        ARQUIVO_ID: id,
+        HASH: impressao,
+        HASH_VERSAO: 2,
+        PARSER_VERSAO: CF_PARSER_VERSAO,
+        ORIGEM: 'import_sheets',
+        DATA: new Date(),
+        USUARIO: cfUsuario_(),
+        STATUS: 'falha',
+        RESUMO: String(err.message || err)
+      }]);
+      throw err;
+    }
 
     cfLog_('importar', 'arquivo', id, analise.arquivo);
     cfImprimirEscrita_(idImportacao, analise, escrita);
@@ -63,14 +106,23 @@ function importarEqualizacao(entrada, forcar) {
   }, 300);
 }
 
-/** Remove tudo que veio de uma importação. */
+/** Remove tudo que veio de uma importação (equalizações E avulsos). */
 function desfazerImportacao(idImportacao) {
-  return cfComTrava_(function () {
-    const equalizacoes = cfLerTudo_('Equalizacoes')
+  return cfDesfazerImportacao_(idImportacao, true);
+}
+
+/**
+ * Implementação interna do desfazer.
+ * @param {boolean} comTrava  false quando chamado de dentro de outra operação já travada
+ */
+function cfDesfazerImportacao_(idImportacao, comTrava) {
+  var executar = function () {
+    var apagados = { Precos: 0, EAP: 0, Propostas: 0, Equalizacoes: 0, Pendencias: 0 };
+
+    // Caminho 1: equalizações vinculadas (importação de planilha)
+    var equalizacoes = cfLerTudo_('Equalizacoes')
       .filter(function (e) { return String(e.ID_IMPORTACAO) === String(idImportacao); })
       .map(function (e) { return String(e.ID); });
-
-    const apagados = { Precos: 0, EAP: 0, Propostas: 0, Equalizacoes: 0, Pendencias: 0 };
 
     equalizacoes.forEach(function (idEq) {
       apagados.Precos       += cfApagarPor_('Precos', 'ID_EQUALIZACAO', idEq);
@@ -79,16 +131,34 @@ function desfazerImportacao(idImportacao) {
       apagados.Equalizacoes += cfApagarPor_('Equalizacoes', 'ID', idEq);
     });
 
+    // Caminho 2: propostas avulsas (orçamento sem equalização)
+    var propostasAvulsas = cfLerTudo_('Propostas')
+      .filter(function (p) {
+        return String(p.ID_IMPORTACAO) === String(idImportacao) && !p.ID_EQUALIZACAO;
+      })
+      .map(function (p) { return String(p.ID); });
+
+    propostasAvulsas.forEach(function (idProp) {
+      apagados.Precos    += cfApagarPor_('Precos', 'ID_PROPOSTA', idProp);
+      apagados.Propostas += cfApagarPor_('Propostas', 'ID', idProp);
+    });
+
+    // EAP avulsa: vinculada à importação diretamente
+    apagados.EAP += cfApagarPor_('EAP', 'ID_IMPORTACAO', idImportacao);
+
+    // Pendências e registro de importação
     apagados.Pendencias += cfApagarPor_('Pendencias', 'ID_IMPORTACAO', idImportacao);
     cfApagarPor_('Importacoes', 'ID', idImportacao);
 
-    // Fornecedor NÃO é apagado: ele pode ter vindo de outra importação
-    // ou ter sido enriquecido à mão. Perder cadastro é pior que sobrar.
+    // Fornecedor NÃO é apagado: pode ter vindo de outra importação
+    // ou ter sido enriquecido à mão.
 
     cfLog_('desfazer_importacao', 'importacao', idImportacao, JSON.stringify(apagados));
     Logger.log('Desfeito ' + idImportacao + ': ' + JSON.stringify(apagados));
     return apagados;
-  }, 300);
+  };
+
+  return comTrava ? cfComTrava_(executar, 300) : executar();
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -102,14 +172,24 @@ function desfazerImportacao(idImportacao) {
  * duas vezes. Só muda se o que importa mudou.
  */
 function cfImpressaoDoArquivo_(analise) {
-  const essencia = analise.equalizacoes.map(function (e) {
+  var essencia = analise.equalizacoes.map(function (e) {
+    var empresaNorm = cfResolverEmpresa_(e.cabecalho.empresa);
+    var empreendimentoNorm = cfResolverEmpreendimento_(e.cabecalho.empreendimento);
     return [
       e.aba,
-      e.cabecalho.empresa, e.cabecalho.empreendimento, e.cabecalho.projeto,
-      e.proponentes.map(function (p) { return p.cnpjLimpo + '|' + p.razaoSocial; }).join(','),
+      empresaNorm || e.cabecalho.empresa,
+      empreendimentoNorm || e.cabecalho.empreendimento,
+      e.cabecalho.projeto,
+      e.proponentes.map(function (p) {
+        return p.cnpjLimpo + '|' + p.razaoSocial + '|' +
+               (p.condicoesPagamento || '') + '|' + (p.prazoExecucao || '');
+      }).join(','),
       e.eap.map(function (n) {
         return n.codigoOriginal + '|' + n.descricao + '|' +
-               n.precos.map(function (p) { return p.valor; }).join('/');
+               (n.unidade || '') + '|' +
+               n.precos.map(function (p) {
+                 return (p.valor === null ? '' : p.valor) + ':' + (p.status || '');
+               }).join('/');
       }).join(';')
     ].join('§');
   }).join('¶');
@@ -134,16 +214,17 @@ function cfGravarAnalise_(analise, idImportacao) {
 
     linhasEq.push({
       ID: idEq,
-      CNPJ_EMPRESA: cfSoDigitos_(eq.cabecalho.empresa) || '',
-      ID_EMPREENDIMENTO: empreendimento,
+      CNPJ_EMPRESA: cfResolverEmpresa_(eq.cabecalho.empresa),
+      ID_EMPREENDIMENTO: cfResolverEmpreendimento_(empreendimento),
       PROJETO: eq.cabecalho.projeto || '',
       AREA: cfAreaDaAba_(eq.aba),
       GRUPO_CENTRO_CUSTO: eq.cabecalho.grupoCentroCusto || '',
       DATA_EQUALIZACAO: data,
-      STATUS: 'homologada',
+      STATUS: 'importada',
       PARECER_FAVORAVEL: eq.cabecalho.parecerFavoravel || '',
       ORIGEM: 'import_sheets',
       ID_IMPORTACAO: idImportacao,
+      ID_FONTE: analise.idArquivo || '',
       CRIADO_POR: usuario,
       CRIADO_EM: agora,
       ATUALIZADO_EM: agora
@@ -219,7 +300,8 @@ function cfGravarAnalise_(analise, idImportacao) {
         ORDEM: n.ordem,
         TIPO: n.tipo,
         DESCRICAO: n.descricao,
-        CODIGO_ORIGINAL: n.codigoOriginal
+        CODIGO_ORIGINAL: n.codigoOriginal,
+        ID_IMPORTACAO: idImportacao
       });
       contagem.nos++;
 
@@ -231,19 +313,33 @@ function cfGravarAnalise_(analise, idImportacao) {
         const idProp = idsProposta[preco.proponente];
         if (!idProp) return;
         const prop = eq.proponentes[preco.proponente - 1] || {};
+
+        var unit = preco.valor;
+        var qtd = n.quantidadeReferencia !== undefined ? n.quantidadeReferencia : n.quantidade;
+        
+        var valorTotal = '';
+        var origemCalculo = unit === null ? 'ausente' : 'informado';
+        
+        if (qtd !== undefined && qtd !== null && qtd !== '' && unit !== null) {
+          valorTotal = qtd * unit;
+          origemCalculo = 'calculado';
+        }
+
         linhasPreco.push({
           ID: cfNovoId_('PRC'),
           ID_EAP: idsNo[n.id],
           ID_PROPOSTA: idProp,
-          PRECO_UNITARIO: preco.valor === null ? '' : preco.valor,
-          VALOR_TOTAL: preco.valor === null ? '' : preco.valor,
+          PRECO_UNITARIO: unit === null ? '' : unit,
+          VALOR_TOTAL: valorTotal,
+          ORIGEM_CALCULO: origemCalculo,
           STATUS_PRECO: preco.status,
           CNPJ: prop.cnpjLimpo || '',
           ID_EQUALIZACAO: idEq,
           ID_EMPREENDIMENTO: empreendimento,
           UF: uf,
           DATA: data,
-          ORIGEM: 'import_sheets'
+          ORIGEM: 'import_sheets',
+          ID_IMPORTACAO: idImportacao
         });
         contagem.precos++;
       });
@@ -291,6 +387,47 @@ function cfGravarAnalise_(analise, idImportacao) {
 // ─────────────────────────────────────────────────────────────
 //  Auxiliares
 // ─────────────────────────────────────────────────────────────
+
+/**
+ * Resolve o texto de empresa para o CNPJ cadastrado.
+ * Usa grafias alternativas da tabela Empresas.
+ */
+function cfResolverEmpresa_(texto) {
+  if (!texto) return '';
+  var limpo = cfNormalizar_(texto);
+  var empresas = cfLerTudo_('Empresas');
+  for (var i = 0; i < empresas.length; i++) {
+    var e = empresas[i];
+    var grafias = String(e.GRAFIAS_ALTERNATIVAS || '').split('|').map(function(g) { return cfNormalizar_(g); });
+    grafias.push(cfNormalizar_(e.CNPJ || ''));
+    if (e.RAZAO_SOCIAL) grafias.push(cfNormalizar_(e.RAZAO_SOCIAL));
+    if (e.NOME_FANTASIA) grafias.push(cfNormalizar_(e.NOME_FANTASIA));
+    for (var j = 0; j < grafias.length; j++) {
+      if (grafias[j] && limpo.indexOf(grafias[j]) >= 0) return String(e.CNPJ);
+    }
+  }
+  return '';
+}
+
+/**
+ * Resolve o texto de empreendimento para o ID canônico.
+ * Usa apelidos cadastrados na tabela Empreendimentos.
+ */
+function cfResolverEmpreendimento_(texto) {
+  if (!texto) return '';
+  var limpo = cfNormalizar_(texto);
+  var empreendimentos = cfLerTudo_('Empreendimentos');
+  for (var i = 0; i < empreendimentos.length; i++) {
+    var emp = empreendimentos[i];
+    var apelidos = String(emp.APELIDOS || '').split('|').map(function(a) { return cfNormalizar_(a); });
+    if (emp.NOME) apelidos.push(cfNormalizar_(emp.NOME));
+    for (var j = 0; j < apelidos.length; j++) {
+      if (apelidos[j] && limpo.indexOf(apelidos[j]) >= 0) return String(emp.ID);
+    }
+  }
+  // Fallback: retorna o texto original (compatibilidade com registros legados)
+  return texto;
+}
 
 /** "Mapa de Cotação_Demercado_Equipamentos" → "Equipamentos" */
 function cfAreaDaAba_(nomeAba) {

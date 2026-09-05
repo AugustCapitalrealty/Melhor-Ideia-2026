@@ -42,13 +42,18 @@ function apiConsultar(termo) {
           minimo: g.minimo,
           maximo: g.maximo,
           variacao: g.variacao,
+          fonte: g.precos[0] && g.precos[0].fonte || '',
           precos: g.precos.sort(function (a, b) { return a.valor - b.valor; })
             .map(function (p) {
               return {
                 fornecedor: p.fornecedor,
                 valor: p.valor,
                 vencedora: !!p.vencedora,
-                semCadastro: !!p.semCadastro
+                semCadastro: !!p.semCadastro,
+                fonte: p.fonte || '',
+                revisao: p.revisao || '',
+                cnpjEmpresa: p.cnpjEmpresa || '',
+                situacao: p.vencedora ? 'selecionado na equalização' : (p.origem === 'import_pdf' ? 'cotado (avulso)' : 'cotado')
               };
             })
         };
@@ -116,6 +121,26 @@ function apiPanorama() {
 function cfDataTexto_(d) {
   if (!d) return null;
   return Utilities.formatDate(d, 'America/Sao_Paulo', 'dd/MM/yyyy');
+}
+
+/**
+ * Verificação de autorização no servidor (Etapa 7).
+ * Operações de gravação, migração e rollback (desfazer) não estão
+ * expostas diretamente no web app (que é somente-leitura). Caso venham
+ * a ser acionadas remotamente, exigem e-mail corporativo válido.
+ */
+function cfExigeAutorizacao_() {
+  const usuario = cfUsuario_();
+  if (!usuario || usuario === 'desconhecido') {
+    throw new Error('Acesso não autorizado: usuário não autenticado.');
+  }
+  // Domínios autorizados para operações de escrita
+  const autorizado = /@(capitalrealty|demercado)\.com\.br$/i.test(usuario);
+  if (!autorizado) {
+    Logger.log('Tentativa de acesso administrativo negada para: ' + usuario);
+    throw new Error('Acesso restrito a usuários autorizados (' + usuario + ').');
+  }
+  return usuario;
 }
 
 /** Imprime a URL publicada. O menu não mostra, e sempre se procura. */

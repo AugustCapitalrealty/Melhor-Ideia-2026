@@ -1,0 +1,543 @@
+{
+  "dataGeracao": "2026-09-05T13:11:33.206Z",
+  "resumo": {
+    "consolidadoLocal": {
+      "documentos": 21,
+      "registros": 274,
+      "fornecedores": 7,
+      "megas": [
+        "MEGA CENTRO LOGÍSTICO CURITIBA",
+        "MEGA CENTRO LOGÍSTICO ITAJAÍ",
+        "MEGA CENTRO LOGÍSTICO ESTEIO"
+      ]
+    },
+    "totalDivergencias": 9,
+    "totalVinculosPendentes": 3,
+    "cotacoesCandidatasAusentes": 31,
+    "fontesComAcessoPendente": 2
+  },
+  "divergencias": [
+    {
+      "id": "wifi-utilities-empresa",
+      "tipo": "empresa_ausente",
+      "registros": "Wi-Fi Casa de Bombas, Monitoramento Utilities",
+      "descricao": "As 4 equalizações na base Google estão sem CNPJ da empresa.",
+      "correcaoProposta": "Atribuir CNPJ da empresa usando cfResolverEmpresa_() ao reimportar.",
+      "prioridade": "alta",
+      "fonte": "auditoria_cobertura.json → base_google"
+    },
+    {
+      "id": "utilities-periodicidade",
+      "tipo": "periodicidade_incorreta",
+      "registros": "Monitoramento Utilities/Água",
+      "descricao": "Os totais declarados equivalem a 12x os valores calculados — mensalidade virou anual no processamento.",
+      "correcaoProposta": "Corrigir PERIODO_COBRANCA para \"mensal\" e DURACAO_CONTRATO_MESES para 12. Manter o valor mensal como PRECO_UNITARIO e o anual como referência.",
+      "prioridade": "alta",
+      "fonte": "auditoria_cobertura.json → base_google"
+    },
+    {
+      "id": "wifi-fornecedor-sem-cnpj",
+      "tipo": "cadastro_incompleto",
+      "registros": "Wi-Fi Casa de Bombas — fornecedor(es)",
+      "descricao": "Proposta de Wi-Fi sem CNPJ de fornecedor.",
+      "correcaoProposta": "Pendente — localizar CNPJ no documento original (acesso restrito HTTP 401).",
+      "prioridade": "media",
+      "fonte": "auditoria_cobertura.json → base_google"
+    },
+    {
+      "id": "eletrobarras-duplicacao",
+      "tipo": "possivel_duplicacao",
+      "registros": "Eletrobarras — Mão de obra",
+      "descricao": "Eletrobarras aparece em duas colunas de mão de obra com R$ 2.200,00 cada.",
+      "correcaoProposta": "Verificar no documento original se são propostas distintas ou duplicação. NÃO somar automaticamente.",
+      "prioridade": "alta",
+      "fonte": "auditoria_cobertura.json → base_google"
+    },
+    {
+      "id": "mapas-abril-duplicados",
+      "tipo": "duplicacao_confirmada",
+      "registros": "Material de consumo Curitiba, abril",
+      "descricao": "Dois PDFs representam o mesmo mapa de consumo de abril.",
+      "correcaoProposta": "Manter apenas um, vincular o segundo como cópia/revisão.",
+      "prioridade": "media",
+      "fonte": "auditoria_cobertura.json → cotacoes_candidatas"
+    },
+    {
+      "id": "imunizadora-rp-data",
+      "tipo": "data_divergente",
+      "registros": "Imunizadora RP — Lavagem de piso Esteio",
+      "descricao": "Data divergente entre o mapa de equalização e o orçamento da Imunizadora RP.",
+      "correcaoProposta": "Resolver a data divergente antes de confirmar fusão. Manter ambas as datas registradas com fonte.",
+      "prioridade": "media",
+      "fonte": "auditoria_cobertura.json → auditoria_mapas"
+    },
+    {
+      "id": "ads-revisao",
+      "tipo": "revisao_divergente",
+      "registros": "ADS Manutenção — Piso Esteio",
+      "descricao": "PDF diz REV01 mas equalização diz REV02.",
+      "correcaoProposta": "Registrar ambas as revisões com fonte. Não fundir automaticamente.",
+      "prioridade": "baixa",
+      "fonte": "DadosADS.gs + auditoria"
+    },
+    {
+      "id": "base-papeis-unidades",
+      "tipo": "unidade_pendente",
+      "registros": "Base Papéis — 79 linhas",
+      "descricao": "79 linhas sem unidade de embalagem. Códigos genéricos como UN e KG não identificam produtos.",
+      "correcaoProposta": "Manter pendentes até confirmação. NÃO inventar unidades.",
+      "prioridade": "baixa",
+      "fonte": "DadosBasePapeis.gs"
+    },
+    {
+      "id": "litoral-desconto",
+      "tipo": "desconto_embutido",
+      "registros": "Litoral — 77 itens com desconto 15%",
+      "descricao": "31 linhas com divergência de centavos entre qtd × unitário e total impresso (desconto já aplicado).",
+      "correcaoProposta": "Preservar valores como impressos. NÃO reaplicar desconto. Registrar DESCONTO_PERCENTUAL = 15.",
+      "prioridade": "baixa",
+      "fonte": "DadosLitoral.gs"
+    }
+  ],
+  "cotacoesCandidatas": [
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    },
+    {
+      "conjunto": "",
+      "cotacoes": 0,
+      "preservar": "",
+      "status": "pendente_incorporacao",
+      "correcaoProposta": "Incorporar ao consolidado após validação do documento original",
+      "fonte": "Drive principal"
+    }
+  ],
+  "precosContratuais": {
+    "quantidade": 28,
+    "contrato": "0187.2026",
+    "empresa": "Capital Realty",
+    "mega": "Itajaí",
+    "status": "pendente_criacao_serie",
+    "correcaoProposta": "Criar série de preços contratuais vinculada às cotações e compras. NÃO somar como valor comprado — tabela de preços não comprova compra.",
+    "itens": [
+      {
+        "descricao": "Adesivo para vaso Coala Lavanda (refil)",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Adesivo para vaso Coala Lavanda (aplicador + refil)",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Água Sanitária 5L Q Boa",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Alcool Líquido 1L Itajuba/Vale",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Bom Ar Leveuze 400ml Capim Limão",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Desinfetante Canaveral Lavanda 5L",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Coala 120ml (aromatizante)",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Detergente clorado Gel Guimarães 5L",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Tela aromatizante mictório",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Detergente de louça Ypê 5L",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Desinfetante Bact Germ Canaveral 1L",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Detergente Multiuso Pink Canaveral Super Concentrado 5L",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Esponja Louça Condor PCT c/ 4",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Fibra branca para rodo",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Luva verniz Bompack Azul",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Fibra verde para rodo",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Lustra móveis Polwax 200ml Lavanda",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Pastilha para vaso sanitário Coala Lavanda",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Papel higiênico (PCT c/ 8 Rolos - 300m)",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Papel toalha (PCT c/ 6 Rolos - 200m)",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Sabonete Líquido Premisse Algas Marinhas (5L)",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Saco de lixo 100L 0,10micras (PCT c/ 100 sacos) azul",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Saco de lixo 60L (PCT c/ 100 sacos) azul",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Saco de lixo 40L (PCT c/ 100 sacos) azul",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Saco de lixo 100L 0,10micras(PCT c/ 100 sacos) marrom",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Saco de lixo 60L (PCT c/ 100 sacos) marrom",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Saco de lixo 40L (PCT c/ 100 sacos) marrom",
+        "valor": 0,
+        "unidade": ""
+      },
+      {
+        "descricao": "Saponáceo CIF 250ml",
+        "valor": 0,
+        "unidade": ""
+      }
+    ]
+  },
+  "fontesRestritas": [
+    {
+      "id": "1iOz9t7xjk19UxCkEP7t-v1yzCOk6HMTR4Qfp9mfCNF4",
+      "nome": "EQU_20260812-MEGA-CURITIBA_WIFI_CASA_DE_BOMBAS",
+      "url": "https://docs.google.com/spreadsheets/d/1iOz9t7xjk19UxCkEP7t-v1yzCOk6HMTR4Qfp9mfCNF4/edit",
+      "acesso": "HTTP401; original não acessível publicamente",
+      "status": "pendente_acesso",
+      "correcaoProposta": "Aguardar liberação de acesso. Não reconstruir informações ausentes por adivinhação."
+    },
+    {
+      "id": "1TaqCghQpf2xmNWhiSX0u7orW4Sw_9lum8Qiid9rv_I4",
+      "nome": "EQU_20260515-MEGA-CURITIBA_MONITORAMENTO-UTILITIES-AGUA_FACILITIES",
+      "url": "https://docs.google.com/spreadsheets/d/1TaqCghQpf2xmNWhiSX0u7orW4Sw_9lum8Qiid9rv_I4/edit",
+      "acesso": "HTTP401; original não acessível publicamente",
+      "status": "pendente_acesso",
+      "correcaoProposta": "Aguardar liberação de acesso. Não reconstruir informações ausentes por adivinhação."
+    }
+  ],
+  "vinculosPendentes": [
+    {
+      "id": "oc-fabesul",
+      "tipo": "vincular_oc",
+      "descricao": "OC Fabesul 034925: 48 bobinas × R$ 13,99 = R$ 671,52 (Curitiba/Demercado).",
+      "correcaoProposta": "Vincular à proposta 7503081 já consolidada. É ordem de compra, NÃO gerar outra compra.",
+      "prioridade": "media"
+    },
+    {
+      "id": "contrato-canaveral",
+      "tipo": "vincular_contrato",
+      "descricao": "Contrato 0187.2026 — 28 preços fixados, Capital Realty/Mega Itajaí.",
+      "correcaoProposta": "Preparar vínculo do contrato às cotações existentes. Preservar diferença entre preço contratual e compra efetiva.",
+      "prioridade": "alta"
+    },
+    {
+      "id": "engenharia-fundacoes",
+      "tipo": "relacionar_propostas",
+      "descricao": "Fundações Curitiba F7: 5 proponentes com divergências entre PDF, EAP e Resumo.",
+      "correcaoProposta": "Documentar relação proposta↔EAP↔equalização. Manter divergências visíveis. Aude e Maggi: propostas a localizar, não preços a inventar.",
+      "prioridade": "media"
+    }
+  ]
+}

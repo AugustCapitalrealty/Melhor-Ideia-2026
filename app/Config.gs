@@ -18,7 +18,7 @@ const CF_PASTA_ID = '1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G';
 const CF_NOME_PLANILHA = 'Capital Fornecedores — Base';
 
 /** Sobe de 1 a cada mudança no schema. Gravado em Script Properties. */
-const CF_SCHEMA_VERSAO = 2;
+const CF_SCHEMA_VERSAO = 3;
 
 /** Versão do parser de importação. Gravada em cada linha importada,
  *  para dar para reprocessar o que veio de uma geração antiga. */
@@ -74,7 +74,11 @@ const CF_ENUM = {
    *  v1 usa 'historico'; v2 passa a usar 'contrato' quando houver LPU. */
   origemReferencia: ['historico', 'contrato', 'orcamento_alvo', 'sem_referencia'],
 
-  statusCatalogo: ['ativo', 'mesclado', 'inativo']
+  statusCatalogo: ['ativo', 'mesclado', 'inativo'],
+
+  origemCalculo: ['informado', 'calculado', 'ausente'],
+
+  periodoCobranca: ['unico', 'mensal', 'trimestral', 'semestral', 'anual']
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -206,7 +210,8 @@ const CF_SCHEMA = [
     { campo: 'ID_IMPORTACAO',      tipo: 'texto', largura: 120 },
     { campo: 'CRIADO_POR',         tipo: 'texto', largura: 200 },
     { campo: 'CRIADO_EM',          tipo: 'data', largura: 130 },
-    { campo: 'ATUALIZADO_EM',      tipo: 'data', largura: 130 }
+    { campo: 'ATUALIZADO_EM',      tipo: 'data', largura: 130 },
+    { campo: 'ID_FONTE',           tipo: 'texto', largura: 150, nota: 'ID do arquivo-fonte original' }
   ]},
 
   { nome: 'Baselines', nota: 'Versão de escopo. Histórico só compara dentro do mesmo baseline.', colunas: [
@@ -243,7 +248,11 @@ const CF_SCHEMA = [
     { campo: 'VENCEDORA',           tipo: 'booleano', largura: 90 },
     { campo: 'OBSERVACAO',          tipo: 'texto', largura: 380 },
     { campo: 'ORIGEM',              tipo: 'enum:origem', largura: 120 },
-    { campo: 'ID_IMPORTACAO',       tipo: 'texto', largura: 120 }
+    { campo: 'ID_IMPORTACAO',       tipo: 'texto', largura: 120 },
+    { campo: 'ID_FONTE',            tipo: 'texto', largura: 150, nota: 'ID do arquivo-fonte no Drive' },
+    { campo: 'REVISAO_DOCUMENTO',   tipo: 'texto', largura: 130, nota: 'Revisão do documento do fornecedor' },
+    { campo: 'REVISAO_IMPORTACAO',  tipo: 'inteiro', largura: 100, nota: 'Contador de reimportação' },
+    { campo: 'CNPJ_EMPRESA',        tipo: 'texto', largura: 150, nota: 'CNPJ da empresa contratante da proposta' }
   ]},
 
   { nome: 'EAP', nota: 'A árvore. CODIGO não é gravado: é derivado da posição.', colunas: [
@@ -256,7 +265,8 @@ const CF_SCHEMA = [
     { campo: 'DESCRICAO',             tipo: 'texto', largura: 480 },
     { campo: 'QUANTIDADE_REFERENCIA', tipo: 'numero', largura: 130, nota: 'o que a CR pede' },
     { campo: 'UNIDADE_REFERENCIA',    tipo: 'texto', largura: 110 },
-    { campo: 'CODIGO_ORIGINAL',       tipo: 'texto', largura: 120, nota: 'só para auditoria da importação' }
+    { campo: 'CODIGO_ORIGINAL',       tipo: 'texto', largura: 120, nota: 'só para auditoria da importação' },
+    { campo: 'ID_IMPORTACAO',         tipo: 'texto', largura: 120, nota: 'Importação que criou este nó' }
   ]},
 
   { nome: 'Precos', nota: 'Formato longo: 1 linha por item x proponente. ESTA tabela é o histórico de preço.', colunas: [
@@ -279,7 +289,13 @@ const CF_SCHEMA = [
     { campo: 'ID_EMPREENDIMENTO',    tipo: 'texto', largura: 140, nota: '(desnorm)' },
     { campo: 'UF',                   tipo: 'texto', largura: 60, nota: '(desnorm) mesmo serviço custa diferente por praça' },
     { campo: 'DATA',                 tipo: 'data', largura: 130, nota: '(desnorm) preço é função de fornecedor x item x data' },
-    { campo: 'ORIGEM',               tipo: 'enum:origem', largura: 120, nota: '(desnorm) confiança do dado' }
+    { campo: 'ORIGEM',               tipo: 'enum:origem', largura: 120, nota: '(desnorm) confiança do dado' },
+    { campo: 'ID_IMPORTACAO',        tipo: 'texto', largura: 120, nota: 'Importação que criou este preço' },
+    { campo: 'ORIGEM_CALCULO',       tipo: 'enum:origemCalculo', largura: 120, nota: 'De onde veio o valor: informado, calculado ou ausente' },
+    { campo: 'DURACAO_CONTRATO_MESES', tipo: 'inteiro', largura: 110, nota: 'Duração do contrato em meses' },
+    { campo: 'PERIODO_COBRANCA',     tipo: 'enum:periodoCobranca', largura: 120, nota: 'Periodicidade: unico, mensal, trimestral, semestral, anual' },
+    { campo: 'VISITAS_PERIODO',      tipo: 'inteiro', largura: 110, nota: 'Número de visitas por período' },
+    { campo: 'DESCONTO_PERCENTUAL',  tipo: 'numero', largura: 110, nota: 'Percentual de desconto aplicado' }
   ]},
 
   { nome: 'Notas', nota: "Três canais. 'interna' NUNCA sai em exportação para fornecedor.", colunas: [
@@ -343,7 +359,9 @@ const CF_SCHEMA = [
     { campo: 'DATA',            tipo: 'data', largura: 130 },
     { campo: 'USUARIO',         tipo: 'texto', largura: 220 },
     { campo: 'STATUS',          tipo: 'texto', largura: 110 },
-    { campo: 'RESUMO',          tipo: 'texto', largura: 520 }
+    { campo: 'RESUMO',          tipo: 'texto', largura: 520 },
+    { campo: 'ARQUIVO_DRIVE_ID',tipo: 'texto', largura: 260, nota: 'ID real do arquivo no Google Drive' },
+    { campo: 'HASH_VERSAO',     tipo: 'inteiro', largura: 100, nota: 'Versão do algoritmo de hash (1=original, 2=ampliado)' }
   ]},
 
   { nome: 'Pendencias', nota: 'O que o parser não resolveu vai para revisão humana, não some calado.', colunas: [

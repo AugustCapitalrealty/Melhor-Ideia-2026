@@ -41,6 +41,11 @@ function cfCarregarPrecos_() {
       descricao: String(no.DESCRICAO || ''),
       chave: cfNormalizar_(no.DESCRICAO),
       codigo: String(no.CODIGO_ORIGINAL || ''),
+      idProposta: String(p.ID_PROPOSTA || ''),
+      fonte: String(p.ID_FONTE || prop.ID_FONTE || ''),
+      revisao: String(prop.REVISAO_DOCUMENTO || ''),
+      idImportacao: String(p.ID_IMPORTACAO || ''),
+      cnpjEmpresa: String(prop.CNPJ_EMPRESA || eq.CNPJ_EMPRESA || ''),
       valor: typeof p.PRECO_UNITARIO === 'number' ? p.PRECO_UNITARIO : cfNumero_(p.PRECO_UNITARIO),
       status: String(p.STATUS_PRECO || ''),
       unidade: String(p.UNIDADE || ''),
@@ -96,7 +101,7 @@ function consultarPreco(termo) {
 function cfAgruparPorItem_(achados, termo) {
   const porItem = {};
   achados.forEach(function (r) {
-    const k = r.chave + '§' + r.idEqualizacao;
+    const k = r.chave + '§' + (r.idEqualizacao || r.idProposta || r.cnpj + '@' + (r.data ? r.data.getTime() : ''));
     if (!porItem[k]) {
       porItem[k] = {
         descricao: r.descricao, codigo: r.codigo, data: r.data,
@@ -117,7 +122,14 @@ function cfAgruparPorItem_(achados, termo) {
   // sem sentido: "monitoramento" traz um equipamento de R$ 3.096 e uma
   // mensalidade de R$ 69, e a variação entre os dois não significa nada.
   grupos.forEach(function (g) {
-    const v = g.precos.map(function (p) { return p.valor; });
+    const comparaveis = g.precos.filter(function(p) { return p.status === 'cotado' && p.valor !== null; });
+    if (comparaveis.length === 0) {
+      g.minimo = null;
+      g.maximo = null;
+      g.variacao = null;
+      return;
+    }
+    const v = comparaveis.map(function (p) { return p.valor; });
     g.minimo = Math.min.apply(null, v);
     g.maximo = Math.max.apply(null, v);
     g.variacao = g.minimo > 0 ? ((g.maximo - g.minimo) / g.minimo) * 100 : null;
