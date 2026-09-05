@@ -287,7 +287,8 @@ try {
       setWrap: function () { return this; },
       getCell: () => ({ setNote: () => {} }),
       setNumberFormat: (f) => { aplicados.formato[coluna] = f; },
-      setDataValidation: (v) => { if (v.tipo === 'checkbox') aplicados.checkbox.push(coluna); }
+      // v vem null nas colunas sem validação — é assim que a herdada é limpa.
+      setDataValidation: (v) => { if (v && v.tipo === 'checkbox') aplicados.checkbox.push(coluna); }
     })
   };
 
@@ -320,5 +321,68 @@ try {
   console.log('✓ CORREÇÃO VERIFICADA: formato de coluna segue o nome, não a ordem declarada');
 } catch (e) {
   console.log(`✗ FALHA na Correção 10: ${e.message}`);
+  process.exitCode = 1;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 11 — validação herdada precisa ser limpa
+//
+//  cfFormatarAba_ aplicava validação mas nunca removia. Uma coluna que
+//  recebeu checkbox por engano (VALOR_FATURAMENTO_DIRETO, enquanto durou o
+//  desalinhamento) seguia devolvendo false mesmo depois de reaplicado o
+//  formato de moeda — setNumberFormat não desfaz validação.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxVal = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  const validacoes = {};
+  ctxVal.SpreadsheetApp = {
+    newDataValidation: () => ({
+      requireCheckbox: () => ({ build: () => ({ tipo: 'checkbox' }) }),
+      requireValueInList: () => ({
+        setAllowInvalid: () => ({ setHelpText: () => ({ build: () => ({ tipo: 'lista' }) }) })
+      })
+    })
+  };
+
+  const CABECALHO_REAL = ['TEXTO', 'MOEDA', 'FLAG', 'TIPO'];
+  const abaFalsa = {
+    getMaxRows: () => 10,
+    getLastColumn: () => CABECALHO_REAL.length,
+    setFrozenRows: () => {}, setRowHeight: () => {}, setColumnWidth: () => {},
+    getRange: (linha, coluna) => ({
+      getValues: () => [CABECALHO_REAL],
+      setFontWeight: function () { return this; }, setBackground: function () { return this; },
+      setFontColor: function () { return this; }, setVerticalAlignment: function () { return this; },
+      setWrap: function () { return this; },
+      getCell: () => ({ setNote: () => {} }),
+      setNumberFormat: () => {},
+      setDataValidation: (v) => { validacoes[coluna] = v; }
+    })
+  };
+
+  ['Util.gs', 'Config.gs', 'Schema.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxVal, { filename: f });
+  });
+
+  ctxVal.cfFormatarAba_(abaFalsa, {
+    nome: 'T',
+    colunas: [
+      { campo: 'TEXTO', tipo: 'texto' },
+      { campo: 'MOEDA', tipo: 'moeda' },
+      { campo: 'FLAG',  tipo: 'booleano' },
+      { campo: 'TIPO',  tipo: 'enum:tipoNo' }
+    ]
+  });
+
+  assert.equal(validacoes[1], null, 'coluna de texto ficou com validação herdada');
+  assert.equal(validacoes[2], null,
+    'coluna de moeda ficou com validação herdada — é o caso de VALOR_FATURAMENTO_DIRETO');
+  assert.equal((validacoes[3] || {}).tipo, 'checkbox', 'coluna booleana perdeu o checkbox');
+  assert.equal((validacoes[4] || {}).tipo, 'lista', 'coluna enum perdeu a lista');
+
+  console.log('✓ CORREÇÃO VERIFICADA: coluna sem tipo de validação tem a herdada limpa');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 11: ${e.message}`);
   process.exitCode = 1;
 }

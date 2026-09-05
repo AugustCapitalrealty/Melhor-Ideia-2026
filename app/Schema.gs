@@ -180,24 +180,29 @@ function cfFormatarAba_(aba, def) {
 
     if (CF_FORMATO[base]) faixa.setNumberFormat(CF_FORMATO[base]);
 
+    const valoresEnum = base === 'enum' ? CF_ENUM[col.tipo.slice(5)] : null;
+
     if (base === 'booleano') {
       faixa.setDataValidation(SpreadsheetApp.newDataValidation().requireCheckbox().build());
-    } else if (base === 'enum') {
-      const valores = CF_ENUM[col.tipo.slice(5)];
-      if (valores && valores.length) {
-        // setAllowInvalid(true): a validação orienta quem digita, mas não
-        // pode bloquear escrita do app. Com false, o Sheets rejeita o
-        // setValues inteiro quando UMA linha tem o enum vazio — e enum
-        // opcional vazio é estado legítimo aqui. Foi assim que a faxina
-        // apagou Propostas: limpou a aba e não conseguiu reescrever.
-        faixa.setDataValidation(
-          SpreadsheetApp.newDataValidation()
-            .requireValueInList(valores, true)
-            .setAllowInvalid(true)
-            .setHelpText('Valores aceitos: ' + valores.join(' · '))
-            .build()
-        );
-      }
+    } else if (valoresEnum && valoresEnum.length) {
+      // setAllowInvalid(true): a validação orienta quem digita, mas não
+      // pode bloquear escrita do app. Com false, o Sheets rejeita o
+      // setValues inteiro quando UMA linha tem o enum vazio — e enum
+      // opcional vazio é estado legítimo aqui. Foi assim que a faxina
+      // apagou Propostas: limpou a aba e não conseguiu reescrever.
+      faixa.setDataValidation(
+        SpreadsheetApp.newDataValidation()
+          .requireValueInList(valoresEnum, true)
+          .setAllowInvalid(true)
+          .setHelpText('Valores aceitos: ' + valoresEnum.join(' · '))
+          .build()
+      );
+    } else {
+      // Limpa validação herdada. Sem isto, uma coluna que recebeu checkbox
+      // por engano continua devolvendo false para sempre: reaplicar o
+      // formato de moeda não desfaz a validação que já está na célula.
+      // VALOR_FATURAMENTO_DIRETO ficou assim enquanto durou o desalinhamento.
+      faixa.setDataValidation(null);
     }
 
     if (col.nota) cabecalho.getCell(1, c).setNote(col.nota);
