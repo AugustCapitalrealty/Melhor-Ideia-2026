@@ -306,10 +306,12 @@ table.mapa tfoot .desc{background:var(--superficie)}
 .base-valores label{display:flex;align-items:center;gap:7px;cursor:pointer}
 .base-valores input{width:auto;margin:0}
 .base-valores b{color:var(--royal)}
-table.grade input.cod{
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
-  text-align:center;color:var(--acao);
+.cod-auto{
+  display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:12.5px;text-align:center;color:var(--acao);font-weight:600;
+  padding:8px 0;
 }
+tr.eh-grupo .cod-auto{color:var(--noturno)}
 
 /* Campo derivado: mostra o valor sem fingir que é editável. */
 .derivado{
@@ -1340,13 +1342,13 @@ function preencherExemplo() {
     .sort(function () { return Math.random() - 0.5; })
     .slice(0, inteiro(6, 12));
 
-  itens = [{ tipo: 'grupo', nivel: 0, codigo: '1.', descricao: sorteio(EXEMPLOS.grupos),
+  itens = [{ tipo: 'grupo', nivel: 0, descricao: sorteio(EXEMPLOS.grupos),
              quantidade: '', unidade: 'un', precos: proponentes.map(function () { return ''; }) }];
 
   sorteados.forEach(function (item, k) {
     var base = inteiro(500, 60000) / 100;          // R$ 5,00 a R$ 600,00
     itens.push({
-      tipo: 'item', nivel: 1, codigo: '1.' + (k + 1),
+      tipo: 'item', nivel: 1,
       descricao: item[0], quantidade: String(inteiro(1, 20)), unidade: item[1],
       precos: proponentes.map(function () {
         // 1 em 8 não cota: é o caso que faz o total mais barato enganar.
@@ -1727,9 +1729,34 @@ function mudarNivel(i, passo) {
   salvarRascunho();
 }
 
+/**
+ * O código da EAP sai da posição na árvore, nunca da digitação.
+ *
+ * Na planilha antiga ele era digitado, e por isso divergia da hierarquia
+ * assim que alguém inseria uma linha no meio — o código dizia uma coisa e
+ * o recuo dizia outra. Derivando, os dois não têm como discordar.
+ *
+ * Primeiro nível vira 1.0, 2.0; os de baixo herdam o caminho: 1.1, 1.1.1.
+ */
+function recalcularCodigos() {
+  var contador = [0, 0, 0, 0];
+
+  itens.forEach(function (it) {
+    var nivel = Math.max(0, Math.min(3, Number(it.nivel) || 0));
+    contador[nivel]++;
+    // Ao subir um degrau, os de baixo recomeçam: o segundo item do grupo 2
+    // é 2.1, não 2.3 porque o grupo 1 já tinha dois.
+    for (var k = nivel + 1; k < contador.length; k++) contador[k] = 0;
+
+    var partes = contador.slice(0, nivel + 1);
+    it.codigo = nivel === 0 ? partes[0] + '.0' : partes.join('.');
+  });
+}
+
 function desenharGrade() {
+  recalcularCodigos();
   var rotuloBase = baseValores() === 'total' ? 'R$ total da linha' : 'R$ unitário';
-  var cab = '<thead><tr><th style="width:88px">Código</th><th>Descrição</th>' +
+  var cab = '<thead><tr><th style="width:76px">Código</th><th>Descrição</th>' +
     '<th style="width:80px">Qtd</th><th style="width:104px">Unidade</th>' +
     proponentes.map(function (p, i) {
       // data-prop identifica a coluna pelo proponente, não pela posição:
@@ -1771,9 +1798,9 @@ function desenharGrade() {
       (it.nivel >= 3 ? ' disabled' : '') + ' aria-label="Aumentar o recuo">›</button>';
 
     return '<tr class="' + (it.tipo === 'grupo' ? 'eh-grupo' : '') + '">' +
-      '<td><input class="cod" value="' + esc(it.codigo || '') + '" placeholder="1.1.7"' +
-        ' aria-label="Código da EAP"' +
-        ' oninput="itens[' + i + '].codigo=this.value;salvarRascunho()"></td>' +
+      // Derivado, então mostrado e não editável: um campo que se pode
+      // digitar convida a divergir da hierarquia que o gera.
+      '<td><span class="cod-auto">' + esc(it.codigo || '') + '</span></td>' +
       '<td class="cel-desc" style="' + recuo + '">' +
         '<span class="degraus">' + controles + '</span>' +
         '<input class="desc" value="' + esc(it.descricao) + '" placeholder="' +

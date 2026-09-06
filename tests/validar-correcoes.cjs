@@ -1215,3 +1215,46 @@ try {
   console.log(`✗ FALHA na Correção 26: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 27 — o código da EAP sai da árvore, não da digitação
+//
+//  Na planilha antiga o código era digitado, e divergia da hierarquia
+//  assim que alguém inseria uma linha no meio: o código dizia uma coisa e
+//  o recuo dizia outra, e a conferência contra o documento original virava
+//  adivinhação.
+// ─────────────────────────────────────────────────────────────
+try {
+  const html = fs.readFileSync(path.join(root, 'app', 'Interface.html'), 'utf8');
+  const i = html.indexOf('function recalcularCodigos() {');
+  assert.ok(i > 0, 'não achei recalcularCodigos no Interface.html');
+  const fim = html.indexOf('\n}', i);
+
+  const ctxCod = vm.createContext({});
+  vm.runInContext(html.slice(i, fim + 2), ctxCod, { filename: 'Interface.html#codigos' });
+
+  ctxCod.itens = [
+    { nivel: 0 },                    // 1.0
+    { nivel: 1 }, { nivel: 1 },      // 1.1, 1.2
+    { nivel: 2 }, { nivel: 2 },      // 1.2.1, 1.2.2
+    { nivel: 1 },                    // 1.3
+    { nivel: 0 },                    // 2.0
+    { nivel: 1 },                    // 2.1
+    { nivel: 2 }                     // 2.1.1
+  ];
+  ctxCod.recalcularCodigos();
+
+  const codigos = ctxCod.itens.map(function (i) { return i.codigo; });
+  assert.deepEqual(codigos,
+    ['1.0', '1.1', '1.2', '1.2.1', '1.2.2', '1.3', '2.0', '2.1', '2.1.1'],
+    'numeração saiu ' + codigos.join(' '));
+
+  // O ponto que mais erra à mão: ao abrir o grupo 2, os filhos recomeçam
+  // do 1 — não continuam de onde o grupo 1 parou.
+  assert.equal(codigos[7], '2.1', 'o primeiro filho do segundo grupo tem que ser 2.1');
+
+  console.log('✓ CORREÇÃO VERIFICADA: código da EAP é derivado da hierarquia');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 27: ${e.message}`);
+  process.exitCode = 1;
+}
