@@ -45,7 +45,7 @@ function cfExportarEqualizacao_(idEq) {
   const grade = [];
   const merges = [];        // {l, c, nl, nc}
   const moeda = [];         // {l, c, n}
-  const faixas = { titulo: [], secao: [], grupo: [], total: [] };
+  const faixas = { titulo: [], secao: [], grupo: [], total: [], cabecalho: [], rodape: [], livre: [] };
 
   const vazia = function () {
     const l = [];
@@ -85,10 +85,14 @@ function cfExportarEqualizacao_(idEq) {
     const li = vazia();
     li[COL_ROTULO - 1] = c[0];
     li[COL_VALOR - 1] = c[1] || '';
-    li[COL_UN - 1] = c[2];
+    // O rótulo da direita ocupa Qtd+Un. mescladas: sozinha, a coluna de
+    // unidade tem 85px e cortava "Cidade/Estado:" no meio.
+    li[COL_QTD - 1] = c[2];
     props.forEach(function (p, i) { li[colDe(i) - 1] = c[3](p); });
     const num = linha(li);
+    merges.push({ l: num, c: COL_QTD, nl: 1, nc: 2 });
     props.forEach(function (p, i) { merges.push({ l: num, c: colDe(i), nl: 1, nc: 2 }); });
+    faixas.cabecalho.push(num);
   });
 
   linha(vazia());
@@ -181,6 +185,7 @@ function cfExportarEqualizacao_(idEq) {
     const num = linha(li);
     merges.push({ l: num, c: COL_ROTULO, nl: 1, nc: 4 });
     props.forEach(function (p, i) { merges.push({ l: num, c: colDe(i), nl: 1, nc: 2 }); });
+    faixas.rodape.push(num);
   });
 
   linha(vazia());
@@ -220,6 +225,7 @@ function cfExportarEqualizacao_(idEq) {
     li[COL_ROTULO - 1] = c[1];
     const lTxt = linha(li);
     merges.push({ l: lTxt, c: COL_ROTULO, nl: 1, nc: largura - 1 });
+    faixas.livre.push(lTxt);
   });
 
   if (eq.vencedora) {
@@ -262,14 +268,16 @@ function cfExportarEqualizacao_(idEq) {
 function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR) {
   aba.getRange(1, 1, grade.length, largura).setValues(grade);
 
-  aba.setColumnWidth(1, 24);
-  aba.setColumnWidth(2, 90);
-  aba.setColumnWidth(3, 300);
-  aba.setColumnWidth(4, 60);
-  aba.setColumnWidth(5, 60);
+  // Larguras pensadas para o rótulo mais longo de cada coluna:
+  // "Data da equalização:" na B, "Cidade/Estado:" em D+E mescladas.
+  aba.setColumnWidth(1, 22);
+  aba.setColumnWidth(2, 180);
+  aba.setColumnWidth(3, 330);
+  aba.setColumnWidth(4, 70);
+  aba.setColumnWidth(5, 85);
   for (let i = 0; i < n; i++) {
-    aba.setColumnWidth(colDe(i), 110);
-    aba.setColumnWidth(colDe(i) + 1, 110);
+    aba.setColumnWidth(colDe(i), 125);
+    aba.setColumnWidth(colDe(i) + 1, 125);
   }
 
   merges.forEach(function (m) {
@@ -304,7 +312,27 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
   // Descrição alinhada à esquerda; todo o resto à direita, que é como se
   // lê número. Sem isto a coluna de texto fica centralizada e ilegível.
   aba.getRange(1, COL_VALOR, grade.length, 1).setHorizontalAlignment('left').setWrap(true);
-  aba.getRange(1, 2, grade.length, 1).setHorizontalAlignment('left');
+  aba.getRange(1, 2, grade.length, 1).setHorizontalAlignment('left').setWrap(true);
+
+  // Quebra de linha onde o texto é imprevisível.
+  //
+  // Largura de coluna resolve o caso conhecido; quebra resolve o caso que
+  // não dá para prever — razão social de fornecedor não tem tamanho máximo,
+  // e "CONTABILISTA SUPRIMENTOS PARA ESCRITORIO" não cabe em coluna nenhuma
+  // que ainda deixe a tabela caber na página. Célula cortada em documento
+  // de conferência é informação perdida sem aviso.
+  faixas.cabecalho.concat(faixas.rodape).forEach(function (l) {
+    aba.getRange(l, 2, 1, largura - 1).setWrap(true).setVerticalAlignment('top');
+  });
+  faixas.secao.forEach(function (l) {
+    aba.getRange(l, 2, 1, largura - 1).setWrap(true);
+  });
+  // Os textos longos de aprovação ocupam a largura toda e precisam crescer
+  // para baixo, não sumir à direita.
+  aba.getRange(1, 2, grade.length, largura - 1).setVerticalAlignment('middle');
+  faixas.livre.forEach(function (l) {
+    aba.getRange(l, 2, 1, largura - 1).setWrap(true).setVerticalAlignment('top');
+  });
   // Sem congelar coluna: os títulos e rótulos são mesclados de B até o fim,
   // e o Sheets recusa congelar uma coluna que corta uma célula mesclada ao
   // meio. Como o PDF sai em paisagem ajustado à largura, não faz falta.
