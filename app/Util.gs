@@ -184,6 +184,32 @@ function cfNovoId_(prefixo) {
   return prefixo + '-' + data + '-' + aleatorio;
 }
 
+/**
+ * Normaliza o que o comprador colou no campo de link da proposta.
+ *
+ * Aceita três formas, porque são as três que aparecem quando alguém
+ * copia algo do Drive: a URL inteira, o link de compartilhamento com
+ * parâmetros, e o ID solto do arquivo.
+ *
+ * Devolve '' para qualquer coisa que não seja http/https. Isso não é
+ * zelo: o link vai virar href numa página e âncora clicável num PDF, e
+ * 'javascript:' ali dentro executaria no navegador de quem abrir o
+ * documento. Um campo de texto livre que vira link é superfície de
+ * ataque, mesmo quando quem digita é de casa.
+ */
+function cfLinkDoDrive_(valor) {
+  const t = String(valor === null || valor === undefined ? '' : valor).trim();
+  if (!t) return '';
+
+  // ID solto do Drive: 25+ caracteres do alfabeto de IDs, sem espaço nem ponto.
+  if (/^[A-Za-z0-9_-]{25,}$/.test(t)) {
+    return 'https://drive.google.com/file/d/' + t + '/view';
+  }
+
+  if (!/^https?:\/\//i.test(t)) return '';
+  return t;
+}
+
 /** Hash do conteúdo de um arquivo — impede reimportar o mesmo duas vezes. */
 function cfHash_(conteudo) {
   const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(conteudo));
