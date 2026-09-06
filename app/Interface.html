@@ -414,6 +414,11 @@ tr.eh-grupo .cod-auto{color:var(--noturno)}
   margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.09em;
   text-transform:uppercase;color:var(--suave);
 }
+.neg-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.neg-topo h3{margin:0}
+.check-neg{min-height:auto;font-size:13px;font-weight:500;color:var(--suave);cursor:pointer}
+.check-neg:hover{color:var(--texto)}
+.check-neg input{margin:0;cursor:pointer}
 .reducao{margin-top:10px;font-size:13.5px}
 .check{display:flex;align-items:center;gap:8px;font-weight:400;font-size:14.5px;color:var(--texto);min-height:43px}
 .check input{width:auto}
@@ -1552,6 +1557,11 @@ function campoProp(i, chave, rotulo, tipo, dica) {
  * Abrir tudo de uma vez transformaria a tela num formulário de 30 campos.
  */
 function detalhesProposta(p, i) {
+  var temFatDir = !!p.faturamentoDireto;
+  var teveNeg = p.teveNegociacao !== undefined
+    ? !!p.teveNegociacao
+    : !!(p.propostaInicial || p.r01 || p.r02);
+
   return '<details class="detalhes-prop">' +
     '<summary>Dados da proposta ' + (i + 1) +
       (p.numero ? ' · nº ' + esc(p.numero) : '') + '</summary>' +
@@ -1571,23 +1581,70 @@ function detalhesProposta(p, i) {
       campoProp(i, 'telefone', 'Telefone', 'text', '(41) 3330-8000') +
       campoProp(i, 'email', 'E-mail do vendedor', 'email', 'vendas@fornecedor.com.br') +
       '<div class="campo"><label>Faturamento direto</label>' +
-        '<label class="check"><input type="checkbox"' +
-        (p.faturamentoDireto ? ' checked' : '') +
-        ' onchange="proponentes[' + i + '].faturamentoDireto=this.checked;salvarRascunho()">' +
+        '<label class="check"><input type="checkbox" id="chkFatDir' + i + '"' +
+        (temFatDir ? ' checked' : '') +
+        ' onchange="alternarFatDir(' + i + ', this.checked)">' +
         ' sim</label></div>' +
-      campoProp(i, 'valorFaturamentoDireto', 'Valor do faturamento direto', 'text', 'R$') +
+      '<div class="campo" id="boxFatDir' + i + '"' + (temFatDir ? '' : ' style="display:none"') + '>' +
+        '<label for="valorFaturamentoDireto' + i + '">Valor do faturamento direto</label>' +
+        '<input id="valorFaturamentoDireto' + i + '" type="text"' +
+        ' value="' + esc(p.valorFaturamentoDireto === undefined || p.valorFaturamentoDireto === null ? '' : p.valorFaturamentoDireto) + '"' +
+        ' placeholder="R$"' +
+        ' oninput="proponentes[' + i + '].valorFaturamentoDireto=this.value;calcular();salvarRascunho()">' +
+      '</div>' +
     '</div>' +
 
     '<div class="negociacao">' +
-      '<h3>Histórico da negociação</h3>' +
-      '<div class="campos">' +
-        campoProp(i, 'propostaInicial', 'Proposta inicial', 'text', 'R$') +
-        campoProp(i, 'r01', 'Proposta R01', 'text', 'R$') +
-        campoProp(i, 'r02', 'Proposta R02', 'text', 'R$') +
+      '<div class="neg-topo">' +
+        '<h3>Histórico da negociação</h3>' +
+        '<label class="check check-neg">' +
+          '<input type="checkbox" id="chkNeg' + i + '"' +
+          (teveNeg ? ' checked' : '') +
+          ' onchange="alternarNegociacao(' + i + ', this.checked)">' +
+          ' Houve negociação' +
+        '</label>' +
       '</div>' +
-      '<div class="reducao" id="red' + i + '">' + textoReducao(p) + '</div>' +
+      '<div id="negCorpo' + i + '"' + (teveNeg ? '' : ' style="display:none"') + '>' +
+        '<div class="campos">' +
+          campoProp(i, 'propostaInicial', 'Proposta inicial', 'text', 'R$') +
+          campoProp(i, 'r01', 'Proposta R01', 'text', 'R$') +
+          campoProp(i, 'r02', 'Proposta R02', 'text', 'R$') +
+        '</div>' +
+        '<div class="reducao" id="red' + i + '">' + textoReducao(p) + '</div>' +
+      '</div>' +
     '</div>' +
   '</details>';
+}
+
+function alternarFatDir(i, marcado) {
+  proponentes[i].faturamentoDireto = marcado;
+  var box = document.getElementById('boxFatDir' + i);
+  if (box) box.style.display = marcado ? '' : 'none';
+  if (!marcado) {
+    proponentes[i].valorFaturamentoDireto = '';
+    var inp = document.getElementById('valorFaturamentoDireto' + i);
+    if (inp) inp.value = '';
+  }
+  salvarRascunho();
+}
+
+function alternarNegociacao(i, marcado) {
+  proponentes[i].teveNegociacao = marcado;
+  var corpo = document.getElementById('negCorpo' + i);
+  if (corpo) corpo.style.display = marcado ? '' : 'none';
+  if (!marcado) {
+    proponentes[i].propostaInicial = '';
+    proponentes[i].r01 = '';
+    proponentes[i].r02 = '';
+    ['propostaInicial', 'r01', 'r02'].forEach(function (f) {
+      var inp = document.getElementById(f + i);
+      if (inp) inp.value = '';
+    });
+    var red = document.getElementById('red' + i);
+    if (red) red.innerHTML = '';
+  }
+  calcular();
+  salvarRascunho();
 }
 
 /**
@@ -2236,8 +2293,17 @@ function salvarEqualizacao() {
       baseValores: baseValores(),
       detalhamento: document.getElementById('nDetalhamento').value,
       premissas: document.getElementById('nPremissas').value,
-      notasCr: document.getElementById('nNotasCr').value,
-      proponentes: proponentes,
+      proponentes: proponentes.map(function (p) {
+        var c = Object.assign({}, p);
+        if (!c.faturamentoDireto) c.valorFaturamentoDireto = '';
+        var teveNeg = c.teveNegociacao !== undefined ? !!c.teveNegociacao : !!(c.propostaInicial || c.r01 || c.r02);
+        if (!teveNeg) {
+          c.propostaInicial = '';
+          c.r01 = '';
+          c.r02 = '';
+        }
+        return c;
+      }),
       itens: itens
     });
 }

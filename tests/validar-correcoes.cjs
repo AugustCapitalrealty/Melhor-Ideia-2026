@@ -665,7 +665,7 @@ try {
                     'navegarGrade', 'colarColuna', 'salvarRascunho', 'descartarRascunho',
                     'atualizarNomes', 'mostrarEmpresa', 'addItem', 'removerItem',
                     'addProponente', 'removerProponente', 'calcular', 'normalizarCampo',
-                    'salvarEqualizacao', 'num'];
+                    'salvarEqualizacao', 'num', 'alternarFatDir', 'alternarNegociacao'];
   const faltando = chamadas.filter(function (n) {
     return js.indexOf('function ' + n + '(') < 0;
   });
