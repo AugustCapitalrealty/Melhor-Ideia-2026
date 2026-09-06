@@ -290,13 +290,24 @@ table.mapa tfoot .desc{background:var(--superficie)}
   border-radius:14px;
 }
 .barra-edicao{
-  display:flex;align-items:center;gap:12px;
-  padding:10px 16px;margin-bottom:16px;border-radius:10px;
-  background:#E8EDF5;border:1.5px solid var(--acao);
-  color:var(--noturno);font-size:13.5px;font-weight:600;
-  box-shadow:var(--sombra);flex-wrap:wrap;
+  display:flex;align-items:center;gap:14px;
+  padding:14px 18px;margin-bottom:18px;border-radius:12px;
+  background:#EBF2FA;border:1.5px solid var(--acao);
+  color:var(--noturno);box-shadow:0 4px 14px -4px rgba(0,61,123,.18);
+  flex-wrap:wrap;
 }
-.barra-edicao-texto{flex:1}
+.barra-edicao-tag{
+  background:var(--acao);color:#fff;font-size:11px;font-weight:700;
+  letter-spacing:.5px;padding:4px 8px;border-radius:6px;text-transform:uppercase;white-space:nowrap;
+}
+.barra-edicao-corpo{flex:1;min-width:240px}
+.barra-edicao-titulo{font-size:14.5px;font-weight:700;color:var(--noturno)}
+.barra-edicao-desc{font-size:12.5px;color:var(--suave);margin-top:2px;font-weight:400;line-height:1.4}
+.bt-cancelar-edicao{
+  background:#fff;border:1px solid #C4D2E5;color:var(--critico);font-weight:600;
+  padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .15s ease;white-space:nowrap;
+}
+.bt-cancelar-edicao:hover{background:#FBEAE5;border-color:var(--critico)}
 .rascunho{
   display:flex;align-items:center;gap:10px;
   padding:8px 14px;margin-bottom:14px;border-radius:8px;
@@ -558,19 +569,19 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
 
   <section id="v-nova" hidden>
     <div class="barra-edicao" id="barraEdicao" hidden>
-      <span class="barra-edicao-icone">✏️</span>
-      <div style="flex:1">
-        <span class="barra-edicao-texto" id="txtEdicao"></span>
-        <div style="font-size:12px;font-weight:400;color:var(--suave);margin-top:2px">
-          Utilize para registrar <b>renegociação</b> (rodadas R01/R02, novos preços e descontos) ou para <b>corrigir dados</b> da cotação.
+      <div class="barra-edicao-tag">MODO EDIÇÃO &amp; RENEGOCIAÇÃO</div>
+      <div class="barra-edicao-corpo">
+        <div class="barra-edicao-titulo" id="txtEdicaoTitulo">Equalização em edição</div>
+        <div class="barra-edicao-desc" id="txtEdicaoDesc">
+          Utilize para registrar <b>renegociação</b> (rodadas R01/R02 e novos preços) ou para <b>corrigir dados</b> da cotação. Ao finalizar, clique em <b>Atualizar equalização</b>.
         </div>
       </div>
-      <button type="button" class="bt" onclick="cancelarEdicao()">Cancelar edição</button>
+      <button type="button" class="bt bt-cancelar-edicao" onclick="cancelarEdicao()">✕ Cancelar edição</button>
     </div>
 
     <div class="rascunho" id="barraRascunho" hidden>
       <span class="rascunho-icone">💾</span>
-      <span class="rascunho-texto"></span>
+      <span class="rascunho-texto" id="txtRascunho"></span>
       <button type="button" class="bt-fechar-aviso" onclick="this.parentElement.hidden=true" title="Dispensar aviso">×</button>
     </div>
 
@@ -894,8 +905,13 @@ function aba(nome) {
 
   // O título da página diz onde se está — a barra é compacta demais para
   // carregar isso sozinha.
-  document.getElementById('tituloTela').textContent = TITULOS[nome][0];
-  document.getElementById('subTela').textContent = TITULOS[nome][1];
+  if (nome === 'nova' && idEmEdicao) {
+    document.getElementById('tituloTela').textContent = 'Editar / Renegociar equalização';
+    document.getElementById('subTela').textContent = idEmEdicao + ' · Ajuste de propostas, rodadas e preços negociados.';
+  } else {
+    document.getElementById('tituloTela').textContent = TITULOS[nome][0];
+    document.getElementById('subTela').textContent = TITULOS[nome][1];
+  }
 
   // Carrega só quando a aba é aberta pela primeira vez.
   if (nome === 'mapa' && !equalizacoesCarregadas) {
@@ -1155,9 +1171,13 @@ function dadosDasPropostas(m) {
     ['Faturamento direto', function (p) {
       return p.faturamentoDireto ? ('sim' + (semValor(p.valorFaturamentoDireto) ? '' : ' · ' + moeda(p.valorFaturamentoDireto))) : '';
     }],
+    ['Histórico da negociação', function (p) {
+      var teve = !semValor(p.propostaInicial) || !semValor(p.reducao) || (p.rodada && p.rodada !== 'inicial');
+      return teve ? (p.rodada && p.rodada !== 'inicial' ? 'Rodada ' + p.rodada : 'Negociada') : 'Não houve renegociação (proposta original)';
+    }],
     ['Proposta inicial', function (p) { return semValor(p.propostaInicial) ? '' : moeda(p.propostaInicial); }],
     ['Redução negociada', function (p) { return semValor(p.reducao) ? '' : moeda(p.reducao); }],
-    ['Rodada',          function (p) { return p.rodada; }]
+    ['Rodada',          function (p) { return (p.rodada && p.rodada !== 'inicial') ? p.rodada : ''; }]
   ];
 
   // Linha sem nenhum valor em nenhum proponente não vira ruído na tela.
@@ -1482,6 +1502,9 @@ function limparFormulario() {
   itens = [];
   jaGravada = false;
   descartarRascunho();
+
+  document.getElementById('tituloTela').textContent = TITULOS['nova'][0];
+  document.getElementById('subTela').textContent = TITULOS['nova'][1];
 
   ['nProjeto', 'nArea', 'nGrupoCC', 'nDetalhamento', 'nPremissas', 'nNotasCr'].forEach(function (id) {
     var el = document.getElementById(id);
@@ -2290,6 +2313,7 @@ function descartarRascunho() {
 }
 
 function restaurarRascunho() {
+  if (idEmEdicao) return false;
   var bruto;
   try { bruto = localStorage.getItem(CHAVE_RASCUNHO); } catch (err) { return false; }
   if (!bruto) return false;
@@ -2330,9 +2354,9 @@ function restaurarRascunho() {
   mostrarEmpresa(); desenharProponentes(); desenharGrade();
 
   var b = document.getElementById('barraRascunho');
-  if (b) {
+  if (b && !idEmEdicao) {
     b.hidden = false;
-    var txt = b.querySelector('.rascunho-texto') || b.querySelector('span');
+    var txt = document.getElementById('txtRascunho');
     if (txt) {
       txt.textContent = 'Rascunho de ' + new Date(e.quando).toLocaleString('pt-BR') + ' recuperado.';
     }
@@ -2382,12 +2406,24 @@ function verMapaDe(id) {
 /** Carrega uma equalização existente no formulário para edição. */
 function editarEqualizacao(id) {
   if (!id) return;
+  idEmEdicao = id;
   aba('nova');
+
+  var bRasc = document.getElementById('barraRascunho');
+  if (bRasc) bRasc.hidden = true;
+
+  var tTela = document.getElementById('tituloTela');
+  if (tTela) tTela.textContent = 'Editar / Renegociar equalização';
+  var sTela = document.getElementById('subTela');
+  if (sTela) sTela.textContent = id + ' · Ajuste de propostas, rodadas e preços negociados.';
+
   var bEd = document.getElementById('barraEdicao');
-  var txtEd = document.getElementById('txtEdicao');
+  var txtTitulo = document.getElementById('txtEdicaoTitulo');
+  var txtDesc = document.getElementById('txtEdicaoDesc');
   if (bEd) {
     bEd.hidden = false;
-    if (txtEd) txtEd.textContent = 'Carregando equalização ' + id + ' para edição…';
+    if (txtTitulo) txtTitulo.textContent = 'Carregando ' + id + '…';
+    if (txtDesc) txtDesc.textContent = 'Buscando proponentes, itens e histórico de preços para edição…';
   }
   var msg = document.getElementById('salvoMsg');
   if (msg) msg.innerHTML = '<span style="color:var(--alerta)">Carregando equalização ' + esc(id) + '…</span>';
@@ -2397,6 +2433,7 @@ function editarEqualizacao(id) {
       if (!m || !m.ok) {
         if (msg) msg.innerHTML = '<span style="color:var(--critico)">Erro ao carregar equalização: ' + esc(m ? m.erro : 'resposta inválida') + '</span>';
         if (bEd) bEd.hidden = true;
+        idEmEdicao = null;
         return;
       }
       carregarDadosParaEdicao(m);
@@ -2404,19 +2441,33 @@ function editarEqualizacao(id) {
     .withFailureHandler(function (err) {
       if (msg) msg.innerHTML = '<span style="color:var(--critico)">Erro ao carregar equalização: ' + esc(err.message) + '</span>';
       if (bEd) bEd.hidden = true;
+      idEmEdicao = null;
     })
     .apiMapa(id);
 }
 
 function carregarDadosParaEdicao(m) {
   idEmEdicao = m.equalizacao.id;
+
+  var bRasc = document.getElementById('barraRascunho');
+  if (bRasc) bRasc.hidden = true;
+
+  var tTela = document.getElementById('tituloTela');
+  if (tTela) tTela.textContent = 'Editar / Renegociar — ' + m.equalizacao.id;
+  var sTela = document.getElementById('subTela');
+  if (sTela) sTela.textContent = (m.equalizacao.projeto || m.equalizacao.empreendimento || 'Equalização') + ' · Atualize propostas, rodadas ou retifique dados.';
+
   var bEd = document.getElementById('barraEdicao');
-  var txtEd = document.getElementById('txtEdicao');
+  var txtTitulo = document.getElementById('txtEdicaoTitulo');
+  var txtDesc = document.getElementById('txtEdicaoDesc');
   if (bEd) {
     bEd.hidden = false;
-    if (txtEd) {
-      txtEd.textContent = 'Editando equalização ' + m.equalizacao.id +
-        (m.equalizacao.projeto ? ' · ' + m.equalizacao.projeto : '');
+    if (txtTitulo) {
+      txtTitulo.textContent = 'Equalização ' + m.equalizacao.id +
+        (m.equalizacao.projeto ? ' — ' + m.equalizacao.projeto : '');
+    }
+    if (txtDesc) {
+      txtDesc.innerHTML = 'Preencha a nova rodada (R01/R02) com descontos negociados ou corrija informações cadastrais. Conclua clicando em <b>Atualizar equalização</b>.';
     }
   }
 
@@ -2570,6 +2621,9 @@ function carregarDadosParaEdicao(m) {
 function cancelarEdicao() {
   if (confirm('Deseja cancelar a edição? Todas as alterações não salvas serão descartadas.')) {
     var idAntigo = idEmEdicao;
+    idEmEdicao = null;
+    var bEd = document.getElementById('barraEdicao');
+    if (bEd) bEd.hidden = true;
     limparFormulario();
     if (idAntigo) {
       aba('mapa');
@@ -2604,6 +2658,8 @@ function salvarEqualizacao() {
       var bEd = document.getElementById('barraEdicao');
       if (bEd) bEd.hidden = true;
       bt.textContent = 'Salvar equalização';
+      document.getElementById('tituloTela').textContent = TITULOS['nova'][0];
+      document.getElementById('subTela').textContent = TITULOS['nova'][1];
     })
     .withFailureHandler(function (e) {
       bt.disabled = false;

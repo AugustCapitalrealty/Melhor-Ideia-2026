@@ -64,6 +64,7 @@ function cfExportarEqualizacao_(idEq) {
 
   // ── cabeçalho: à esquerda a compra, à direita os proponentes
   const empresa = cfEmpresaDoMega_(eq.empreendimento).nome;
+  const ehDemercado = (empresa || '').toUpperCase().indexOf('DEMERCADO') >= 0;
   const cabecalho = [
     // O identificador carimbado no documento, não só no nome do arquivo:
     // sem ele o retrato não volta para a equalização que o gerou.
@@ -81,6 +82,7 @@ function cfExportarEqualizacao_(idEq) {
     ['Situação:', eq.status, 'Observação:', function () { return ''; }]
   ];
 
+  let lLinhaEmpresa = null;
   cabecalho.forEach(function (c) {
     const li = vazia();
     li[COL_ROTULO - 1] = c[0];
@@ -90,6 +92,7 @@ function cfExportarEqualizacao_(idEq) {
     li[COL_QTD - 1] = c[2];
     props.forEach(function (p, i) { li[colDe(i) - 1] = c[3](p); });
     const num = linha(li);
+    if (c[0] === 'Empresa:') lLinhaEmpresa = num;
     merges.push({ l: num, c: COL_QTD, nl: 1, nc: 2 });
     props.forEach(function (p, i) { merges.push({ l: num, c: colDe(i), nl: 1, nc: 2 }); });
     faixas.cabecalho.push(num);
@@ -230,21 +233,54 @@ function cfExportarEqualizacao_(idEq) {
   linha(vazia());
 
   // ── histórico da negociação
+  const teveNegociacao = props.some(function (p) {
+    return (p.propostaInicial !== null && p.propostaInicial !== undefined && p.propostaInicial !== '') ||
+           (p.reducao !== null && p.reducao !== undefined && p.reducao !== '') ||
+           (p.rodada && p.rodada !== 'inicial');
+  });
+
   li = vazia();
   li[COL_ROTULO - 1] = 'Histórico da Negociação';
   const lHist = linha(li);
   merges.push({ l: lHist, c: COL_ROTULO, nl: 1, nc: largura - 1 });
   faixas.secao.push(lHist);
 
-  [['Proposta inicial:', 'propostaInicial'], ['Redução total da negociação:', 'reducao']]
-    .forEach(function (c) {
-      const li = vazia();
-      li[COL_ROTULO - 1] = c[0];
-      props.forEach(function (p, i) { li[colDe(i)] = p[c[1]] === null ? '' : p[c[1]]; });
-      const num = linha(li);
-      merges.push({ l: num, c: COL_ROTULO, nl: 1, nc: 4 });
-      props.forEach(function (p, i) { moeda.push({ l: num, c: colDe(i), n: 2 }); });
+  if (!teveNegociacao) {
+    li = vazia();
+    li[COL_ROTULO - 1] = 'Não houve renegociação nesta cotação — valores mantidos conforme propostas originais.';
+    const numSemNeg = linha(li);
+    merges.push({ l: numSemNeg, c: COL_ROTULO, nl: 1, nc: largura - 1 });
+    faixas.cabecalho.push(numSemNeg);
+  } else {
+    li = vazia();
+    li[COL_ROTULO - 1] = 'Rodada de negociação:';
+    props.forEach(function (p, i) {
+      li[colDe(i) - 1] = (p.rodada && p.rodada !== 'inicial') ? p.rodada : 'proposta original';
     });
+    const numR = linha(li);
+    merges.push({ l: numR, c: COL_ROTULO, nl: 1, nc: 4 });
+    props.forEach(function (p, i) { merges.push({ l: numR, c: colDe(i), nl: 1, nc: 2 }); });
+    faixas.rodape.push(numR);
+
+    [['Proposta inicial:', 'propostaInicial'], ['Redução total da negociação:', 'reducao']]
+      .forEach(function (c) {
+        const li = vazia();
+        li[COL_ROTULO - 1] = c[0];
+        props.forEach(function (p, i) {
+          const val = p[c[1]];
+          li[colDe(i)] = (val === null || val === undefined || val === '') ? '—' : val;
+        });
+        const num = linha(li);
+        merges.push({ l: num, c: COL_ROTULO, nl: 1, nc: 4 });
+        props.forEach(function (p, i) {
+          if (p[c[1]] !== null && p[c[1]] !== undefined && p[c[1]] !== '') {
+            moeda.push({ l: num, c: colDe(i), n: 2 });
+          } else {
+            merges.push({ l: num, c: colDe(i), nl: 1, nc: 2 });
+          }
+        });
+      });
+  }
 
   linha(vazia());
 
@@ -285,7 +321,7 @@ function cfExportarEqualizacao_(idEq) {
   const lPe = linha(li);
   merges.push({ l: lPe, c: COL_ROTULO, nl: 1, nc: largura - 1 });
 
-  cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR, PRIMEIRA);
+  cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR, PRIMEIRA, lLinhaEmpresa, ehDemercado);
 
   // flush ANTES de exportar: as escritas ficam numa fila, e a URL de export
   // lê o arquivo do servidor. Sem isto o PDF sai em branco — a planilha
@@ -304,8 +340,20 @@ function cfExportarEqualizacao_(idEq) {
 }
 
 /** Escrita e formatação. Separado só para a função de cima caber na cabeça. */
-function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR, PRIMEIRA) {
+function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR, PRIMEIRA, lLinhaEmpresa, ehDemercado) {
   aba.getRange(1, 1, grade.length, largura).setValues(grade);
+
+  if (lLinhaEmpresa && ehDemercado) {
+    try {
+      if (aba && typeof aba.setRowHeight === 'function') aba.setRowHeight(lLinhaEmpresa, 46);
+      const colocou = cfInserirLogoDemercado_(aba, COL_VALOR, lLinhaEmpresa);
+      if (colocou) {
+        try { aba.getRange(lLinhaEmpresa, COL_VALOR).setValue(''); } catch (eLimpa) {}
+      }
+    } catch (eLogo) {
+      Logger.log('Aviso ao ajustar linha empresa: ' + eLogo);
+    }
+  }
 
   // Larguras pensadas para o rótulo mais longo de cada coluna:
   // "Data da equalização:" na B, "Cidade/Estado:" em D+E mescladas.
@@ -457,3 +505,34 @@ function cfPdfDaPlanilha_(planilhaId, gid, nomeArquivo) {
 function cfDataHoraTexto_(d) {
   return Utilities.formatDate(d, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
 }
+
+/**
+ * Insere a imagem da logo da Demercado diretamente na planilha.
+ * O blob incorporado na planilha garante que a imagem saia impressa no PDF sem depender de carregamento externo.
+ */
+function cfInserirLogoDemercado_(aba, col, lin) {
+  try {
+    const idLogo = '168kVyD9dXiZctYNl27f_-Ic9S1W3wm-T';
+    let blob = null;
+    try {
+      blob = DriveApp.getFileById(idLogo).getBlob();
+    } catch (eDrive) {
+      try {
+        const resp = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + idLogo);
+        if (resp.getResponseCode() === 200) blob = resp.getBlob();
+      } catch (eFetch) {}
+    }
+    if (blob && aba && aba.insertImage) {
+      const img = aba.insertImage(blob, col, lin, 4, 3);
+      if (img && img.setWidth && img.setHeight) {
+        img.setWidth(140);
+        img.setHeight(42);
+      }
+      return true;
+    }
+  } catch (erro) {
+    Logger.log('Aviso: falha ao inserir logo Demercado via insertImage: ' + erro);
+  }
+  return false;
+}
+
