@@ -257,7 +257,29 @@ table.mapa tfoot .desc{background:var(--superficie)}
   outline:none;border-color:var(--acao);background:#fff;
   box-shadow:0 0 0 3px rgba(6,92,169,.14);
 }
-.linha-prop{display:grid;grid-template-columns:1.6fr 1fr auto;gap:10px;margin-bottom:10px;align-items:end}
+.linha-prop{display:grid;grid-template-columns:1fr auto;gap:12px;margin-bottom:12px;align-items:start}
+.busca-forn{position:relative}
+.sugestoes{
+  position:absolute;left:0;right:0;top:100%;z-index:30;margin-top:4px;
+  background:#fff;border:1px solid var(--linha);border-radius:10px;overflow:hidden;
+  box-shadow:0 12px 30px -12px rgba(21,30,73,.35);max-height:280px;overflow-y:auto;
+}
+.sug{
+  display:block;width:100%;text-align:left;padding:10px 13px;border:0;
+  background:#fff;cursor:pointer;font-family:inherit;
+}
+.sug:hover{background:var(--superficie2)}
+.sug b{display:block;font-size:14px;color:var(--noturno);font-weight:600}
+.sug small{display:block;font-size:12px;color:var(--suave);margin-top:2px}
+.sug-msg{padding:10px 13px;font-size:13px;color:var(--suave)}
+.sug-msg.erro-msg{color:var(--critico)}
+.resolvido{min-height:20px;margin-top:6px}
+.selo{
+  display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;
+  background:var(--superficie2);color:var(--royal);font-variant-numeric:tabular-nums;
+}
+.selo em{font-style:normal;font-weight:700;opacity:.75;margin-left:4px}
+.selo-receita{background:#E4F2EA;color:var(--ok)}
 .bt{
   padding:9px 16px;font-size:14px;font-weight:600;font-family:inherit;
   border:1px solid rgba(21,30,73,.16);border-radius:9px;
@@ -780,16 +802,124 @@ function removerProponente(i) {
 function desenharProponentes() {
   document.getElementById('props').innerHTML = proponentes.map(function (p, i) {
     return '<div class="linha-prop">' +
-      '<div class="campo"><label>Proponente ' + (i + 1) + '</label>' +
-      '<input value="' + esc(p.nome) + '" placeholder="razão social"' +
-      ' oninput="proponentes[' + i + '].nome=this.value;atualizarNomes();salvarRascunho()"></div>' +
-      '<div class="campo"><label>CNPJ</label>' +
-      '<input value="' + esc(p.cnpj) + '" placeholder="00.000.000/0001-00"' +
-      ' oninput="proponentes[' + i + '].cnpj=this.value;salvarRascunho()"></div>' +
+      '<div class="campo busca-forn">' +
+        '<label for="pf' + i + '">Proponente ' + (i + 1) + '</label>' +
+        '<input id="pf' + i + '" value="' + esc(p.busca !== undefined ? p.busca : p.nome) + '"' +
+          ' placeholder="CNPJ ou nome do fornecedor" autocomplete="off"' +
+          ' oninput="digitouFornecedor(' + i + ', this.value)">' +
+        '<div class="sugestoes" id="sug' + i + '" hidden></div>' +
+        '<div class="resolvido" id="res' + i + '">' + selo(p) + '</div>' +
+      '</div>' +
       '<button class="bt some" onclick="removerProponente(' + i + ')" ' +
       (proponentes.length < 2 ? 'disabled' : '') + '>remover</button>' +
       '</div>';
   }).join('');
+}
+
+/** O que já se sabe sobre o proponente, abaixo do campo. */
+function selo(p) {
+  if (!p.cnpj) return '';
+  var partes = [cnpjBonito(p.cnpj)];
+  if (p.cidade || p.uf) partes.push([p.cidade, p.uf].filter(Boolean).join('/'));
+  if (p.situacao) partes.push(p.situacao);
+  return '<span class="selo' + (p.fonte === 'receita' ? ' selo-receita' : '') + '">' +
+         esc(partes.join(' · ')) +
+         (p.fonte ? ' <em>' + (p.fonte === 'receita' ? 'Receita' : 'já cadastrado') + '</em>' : '') +
+         '</span>';
+}
+
+function cnpjBonito(v) {
+  var d = String(v || '').replace(/\D/g, '');
+  if (d.length !== 14) return String(v || '');
+  return d.slice(0,2)+'.'+d.slice(2,5)+'.'+d.slice(5,8)+'/'+d.slice(8,12)+'-'+d.slice(12);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Busca de fornecedor — um campo só, CNPJ ou nome
+// ─────────────────────────────────────────────────────────────
+
+var timerBusca = {};
+
+function digitouFornecedor(i, valor) {
+  proponentes[i].busca = valor;
+  proponentes[i].nome = valor;      // vale como nome até algo melhor chegar
+  atualizarNomes();
+  salvarRascunho();
+
+  clearTimeout(timerBusca[i]);
+  var caixa = document.getElementById('sug' + i);
+  if (String(valor).trim().length < 2) { caixa.hidden = true; return; }
+
+  // Espera parar de digitar: sem isso, um CNPJ de 14 dígitos dispararia 14
+  // consultas à Receita.
+  timerBusca[i] = setTimeout(function () {
+    caixa.hidden = false;
+    caixa.innerHTML = '<div class="sug-msg">procurando…</div>';
+    google.script.run
+      .withSuccessHandler(function (r) { mostrarSugestoes(i, r); })
+      .withFailureHandler(function () { caixa.hidden = true; })
+      .apiBuscarFornecedor(valor);
+  }, 450);
+}
+
+function mostrarSugestoes(i, r) {
+  var caixa = document.getElementById('sug' + i);
+  if (!caixa) return;
+
+  if (r.erro) {
+    caixa.innerHTML = '<div class="sug-msg erro-msg">' + esc(r.erro) + '</div>';
+    return;
+  }
+  if (!r.achados.length) {
+    caixa.innerHTML = '<div class="sug-msg">Sem correspondência — o nome digitado será usado.</div>';
+    return;
+  }
+
+  // CNPJ tem resposta única: preenche direto, sem obrigar a escolher.
+  if (r.tipo === 'cnpj' && r.achados.length === 1) {
+    caixa.hidden = true;
+    aplicarFornecedor(i, r.achados[0]);
+    return;
+  }
+
+  sugestoesAbertas[i] = r.achados;
+  caixa.innerHTML = r.achados.map(function (a, k) {
+    return '<button type="button" class="sug" onclick="escolherFornecedor(' + i + ',' + k + ')">' +
+           '<b>' + esc(a.razaoSocial) + '</b>' +
+           '<small>' + esc([cnpjBonito(a.cnpj), a.cidade, a.uf].filter(Boolean).join(' · ')) + '</small>' +
+           '</button>';
+  }).join('');
+}
+
+var sugestoesAbertas = {};
+
+function escolherFornecedor(i, k) {
+  var a = (sugestoesAbertas[i] || [])[k];
+  if (!a) return;
+  document.getElementById('sug' + i).hidden = true;
+  aplicarFornecedor(i, a);
+}
+
+function aplicarFornecedor(i, a) {
+  var p = proponentes[i];
+  p.nome = a.razaoSocial || p.nome;
+  p.busca = a.razaoSocial || p.busca;
+  p.cnpj = a.cnpj || '';
+  p.cidade = a.cidade || '';
+  p.uf = a.uf || '';
+  p.situacao = a.situacao || '';
+  p.cnae = a.cnae || '';
+  p.telefone = a.telefone || '';
+  p.email = a.email || '';
+  p.fonte = a.fonte;
+
+  var campo = document.getElementById('pf' + i);
+  if (campo) campo.value = p.busca;
+  var res = document.getElementById('res' + i);
+  if (res) res.innerHTML = selo(p);
+
+  atualizarNomes();
+  salvarRascunho();
 }
 
 /**

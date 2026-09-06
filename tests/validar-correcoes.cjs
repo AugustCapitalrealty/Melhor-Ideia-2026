@@ -675,3 +675,77 @@ try {
   console.log(`✗ FALHA na Correção 17: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 18 — busca de fornecedor por CNPJ ou nome
+//
+//  Um campo só. Dígitos vão à Receita; texto procura no cadastro. A ordem
+//  importa: cadastro interno antes da rede, porque o nome que a operação
+//  ajustou à mão vale mais que a razão social crua — e não gasta consulta.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxC = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  let foiARede = false;
+  ctxC.UrlFetchApp = {
+    fetch: () => {
+      foiARede = true;
+      return {
+        getResponseCode: () => 200,
+        getContentText: () => JSON.stringify({
+          razao_social: 'FORNECEDOR DA RECEITA LTDA', municipio: 'CURITIBA', uf: 'PR',
+          descricao_situacao_cadastral: 'ATIVA', cnae_fiscal: 4321,
+          cnae_fiscal_descricao: 'Instalação elétrica'
+        })
+      };
+    }
+  };
+  ctxC.CacheService = { getScriptCache: () => ({ get: () => null, put: () => {} }) };
+
+  ['Util.gs', 'Config.gs', 'Cnpj.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxC, { filename: f });
+  });
+
+  const CADASTRADO = '11222333000181';   // dígitos verificadores válidos
+  ctxC.cfLerTudo_ = () => [
+    { CNPJ: CADASTRADO, RAZAO_SOCIAL: 'ALFA MANUTENCAO LTDA', CIDADE: 'Itajaí', UF: 'SC' },
+    { CNPJ: '', RAZAO_SOCIAL: 'BETA SEM CNPJ' }
+  ];
+
+  // Dígito verificador barra antes de gastar rede.
+  assert.equal(ctxC.cfCnpjValido_('11222333000181'), true);
+  assert.equal(ctxC.cfCnpjValido_('11222333000182'), false, 'DV errado devia ser recusado');
+  assert.equal(ctxC.cfCnpjValido_('00000000000000'), false, 'repetido não é CNPJ');
+
+  // Já cadastrado: responde da base, sem tocar na rede.
+  foiARede = false;
+  const doCadastro = ctxC.cfBuscarFornecedor_('11.222.333/0001-81');
+  assert.equal(doCadastro.tipo, 'cnpj');
+  assert.equal(doCadastro.achados[0].razaoSocial, 'ALFA MANUTENCAO LTDA');
+  assert.equal(doCadastro.achados[0].fonte, 'cadastro');
+  assert.equal(foiARede, false, 'consultou a Receita para um CNPJ que já estava no cadastro');
+
+  // Não cadastrado: aí sim vai à rede.
+  foiARede = false;
+  const daReceita = ctxC.cfBuscarFornecedor_('34.028.316/0001-03');
+  assert.equal(foiARede, true);
+  assert.equal(daReceita.achados[0].razaoSocial, 'FORNECEDOR DA RECEITA LTDA');
+  assert.equal(daReceita.achados[0].fonte, 'receita');
+
+  // Texto procura por nome, no cadastro.
+  foiARede = false;
+  const porNome = ctxC.cfBuscarFornecedor_('alfa');
+  assert.equal(porNome.tipo, 'nome');
+  assert.equal(porNome.achados.length, 1);
+  assert.equal(foiARede, false, 'busca por nome não pode ir à Receita');
+
+  // Nome com número não pode virar consulta de CNPJ.
+  foiARede = false;
+  ctxC.cfBuscarFornecedor_('Alfa 2000 Serviços');
+  assert.equal(foiARede, false, '"Alfa 2000" foi tratado como CNPJ');
+
+  console.log('✓ CORREÇÃO VERIFICADA: fornecedor vem do cadastro antes da Receita, por CNPJ ou por nome');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 18: ${e.message}`);
+  process.exitCode = 1;
+}

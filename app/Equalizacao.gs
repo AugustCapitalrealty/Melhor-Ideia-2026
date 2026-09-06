@@ -345,9 +345,19 @@ function cfCadastrarProponentes_(proponentes) {
     const cnpj = cfSoDigitos_(p.cnpj);
     if (!cnpj || cnpj.length !== 14 || existentes[cnpj]) return;
     existentes[cnpj] = true;
+    // Guarda o que a consulta trouxe: as colunas existem desde o schema v1
+    // e nunca eram preenchidas. É isso que faz o cadastro se construir
+    // sozinho — na próxima cotação o fornecedor já vem pronto, sem rede.
     novos.push({
       CNPJ: cnpj,
       RAZAO_SOCIAL: String(p.nome || '').trim(),
+      NOME_FANTASIA: p.nomeFantasia || '',
+      CIDADE: p.cidade || '',
+      UF: p.uf || '',
+      SITUACAO_CNPJ: p.situacao || '',
+      CNAE_PRINCIPAL: p.cnae || '',
+      CONTATO_TEL: p.telefone || '',
+      CONTATO_EMAIL: p.email || '',
       ORIGEM: 'app',
       ATUALIZADO_EM: new Date()
     });

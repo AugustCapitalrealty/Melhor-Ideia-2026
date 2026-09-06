@@ -172,6 +172,18 @@ function apiEqualizacoes() {
   }
 }
 
+/**
+ * Identifica a empresa pelo CNPJ: cadastro interno, cache, e só então a
+ * consulta externa. Nunca lança — falhar aqui não pode travar a cotação.
+ */
+function apiBuscarFornecedor(termo) {
+  try {
+    return cfBuscarFornecedor_(termo);
+  } catch (erro) {
+    return { tipo: 'erro', achados: [], erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
 /** Os Megas e as empresas, para os seletores da tela de criação. */
 function apiOpcoes() {
   try {
