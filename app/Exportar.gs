@@ -76,7 +76,9 @@ function cfExportarEqualizacao_(idEq) {
     ['Grupo Centro de Custo:', eq.grupoCentroCusto, 'Cód. Fornecedor:', function () { return ''; }],
     ['Área:', eq.area, 'Telefone:', function (p) { return p.telefone || ''; }],
     ['Data da equalização:', eq.data, 'Email:', function (p) { return p.email || ''; }],
-    ['Situação:', eq.status, 'Nº da proposta:', function (p) { return p.numero || ''; }]
+    // Observação, e não "Nº da proposta": esse já aparece no rodapé, e
+    // repetir campo num documento de conferência convida a divergência.
+    ['Situação:', eq.status, 'Observação:', function () { return ''; }]
   ];
 
   cabecalho.forEach(function (c) {
@@ -240,10 +242,17 @@ function cfExportarEqualizacao_(idEq) {
 
   cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR);
 
+  // flush ANTES de exportar: as escritas ficam numa fila, e a URL de export
+  // lê o arquivo do servidor. Sem isto o PDF sai em branco — a planilha
+  // fica certa e o PDF, vazio, porque foram lidos em momentos diferentes.
+  SpreadsheetApp.flush();
+
+  // O PDF é gerado antes de mover. Mover para a pasta compartilhada troca o
+  // arquivo de drive, e exportar em seguida pega a propagação pela metade.
+  const pdf = cfPdfDaPlanilha_(ss.getId(), aba.getSheetId(), nome);
+
   const arquivo = DriveApp.getFileById(ss.getId());
   try { arquivo.moveTo(DriveApp.getFolderById(CF_PASTA_ID)); } catch (erro) {}
-
-  const pdf = cfPdfDaPlanilha_(ss.getId(), aba.getSheetId(), nome);
   cfLog_('exportar', 'equalizacao', idEq, JSON.stringify({ planilha: ss.getId(), pdf: pdf.getId() }));
 
   return { planilha: ss.getUrl(), pdf: pdf.getUrl() };
@@ -327,6 +336,15 @@ function cfPdfDaPlanilha_(planilhaId, gid, nomeArquivo) {
   }
 
   const blob = resposta.getBlob().setName(nomeArquivo + '.pdf');
+
+  // Um PDF de uma página em branco tem uns poucos KB. Falhar aqui é melhor
+  // que entregar um arquivo vazio com cara de sucesso — foi assim que o
+  // problema passou despercebido da primeira vez.
+  const tamanho = blob.getBytes().length;
+  if (tamanho < 3000) {
+    throw new Error('O PDF saiu praticamente vazio (' + tamanho + ' bytes). ' +
+      'Tente de novo em alguns segundos — a planilha pode não ter terminado de gravar.');
+  }
   try {
     return DriveApp.getFolderById(CF_PASTA_ID).createFile(blob);
   } catch (erro) {

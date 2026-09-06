@@ -908,6 +908,7 @@ try {
   };
   ctxX.SpreadsheetApp = {
     create: () => ({ getSheets: () => [abaFalsa], getId: () => 'SS1', getUrl: () => 'url-planilha' }),
+    flush: () => {},
     BorderStyle: { SOLID: 'SOLID' }
   };
   ctxX.DriveApp = {
@@ -917,7 +918,10 @@ try {
   };
   ctxX.ScriptApp = { getOAuthToken: () => 't' };
   ctxX.UrlFetchApp = {
-    fetch: () => ({ getResponseCode: () => 200, getBlob: () => ({ setName: function () { return this; } }) })
+    fetch: () => ({ getResponseCode: () => 200, getBlob: () => ({
+      setName: function () { return this; },
+      getBytes: () => new Array(9000).fill(0)
+    }) })
   };
   ctxX.Utilities = { formatDate: () => '06/09/2026 10:00', getUuid: () => 'x' };
 
@@ -1167,5 +1171,47 @@ try {
   console.log('✓ CORREÇÃO VERIFICADA: faxina de teste apaga só o marcado, filhos antes do pai');
 } catch (e) {
   console.log(`✗ FALHA na Correção 25: ${e.message}`);
+  process.exitCode = 1;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 26 — PDF vazio tem que falhar, não ser entregue
+//
+//  O primeiro PDF saiu em branco e o sistema devolveu o link como se
+//  tivesse dado certo. Arquivo vazio com cara de sucesso é pior que erro:
+//  só se descobre na hora de mostrar para alguém.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxP = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  let bytes = 200;                       // um PDF em branco
+  ctxP.UrlFetchApp = {
+    fetch: () => ({
+      getResponseCode: () => 200,
+      getBlob: () => ({ setName: function () { return this; }, getBytes: () => new Array(bytes).fill(0) })
+    })
+  };
+  ctxP.ScriptApp = { getOAuthToken: () => 't' };
+  ctxP.DriveApp = {
+    getFolderById: () => ({ createFile: () => ({ getId: () => 'P', getUrl: () => 'u' }) }),
+    createFile: () => ({ getId: () => 'P', getUrl: () => 'u' })
+  };
+  ctxP.SpreadsheetApp = { flush: () => {} };
+  ctxP.Utilities = { formatDate: () => '' };
+
+  ['Util.gs', 'Config.gs', 'Exportar.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxP, { filename: f });
+  });
+
+  assert.throws(() => ctxP.cfPdfDaPlanilha_('SS', 0, 'x'), /vazio/i,
+    'entregou um PDF em branco como se fosse sucesso');
+
+  bytes = 40000;                         // um PDF de verdade
+  const ok = ctxP.cfPdfDaPlanilha_('SS', 0, 'x');
+  assert.equal(ok.getUrl(), 'u');
+
+  console.log('✓ CORREÇÃO VERIFICADA: PDF em branco falha em vez de ser entregue');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 26: ${e.message}`);
   process.exitCode = 1;
 }
