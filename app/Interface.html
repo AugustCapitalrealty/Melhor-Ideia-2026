@@ -251,6 +251,19 @@ table.mapa tfoot .desc{background:var(--superficie)}
 .rascunho .bt{margin-left:auto}
 .dica{margin:-8px 0 14px;font-size:13px;color:var(--suave)}
 .dica b{color:var(--royal)}
+.base-valores{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 12px;
+  padding:11px 15px;border-radius:10px;background:var(--superficie2);
+  border:1px solid var(--linha);font-size:14px;
+}
+.base-valores > span{color:var(--suave)}
+.base-valores label{display:flex;align-items:center;gap:7px;cursor:pointer}
+.base-valores input{width:auto;margin:0}
+.base-valores b{color:var(--royal)}
+table.grade input.cod{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+  text-align:center;color:var(--acao);
+}
 
 /* Campo derivado: mostra o valor sem fingir que é editável. */
 .derivado{
@@ -472,6 +485,10 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
           <input id="nArea" placeholder="Facilities, Equipamentos, Mão de obra…">
         </div>
         <div class="campo">
+          <label for="nGrupoCC">Grupo Centro de Custo</label>
+          <input id="nGrupoCC" placeholder="Limpeza e conservação, Utilities…">
+        </div>
+        <div class="campo">
           <label for="nData">Data da equalização</label>
           <input id="nData" type="date">
         </div>
@@ -488,6 +505,16 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
 
     <div class="bloco vidro">
       <h2>Itens e preços</h2>
+      <div class="base-valores">
+        <span>Os valores que vou digitar são:</span>
+        <label><input type="radio" name="baseValores" value="unitario" checked
+          onchange="mudarBase()"> preço <b>unitário</b></label>
+        <label><input type="radio" name="baseValores" value="total"
+          onchange="mudarBase()"> <b>total</b> da linha</label>
+      </div>
+      <p class="dica">A planilha EQU só traz o total da linha — ao transcrever uma
+        antiga, escolha <b>total</b> e o unitário sai da quantidade. É essa conta
+        que faltava, e é ela que faz o histórico de preço valer alguma coisa.</p>
       <p class="dica">Só itens recebem preço — grupo agrega e fica sem valor.
         Use <b>›</b> para empurrar um item para dentro do grupo acima e <b>‹</b> para tirar.
         Na coluna de preços, <b>Enter</b> desce para o próximo item e dá para
@@ -1065,7 +1092,7 @@ function limparFormulario() {
   jaGravada = false;
   descartarRascunho();
 
-  ['nProjeto', 'nArea', 'nDetalhamento', 'nPremissas', 'nNotasCr'].forEach(function (id) {
+  ['nProjeto', 'nArea', 'nGrupoCC', 'nDetalhamento', 'nPremissas', 'nNotasCr'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1105,7 +1132,7 @@ function carregarOpcoes() {
     addItem('grupo'); addItem('item');
   }
 
-  ['nEmp', 'nProjeto', 'nArea', 'nData'].forEach(function (id) {
+  ['nEmp', 'nProjeto', 'nArea', 'nGrupoCC', 'nData'].forEach(function (id) {
     document.getElementById(id).addEventListener('input', salvarRascunho);
   });
 }
@@ -1184,6 +1211,10 @@ function detalhesProposta(p, i) {
       campoProp(i, 'dataPrevInicio', 'Data prevista para início', 'date') +
       campoProp(i, 'dataPrevTermino', 'Data prevista para término', 'date') +
       campoProp(i, 'centroCusto', 'Nome do centro de custo', 'text', 'Material de consumo') +
+      campoProp(i, 'totalDeclarado', 'VALOR TOTAL declarado no documento', 'text', 'R$') +
+      campoProp(i, 'contatoNome', 'Contato', 'text', 'nome de quem cotou') +
+      campoProp(i, 'telefone', 'Telefone', 'text', '(41) 3330-8000') +
+      campoProp(i, 'email', 'E-mail do vendedor', 'email', 'vendas@fornecedor.com.br') +
       '<div class="campo"><label>Faturamento direto</label>' +
         '<label class="check"><input type="checkbox"' +
         (p.faturamentoDireto ? ' checked' : '') +
@@ -1340,17 +1371,14 @@ function aplicarFornecedor(i, a) {
  * por rótulo desatualizado.
  */
 function atualizarNomes() {
-  var ths = document.querySelectorAll('#grade thead th');
+  var rotulo = baseValores() === 'total' ? 'R$ total da linha' : 'R$ unitário';
   proponentes.forEach(function (p, j) {
-    // 3, não 4: o cabeçalho tem Descrição, Qtd e Unidade antes dos
-    // proponentes. O controle de nível é um botão dentro da célula de
-    // descrição, não uma coluna — com 4 o nome de cada proponente ia
-    // parar na coluna do seguinte, que é exatamente o rótulo trocado que
-    // esta função existe para evitar.
-    var th = ths[3 + j];
+    // Pelo data-prop, não por posição: o número de colunas fixas já mudou
+    // duas vezes, e das duas o nome foi parar na coluna errada.
+    var th = document.querySelector('#grade thead th[data-prop="' + j + '"]');
     if (!th) return;
-    // innerHTML, não textContent: textContent apagava o "R$ unitário".
-    th.innerHTML = esc(p.nome || ('Proponente ' + (j + 1))) + '<small>R$ unitário</small>';
+    // innerHTML, não textContent: textContent apagava o rótulo da unidade.
+    th.innerHTML = esc(p.nome || ('Proponente ' + (j + 1))) + '<small>' + rotulo + '</small>';
   });
   calcular();
 }
@@ -1373,6 +1401,24 @@ function addItem(tipo, semFoco) {
 }
 
 function removerItem(i) { itens.splice(i, 1); desenharGrade(); salvarRascunho(); }
+
+/**
+ * A grade recebe unitário digitado ou total da linha?
+ *
+ * A planilha EQU só tem o total; ter o unitário é a melhoria que o sistema
+ * traz. Transcrevendo um documento antigo, digita-se o total e o unitário
+ * sai da quantidade — mas isso precisa ser uma escolha explícita, porque
+ * as duas leituras dão resultados diferentes para o mesmo número.
+ */
+function baseValores() {
+  var r = document.querySelector('input[name="baseValores"]:checked');
+  return r ? r.value : 'unitario';
+}
+
+function mudarBase() {
+  desenharGrade();      // o rótulo da coluna e a conta mudam junto
+  salvarRascunho();
+}
 
 /**
  * Unidades correntes nas cotações do acervo.
@@ -1402,11 +1448,16 @@ function mudarNivel(i, passo) {
 }
 
 function desenharGrade() {
-  var cab = '<thead><tr><th>Descrição</th>' +
+  var rotuloBase = baseValores() === 'total' ? 'R$ total da linha' : 'R$ unitário';
+  var cab = '<thead><tr><th style="width:88px">Código</th><th>Descrição</th>' +
     '<th style="width:80px">Qtd</th><th style="width:104px">Unidade</th>' +
     proponentes.map(function (p, i) {
-      return '<th style="width:150px">' + esc(p.nome || ('Proponente ' + (i + 1))) +
-             '<small>R$ unitário</small></th>';
+      // data-prop identifica a coluna pelo proponente, não pela posição:
+      // contar colunas fixas com um número mágico já mandou o nome de um
+      // proponente para a coluna do seguinte quando a grade mudou.
+      return '<th data-prop="' + i + '" style="width:150px">' +
+             esc(p.nome || ('Proponente ' + (i + 1))) +
+             '<small>' + rotuloBase + '</small></th>';
     }).join('') + '<th style="width:40px"></th></tr></thead>';
 
   var corpo = itens.map(function (it, i) {
@@ -1440,6 +1491,9 @@ function desenharGrade() {
       (it.nivel >= 3 ? ' disabled' : '') + ' aria-label="Aumentar o recuo">›</button>';
 
     return '<tr class="' + (it.tipo === 'grupo' ? 'eh-grupo' : '') + '">' +
+      '<td><input class="cod" value="' + esc(it.codigo || '') + '" placeholder="1.1.7"' +
+        ' aria-label="Código da EAP"' +
+        ' oninput="itens[' + i + '].codigo=this.value;salvarRascunho()"></td>' +
       '<td class="cel-desc" style="' + recuo + '">' +
         '<span class="degraus">' + controles + '</span>' +
         '<input class="desc" value="' + esc(it.descricao) + '" placeholder="' +
@@ -1510,13 +1564,17 @@ function calcular() {
   var cotou = proponentes.map(function () { return 0; });
   var itensReais = itens.filter(function (i) { return i.tipo !== 'grupo'; }).length;
 
+  var porTotal = baseValores() === 'total';
   itens.forEach(function (it) {
     if (it.tipo === 'grupo') return;
     var q = num(it.quantidade);
+    var mult = (q === null || q === 0) ? 1 : q;
     it.precos.forEach(function (p, j) {
       var v = num(p);
       if (v === null) return;
-      totais[j] += v * (q === null ? 1 : q);
+      // Digitando o total da linha, o valor já É o total: multiplicar de
+      // novo pela quantidade inflaria tudo por um fator inteiro.
+      totais[j] += porTotal ? v : v * mult;
       cotou[j] += 1;
     });
   });
@@ -1641,6 +1699,8 @@ function estadoAtual() {
     emp: document.getElementById('nEmp').value,
     projeto: document.getElementById('nProjeto').value,
     area: document.getElementById('nArea').value,
+    grupoCC: document.getElementById('nGrupoCC').value,
+    base: baseValores(),
     data: document.getElementById('nData').value,
     // Os três textareas de Aprovação chamavam salvarRascunho no oninput mas
     // não entravam no estado: um F5 apagava o detalhamento sem aviso, e um
@@ -1654,7 +1714,7 @@ function estadoAtual() {
 }
 
 function temConteudo(e) {
-  return !!(e.emp || e.projeto || e.area || e.detalhamento || e.premissas || e.notasCr ||
+  return !!(e.emp || e.projeto || e.area || e.grupoCC || e.detalhamento || e.premissas || e.notasCr ||
     (e.proponentes || []).some(function (p) { return p.nome || p.cnpj; }) ||
     (e.itens || []).some(function (i) { return i.descricao || i.precos.some(Boolean); }));
 }
@@ -1687,6 +1747,9 @@ function restaurarRascunho() {
   document.getElementById('nEmp').value = e.emp || '';
   document.getElementById('nProjeto').value = e.projeto || '';
   document.getElementById('nArea').value = e.area || '';
+  document.getElementById('nGrupoCC').value = e.grupoCC || '';
+  var rb = document.querySelector('input[name="baseValores"][value="' + (e.base || 'unitario') + '"]');
+  if (rb) rb.checked = true;
   document.getElementById('nDetalhamento').value = e.detalhamento || '';
   document.getElementById('nPremissas').value = e.premissas || '';
   document.getElementById('nNotasCr').value = e.notasCr || '';
@@ -1760,6 +1823,8 @@ function salvarEqualizacao() {
       projeto: document.getElementById('nProjeto').value,
       area: document.getElementById('nArea').value,
       data: document.getElementById('nData').value,
+      grupoCentroCusto: document.getElementById('nGrupoCC').value,
+      baseValores: baseValores(),
       detalhamento: document.getElementById('nDetalhamento').value,
       premissas: document.getElementById('nPremissas').value,
       notasCr: document.getElementById('nNotasCr').value,

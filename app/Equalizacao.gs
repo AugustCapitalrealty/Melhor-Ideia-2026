@@ -284,10 +284,21 @@ function cfCriarEqualizacao_(d) {
     if (item.tipo === 'grupo') return;
 
     proponentes.forEach(function (p, i) {
-      const valor = cfNumero_((item.precos || [])[i]);
-      const cotou = valor !== null && valor !== undefined && String((item.precos || [])[i]).trim() !== '';
+      const digitado = cfNumero_((item.precos || [])[i]);
+      const cotou = digitado !== null && digitado !== undefined &&
+                    String((item.precos || [])[i]).trim() !== '';
       const qtd = cfNumero_(item.quantidade);
-      const total = cotou ? valor * (qtd === null ? 1 : qtd) : null;
+      const q = (qtd === null || qtd === 0) ? 1 : qtd;
+
+      // O formulário EQU só tem o total da linha; ter o unitário é a
+      // melhoria. Quando o comprador transcreve um documento antigo ele
+      // digita o total, e o unitário é derivado — ORIGEM_CALCULO guarda
+      // qual dos dois foi informado, para o histórico não misturar preço
+      // digitado com preço deduzido.
+      const porTotal = d.baseValores === 'total';
+      const unitario = cotou ? (porTotal ? digitado / q : digitado) : null;
+      const total = cotou ? (porTotal ? digitado : digitado * q) : null;
+
       if (cotou) { totais[i] += total; cotouAlgo[i] = true; }
 
       linhasPreco.push({
@@ -297,9 +308,10 @@ function cfCriarEqualizacao_(d) {
         ID_EQUALIZACAO: idEq,
         QUANTIDADE: qtd,
         UNIDADE: item.unidade || '',
-        PRECO_UNITARIO: cotou ? valor : '',
+        PRECO_UNITARIO: cotou ? unitario : '',
         VALOR_TOTAL: cotou ? total : '',
         STATUS_PRECO: cotou ? 'cotado' : 'nao_cotado',
+        ORIGEM_CALCULO: cotou ? (porTotal ? 'calculado' : 'informado') : 'ausente',
         CNPJ: cfSoDigitos_(p.cnpj),
         ID_EMPREENDIMENTO: d.empreendimento,
         DATA: agora,
@@ -317,6 +329,7 @@ function cfCriarEqualizacao_(d) {
       ID_EMPREENDIMENTO: d.empreendimento,
       PROJETO: d.projeto || '',
       AREA: d.area || '',
+      GRUPO_CENTRO_CUSTO: d.grupoCentroCusto || '',
       DATA_EQUALIZACAO: cfData_(d.data) || agora,
       STATUS: 'em_cotacao',
       PREMISSAS: d.premissas || '',
@@ -333,8 +346,13 @@ function cfCriarEqualizacao_(d) {
       const rodada = cfNumero_(p.r02) !== null ? 'R02'
                    : (cfNumero_(p.r01) !== null ? 'R01' : 'inicial');
       const inicial = cfNumero_(p.propostaInicial);
-      const declarado = cfNumero_(p.r02) !== null ? cfNumero_(p.r02)
-                      : (cfNumero_(p.r01) !== null ? cfNumero_(p.r01) : inicial);
+      // O total que o fornecedor escreveu no documento manda. Ele e a soma
+      // dos itens sao numeros independentes, e a divergencia entre os dois e
+      // erro comum de proposta — a confusao so aparece se ambos existirem.
+      const digitadoDeclarado = cfNumero_(p.totalDeclarado);
+      const declarado = digitadoDeclarado !== null ? digitadoDeclarado
+                      : (cfNumero_(p.r02) !== null ? cfNumero_(p.r02)
+                      : (cfNumero_(p.r01) !== null ? cfNumero_(p.r01) : inicial));
 
       return {
         ID: idsProposta[i],

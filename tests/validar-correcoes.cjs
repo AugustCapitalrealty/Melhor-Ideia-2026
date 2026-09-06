@@ -1032,3 +1032,68 @@ try {
   console.log(`✗ FALHA na Correção 23: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 24 — total da linha × preço unitário
+//
+//  A planilha EQU só traz o total da linha; ter o unitário é a melhoria.
+//  Transcrevendo um documento antigo digita-se o total, e o unitário sai
+//  da quantidade. Sem essa distinção, R$ 524,00 de um lote de café virava
+//  "café custa R$ 524,00 a unidade" no histórico de preços.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxB = vm.createContext({ Logger: { log: () => {} }, console: console });
+  let gravadoB = {};
+  let seqB = 0;
+
+  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxB, { filename: f });
+  });
+  ctxB.cfLerTudo_ = () => [];
+  ctxB.cfInserir_ = (aba, linhas) => { gravadoB[aba] = (gravadoB[aba] || []).concat(linhas); };
+  ctxB.cfComTrava_ = (fn) => fn();
+  ctxB.cfUsuario_ = () => 'x@capitalrealty.com.br';
+  ctxB.cfLog_ = () => {};
+  ctxB.cfNovoId_ = (p) => p + '-' + (++seqB);
+
+  const item = { tipo: 'item', nivel: 0, descricao: 'Café Melitta 500g',
+                 quantidade: '4', unidade: 'un', precos: ['524,00'] };
+
+  // Base "total": 524 é o total de 4 unidades → unitário 131.
+  ctxB.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA', baseValores: 'total',
+    proponentes: [{ nome: 'A' }], itens: [JSON.parse(JSON.stringify(item))]
+  });
+  let pr = gravadoB.Precos[0];
+  assert.equal(pr.VALOR_TOTAL, 524, 'o total digitado tem que ser preservado');
+  assert.equal(pr.PRECO_UNITARIO, 131, 'o unitário sai do total dividido pela quantidade');
+  assert.equal(pr.ORIGEM_CALCULO, 'calculado', 'unitário derivado precisa ficar marcado como calculado');
+  assert.equal(gravadoB.Propostas[0].VALOR_TOTAL_CALCULADO, 524,
+    'somar o total da linha não pode multiplicar de novo pela quantidade');
+
+  // Base "unitario": 524 é o preço de um → total 2096.
+  gravadoB = {}; seqB = 0;
+  ctxB.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA', baseValores: 'unitario',
+    proponentes: [{ nome: 'A' }], itens: [JSON.parse(JSON.stringify(item))]
+  });
+  pr = gravadoB.Precos[0];
+  assert.equal(pr.PRECO_UNITARIO, 524);
+  assert.equal(pr.VALOR_TOTAL, 2096);
+  assert.equal(pr.ORIGEM_CALCULO, 'informado');
+
+  // Sem quantidade, as duas bases coincidem — é o caso do formulário real.
+  gravadoB = {}; seqB = 0;
+  ctxB.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA', baseValores: 'total',
+    proponentes: [{ nome: 'A' }],
+    itens: [{ tipo: 'item', nivel: 0, descricao: 'Açúcar', precos: ['29,00'] }]
+  });
+  assert.equal(gravadoB.Precos[0].PRECO_UNITARIO, 29);
+  assert.equal(gravadoB.Precos[0].VALOR_TOTAL, 29);
+
+  console.log('✓ CORREÇÃO VERIFICADA: total da linha e preço unitário são coisas distintas');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 24: ${e.message}`);
+  process.exitCode = 1;
+}
