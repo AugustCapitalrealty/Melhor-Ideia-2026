@@ -24,7 +24,7 @@ E segundo o item 12 (**Critérios de Desempate**):
 
 * **Como atingimos a nota máxima**:
   1. **Redução Direta de Custos (Saving Comprovado)**: A equalização padronizada com histórico de rodadas (Inicial, R01, R02) expõe o valor economizado em cada negociação. Vamos demonstrar o valor total de R$ poupados para a Capital Realty durante o período de testes.
-  2. **Eliminação de Retrabalho e Riscos Fiscais**: A consulta automática de CNPJ via BrasilAPI valida instantaneamente se a empresa está com situação "ATIVA" na Receita Federal, evitando contratação de empresas inaptas ou fraudulentas.
+  2. **Eliminação de Retrabalho e Riscos Fiscais**: A consulta automática de CNPJ via BrasilAPI mostra a situação cadastral da empresa (ex: ATIVA) no momento da cotação, sinalizando empresas inaptas antes da contratação. A BrasilAPI é serviço comunitário sem SLA: o dado é um indício útil, não uma certidão.
   3. **Aumento de Produtividade**: Redução de ~50 minutos para menos de 15 minutos por processo de equalização. Menos tempo preenchendo planilhas significa mais tempo dos gestores de Facilities focados na operação e conservação dos Megas.
   4. **Qualificação da Base**: Prestadores com histórico ruim ou recorrentes infrações de segurança nos Megas são identificados imediatamente pelo Scorecard, evitando recontratações danosas.
 
@@ -55,7 +55,7 @@ E segundo o item 12 (**Critérios de Desempate**):
 
 * **Como atingimos a nota máxima**:
   1. **O Fim da Planilha XLSX Quebrada**: Substituição de arquivos estáticos por uma aplicação web moderna, colaborativa e à prova de fórmulas corrompidas.
-  2. **Arquitetura Híbrida Inteligente**: Fusão pioneira de consulta pública da Receita Federal (BrasilAPI) com memória interna da empresa (cadastro operacional persistente de contatos).
+  2. **Arquitetura Híbrida Inteligente**: consulta pública de CNPJ (BrasilAPI, comunitária) combinada à memória interna da empresa — o cadastro operacional de contatos, que a consulta externa não tem.
   3. **Ciclo 360° do Fornecedor**: Conexão inédita entre o momento da cotação (pré-serviço) e o histórico de avaliações pós-OC (pós-serviço). A avaliação deixa de ser burocracia esquecida para virar critério de escolha na próxima cotação.
 
 ---

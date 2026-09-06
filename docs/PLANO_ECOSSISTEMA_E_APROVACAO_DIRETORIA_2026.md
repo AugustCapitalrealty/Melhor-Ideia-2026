@@ -6,6 +6,36 @@
 
 ---
 
+## 0. Nota de revisão — 06/09/2026
+
+Este plano passou por parecer técnico independente antes de virar trabalho. O parecer aprovou as Fases 1 e 2 com ressalvas e **reprovou as Fases 3 e 4 para o ciclo 2026**. O documento fica no acervo como escrito, com as correções abaixo registradas em vez de apagadas.
+
+**Escopo revisado:**
+
+| Fase | Veredito | Motivo |
+| :--- | :--- | :--- |
+| 1 — Dossiê de Diretoria | **Executar**, com escopo cortado | É o único entregável que o comitê enxerga. Requer correção prévia de dados (ver abaixo). |
+| 2 — Ergonomia | **Executar 3 dos 6 itens** | Cabeçalho fixo, menor preço ao vivo e rascunho por rodada. Colagem bidimensional fica para depois. |
+| 3 — Catálogo em escala | **Ciclo 2027** | Resolve um problema que ainda não existe. |
+| 4 — Ecossistema 360° | **Ciclo 2027** | Depende de dados que ainda não foram produzidos. |
+
+O regulamento, §5.3, prevê exatamente isso: *"Ideias validadas que não forem concluídas devido a limitações de orçamento ou tempo permanecerão elegíveis para execução no próximo ciclo anual."*
+
+**Correções de fato apuradas no parecer:**
+
+1. **Os volumes citados na Fase 3 são hipotéticos.** A base tem **4 equalizações**, não "100+". Os contadores do exemplo de *Category Pills* (§3.3) — `Todas (142)`, `Mat. Consumo (48)` — são ilustrativos, não medições. Leia-os como maquete de tela.
+2. **Três das sete macro-categorias propostas (§3.2) não têm um único registro no acervo:** Obras & Reformas, Equipamentos & Locação, Tecnologia & Segurança. As categorias reais são Material de consumo (156 registros), Material de manutenção (75), Material de construção (28), Material de escritório (12) e Serviço de limpeza de piso (3).
+3. **O win-rate da Fase 4 (§4.3) não é calculável hoje.** Os 274 registros do acervo são todos orçamentos avulsos; nenhum é disputa com vencedor apurado. E a tabela `Convites`, que seria o denominador de "concorrências convocadas", está vazia por motivo conhecido: Engenharia registra convites, Facilities não. Um índice sobre essa amostra seria ruído apresentado como inteligência.
+4. **As três colunas novas propostas para `Fornecedores` (§4.1) são desnecessárias.** `TOTAL_CONTRATADO` em especial é cache de algo já derivável de `Equalizacoes.VALOR_FINAL`, e divergiria na primeira homologação corrigida.
+5. **O trecho de `setRichTextValue` da §1.4 não funciona como escrito.** Verificado em spike (06/09): o link aplicado antes do `setValues` da linha 344 do `Exportar.gs` é apagado por ele. A regra correta é uma só — **rich text depois do `setValues`**. Ao contrário do que o parecer supunha, `setFontSize` e `setBorder` **não** achatam os runs, e o range de duas células mescladas funciona.
+6. **O link sobrevive ao PDF — confirmado, não suposto.** O mesmo spike gerou o PDF pelo caminho real (`cfPdfDaPlanilha_`, endpoint `?format=pdf` com token OAuth) e encontrou `/Annots` e `/URI` com a URL. A Fase 1 pode incluir `LINK_PROPOSTA`.
+7. **Subir `CF_SCHEMA_VERSAO` de 3 para 4 exige congelar a migração atual primeiro.** `migrarParaSchemaV3()` deriva a versão da constante em vez de usar literais: bumpar a constante faria ela carimbar "migrado para v4" sem executar nenhum passo de v4.
+8. **Pré-requisito da Fase 1 — três divergências de dados.** O Scorecard executivo publica o Valor Homologado no topo do documento que vai à Diretoria. Antes disso: as 4 equalizações estão sem CNPJ da empresa; uma tem totais declarados equivalentes a 12× o calculado (mensalidade lida como anual); e Eletrobarras aparece com mão de obra duplicada em duas colunas.
+
+**O que o plano não previu e virou prioridade:** medir. Impacto vale 30% da nota e é o primeiro critério de desempate, e não há uma única medição de tempo apurada. A instrumentação via `cfLog_` e um piloto com cotações reais valem mais, para o concurso, que as Fases 3 e 4 somadas.
+
+---
+
 ## 1. Visão Geral e Propósito
 
 Este documento consolida a auditoria profunda realizada por três agentes especializados (UX/UI & Performance, Governança/Diretoria & Exportação, e Arquitetura de Ecossistema) e define o **Plano Diretor** para transformar o sistema **Capital Fornecedores** em uma plataforma estratégica corporativa.
@@ -204,7 +234,7 @@ A barra de navegação passa a contar com 4 áreas:
 Ao selecionar uma categoria na aba Fornecedores:
 * Lista todos os fornecedores que já apresentaram propostas naquele segmento.
 * Cards informativos com:
-  * Razão Social, Nome Fantasia e CNPJ com selo de regularidade da Receita Federal (`● ATIVA`).
+  * Razão Social, Nome Fantasia e CNPJ com selo de situação cadastral (`● ATIVA`), vindo da consulta pública.
   * Empreendimentos atendidos (Mega Curitiba, Esteio, Itajaí, Demercado).
   * **Métricas de Performance:**
     * *Participações*: total de concorrências convocadas.

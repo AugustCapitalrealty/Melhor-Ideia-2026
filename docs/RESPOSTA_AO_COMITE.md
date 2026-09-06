@@ -29,7 +29,7 @@ Apresento abaixo o detalhamento dos pontos solicitados:
 | Aspecto | Modelo Atual (AS-IS) | Nova Solução Integrada (TO-BE) |
 | :--- | :--- | :--- |
 | **Ponto de Entrada** | Planilha de equalização `.xlsx` avulsa, sujeita a quebra de fórmulas e perda de histórico. | **Web App Corporativo Inteligente (Google Apps Script)** com validação de dados, cálculo de saving e histórico unificado. |
-| **Cadastro de Fornecedores** | Digitação manual e repetitiva de Razão Social, CNPJ e contatos em cada cotação. | **Integração com BrasilAPI (Receita Federal)** para autopreenchimento instantâneo + memória interna dos contatos comerciais. |
+| **Cadastro de Fornecedores** | Digitação manual e repetitiva de Razão Social, CNPJ e contatos em cada cotação. | **Integração com a BrasilAPI (consulta pública de CNPJ)** para autopreenchimento instantâneo + memória interna dos contatos comerciais. |
 | **Gatilho de Avaliação** | Manual e voluntário no Fluig (baixa adesão). | **Gatilho automatizado pós-Ordem de Compra** no encerramento do serviço no Mega (preenchimento em 60 segundos). |
 | **Visibilidade dos Dados** | Avaliações esquecidas em formulários individuais. | **Scorecard Centralizado & IQF (Índice de Qualificação do Fornecedor)** acessível em tempo real. |
 | **Impacto na Tomada de Decisão** | Nulo (o comprador não sabe a nota do fornecedor). | **Retroalimentação direta**: o histórico e a reputação do prestador aparecem na tela durante a próxima equalização. |

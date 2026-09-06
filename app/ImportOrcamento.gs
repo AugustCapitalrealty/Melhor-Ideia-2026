@@ -135,6 +135,10 @@ function cfGravarOrcamento_(orc, idImportacao) {
     ID_IMPORTACAO: idImportacao
   }]);
 
+  // Uma resolução por orçamento, não por item: cada chamada relê a
+  // tabela Empreendimentos inteira.
+  const empreendimentoId = cfResolverEmpreendimento_(orc.empreendimento || '');
+
   const linhasEap = [], linhasPreco = [];
   orc.itens.forEach(function (item, i) {
     const idNo = cfNovoId_('EAP');
@@ -170,7 +174,7 @@ function cfGravarOrcamento_(orc, idImportacao) {
       STATUS_PRECO: (unit === null && total === null) ? 'nao_cotado' : 'cotado',
       CNPJ: cnpjValido,
       ID_EQUALIZACAO: '',
-      ID_EMPREENDIMENTO: orc.empreendimento || '',
+      ID_EMPREENDIMENTO: empreendimentoId,
       UF: forn.uf || cfInferirUf_(orc.empreendimento),
       DATA: data || '',
       ORIGEM: 'import_pdf',

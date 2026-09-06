@@ -413,7 +413,7 @@ tr.eh-grupo .cod-auto{color:var(--noturno)}
   background:var(--superficie2);color:var(--royal);font-variant-numeric:tabular-nums;
 }
 .selo em{font-style:normal;font-weight:700;opacity:.75;margin-left:4px}
-.selo-receita{background:#E4F2EA;color:var(--ok)}
+.selo-consulta{background:#E4F2EA;color:var(--ok)}
 
 /* Detalhes da proposta: recolhido por padrão, aberto quando se transcreve. */
 .detalhes-prop{
@@ -1856,9 +1856,9 @@ function selo(p) {
   var partes = [cnpjBonito(p.cnpj)];
   if (p.cidade || p.uf) partes.push([p.cidade, p.uf].filter(Boolean).join('/'));
   if (p.situacao) partes.push(p.situacao);
-  return '<span class="selo' + (p.fonte === 'receita' ? ' selo-receita' : '') + '">' +
+  return '<span class="selo' + (p.fonte === 'consulta_publica' ? ' selo-consulta' : '') + '">' +
          esc(partes.join(' · ')) +
-         (p.fonte ? ' <em>' + (p.fonte === 'receita' ? 'Receita' : 'já cadastrado') + '</em>' : '') +
+         (p.fonte ? ' <em>' + (p.fonte === 'consulta_publica' ? 'consulta pública' : 'já cadastrado') + '</em>' : '') +
          '</span>';
 }
 
@@ -1885,7 +1885,7 @@ function digitouFornecedor(i, valor) {
   if (String(valor).trim().length < 2) { caixa.hidden = true; return; }
 
   // Espera parar de digitar: sem isso, um CNPJ de 14 dígitos dispararia 14
-  // consultas à Receita.
+  // consultas externas.
   timerBusca[i] = setTimeout(function () {
     caixa.hidden = false;
     caixa.innerHTML = '<div class="sug-msg">procurando…</div>';
