@@ -221,6 +221,16 @@ table.mapa tfoot .desc{background:var(--superficie)}
   box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 10px 34px -18px rgba(21,30,73,.45);
   border-radius:14px;
 }
+.rascunho{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:11px 16px;margin-bottom:16px;border-radius:10px;
+  background:#FAEEDF;border:1px solid rgba(168,91,18,.25);
+  color:#8F4D0F;font-size:14px;font-weight:600;
+}
+.rascunho .bt{margin-left:auto}
+.dica{margin:-8px 0 14px;font-size:13px;color:var(--suave)}
+.dica b{color:var(--royal)}
+
 /* Campo derivado: mostra o valor sem fingir que é editável. */
 .derivado{
   padding:10px 12px;font-size:14.5px;font-weight:600;color:var(--noturno);
@@ -326,6 +336,11 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
   </section>
 
   <section id="v-nova" hidden>
+    <div class="rascunho" id="barraRascunho" hidden>
+      <span></span>
+      <button class="bt" onclick="descartarRascunho();location.reload()">Descartar e começar do zero</button>
+    </div>
+
     <div class="bloco vidro">
       <h2>A compra</h2>
       <div class="campos">
@@ -362,6 +377,9 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
 
     <div class="bloco vidro">
       <h2>Itens e preços</h2>
+      <p class="dica">Só itens recebem preço — grupo agrega. Na coluna de preços,
+        <b>Enter</b> desce para o próximo item, e dá para <b>colar uma coluna inteira</b>
+        do Excel de uma vez.</p>
       <div class="grade-rolo"><table class="grade" id="grade"></table></div>
       <div class="acoes">
         <button class="bt" onclick="addItem('item')">+ Item</button>
@@ -721,8 +739,17 @@ function carregarOpcoes() {
   }).apiOpcoes();
 
   document.getElementById('nData').valueAsDate = new Date();
-  addProponente(); addProponente(); addProponente();   // três é o mínimo usual
-  addItem('grupo'); addItem('item');
+
+  // Rascunho tem prioridade sobre o estado inicial: se havia trabalho em
+  // andamento, começar do zero por cima dele seria perdê-lo de novo.
+  if (!restaurarRascunho()) {
+    addProponente(); addProponente(); addProponente();   // três é o mínimo usual
+    addItem('grupo'); addItem('item');
+  }
+
+  ['nEmp', 'nProjeto', 'nArea', 'nData'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', salvarRascunho);
+  });
 }
 
 /**
@@ -755,26 +782,51 @@ function desenharProponentes() {
     return '<div class="linha-prop">' +
       '<div class="campo"><label>Proponente ' + (i + 1) + '</label>' +
       '<input value="' + esc(p.nome) + '" placeholder="razão social"' +
-      ' oninput="proponentes[' + i + '].nome=this.value"></div>' +
+      ' oninput="proponentes[' + i + '].nome=this.value;atualizarNomes();salvarRascunho()"></div>' +
       '<div class="campo"><label>CNPJ</label>' +
       '<input value="' + esc(p.cnpj) + '" placeholder="00.000.000/0001-00"' +
-      ' oninput="proponentes[' + i + '].cnpj=this.value"></div>' +
+      ' oninput="proponentes[' + i + '].cnpj=this.value;salvarRascunho()"></div>' +
       '<button class="bt some" onclick="removerProponente(' + i + ')" ' +
       (proponentes.length < 2 ? 'disabled' : '') + '>remover</button>' +
       '</div>';
   }).join('');
 }
 
-function addItem(tipo) {
+/**
+ * Nome do proponente no cabeçalho da grade e nos totais, sem redesenhar.
+ *
+ * Antes, digitar "Alfa Manutenção" no bloco de cima não mudava nada lá
+ * embaixo: as colunas continuavam "Proponente 1, 2, 3". Com 4+ colunas
+ * isso vira preço digitado na coluna errada — erro de dinheiro causado
+ * por rótulo desatualizado.
+ */
+function atualizarNomes() {
+  var ths = document.querySelectorAll('#grade thead th');
+  proponentes.forEach(function (p, j) {
+    var th = ths[4 + j];                       // nível, descrição, qtd, un.
+    if (th) th.textContent = p.nome || ('Proponente ' + (j + 1));
+  });
+  calcular();
+}
+
+function addItem(tipo, semFoco) {
   itens.push({
     tipo: tipo, nivel: tipo === 'grupo' ? 0 : 1, descricao: '',
     quantidade: '', unidade: '',
     precos: proponentes.map(function () { return ''; })
   });
   desenharGrade();
+
+  // Sem isto o usuário tinha que caçar a linha nova com o mouse: a grade
+  // inteira é redesenhada e o foco vai para lugar nenhum.
+  if (!semFoco) {
+    var linhas = document.querySelectorAll('#grade tbody tr');
+    var ultima = linhas[linhas.length - 1];
+    if (ultima) { var d = ultima.querySelector('input.desc'); if (d) d.focus(); }
+  }
 }
 
-function removerItem(i) { itens.splice(i, 1); desenharGrade(); }
+function removerItem(i) { itens.splice(i, 1); desenharGrade(); salvarRascunho(); }
 
 function desenharGrade() {
   var cab = '<thead><tr><th style="width:44px">Nív.</th><th>Descrição</th>' +
@@ -789,11 +841,13 @@ function desenharGrade() {
       ? proponentes.map(function () { return '<td></td>'; }).join('')
       : proponentes.map(function (p, j) {
           return '<td><input class="preco" inputmode="decimal" value="' + esc(it.precos[j]) + '"' +
-                 ' placeholder="—"' +
+                 ' placeholder="—" data-l="' + i + '" data-c="' + j + '"' +
                  ' aria-label="Preço unitário — ' + esc(it.descricao || ('item ' + (i + 1))) +
                  ' — ' + esc(p.nome || ('proponente ' + (j + 1))) + '"' +
-                 ' oninput="itens[' + i + '].precos[' + j + ']=this.value;calcular()"' +
-                 ' onblur="normalizarCampo(this,' + i + ',' + j + ')"></td>';
+                 ' oninput="itens[' + i + '].precos[' + j + ']=this.value;calcular();salvarRascunho()"' +
+                 ' onblur="normalizarCampo(this,' + i + ',' + j + ')"' +
+                 ' onkeydown="navegarGrade(event,this)"' +
+                 ' onpaste="colarColuna(event,this)"></td>';
         }).join('');
 
     var niveis = [0, 1, 2, 3].map(function (n) {
@@ -804,11 +858,11 @@ function desenharGrade() {
       '<td><select onchange="itens[' + i + '].nivel=Number(this.value)">' + niveis + '</select></td>' +
       '<td><input class="desc" value="' + esc(it.descricao) + '" placeholder="' +
         (it.tipo === 'grupo' ? 'NOME DO GRUPO' : 'descrição do item') +
-        '" oninput="itens[' + i + '].descricao=this.value"></td>' +
+        '" oninput="itens[' + i + '].descricao=this.value;salvarRascunho()"></td>' +
       '<td><input value="' + esc(it.quantidade) + '" inputmode="decimal"' +
-        ' oninput="itens[' + i + '].quantidade=this.value;calcular()"></td>' +
+        ' oninput="itens[' + i + '].quantidade=this.value;calcular();salvarRascunho()"></td>' +
       '<td><input value="' + esc(it.unidade) + '" placeholder="un"' +
-        ' oninput="itens[' + i + '].unidade=this.value"></td>' +
+        ' oninput="itens[' + i + '].unidade=this.value;salvarRascunho()"></td>' +
       precos +
       '<td><button class="bt some" style="padding:6px 9px" onclick="removerItem(' + i + ')">×</button></td>' +
       '</tr>';
@@ -899,6 +953,163 @@ function calcular() {
   }).join('');
 }
 
+// ─────────────────────────────────────────────────────────────
+//  Navegação da grade
+//
+//  O comprador transcreve UM PDF por vez, ou seja, preenche uma COLUNA de
+//  cima para baixo. A tabulação padrão anda de lado, o que obrigava a seis
+//  Tabs entre cada número da mesma proposta.
+// ─────────────────────────────────────────────────────────────
+
+function focarCelula(l, c) {
+  var el = document.querySelector('#grade input.preco[data-l="' + l + '"][data-c="' + c + '"]');
+  if (el) { el.focus(); el.select(); }
+  return el;
+}
+
+/** Índices de linha que aceitam preço — grupo não recebe. */
+function linhasComPreco() {
+  var r = [];
+  itens.forEach(function (it, i) { if (it.tipo !== 'grupo') r.push(i); });
+  return r;
+}
+
+function navegarGrade(ev, el) {
+  var l = Number(el.dataset.l), c = Number(el.dataset.c);
+  var desce = (ev.key === 'Enter' && !ev.shiftKey) || ev.key === 'ArrowDown';
+  var sobe = (ev.key === 'Enter' && ev.shiftKey) || ev.key === 'ArrowUp';
+  if (!desce && !sobe) return;
+
+  ev.preventDefault();
+  el.blur();                       // dispara a normalização do valor
+
+  var linhas = linhasComPreco();
+  var pos = linhas.indexOf(l);
+
+  if (desce && pos === linhas.length - 1) {
+    // No fim da coluna, Enter cria item novo e continua na mesma coluna:
+    // é assim que se transcreve uma proposta sem tocar no mouse.
+    addItem('item');
+    focarCelula(itens.length - 1, c);
+    return;
+  }
+
+  var alvo = linhas[pos + (desce ? 1 : -1)];
+  if (alvo !== undefined) focarCelula(alvo, c);
+}
+
+/**
+ * Colar uma coluna inteira do Excel ou do PDF.
+ *
+ * É o maior ganho de tempo do app: em vez de digitar 40 números, o
+ * comprador copia a coluna do fornecedor e cola de uma vez. Cria as linhas
+ * que faltarem — a lista de itens costuma vir da própria proposta.
+ */
+function colarColuna(ev, el) {
+  var texto = (ev.clipboardData || window.clipboardData).getData('text') || '';
+  var valores = texto.split(/\r?\n/).map(function (v) { return v.trim(); });
+  while (valores.length && valores[valores.length - 1] === '') valores.pop();
+  if (valores.length < 2) return;          // uma célula só: comportamento normal
+
+  ev.preventDefault();
+  var c = Number(el.dataset.c);
+  var linhas = linhasComPreco();
+  var pos = linhas.indexOf(Number(el.dataset.l));
+
+  valores.forEach(function (v, k) {
+    var alvo = linhas[pos + k];
+    if (alvo === undefined) {
+      addItem('item', true);      // em lote: não roubar o foco a cada linha
+      alvo = itens.length - 1;
+      linhas = linhasComPreco();
+    }
+    var n = num(v);
+    itens[alvo].precos[c] = n === null ? ''
+      : n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  });
+
+  desenharGrade();
+  salvarRascunho();
+  var msg = valores.length + ' valores colados na coluna.';
+  document.getElementById('salvoMsg').innerHTML = '<span style="color:var(--ok)">' + msg + '</span>';
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Rascunho
+//
+//  Um F5 no iframe do Apps Script apagava 40 minutos de digitação sem
+//  aviso — o estado vivia só em variáveis de módulo.
+// ─────────────────────────────────────────────────────────────
+
+var CHAVE_RASCUNHO = 'cf_rascunho_v1';
+var timerRascunho = null;
+
+function estadoAtual() {
+  return {
+    quando: new Date().toISOString(),
+    emp: document.getElementById('nEmp').value,
+    projeto: document.getElementById('nProjeto').value,
+    area: document.getElementById('nArea').value,
+    data: document.getElementById('nData').value,
+    proponentes: proponentes,
+    itens: itens
+  };
+}
+
+function temConteudo(e) {
+  return !!(e.emp || e.projeto || e.area ||
+    (e.proponentes || []).some(function (p) { return p.nome || p.cnpj; }) ||
+    (e.itens || []).some(function (i) { return i.descricao || i.precos.some(Boolean); }));
+}
+
+function salvarRascunho() {
+  clearTimeout(timerRascunho);
+  timerRascunho = setTimeout(function () {
+    try {
+      var e = estadoAtual();
+      if (temConteudo(e)) localStorage.setItem(CHAVE_RASCUNHO, JSON.stringify(e));
+    } catch (err) { /* navegador sem storage: seguir sem rascunho */ }
+  }, 800);
+}
+
+function descartarRascunho() {
+  try { localStorage.removeItem(CHAVE_RASCUNHO); } catch (err) {}
+  var b = document.getElementById('barraRascunho');
+  if (b) b.hidden = true;
+}
+
+function restaurarRascunho() {
+  var bruto;
+  try { bruto = localStorage.getItem(CHAVE_RASCUNHO); } catch (err) { return false; }
+  if (!bruto) return false;
+
+  var e;
+  try { e = JSON.parse(bruto); } catch (err) { return false; }
+  if (!temConteudo(e)) return false;
+
+  document.getElementById('nEmp').value = e.emp || '';
+  document.getElementById('nProjeto').value = e.projeto || '';
+  document.getElementById('nArea').value = e.area || '';
+  if (e.data) document.getElementById('nData').value = e.data;
+  proponentes = e.proponentes || [];
+  itens = e.itens || [];
+  mostrarEmpresa(); desenharProponentes(); desenharGrade();
+
+  var b = document.getElementById('barraRascunho');
+  b.hidden = false;
+  b.querySelector('span').textContent =
+    'Rascunho de ' + new Date(e.quando).toLocaleString('pt-BR') + ' recuperado.';
+  return true;
+}
+
+// Só avisa quando há o que perder.
+window.addEventListener('beforeunload', function (ev) {
+  if (document.getElementById('v-nova').hidden) return;
+  if (!temConteudo(estadoAtual())) return;
+  ev.preventDefault();
+  ev.returnValue = '';
+});
+
 /** Leva ao mapa da equalização recém-criada: é o fecho natural da tarefa. */
 function verMapaDe(id) {
   aba('mapa');
@@ -932,6 +1143,7 @@ function salvarEqualizacao() {
       // Continua desabilitado de propósito. Reabilitar com o formulário
       // intacto fazia dois cliques criarem duas equalizações idênticas —
       // não há chave de idempotência no servidor que segure isso.
+      descartarRascunho();   // gravado: o rascunho perdeu a razão de existir
       msg.innerHTML = '<span style="color:var(--ok)">Gravada ' + esc(r.resultado.id) + ' · ' +
         r.resultado.nos + ' nós · ' + r.resultado.precos + ' preços.</span> ' +
         '<button class="bt" onclick="verMapaDe(\'' + esc(r.resultado.id) + '\')">Abrir o mapa</button> ' +

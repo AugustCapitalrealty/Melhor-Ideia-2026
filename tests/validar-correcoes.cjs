@@ -641,3 +641,37 @@ try {
   console.log(`✗ FALHA na Correção 16: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 17 — o JavaScript da interface precisa compilar
+//
+//  Nenhum teste olhava para Interface.html. Um erro de sintaxe ali não
+//  quebra o deploy nem o Apps Script: quebra a tela inteira em silêncio,
+//  no navegador do usuário, depois do push.
+// ─────────────────────────────────────────────────────────────
+try {
+  const html = fs.readFileSync(path.join(root, 'app', 'Interface.html'), 'utf8');
+  const i = html.indexOf('<script>');
+  const f = html.lastIndexOf('</script>');
+  assert.ok(i > 0 && f > i, 'não achei o bloco <script> no Interface.html');
+
+  const js = html.slice(i + '<script>'.length, f);
+  new vm.Script(js, { filename: 'Interface.html#script' });   // lança se não compilar
+
+  // As funções que o HTML chama por onclick/oninput precisam existir: um
+  // onclick apontando para função inexistente falha só quando clicado.
+  const chamadas = ['aba', 'buscar', 'desenharMapa', 'abrirMapa', 'verMapaDe',
+                    'navegarGrade', 'colarColuna', 'salvarRascunho', 'descartarRascunho',
+                    'atualizarNomes', 'mostrarEmpresa', 'addItem', 'removerItem',
+                    'addProponente', 'removerProponente', 'calcular', 'normalizarCampo',
+                    'salvarEqualizacao', 'num'];
+  const faltando = chamadas.filter(function (n) {
+    return js.indexOf('function ' + n + '(') < 0;
+  });
+  assert.equal(faltando.length, 0, 'funções chamadas pelo HTML e não definidas: ' + faltando.join(', '));
+
+  console.log('✓ CORREÇÃO VERIFICADA: o JavaScript da interface compila e tem as funções que o HTML chama');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 17: ${e.message}`);
+  process.exitCode = 1;
+}
