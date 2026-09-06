@@ -246,7 +246,7 @@ function cfExportarEqualizacao_(idEq) {
   const lPe = linha(li);
   merges.push({ l: lPe, c: COL_ROTULO, nl: 1, nc: largura - 1 });
 
-  cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR);
+  cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR, PRIMEIRA);
 
   // flush ANTES de exportar: as escritas ficam numa fila, e a URL de export
   // lê o arquivo do servidor. Sem isto o PDF sai em branco — a planilha
@@ -265,7 +265,7 @@ function cfExportarEqualizacao_(idEq) {
 }
 
 /** Escrita e formatação. Separado só para a função de cima caber na cabeça. */
-function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR) {
+function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR, PRIMEIRA) {
   aba.getRange(1, 1, grade.length, largura).setValues(grade);
 
   // Larguras pensadas para o rótulo mais longo de cada coluna:
@@ -332,6 +332,21 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
   aba.getRange(1, 2, grade.length, largura - 1).setVerticalAlignment('middle');
   faixas.livre.forEach(function (l) {
     aba.getRange(l, 2, 1, largura - 1).setWrap(true).setVerticalAlignment('top');
+  });
+
+  // Dado de proponente centralizado na coluna dele.
+  //
+  // Alinhado à esquerda, o texto de uma coluna encosta na anterior e a
+  // leitura ambígua: não fica claro a qual fornecedor cada informação
+  // pertence. Dinheiro é a exceção e continua à direita — número se
+  // compara pela casa decimal, e é para isso que a coluna existe.
+  // Centraliza o bloco inteiro de proponentes e depois devolve o dinheiro
+  // para a direita. Nesta ordem: assim "não cotou" e qualquer texto solto
+  // nas colunas de preço também ficam centralizados, sem precisar
+  // enumerá-los um a um.
+  aba.getRange(1, PRIMEIRA, grade.length, n * 2).setHorizontalAlignment('center');
+  moeda.forEach(function (f) {
+    aba.getRange(f.l, f.c, 1, f.n).setHorizontalAlignment('right');
   });
   // Sem congelar coluna: os títulos e rótulos são mesclados de B até o fim,
   // e o Sheets recusa congelar uma coluna que corta uma célula mesclada ao
