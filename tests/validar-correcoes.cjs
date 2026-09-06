@@ -2150,3 +2150,161 @@ try {
   console.log(`✗ FALHA na Correção 33: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 34 — a categoria do fornecedor vem do que ele cotou
+//
+//  A primeira versão tirava a categoria do fornecedor só das
+//  equalizações que ele disputou. Como a maior parte do acervo é
+//  orçamento avulso, quase todo fornecedor ficava sem categoria nenhuma
+//  — e um filtro por categoria numa lista onde ninguém tem categoria é
+//  um filtro que só faz a tela parecer quebrada.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxF = vm.createContext({ Logger: { log: () => {} }, console: console });
+  ['Util.gs', 'Config.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Fornecedores.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxF, { filename: f });
+  });
+
+  // ── CNAE → categoria
+  assert.equal(ctxF.cfCategoriaPorCnae_('4321-5/00 — Instalação e manutenção elétrica'),
+    'Material de Construção');
+  assert.equal(ctxF.cfCategoriaPorCnae_('8121400'), 'Serviços & Facilities');
+  assert.equal(ctxF.cfCategoriaPorCnae_('4761-0/03'), 'Material de Consumo');
+  assert.equal(ctxF.cfCategoriaPorCnae_('6209-1/00'), 'Tecnologia & Segurança');
+  assert.equal(ctxF.cfCategoriaPorCnae_('7732-2/01'), 'Equipamentos & Locação');
+  assert.equal(ctxF.cfCategoriaPorCnae_('0111-3/01'), '', 'CNAE não mapeado não pode virar categoria');
+  assert.equal(ctxF.cfCategoriaPorCnae_(''), '');
+  assert.equal(ctxF.cfCategoriaPorCnae_('abc'), '');
+
+  // ── Subcategoria dentro da categoria
+  assert.equal(
+    ctxF.cfSubcategoriaDerivada_(['Detergente neutro 5L', 'Água sanitária 2L', 'Saco de lixo 100L'],
+      'Material de Consumo'),
+    'Higiene & Limpeza');
+  assert.equal(
+    ctxF.cfSubcategoriaDerivada_(['Cabo flexível 2,5mm', 'Disjuntor bipolar', 'Luminária LED 40W'],
+      'Material de Construção'),
+    'Elétrica & Iluminação');
+  assert.equal(ctxF.cfSubcategoriaDerivada_(['Item genérico'], 'Material de Consumo'), '',
+    'sem palavra reconhecida não se inventa subcategoria');
+  // Empate fica em branco. Um fornecedor que vende café E detergente
+  // atende as duas coisas; rotulá-lo de uma delas esconde a outra de
+  // quem filtrar — e a etiqueta errada não se distingue da certa.
+  assert.equal(
+    ctxF.cfSubcategoriaDerivada_(['Café em pó 500g', 'Detergente neutro'], 'Material de Consumo'), '',
+    'empate entre subcategorias tem que ficar sem subcategoria');
+  assert.equal(ctxF.cfSubcategoriaDerivada_(['Café em pó'], 'Categoria Que Não Existe'), '');
+
+  // ── A categoria do fornecedor: três fontes, nesta ordem
+  //
+  //  1. Só orçamentos avulsos — é o caso da maioria do acervo. Sem isto,
+  //     estes fornecedores não teriam categoria nenhuma.
+  const soItens = ctxF.cfCategoriasDoFornecedor_({}, [
+    'Papel higiênico folha dupla', 'Detergente neutro', 'Sabão em pó',
+    'Desinfetante 5L', 'Saco de lixo 60L'
+  ], '');
+  assert.equal(soItens.principal, 'Material de Consumo');
+  assert.equal(soItens.origem, 'itens');
+
+  //  2. Sem itens reconhecidos, o CNAE decide — e fica marcado como tal,
+  //     porque é o que a empresa declarou na abertura, não o que vende.
+  const soCnae = ctxF.cfCategoriasDoFornecedor_({}, ['Serviço conforme proposta'], '4321-5/00');
+  assert.equal(soCnae.principal, 'Material de Construção');
+  assert.equal(soCnae.origem, 'cnae');
+
+  //  3. O que ele cotou ganha do CNAE. Um atacadista com CNAE de papelaria
+  //     que só cota material elétrico atende elétrica, não papelaria.
+  const itensGanham = ctxF.cfCategoriasDoFornecedor_({}, [
+    'Cabo flexível 2,5mm', 'Disjuntor DIN 25A', 'Eletroduto 3/4',
+    'Luminária LED', 'Tomada 2P+T'
+  ], '4761-0/03');
+  assert.equal(itensGanham.principal, 'Material de Construção',
+    'o CNAE não pode ganhar do que o fornecedor cotou de fato');
+
+  //  4. A equalização pesa mais que item solto: é categoria já decidida.
+  const comEq = ctxF.cfCategoriasDoFornecedor_({ 'Serviços & Facilities': 2 },
+    ['Papel higiênico', 'Detergente'], '');
+  assert.equal(comEq.principal, 'Serviços & Facilities');
+
+  //  5. Sem nada: sem categoria. Melhor vazio que chute.
+  const nada = ctxF.cfCategoriasDoFornecedor_({}, [], '');
+  // length, e não deepEqual: o array nasce dentro do vm e tem outro
+  // Array.prototype, então a comparação estrita reprova dois vazios.
+  assert.equal(nada.lista.length, 0);
+  assert.equal(nada.principal, '');
+
+  //  6. Categoria com uma menção solta entre dezenas é ruído e não entra
+  //     na lista — senão um fornecedor de limpeza que cotou um cabo uma
+  //     vez apareceria no filtro de elétrica.
+  const ruido = ctxF.cfCategoriasDoFornecedor_({}, [
+    'Detergente', 'Sabão em pó', 'Desinfetante', 'Papel higiênico',
+    'Saco de lixo', 'Água sanitária', 'Esponja', 'Vassoura', 'Rodo',
+    'Pano de chão', 'Álcool 70', 'Luva de látex',
+    'Cabo flexível 2,5mm'
+  ], '');
+  assert.equal(ruido.principal, 'Material de Consumo');
+  assert.equal(ruido.lista.indexOf('Material de Construção'), -1,
+    'um item solto de outra categoria não pode listar o fornecedor nela');
+
+  // ── A ficha lê a coluna certa do cadastro
+  //
+  //  Ela lia cad.CNAE, e a coluna chama CNAE_PRINCIPAL: o CNAE nunca
+  //  aparecia para ninguém, e o campo parecia vazio no cadastro.
+  const src = fs.readFileSync(path.join(root, 'app', 'Fornecedores.gs'), 'utf8');
+  assert.ok(src.indexOf('cad.CNAE ||') < 0,
+    'Fornecedores.gs voltou a ler cad.CNAE — a coluna é CNAE_PRINCIPAL');
+
+  // ── A contagem das pílulas conta fornecedores, não equalizações
+  ctxF.cfLerTudo_ = (n) => ({
+    Fornecedores: [
+      { CNPJ: '11111111000111', RAZAO_SOCIAL: 'Limpa Tudo', CNAE_PRINCIPAL: '4649-4/08' },
+      { CNPJ: '22222222000122', RAZAO_SOCIAL: 'Elétrica Boa',  CNAE_PRINCIPAL: '4321-5/00' }
+    ],
+    Equalizacoes: [],
+    Propostas: [
+      { ID: 'P1', ID_EQUALIZACAO: '', CNPJ: '11111111000111', RAZAO_SOCIAL_INFORMADA: 'Limpa Tudo' },
+      { ID: 'P2', ID_EQUALIZACAO: '', CNPJ: '22222222000122', RAZAO_SOCIAL_INFORMADA: 'Elétrica Boa' }
+    ],
+    EAP: [
+      { ID: 'N1', DESCRICAO: 'Detergente neutro 5L' },
+      { ID: 'N2', DESCRICAO: 'Sabão em pó 1kg' },
+      { ID: 'N3', DESCRICAO: 'Cabo flexível 2,5mm' },
+      { ID: 'N4', DESCRICAO: 'Disjuntor DIN 25A' }
+    ],
+    Precos: [
+      { ID_PROPOSTA: 'P1', ID_EAP: 'N1', PRECO_UNITARIO: 10 },
+      { ID_PROPOSTA: 'P1', ID_EAP: 'N2', PRECO_UNITARIO: 12 },
+      { ID_PROPOSTA: 'P2', ID_EAP: 'N3', PRECO_UNITARIO: 3 },
+      { ID_PROPOSTA: 'P2', ID_EAP: 'N4', PRECO_UNITARIO: 30 }
+    ]
+  })[n] || [];
+  ctxF.cfDataTexto_ = () => '06/09/2026';
+
+  const lista = ctxF.cfFornecedores_('');
+  assert.equal(lista.length, 2);
+
+  const limpa = lista.filter(function (f) { return f.cnpj === '11111111000111'; })[0];
+  assert.equal(limpa.categoriaPrincipal, 'Material de Consumo',
+    'fornecedor só com orçamento avulso continuou sem categoria');
+  assert.equal(limpa.subcategoria, 'Higiene & Limpeza');
+  assert.equal(limpa.cnae, '4649-4/08', 'o CNAE não chegou à tela');
+
+  const eletrica = lista.filter(function (f) { return f.cnpj === '22222222000122'; })[0];
+  assert.equal(eletrica.categoriaPrincipal, 'Material de Construção');
+  assert.equal(eletrica.subcategoria, 'Elétrica & Iluminação');
+
+  // O filtro por categoria devolve só quem atende aquela categoria.
+  assert.equal(ctxF.cfFornecedores_('Material de Consumo').length, 1);
+  assert.equal(ctxF.cfFornecedores_('Tecnologia & Segurança').length, 0);
+
+  const contagem = ctxF.cfCategoriasDeFornecedores_();
+  assert.equal(contagem.total, 2);
+  const consumo = contagem.categorias.filter(function (c) { return c.nome === 'Material de Consumo'; })[0];
+  assert.equal(consumo.n, 1, 'a pílula da tela de fornecedores conta fornecedores, não equalizações');
+
+  console.log('✓ CORREÇÃO VERIFICADA: categoria do fornecedor sai do que ele cotou, com CNAE como reforço');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 34: ${e.message}`);
+  process.exitCode = 1;
+}

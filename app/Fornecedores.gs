@@ -65,10 +65,15 @@ function cfFornecedores_(categoria) {
       megas: {},
       categorias: {},
       itens: {},
+      // O que ele cotou, em texto: é daqui que sai a categoria de quem
+      // só tem orçamento avulso — a maioria.
+      descricoes: [],
+      cnae: '',
       ultima: null
     });
 
     const cad = cadastro[cnpj];
+    if (cad && !f.cnae) f.cnae = cad.CNAE_PRINCIPAL || '';
     if (!f.nome) {
       f.nome = (cad && (cad.RAZAO_SOCIAL || cad.NOME_FANTASIA)) ||
                p.RAZAO_SOCIAL_INFORMADA || '(sem identificação)';
@@ -100,6 +105,7 @@ function cfFornecedores_(categoria) {
       if (!desc) return;
       const chave = cfChaveItem_ ? cfChaveItem_(desc) : cfNormalizar_(desc);
       const it = f.itens[chave] || (f.itens[chave] = { descricao: desc, n: 0, menor: null });
+      if (it.n === 0) f.descricoes.push(desc);   // uma vez por item distinto
       it.n++;
       const v = cfNumero_(pr.PRECO_UNITARIO);
       if (v !== null && (it.menor === null || v < it.menor)) it.menor = v;
@@ -112,9 +118,9 @@ function cfFornecedores_(categoria) {
   return Object.keys(porCnpj).map(function (cnpj) {
     const f = porCnpj[cnpj];
     const cad = cadastro[cnpj] || {};
-    const cats = Object.keys(f.categorias).sort(function (a, b) {
-      return f.categorias[b] - f.categorias[a];
-    });
+    const dedu = cfCategoriasDoFornecedor_(f.categorias, f.descricoes, f.cnae || cad.CNAE_PRINCIPAL);
+    const cats = dedu.lista;
+    const sub = dedu.principal ? cfSubcategoriaDerivada_(f.descricoes, dedu.principal) : '';
 
     return {
       cnpj: cnpj,
@@ -137,7 +143,12 @@ function cfFornecedores_(categoria) {
       volumeHomologado: f.volumeHomologado || null,
       megas: Object.keys(f.megas),
       categorias: cats,
-      categoriaPrincipal: cats[0] || '',
+      categoriaPrincipal: dedu.principal || '',
+      subcategoria: sub,
+      // 'cnae' avisa a tela que a categoria veio do que a empresa
+      // declarou na abertura, e não do que ela cotou aqui.
+      origemCategoria: dedu.origem,
+      cnae: f.cnae || cad.CNAE_PRINCIPAL || '',
       itensDistintos: Object.keys(f.itens).length,
       ultimaProposta: f.ultima ? cfDataTexto_(f.ultima) : null,
       ordenacao: f.ultima ? f.ultima.getTime() : 0
@@ -247,6 +258,11 @@ function cfFichaFornecedor_(cnpjBruto) {
     };
   }).sort(function (a, b) { return b.vezes - a.vezes; });
 
+  const descricoes = itens.map(function (i) { return i.descricao; });
+  const catsEq = {};
+  disputas.forEach(function (d) { if (d.categoria) catsEq[d.categoria] = (catsEq[d.categoria] || 0) + 1; });
+  const dedu = cfCategoriasDoFornecedor_(catsEq, descricoes, cad.CNAE_PRINCIPAL);
+
   const ganhas = disputas.filter(function (d) { return d.venceu; });
   const decididas = disputas.filter(function (d) { return d.decidida; });
 
@@ -258,7 +274,7 @@ function cfFichaFornecedor_(cnpjBruto) {
     cidade: cad.CIDADE || '',
     uf: cad.UF || '',
     situacao: cad.SITUACAO_CNPJ || '',
-    cnae: cad.CNAE || '',
+    cnae: cad.CNAE_PRINCIPAL || '',
     contato: cad.CONTATO_NOME || '',
     telefone: cad.CONTATO_TEL || '',
     email: cad.CONTATO_EMAIL || '',
@@ -272,8 +288,34 @@ function cfFichaFornecedor_(cnpjBruto) {
     taxaVitoria: decididas.length >= 5 ? (ganhas.length / decididas.length) : null,
     amostraCurta: decididas.length < 5,
     volumeHomologado: ganhas.reduce(function (a, d) { return a + (d.valor || 0); }, 0) || null,
+    categorias: dedu.lista,
+    categoriaPrincipal: dedu.principal,
+    subcategoria: dedu.principal ? cfSubcategoriaDerivada_(descricoes, dedu.principal) : '',
+    origemCategoria: dedu.origem,
     historico: disputas,
     itens: itens
+  };
+}
+
+/** As categorias com a contagem de FORNECEDORES em cada uma. */
+function cfCategoriasDeFornecedores_() {
+  const lista = cfFornecedores_('');
+  const conta = {};
+  let sem = 0;
+  lista.forEach(function (f) {
+    if (!f.categorias.length) { sem++; return; }
+    // Um fornecedor que atende três categorias conta nas três: a
+    // pergunta é "quem me atende em X", não "a que categoria ele
+    // pertence". Por isso a soma das pílulas passa do total, e o
+    // botão Todas mostra o total de verdade.
+    f.categorias.forEach(function (c) { conta[c] = (conta[c] || 0) + 1; });
+  });
+  return {
+    total: lista.length,
+    semCategoria: sem,
+    categorias: CF_CATEGORIAS.map(function (c) {
+      return { nome: c.nome, icone: c.icone, n: conta[c.nome] || 0 };
+    })
   };
 }
 

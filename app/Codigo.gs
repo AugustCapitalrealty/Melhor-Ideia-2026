@@ -263,10 +263,14 @@ function apiCategorias() {
   }
 }
 
-/** Os fornecedores que já cotaram, opcionalmente de uma categoria só. */
+/** Os fornecedores que já cotaram, com a contagem por categoria junto.
+ *  Junto, e não em duas chamadas, porque a tela precisa dos dois ao
+ *  mesmo tempo — separadas, as pílulas apareciam depois da lista ou não
+ *  apareciam, dependendo de qual resposta chegasse primeiro. */
 function apiFornecedores(categoria) {
   try {
-    return { ok: true, fornecedores: cfFornecedores_(categoria) };
+    return { ok: true, fornecedores: cfFornecedores_(categoria),
+             categorias: cfCategoriasDeFornecedores_() };
   } catch (erro) {
     return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
   }

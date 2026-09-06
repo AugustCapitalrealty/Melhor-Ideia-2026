@@ -733,6 +733,28 @@ const CF_CATEGORIAS = [
     subs: ['CFTV Perimetral', 'Catracas & Biometria', 'Cabeamento Estruturado'] }
 ];
 
+/**
+ * Quantas palavras-chave DISTINTAS aparecem no texto.
+ *
+ * Distintas depois de normalizar, e é aí que está o cuidado: as listas
+ * trazem 'café' e 'cafe' — a mesma palavra com e sem acento — para quem
+ * lê o código encontrar as duas grafias. Mas cfNormalizar_ tira o
+ * acento, então as duas viram a mesma chave e um único "café em pó"
+ * pontuava dois. Categoria com mais sinônimos escritos vencia por ter
+ * mais sinônimos escritos, não por descrever melhor o documento.
+ */
+function cfContarChaves_(chaves, alvo) {
+  const vistas = {};
+  let n = 0;
+  (chaves || []).forEach(function (k) {
+    const chave = cfNormalizar_(k);
+    if (!chave || vistas[chave]) return;
+    vistas[chave] = true;
+    if (alvo.indexOf(chave) >= 0) n++;
+  });
+  return n;
+}
+
 /** A categoria pelo nome, com ícone. Devolve null para nome desconhecido. */
 function cfCategoria_(nome) {
   const n = cfNormalizar_(nome || '');
@@ -755,12 +777,7 @@ function cfCategoriaDerivada_(textos) {
   if (alvo.trim() === '') return '';
 
   const pontos = CF_CATEGORIAS.map(function (c) {
-    let n = 0;
-    c.chaves.forEach(function (k) {
-      const chave = cfNormalizar_(k);
-      if (chave && alvo.indexOf(chave) >= 0) n++;
-    });
-    return { nome: c.nome, n: n };
+    return { nome: c.nome, n: cfContarChaves_(c.chaves, alvo) };
   }).filter(function (p) { return p.n > 0; })
     .sort(function (a, b) { return b.n - a.n; });
 
@@ -774,4 +791,224 @@ function cfTextosDaEqualizacao_(eq, descricoesDosItens) {
   return [eq.PROJETO || eq.projeto || '', eq.AREA || eq.area || '',
           eq.GRUPO_CENTRO_CUSTO || eq.grupoCentroCusto || '']
     .concat(descricoesDosItens || []);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Subcategorias com palavras próprias
+//
+//  A macro-categoria responde "que tipo de compra é esta". A
+//  subcategoria responde a pergunta que o comprador faz de verdade:
+//  "quem me atende em elétrica?", "quem vende material de limpeza?".
+//  Sete botões não respondem isso; o segundo nível responde.
+// ─────────────────────────────────────────────────────────────
+
+const CF_SUBCATEGORIAS = {
+  'Material de Consumo': [
+    { nome: 'Copa & Cozinha', chaves: ['copo', 'café', 'cafe', 'açúcar', 'acucar', 'adoçante',
+        'chá', 'filtro de papel', 'guardanapo', 'talher', 'prato', 'copa', 'cozinha', 'garrafa'] },
+    { nome: 'Higiene & Limpeza', chaves: ['papel higi', 'papel toalha', 'detergente', 'sabão',
+        'sabao', 'sabonete', 'desinfetante', 'álcool', 'alcool', 'água sanitária', 'agua sanitaria',
+        'cloro', 'saco de lixo', 'vassoura', 'rodo', 'pano de chão', 'pano de chao', 'esponja',
+        'limpeza', 'higiene', 'multiuso', 'lustra', 'desengordurante'] },
+    { nome: 'Papelaria', chaves: ['caneta', 'lápis', 'lapis', 'grampo', 'grampeador', 'clipe',
+        'sulfite', 'a4', 'papel sulfite', 'pasta', 'envelope', 'etiqueta', 'papelaria', 'escritório', 'escritorio'] },
+    { nome: 'Toners & Suprimentos de Impressão', chaves: ['toner', 'cartucho', 'tinta impressora', 'cilindro'] },
+    { nome: 'EPIs Descartáveis', chaves: ['luva', 'máscara', 'mascara', 'touca', 'protetor auricular',
+        'óculos de proteção', 'oculos de protecao', 'epi', 'bota', 'capacete'] }
+  ],
+  'Material de Construção': [
+    { nome: 'Elétrica & Iluminação', chaves: ['cabo', 'fio', 'disjuntor', 'lâmpada', 'lampada',
+        'luminária', 'luminaria', 'eletroduto', 'tomada', 'interruptor', 'quadro de distribuição',
+        'reator', 'refletor', 'elétric', 'eletric', 'condulete', 'terminal', 'contator'] },
+    { nome: 'Hidráulica', chaves: ['tubo', 'conexão', 'conexao', 'registro', 'joelho', 'luva de',
+        'torneira', 'válvula', 'valvula', 'caixa d', 'hidráulic', 'hidraulic', 'sifão', 'sifao', 'ralo'] },
+    { nome: 'Alvenaria', chaves: ['cimento', 'areia', 'brita', 'tijolo', 'bloco', 'argamassa',
+        'rejunte', 'cal', 'vergalhão', 'vergalhao', 'concreto'] },
+    { nome: 'Tintas', chaves: ['tinta', 'verniz', 'massa corrida', 'solvente', 'thinner',
+        'primer', 'selador', 'rolo de pintura', 'pincel'] },
+    { nome: 'Coberturas', chaves: ['telha', 'calha', 'rufo', 'manta', 'impermeabiliza', 'cobertura', 'policarbonato'] }
+  ],
+  'Obras & Reformas': [
+    { nome: 'Pisos Industriais & Juntas', chaves: ['piso industrial', 'junta', 'polimento', 'lapidação', 'lapidacao'] },
+    { nome: 'Pavimentação', chaves: ['pavimenta', 'asfalto', 'cbuq', 'meio-fio', 'guia e sarjeta'] },
+    { nome: 'Galpões & Mezaninos', chaves: ['galpão', 'galpao', 'mezanino', 'estrutura metálica', 'estrutura metalica'] },
+    { nome: 'Terraplenagem', chaves: ['terraplen', 'escavação', 'escavacao', 'aterro', 'compactação', 'compactacao'] },
+    { nome: 'Reformas & Demolição', chaves: ['reforma', 'demoli', 'retrofit'] }
+  ],
+  'Serviços & Facilities': [
+    { nome: 'Limpeza Predial', chaves: ['limpeza predial', 'conservação', 'conservacao', 'zeladoria',
+        'auxiliar de limpeza', 'serviço de limpeza', 'servico de limpeza'] },
+    { nome: 'Portaria & Acesso', chaves: ['portaria', 'vigilância', 'vigilancia', 'porteiro', 'recepção', 'recepcao'] },
+    { nome: 'Jardinagem', chaves: ['jardinagem', 'poda', 'grama', 'paisagismo', 'roçada', 'rocada'] },
+    { nome: 'Controle de Pragas', chaves: ['praga', 'dedetiza', 'desratiza', 'imuniza', 'descupiniza'] },
+    { nome: 'Gestão de Resíduos', chaves: ['resíduo', 'residuo', 'coleta', 'caçamba', 'cacamba', 'destinação', 'destinacao'] }
+  ],
+  'Manutenção Predial & Engenharia': [
+    { nome: 'Subestações & Geradores', chaves: ['subestação', 'subestacao', 'gerador', 'transformador', 'grupo gerador'] },
+    { nome: 'Docas & Niveladoras', chaves: ['doca', 'niveladora', 'abrigo de doca'] },
+    { nome: 'Combate a Incêndio', chaves: ['sprinkler', 'hidrante', 'extintor', 'incêndio', 'incendio', 'alarme de'] },
+    { nome: 'Climatização', chaves: ['climatiza', 'ar condicionado', 'ar-condicionado', 'chiller', 'split', 'exaustor'] },
+    { nome: 'Utilities & Bombas', chaves: ['bomba', 'casa de bombas', 'utilities', 'água', 'agua', 'esgoto', 'reservatório', 'reservatorio'] }
+  ],
+  'Equipamentos & Locação': [
+    { nome: 'Plataformas Elevatórias', chaves: ['plataforma elevatória', 'plataforma elevatoria', 'tesoura', 'articulada'] },
+    { nome: 'Empilhadeiras & Carga', chaves: ['empilhadeira', 'paleteira', 'transpaleteira', 'munck', 'guindaste'] },
+    { nome: 'Andaimes & Containers', chaves: ['andaime', 'container', 'contêiner', 'escora'] }
+  ],
+  'Tecnologia & Segurança': [
+    { nome: 'CFTV & Monitoramento', chaves: ['cftv', 'câmera', 'camera', 'dvr', 'nvr', 'monitoramento'] },
+    { nome: 'Controle de Acesso', chaves: ['catraca', 'biometria', 'controle de acesso', 'crachá', 'cracha', 'leitor'] },
+    { nome: 'Rede & Cabeamento', chaves: ['cabeamento', 'rack', 'switch', 'patch', 'wi-fi', 'wifi', 'roteador', 'fibra'] },
+    { nome: 'Equipamentos de TI', chaves: ['notebook', 'computador', 'monitor', 'nobreak', 'servidor', 'impressora'] }
+  ]
+};
+
+// ─────────────────────────────────────────────────────────────
+//  CNAE → macro-categoria
+//
+//  O CNAE diz o que a empresa declara fazer, e às vezes é o único sinal
+//  disponível: um fornecedor com poucos itens cotados não dá pistas
+//  suficientes pelas descrições.
+//
+//  Sinal fraco de propósito. O CNAE é o que a empresa registrou na
+//  abertura, não o que ela vende hoje — um comércio varejista com CNAE de
+//  1990 vende outra coisa. Por isso ele nunca ganha do que o fornecedor
+//  cotou de fato: entra quando as descrições não decidem.
+//
+//  Prefixos, do mais específico para o mais genérico.
+// ─────────────────────────────────────────────────────────────
+
+const CF_CNAE_CATEGORIA = [
+  ['4321', 'Material de Construção'],          // instalação elétrica
+  ['4322', 'Manutenção Predial & Engenharia'], // hidráulica, ar-condicionado
+  ['4329', 'Manutenção Predial & Engenharia'],
+  ['4744', 'Material de Construção'],          // varejo de material de construção
+  ['4679', 'Material de Construção'],          // atacado de material de construção
+  ['4741', 'Material de Construção'],          // tintas
+  ['4742', 'Material de Construção'],          // material elétrico
+  ['4673', 'Material de Construção'],
+  ['4120', 'Obras & Reformas'],
+  ['4211', 'Obras & Reformas'],
+  ['4213', 'Obras & Reformas'],
+  ['4222', 'Obras & Reformas'],
+  ['4292', 'Obras & Reformas'],
+  ['4399', 'Obras & Reformas'],
+  ['4313', 'Obras & Reformas'],
+  ['8121', 'Serviços & Facilities'],           // limpeza em prédios
+  ['8122', 'Serviços & Facilities'],           // imunização e controle de pragas
+  ['8129', 'Serviços & Facilities'],
+  ['8130', 'Serviços & Facilities'],           // paisagismo
+  ['8011', 'Serviços & Facilities'],           // vigilância
+  ['8020', 'Tecnologia & Segurança'],          // monitoramento de sistemas de segurança
+  ['3811', 'Serviços & Facilities'],           // coleta de resíduos
+  ['3812', 'Serviços & Facilities'],
+  ['3314', 'Manutenção Predial & Engenharia'], // manutenção de máquinas
+  ['3321', 'Manutenção Predial & Engenharia'],
+  ['3329', 'Manutenção Predial & Engenharia'],
+  ['2790', 'Manutenção Predial & Engenharia'],
+  ['7732', 'Equipamentos & Locação'],          // aluguel de máquinas e equipamentos
+  ['7731', 'Equipamentos & Locação'],
+  ['7739', 'Equipamentos & Locação'],
+  ['4663', 'Equipamentos & Locação'],
+  ['6209', 'Tecnologia & Segurança'],
+  ['6190', 'Tecnologia & Segurança'],
+  ['6110', 'Tecnologia & Segurança'],
+  ['4651', 'Tecnologia & Segurança'],          // atacado de informática
+  ['4652', 'Tecnologia & Segurança'],
+  ['4757', 'Tecnologia & Segurança'],
+  ['2610', 'Tecnologia & Segurança'],
+  ['4761', 'Material de Consumo'],             // papelaria
+  ['4647', 'Material de Consumo'],             // atacado de artigos de escritório
+  ['4649', 'Material de Consumo'],
+  ['4646', 'Material de Consumo'],             // higiene pessoal
+  ['4644', 'Material de Consumo'],
+  ['4637', 'Material de Consumo'],             // atacado de alimentos
+  ['4639', 'Material de Consumo'],
+  ['4691', 'Material de Consumo'],             // atacado de mercadorias em geral
+  ['4789', 'Material de Consumo'],
+  ['1721', 'Material de Consumo'],             // papel e papelão
+  ['1742', 'Material de Consumo'],
+  ['2062', 'Material de Consumo'],             // produtos de limpeza
+  ['2063', 'Material de Consumo']
+];
+
+/**
+ * A macro-categoria que o CNAE sugere. Vazio quando não reconhece.
+ * Aceita "4744-0/99 — Comércio varejista…" ou só os dígitos.
+ */
+function cfCategoriaPorCnae_(cnae) {
+  const d = String(cnae || '').replace(/\D/g, '');
+  if (d.length < 4) return '';
+  for (let i = 0; i < CF_CNAE_CATEGORIA.length; i++) {
+    if (d.indexOf(CF_CNAE_CATEGORIA[i][0]) === 0) return CF_CNAE_CATEGORIA[i][1];
+  }
+  return '';
+}
+
+/**
+ * A subcategoria, dentro de uma macro-categoria já decidida.
+ * Mesma regra da macro: empate ou nada reconhecido devolve vazio.
+ */
+function cfSubcategoriaDerivada_(textos, categoria) {
+  const subs = CF_SUBCATEGORIAS[categoria];
+  if (!subs) return '';
+  const alvo = ' ' + (textos || []).map(function (t) { return cfNormalizar_(t || ''); }).join(' ') + ' ';
+  if (alvo.trim() === '') return '';
+
+  const pontos = subs.map(function (s) {
+    return { nome: s.nome, n: cfContarChaves_(s.chaves, alvo) };
+  }).filter(function (p) { return p.n > 0; })
+    .sort(function (a, b) { return b.n - a.n; });
+
+  if (!pontos.length) return '';
+  if (pontos.length > 1 && pontos[0].n === pontos[1].n) return '';
+  return pontos[0].nome;
+}
+
+/**
+ * Todas as categorias em que um fornecedor atua, em ordem de evidência.
+ *
+ * Três fontes, e a ordem entre elas importa:
+ *
+ *  1. As equalizações que ele disputou — categoria já decidida, às vezes
+ *     por gente. É a evidência mais forte.
+ *  2. O que ele cotou de fato. Vale para os orçamentos avulsos, que são a
+ *     maior parte do acervo e onde estão quase todos os fornecedores.
+ *  3. O CNAE, só quando as duas primeiras não decidem. É o que a empresa
+ *     declarou na abertura, não o que ela vende hoje.
+ *
+ * Sem a fonte 2 o filtro nasceria vazio: fornecedor que só mandou
+ * orçamento solto — que é a maioria — não tem categoria nenhuma.
+ */
+function cfCategoriasDoFornecedor_(categoriasDeEqualizacao, descricoes, cnae) {
+  const contadas = {};
+  Object.keys(categoriasDeEqualizacao || {}).forEach(function (c) {
+    if (c) contadas[c] = (contadas[c] || 0) + categoriasDeEqualizacao[c] * 10;
+  });
+
+  // Cada descrição vota sozinha: uma lista de 40 itens de limpeza e 2 de
+  // elétrica tem que resultar em limpeza, e não num empate.
+  (descricoes || []).forEach(function (d) {
+    const c = cfCategoriaDerivada_([d]);
+    if (c) contadas[c] = (contadas[c] || 0) + 1;
+  });
+
+  const nomes = Object.keys(contadas).sort(function (a, b) { return contadas[b] - contadas[a]; });
+
+  if (!nomes.length) {
+    const porCnae = cfCategoriaPorCnae_(cnae);
+    return porCnae ? { lista: [porCnae], principal: porCnae, origem: 'cnae' } : { lista: [], principal: '', origem: '' };
+  }
+
+  // Categoria com uma única menção entre dezenas é ruído — o item avulso
+  // que qualquer fornecedor cota uma vez. Só entra na lista o que tem
+  // presença de verdade.
+  const maior = contadas[nomes[0]];
+  const relevantes = nomes.filter(function (n) { return contadas[n] >= Math.max(2, maior * 0.15); });
+
+  return {
+    lista: relevantes.length ? relevantes : [nomes[0]],
+    principal: nomes[0],
+    origem: 'itens'
+  };
 }
