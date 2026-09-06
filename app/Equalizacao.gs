@@ -424,15 +424,39 @@ function cfCriarEqualizacao_(d) {
       });
     });
 
-    // Se estava homologada e foi editada, condições comerciais foram alteradas:
-    // revoga homologação, reabre para nova negociação/aprovação e limpa decisão anterior.
-    const estavaHomologada = !!(anterior && anterior.STATUS === 'homologada');
-    const statusFinal = estavaHomologada ? 'em_negociacao' : (anterior ? (anterior.STATUS || 'em_cotacao') : 'em_cotacao');
-    const vencedorFinal = estavaHomologada ? '' : (anterior ? (anterior.ID_PROPOSTA_VENCEDORA || '') : '');
-    const cnpjVencedorFinal = estavaHomologada ? '' : (anterior ? (anterior.CNPJ_VENCEDOR || '') : '');
-    const valorFinal = estavaHomologada ? '' : (anterior ? (anterior.VALOR_FINAL || '') : '');
-    const parecerFinal = estavaHomologada ? '' : (anterior ? (anterior.PARECER_FAVORAVEL || '') : '');
-    const ocFinal = estavaHomologada ? '' : (anterior ? (anterior.NUMERO_OC || '') : '');
+    // Preserva dados de homologação e decisão anterior quando existirem,
+    // garantindo que o vencedor aponte para uma proposta válida existente (sem órfãos).
+    const statusFinal = anterior ? (anterior.STATUS || 'em_cotacao') : 'em_cotacao';
+    let vencedorFinal = anterior ? (anterior.ID_PROPOSTA_VENCEDORA || '') : '';
+    let cnpjVencedorFinal = anterior ? (anterior.CNPJ_VENCEDOR || '') : '';
+    let valorFinal = anterior ? (anterior.VALOR_FINAL || '') : '';
+    const parecerFinal = anterior ? (anterior.PARECER_FAVORAVEL || '') : '';
+    const ocFinal = anterior ? (anterior.NUMERO_OC || '') : '';
+
+    // Se o vencedor anterior não estiver diretamente pelo ID nos atuais,
+    // localiza pelo CNPJ do vencedor
+    if (vencedorFinal && idsProposta.indexOf(vencedorFinal) < 0 && cnpjVencedorFinal) {
+      const idxPorCnpj = proponentes.findIndex(function (p) { return cfSoDigitos_(p.cnpj) === cnpjVencedorFinal; });
+      if (idxPorCnpj >= 0) {
+        vencedorFinal = idsProposta[idxPorCnpj];
+      } else {
+        vencedorFinal = '';
+      }
+    }
+
+    // Se há vencedor identificado, atualiza o VALOR_FINAL com o novo valor negociado/declarado
+    if (vencedorFinal) {
+      const idxV = idsProposta.indexOf(vencedorFinal);
+      if (idxV >= 0) {
+        const pV = proponentes[idxV];
+        const dec = cfNumero_(pV.totalDeclarado);
+        const r02 = cfNumero_(pV.r02);
+        const r01 = cfNumero_(pV.r01);
+        const ini = cfNumero_(pV.propostaInicial);
+        const vAtual = dec !== null ? dec : (r02 !== null ? r02 : (r01 !== null ? r01 : (ini !== null ? ini : (cotouAlgo[idxV] ? totais[idxV] : null))));
+        if (vAtual !== null) valorFinal = vAtual;
+      }
+    }
 
     try {
       if (ehEdicao) {
@@ -524,7 +548,7 @@ function cfCriarEqualizacao_(d) {
           // planilha já é o link final, e quem abrir a aba direto vê o mesmo
           // que a tela vê.
           LINK_PROPOSTA: cfLinkDoDrive_(p.linkProposta),
-          VENCEDORA: estavaHomologada ? false : (!vencedorFinal ? false : idsProposta[i] === vencedorFinal),
+          VENCEDORA: (!vencedorFinal ? false : idsProposta[i] === vencedorFinal),
           ORIGEM: 'app'
         };
       }));
@@ -556,7 +580,7 @@ function cfCriarEqualizacao_(d) {
     cfRegistrarTempo_(idEq, d.segundosPreenchimento, proponentes.length, linhasEap.length, ehEdicao);
 
     cfLog_(ehEdicao ? 'editar_equalizacao' : 'criar_equalizacao', 'equalizacao', idEq, JSON.stringify({
-      proponentes: proponentes.length, nos: linhasEap.length, precos: linhasPreco.length, editada: ehEdicao, reaberta: estavaHomologada
+      proponentes: proponentes.length, nos: linhasEap.length, precos: linhasPreco.length, editada: ehEdicao
     }));
 
     return {
@@ -564,8 +588,7 @@ function cfCriarEqualizacao_(d) {
       proponentes: proponentes.length,
       nos: linhasEap.length,
       precos: linhasPreco.length,
-      editada: ehEdicao,
-      reaberta: estavaHomologada
+      editada: ehEdicao
     };
   }, 120);
 }

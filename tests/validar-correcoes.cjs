@@ -2310,8 +2310,8 @@ try {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Correção 35 (P0-1) — edição de equalização homologada revoga homologação,
-//  reabre para 'em_negociacao' e preserva IDs de propostas de mesmo CNPJ
+//  Correção 35 (P0-1) — edição preserva status homologado, atualiza valor do vencedor
+//  e mantém IDs de propostas sem gerar referências órfãs ou fantasmas
 // ─────────────────────────────────────────────────────────────
 try {
   const ctx35 = vm.createContext({ Logger: { log: () => {} }, console: console });
@@ -2364,11 +2364,11 @@ try {
   let seq = 500;
   ctx35.cfNovoId_ = (p) => p + '-' + (++seq);
 
-  // Edita alterando o preço (renegociação)
+  // Edita alterando o preço (renegociação com o comprador finalizando a cotação)
   const res = ctx35.cfCriarEqualizacao_({
     id: ID_EQ,
     empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
-    projeto: 'Pintura Renegociada',
+    projeto: 'Pintura Pronta para Diretoria',
     area: 'Facilities',
     proponentes: [
       { nome: 'Fornecedor A', cnpj: '11.222.333/0001-81' },
@@ -2380,21 +2380,23 @@ try {
   });
 
   assert.equal(res.editada, true);
-  assert.equal(res.reaberta, true, 'deve sinalizar reaberta: true');
 
   const eqAtual = tabelas.Equalizacoes.find(e => e.ID === ID_EQ);
-  assert.equal(eqAtual.STATUS, 'em_negociacao', 'deve reabrir status para em_negociacao');
-  assert.equal(eqAtual.ID_PROPOSTA_VENCEDORA, '', 'deve limpar ID_PROPOSTA_VENCEDORA');
-  assert.equal(eqAtual.CNPJ_VENCEDOR, '', 'deve limpar CNPJ_VENCEDOR');
-  assert.equal(eqAtual.VALOR_FINAL, '', 'deve limpar VALOR_FINAL');
-  assert.equal(eqAtual.PARECER_FAVORAVEL, '', 'deve limpar PARECER_FAVORAVEL');
+  assert.equal(eqAtual.STATUS, 'homologada', 'deve manter status homologada para envio à diretoria');
+  assert.equal(eqAtual.ID_PROPOSTA_VENCEDORA, 'PRP-ORIG-1', 'ID_PROPOSTA_VENCEDORA deve apontar para PRP-ORIG-1');
+  assert.equal(eqAtual.CNPJ_VENCEDOR, '11222333000181');
+  assert.equal(eqAtual.VALOR_FINAL, 1400, 'VALOR_FINAL deve atualizar para o novo valor negociado de 1400');
+  assert.equal(eqAtual.PARECER_FAVORAVEL, 'Menor preço homologado.');
 
   // Os IDs de proposta devem ter sido preservados porque o CNPJ bateu
   const prop1 = tabelas.Propostas.find(p => p.CNPJ === '11222333000181');
   assert.equal(prop1.ID, 'PRP-ORIG-1', 'deve reaproveitar PRP-ORIG-1 para o mesmo CNPJ');
-  assert.equal(prop1.VENCEDORA, false, 'proposta não deve continuar vencedora tacitamente');
+  assert.equal(prop1.VENCEDORA, true, 'proposta vencedora deve continuar marcada VENCEDORA: true');
 
-  console.log('✓ CORREÇÃO VERIFICADA: edição de homologação revoga status e preserva IDs sem referências órfãs');
+  // Verifica que nenhuma proposta fantasma foi gerada
+  assert.ok(tabelas.Propostas.some(p => p.ID === eqAtual.ID_PROPOSTA_VENCEDORA), 'o vencedor DEVE existir na tabela Propostas');
+
+  console.log('✓ CORREÇÃO VERIFICADA: edição preserva homologação, atualiza valor e mantém integridade sem órfãos');
 } catch (e) {
   console.log(`✗ FALHA na Correção 35: ${e.message}`);
   process.exitCode = 1;
