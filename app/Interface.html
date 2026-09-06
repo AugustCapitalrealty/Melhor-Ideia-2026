@@ -599,6 +599,173 @@ table.grade thead th{
 }
 .totais b{color:var(--noturno);font-variant-numeric:tabular-nums}
 @media(max-width:560px){ .linha-prop{grid-template-columns:1fr} }
+
+/* ── Hub de categorias ────────────────────────────────────────
+   Rolagem horizontal e não quebra de linha: com sete categorias em tela
+   estreita, quebrar empurraria a lista para baixo da dobra e o hub
+   passaria a atrapalhar o que ele existe para facilitar. */
+.pills{
+  display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin;
+}
+.pill{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;
+  padding:8px 14px;border:1px solid var(--linha);border-radius:999px;
+  background:var(--superficie);color:var(--texto);
+  font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;
+  white-space:nowrap;transition:background .15s,border-color .15s,color .15s;
+}
+.pill:hover{border-color:var(--acao);color:var(--acao)}
+.pill em{
+  font-style:normal;font-size:11.5px;font-weight:700;
+  padding:1px 7px;border-radius:999px;background:var(--superficie2);color:var(--suave);
+}
+.pill.ativa{background:var(--noturno);border-color:var(--noturno);color:#fff}
+.pill.ativa em{background:rgba(255,255,255,.18);color:#fff}
+.pill-vazia{border-style:dashed;color:var(--suave)}
+
+/* ── Alternador de exibição ─────────────────────────────────── */
+.modo-exibicao{display:inline-flex;border:1px solid var(--linha);border-radius:9px;overflow:hidden}
+.modo-exibicao button{
+  border:0;background:var(--superficie);color:var(--suave);
+  padding:0 13px;height:100%;min-height:38px;font-size:15px;cursor:pointer;font-family:inherit;
+}
+.modo-exibicao button+button{border-left:1px solid var(--linha)}
+.modo-exibicao button.ativo{background:var(--noturno);color:#fff}
+.check-agrupar{font-size:12.5px;color:var(--suave);white-space:nowrap}
+
+/* ── Acordeão por categoria ─────────────────────────────────── */
+.grupo-cat{margin-bottom:14px;border:1px solid var(--linha);border-radius:12px;overflow:hidden;background:var(--superficie)}
+.grupo-cat>summary{
+  display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;
+  padding:11px 16px;background:var(--superficie2);
+  font-size:13.5px;font-weight:700;color:var(--noturno);
+}
+.grupo-cat>summary::-webkit-details-marker{display:none}
+.grupo-cat>summary::before{content:'▾';font-size:11px;color:var(--suave);transition:transform .15s}
+.grupo-cat:not([open])>summary::before{transform:rotate(-90deg)}
+.grupo-n{
+  font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:999px;
+  background:var(--superficie);color:var(--suave);border:1px solid var(--linha);
+}
+/* O montante à direita: contagem sozinha trata uma compra de mil reais e
+   uma de duzentos mil como a mesma coisa. */
+.grupo-soma{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--royal)}
+.grupo-cat>.cartao,.grupo-cat>.tabela-rolo{margin:0}
+.grupo-cat>.cartao{border-radius:0;border-left:0;border-right:0;border-top:0}
+
+/* ── Tabela densa ───────────────────────────────────────────── */
+.tabela-rolo{overflow-x:auto;border:1px solid var(--linha);border-radius:12px;background:var(--superficie)}
+table.tabela-densa{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+table.tabela-densa th{
+  text-align:left;padding:9px 14px;background:var(--noturno);color:#fff;
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;
+}
+table.tabela-densa td{padding:9px 14px;border-bottom:1px solid var(--superficie2);white-space:nowrap}
+table.tabela-densa tbody tr{cursor:pointer}
+table.tabela-densa tbody tr:hover td{background:#F7F9FD}
+table.tabela-densa .num{text-align:right;font-variant-numeric:tabular-nums}
+table.tabela-densa .td-projeto{white-space:normal;min-width:220px;font-weight:600;color:var(--noturno)}
+
+/* ── Etiqueta de categoria ──────────────────────────────────── */
+.etq-cat{background:rgba(6,92,169,.09);color:var(--royal);border-color:rgba(6,92,169,.18)}
+/* Deduzida pelo sistema aparece diferente da definida por gente: quem lê
+   precisa saber quando o sistema chutou. */
+.etq-deduzida{border-style:dashed;opacity:.82}
+
+/* ── Cartões de fornecedor ──────────────────────────────────── */
+.grade-forn{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.cartao-forn{
+  display:block;width:100%;text-align:left;font-family:inherit;cursor:pointer;
+  padding:15px 17px;border:1px solid var(--linha);border-radius:13px;
+  background:var(--superficie);transition:border-color .15s,box-shadow .15s,transform .08s;
+}
+.cartao-forn:hover{border-color:var(--acao);box-shadow:0 3px 14px rgba(21,30,73,.08)}
+.cartao-forn:active{transform:translateY(1px)}
+.forn-topo{display:flex;align-items:flex-start;gap:10px;justify-content:space-between}
+.forn-topo b{font-size:14.5px;color:var(--noturno);line-height:1.3}
+.forn-cnpj{font-size:12px;color:var(--suave);margin-top:3px;font-variant-numeric:tabular-nums}
+.forn-linha{font-size:12.5px;color:var(--texto);margin-top:7px}
+.forn-linha b{color:var(--noturno);font-variant-numeric:tabular-nums}
+.selo-sit{
+  flex:0 0 auto;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;
+  background:var(--superficie2);color:var(--suave);white-space:nowrap;
+}
+.selo-sit.ok{background:#E4F2EA;color:var(--ok)}
+/* A ressalva de amostra anda junto do número, não num rodapé: separada,
+   ela é lida depois da conclusão que deveria qualificar. */
+.nota-amostra{
+  margin-left:7px;font-size:10.5px;padding:1px 7px;border-radius:999px;
+  background:#FDF3E7;color:var(--alerta);white-space:nowrap;
+}
+
+/* ── Gaveta lateral (ficha 360°) ────────────────────────────── */
+.gaveta-fundo{position:fixed;inset:0;background:rgba(21,30,73,.34);z-index:80;backdrop-filter:blur(2px)}
+.gaveta{
+  position:fixed;top:0;right:0;bottom:0;width:min(560px,94vw);z-index:81;
+  background:var(--superficie);border-left:1px solid var(--linha);
+  box-shadow:-14px 0 40px rgba(21,30,73,.16);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .2s ease-out;
+}
+.gaveta.aberta{transform:translateX(0)}
+.gaveta-topo{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:20px 22px 14px;border-bottom:1px solid var(--linha);
+  background:var(--noturno);color:#fff;
+}
+.gaveta-rotulo{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;opacity:.7}
+.gaveta-topo h2{margin:4px 0 0;font-size:18px;line-height:1.25;font-weight:650}
+.gaveta-fechar{
+  flex:0 0 auto;width:32px;height:32px;border:0;border-radius:8px;cursor:pointer;
+  background:rgba(255,255,255,.14);color:#fff;font-size:20px;line-height:1;font-family:inherit;
+}
+.gaveta-fechar:hover{background:rgba(255,255,255,.24)}
+.gaveta-corpo{flex:1;overflow-y:auto;padding:20px 22px 40px}
+.gaveta-corpo h3{
+  margin:22px 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--suave);font-weight:700;
+}
+.gaveta-corpo h3:first-child{margin-top:0}
+.ficha-dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:13px}
+.ficha-dl dt{color:var(--suave);font-weight:600}
+.ficha-dl dd{margin:0;color:var(--texto)}
+.ficha-dl a{color:var(--acao)}
+.zap{margin-left:8px;font-size:11.5px;font-weight:600}
+.ficha-numeros{display:flex;gap:10px;flex-wrap:wrap}
+.ficha-numeros>div{
+  flex:1 1 110px;padding:11px 13px;border:1px solid var(--linha);border-radius:11px;
+  background:var(--superficie2);
+}
+.ficha-numeros b{display:block;font-size:19px;color:var(--noturno);font-variant-numeric:tabular-nums}
+.ficha-numeros span{font-size:11px;color:var(--suave)}
+.ficha-nota{font-size:12.5px;color:var(--suave);line-height:1.55;margin:10px 0 0}
+.ficha-nota b{color:var(--texto)}
+table.ficha-tab{border-collapse:collapse;width:100%;font-size:12.5px}
+table.ficha-tab th{
+  text-align:left;padding:6px 8px;border-bottom:1px solid var(--linha);
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);
+}
+table.ficha-tab td{padding:8px;border-bottom:1px solid var(--superficie2);vertical-align:top}
+table.ficha-tab .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.ficha-tab small{display:block;font-size:11px;color:var(--suave);margin-top:2px}
+table.ficha-tab a{color:var(--acao);text-decoration:none;font-weight:600}
+table.ficha-tab a:hover{text-decoration:underline}
+.res{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.res.venceu{background:#E4F2EA;color:var(--ok)}
+.res.perdeu{background:var(--superficie2);color:var(--suave)}
+/* "Em aberto" não é derrota: a equalização ainda não foi decidida, e
+   pintá-la de perdida contaria uma disputa que não terminou. */
+.res.aberta{background:#FDF3E7;color:var(--alerta)}
+.delta.subiu{color:var(--critico);font-weight:700}
+.delta.caiu{color:var(--ok);font-weight:700}
+
+@media(max-width:640px){
+  .gaveta{width:100vw}
+  .ficha-dl{grid-template-columns:1fr;gap:2px 0}
+  .ficha-dl dd{margin-bottom:8px}
+}
+
 </style>
 </head>
 <body>
@@ -612,6 +779,7 @@ table.grade thead th{
     <div class="abas" role="tablist">
       <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
       <button id="ab-mapa"     role="tab" aria-selected="false" onclick="aba('mapa')">Equalizações</button>
+      <button id="ab-fornecedores" role="tab" aria-selected="false" onclick="aba('fornecedores')">Fornecedores</button>
     </div>
     <button id="ab-nova" class="bt primario" onclick="novaCotacao()" title="Abrir nova cotação em nova janela">+ Nova cotação</button>
   </div>
@@ -634,15 +802,33 @@ table.grade thead th{
   </section>
 
   <section id="v-mapa" hidden>
+    <div class="pills" id="pillsEq"></div>
     <div class="filtros">
       <input id="fBusca" type="search" placeholder="Buscar por projeto, área, centro de custo ou ID…"
         autocomplete="off" oninput="filtrarLista()">
       <select id="fMega" onchange="filtrarLista()"><option value="">Todos os Megas</option></select>
       <select id="fArea" onchange="filtrarLista()"><option value="">Todas as áreas</option></select>
       <select id="fStatus" onchange="filtrarLista()"><option value="">Todas as situações</option></select>
+      <div class="modo-exibicao" role="group" aria-label="Modo de exibição">
+        <button type="button" id="modoCards" class="ativo" onclick="trocarModo('cards')" title="Cartões">▦</button>
+        <button type="button" id="modoTabela" onclick="trocarModo('tabela')" title="Tabela densa">☰</button>
+      </div>
+      <label class="check check-agrupar">
+        <input type="checkbox" id="agruparCat" onchange="filtrarLista()"> agrupar por categoria
+      </label>
     </div>
     <div id="listaEq"></div>
     <div id="mapa"></div>
+  </section>
+
+  <section id="v-fornecedores" hidden>
+    <div class="pills" id="pillsForn"></div>
+    <div class="filtros">
+      <input id="fBuscaForn" type="search" placeholder="Buscar por razão social, CNPJ ou cidade…"
+        autocomplete="off" oninput="filtrarFornecedores()">
+      <select id="fMegaForn" onchange="filtrarFornecedores()"><option value="">Todos os Megas</option></select>
+    </div>
+    <div id="listaForn"></div>
   </section>
 
   <section id="v-nova" hidden>
@@ -773,6 +959,17 @@ table.grade thead th{
   <footer id="rodape">carregando…</footer>
 </div>
 
+<div class="gaveta-fundo" id="gavetaFundo" hidden onclick="fecharFichaFornecedor()"></div>
+<aside class="gaveta" id="gaveta" hidden role="dialog" aria-modal="true" aria-labelledby="gavetaTitulo">
+  <div class="gaveta-topo">
+    <div>
+      <div class="gaveta-rotulo">Ficha do fornecedor</div>
+      <h2 id="gavetaTitulo">—</h2>
+    </div>
+    <button type="button" class="gaveta-fechar" onclick="fecharFichaFornecedor()" aria-label="Fechar">×</button>
+  </div>
+  <div class="gaveta-corpo" id="gavetaCorpo"></div>
+</aside>
 <script>
 // Vindos do doGet. A ficha é uma janela própria: sem navegação, tudo
 // aberto, pronta para imprimir e para mandar o link a alguém.
@@ -966,11 +1163,12 @@ var equalizacoesCarregadas = false;
 var TITULOS = {
   consulta: ['Consulta de preço', 'O que já pagamos por isso?'],
   mapa:     ['Equalizações', 'O comparativo lado a lado, item a item.'],
+  fornecedores: ['Fornecedores', 'Quem atende cada categoria, e a que preço.'],
   nova:     ['Nova cotação', 'Uma linha por item, uma coluna por proponente.']
 };
 
 function aba(nome) {
-  ['consulta', 'mapa', 'nova'].forEach(function (n) {
+  ['consulta', 'mapa', 'fornecedores', 'nova'].forEach(function (n) {
     document.getElementById('v-' + n).hidden = n !== nome;
   });
 
@@ -979,6 +1177,7 @@ function aba(nome) {
   // formulário com dado digitado não é.
   document.getElementById('ab-consulta').setAttribute('aria-selected', nome === 'consulta');
   document.getElementById('ab-mapa').setAttribute('aria-selected', nome === 'mapa');
+  document.getElementById('ab-fornecedores').setAttribute('aria-selected', nome === 'fornecedores');
   document.getElementById('ab-nova').classList.toggle('ativo', nome === 'nova');
 
   // O título da página diz onde se está — a barra é compacta demais para
@@ -991,10 +1190,29 @@ function aba(nome) {
     document.getElementById('subTela').textContent = TITULOS[nome][1];
   }
 
+  try {
+    var salvo = localStorage.getItem('cf_modo_lista');
+    if (salvo && salvo !== modoLista && document.getElementById('modoCards')) {
+      modoLista = salvo;
+      document.getElementById('modoCards').classList.toggle('ativo', salvo === 'cards');
+      document.getElementById('modoTabela').classList.toggle('ativo', salvo === 'tabela');
+    }
+  } catch (e) { /* navegador sem storage: fica em cartões */ }
+
   // Carrega só quando a aba é aberta pela primeira vez.
   if (nome === 'mapa' && !equalizacoesCarregadas) {
     equalizacoesCarregadas = true;
     carregarEqualizacoes();
+  }
+  // As categorias servem às duas telas, e a contagem tem que ser a mesma
+  // nas duas: uma só chamada, guardada.
+  if ((nome === 'mapa' || nome === 'fornecedores') && !categoriasCarregadas) {
+    categoriasCarregadas = true;
+    carregarCategorias();
+  }
+  if (nome === 'fornecedores' && !fornecedoresCarregados) {
+    fornecedoresCarregados = true;
+    carregarFornecedores();
   }
   if (nome === 'nova' && !opcoesCarregadas) {
     opcoesCarregadas = true;
@@ -1059,6 +1277,8 @@ function filtrarLista() {
   var status = document.getElementById('fStatus').value;
 
   var achadas = todasEqualizacoes.filter(function (e) {
+    if (categoriaAtiva === '(sem)') { if (e.categoria) return false; }
+    else if (categoriaAtiva && e.categoria !== categoriaAtiva) return false;
     if (mega && e.empreendimento !== mega) return false;
     if (area && e.area !== area) return false;
     if (status && e.status !== status) return false;
@@ -1072,26 +1292,37 @@ function filtrarLista() {
     return;
   }
 
-  el.innerHTML =
-    '<div class="contagem">' + achadas.length +
+  var contagem = '<div class="contagem">' + achadas.length +
     (achadas.length === 1 ? ' equalização' : ' equalizações') +
-    (achadas.length < todasEqualizacoes.length ? ' de ' + todasEqualizacoes.length : '') + '</div>' +
-    achadas.map(function (e) {
-      var etiquetas = [e.area, e.grupoCentroCusto].filter(Boolean)
-        .map(function (t) { return '<span class="etq">' + esc(t) + '</span>'; }).join('');
-      return '<button type="button" class="cartao' +
-        (e.status === 'homologada' ? ' fechada' : '') +
-        '" onclick="abrirMapa(\'' + esc(e.id) + '\')">' +
-        '<div class="cartao-topo">' +
-          '<b>' + esc(e.projeto || e.id) + '</b>' +
-          '<span class="valor">' + (semValor(e.menor) ? '' : moeda(e.menor)) + '</span>' +
-        '</div>' +
-        '<div class="cartao-meta">' + esc(e.data) + ' · ' + esc(e.empreendimento) +
-          ' · ' + e.proponentes + (e.proponentes === 1 ? ' proponente' : ' proponentes') +
-          ' · ' + esc(e.status) + '</div>' +
-        (etiquetas ? '<div class="cartao-etq">' + etiquetas + '</div>' : '') +
-        '</button>';
+    (achadas.length < todasEqualizacoes.length ? ' de ' + todasEqualizacoes.length : '') + '</div>';
+
+  var agrupar = document.getElementById('agruparCat');
+  if (agrupar && agrupar.checked) {
+    // Agrupado: uma barra por categoria, com o montante somado. O total
+    // do grupo é o que diz onde o dinheiro está indo — a contagem
+    // sozinha trata uma compra de mil reais e uma de duzentos mil como
+    // a mesma coisa.
+    var grupos = {};
+    achadas.forEach(function (e) {
+      var k = e.categoria || '(sem categoria)';
+      (grupos[k] = grupos[k] || { itens: [], soma: 0, icone: e.icone || '' }).itens.push(e);
+      if (!semValor(e.menor)) grupos[k].soma += e.menor;
+    });
+    el.innerHTML = contagem + Object.keys(grupos).sort().map(function (k) {
+      var g = grupos[k];
+      return '<details class="grupo-cat" open>' +
+        '<summary>' + (g.icone ? g.icone + ' ' : '') + esc(k) +
+          '<span class="grupo-n">' + g.itens.length + '</span>' +
+          (g.soma ? '<span class="grupo-soma">' + moeda(g.soma) + '</span>' : '') +
+        '</summary>' +
+        (modoLista === 'tabela' ? tabelaEq(g.itens) : g.itens.map(cartaoEq).join('')) +
+        '</details>';
     }).join('');
+    return;
+  }
+
+  el.innerHTML = contagem +
+    (modoLista === 'tabela' ? tabelaEq(achadas) : achadas.map(cartaoEq).join(''));
 }
 
 function abrirMapa(id) {
@@ -2925,6 +3156,400 @@ function salvarEqualizacao() {
       itens: itens
     });
 }
+
+
+// ─────────────────────────────────────────────────────────────
+//  Categorias — o hub da tela de equalizações
+//
+//  Com quatro equalizações uma lista simples basta, e por um tempo vai
+//  bastar. O que isto resolve é o dia em que forem cem: filtrar por
+//  categoria antes de procurar, em vez de rolar. A estrutura entra antes
+//  do volume porque reorganizar cem cotações depois custa mais que
+//  organizar quatro agora.
+// ─────────────────────────────────────────────────────────────
+
+var categoriasCarregadas = false;
+var infoCategorias = null;
+var categoriaAtiva = '';
+var modoLista = 'cards';
+
+function carregarCategorias() {
+  google.script.run
+    .withSuccessHandler(function (r) {
+      if (!r.ok) return;
+      infoCategorias = r;
+      desenharPills('pillsEq', categoriaAtiva, escolherCategoria);
+    })
+    .withFailureHandler(function () {})
+    .apiCategorias();
+}
+
+/**
+ * As pílulas de categoria.
+ *
+ * Categoria sem nenhuma equalização não vira pílula. Um hub que abre com
+ * sete botões, quatro deles em zero, ensina que os botões não valem nada
+ * — e daí ninguém olha mais para nenhum.
+ */
+function desenharPills(idElemento, ativa, aoClicar) {
+  var el = document.getElementById(idElemento);
+  if (!el || !infoCategorias) return;
+
+  var comUso = infoCategorias.categorias.filter(function (c) { return c.n > 0; });
+  if (!comUso.length) { el.innerHTML = ''; return; }
+
+  var html = '<button type="button" class="pill' + (ativa ? '' : ' ativa') +
+    '" data-cat="">Todas <em>' + infoCategorias.total + '</em></button>';
+
+  html += comUso.map(function (c) {
+    return '<button type="button" class="pill' + (ativa === c.nome ? ' ativa' : '') +
+      '" data-cat="' + esc(c.nome) + '">' +
+      c.icone + ' ' + esc(c.nome) + ' <em>' + c.n + '</em></button>';
+  }).join('');
+
+  if (infoCategorias.semCategoria) {
+    html += '<button type="button" class="pill pill-vazia' +
+      (ativa === '(sem)' ? ' ativa' : '') +
+      '" data-cat="(sem)" title="O sistema não conseguiu deduzir com confiança">' +
+      'sem categoria <em>' + infoCategorias.semCategoria + '</em></button>';
+  }
+
+  el.innerHTML = html;
+
+  // Ligado aqui, e não por onclick no atributo: nome de função montado
+  // em string não é verificável — nem o navegador nem o teste sabem se
+  // ela existe até alguém clicar. Assim a referência quebrada aparece na
+  // carga, não no clique de outra pessoa.
+  Array.prototype.forEach.call(el.querySelectorAll('.pill'), function (b) {
+    b.addEventListener('click', function () { aoClicar(b.getAttribute('data-cat') || ''); });
+  });
+}
+
+function escolherCategoria(nome) {
+  categoriaAtiva = nome;
+  desenharPills('pillsEq', categoriaAtiva, escolherCategoria);
+  filtrarLista();
+}
+
+function trocarModo(modo) {
+  modoLista = modo;
+  document.getElementById('modoCards').classList.toggle('ativo', modo === 'cards');
+  document.getElementById('modoTabela').classList.toggle('ativo', modo === 'tabela');
+  try { localStorage.setItem('cf_modo_lista', modo); } catch (e) {}
+  filtrarLista();
+}
+
+/** Um cartão de equalização. */
+function cartaoEq(e) {
+  var etiquetas = [e.area, e.grupoCentroCusto].filter(Boolean)
+    .map(function (t) { return '<span class="etq">' + esc(t) + '</span>'; }).join('');
+  var cat = e.categoria
+    ? '<span class="etq etq-cat' + (e.categoriaDeduzida ? ' etq-deduzida' : '') + '" title="' +
+      (e.categoriaDeduzida ? 'Deduzida dos itens — confira e ajuste se precisar' : 'Categoria definida') +
+      '">' + (e.icone || '') + ' ' + esc(e.categoria) +
+      (e.categoriaDeduzida ? ' ~' : '') + '</span>'
+    : '';
+
+  return '<button type="button" class="cartao' +
+    (e.status === 'homologada' ? ' fechada' : '') +
+    '" onclick="abrirMapa(\'' + esc(e.id) + '\')">' +
+    '<div class="cartao-topo">' +
+      '<b>' + esc(e.projeto || e.id) + '</b>' +
+      '<span class="valor">' + (semValor(e.menor) ? '' : moeda(e.menor)) + '</span>' +
+    '</div>' +
+    '<div class="cartao-meta">' + esc(e.data) + ' · ' + esc(e.empreendimento) +
+      ' · ' + e.proponentes + (e.proponentes === 1 ? ' proponente' : ' proponentes') +
+      ' · ' + esc(e.status) + '</div>' +
+    ((cat || etiquetas) ? '<div class="cartao-etq">' + cat + etiquetas + '</div>' : '') +
+    '</button>';
+}
+
+/** A mesma lista em tabela densa, para quem está comparando dezenas. */
+function tabelaEq(lista) {
+  return '<div class="tabela-rolo"><table class="tabela-densa">' +
+    '<thead><tr><th>Data</th><th>Projeto</th><th>Categoria</th><th>Mega</th>' +
+    '<th class="num">Menor</th><th class="num">Prop.</th><th>Situação</th></tr></thead><tbody>' +
+    lista.map(function (e) {
+      return '<tr onclick="abrirMapa(\'' + esc(e.id) + '\')" tabindex="0">' +
+        '<td>' + esc(e.data || '—') + '</td>' +
+        '<td class="td-projeto">' + esc(e.projeto || e.id) + '</td>' +
+        '<td>' + (e.categoria ? (e.icone || '') + ' ' + esc(e.categoria) : '<span class="d-nulo">—</span>') + '</td>' +
+        '<td>' + esc(e.empreendimento) + '</td>' +
+        '<td class="num">' + (semValor(e.menor) ? '—' : moeda(e.menor)) + '</td>' +
+        '<td class="num">' + e.proponentes + '</td>' +
+        '<td>' + esc(e.status) + '</td>' +
+        '</tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Fornecedores
+// ─────────────────────────────────────────────────────────────
+
+var fornecedoresCarregados = false;
+var todosFornecedores = [];
+var categoriaForn = '';
+
+function carregarFornecedores() {
+  document.getElementById('listaForn').innerHTML = '<div class="carregando">carregando…</div>';
+
+  google.script.run
+    .withSuccessHandler(function (r) {
+      if (!r.ok) {
+        document.getElementById('listaForn').innerHTML = '<div class="aviso erro">' + esc(r.erro) + '</div>';
+        return;
+      }
+      todosFornecedores = r.fornecedores;
+
+      if (!todosFornecedores.length) {
+        document.getElementById('listaForn').innerHTML =
+          '<div class="aviso">Nenhum fornecedor com proposta registrada ainda.</div>';
+        return;
+      }
+
+      var vistos = {};
+      todosFornecedores.forEach(function (f) {
+        (f.megas || []).forEach(function (m) { if (m) vistos[m] = true; });
+      });
+      document.getElementById('fMegaForn').innerHTML =
+        '<option value="">Todos os Megas</option>' +
+        Object.keys(vistos).sort().map(function (m) {
+          return '<option value="' + esc(m) + '">' + esc(m) + '</option>';
+        }).join('');
+
+      if (infoCategorias) desenharPills('pillsForn', categoriaForn, escolherCategoriaForn);
+      filtrarFornecedores();
+    })
+    .withFailureHandler(function (e) {
+      document.getElementById('listaForn').innerHTML = '<div class="aviso erro">' + esc(e.message) + '</div>';
+    })
+    .apiFornecedores('');
+}
+
+function escolherCategoriaForn(nome) {
+  categoriaForn = nome;
+  desenharPills('pillsForn', categoriaForn, escolherCategoriaForn);
+  filtrarFornecedores();
+}
+
+function filtrarFornecedores() {
+  var termo = document.getElementById('fBuscaForn').value.trim().toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+  var mega = document.getElementById('fMegaForn').value;
+
+  var achados = todosFornecedores.filter(function (f) {
+    if (categoriaForn === '(sem)') {
+      if ((f.categorias || []).length) return false;
+    } else if (categoriaForn) {
+      if ((f.categorias || []).indexOf(categoriaForn) < 0) return false;
+    }
+    if (mega && (f.megas || []).indexOf(mega) < 0) return false;
+    if (termo) {
+      var alvo = (f.nome + ' ' + f.nomeFantasia + ' ' + f.cnpj + ' ' + f.cidade)
+        .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      if (alvo.indexOf(termo) < 0) return false;
+    }
+    return true;
+  });
+
+  var el = document.getElementById('listaForn');
+  if (!achados.length) {
+    el.innerHTML = '<div class="aviso">Nenhum fornecedor com esses filtros.</div>';
+    return;
+  }
+
+  el.innerHTML =
+    '<div class="contagem">' + achados.length +
+    (achados.length === 1 ? ' fornecedor' : ' fornecedores') +
+    (achados.length < todosFornecedores.length ? ' de ' + todosFornecedores.length : '') + '</div>' +
+    '<div class="grade-forn">' + achados.map(cartaoForn).join('') + '</div>';
+}
+
+/**
+ * O cartão de um fornecedor.
+ *
+ * A taxa de vitória só aparece como percentual quando o servidor mandou
+ * um — e ele só manda com cinco disputas decididas ou mais. Abaixo disso
+ * mostra a fração crua, que informa o mesmo sem fingir precisão.
+ */
+function cartaoForn(f) {
+  var selo = f.situacao
+    ? '<span class="selo-sit' + (/ativa/i.test(f.situacao) ? ' ok' : '') + '">● ' + esc(f.situacao) + '</span>'
+    : '';
+
+  var desempenho;
+  if (f.disputas === 0) {
+    desempenho = '<span class="d-nulo">só orçamentos avulsos (' + f.avulsos + ')</span>';
+  } else if (f.taxaVitoria !== null && f.taxaVitoria !== undefined) {
+    desempenho = '<b>' + Math.round(f.taxaVitoria * 100) + '%</b> de aproveitamento · ' +
+      f.vitorias + ' de ' + f.disputas;
+  } else {
+    desempenho = 'venceu <b>' + f.vitorias + '</b> de <b>' + f.disputas + '</b>' +
+      '<span class="nota-amostra" title="Com menos de 5 disputas decididas, um percentual daria falsa precisão">amostra curta</span>';
+  }
+
+  return '<button type="button" class="cartao-forn" onclick="abrirFichaFornecedor(\'' + esc(f.cnpj) + '\')">' +
+    '<div class="forn-topo"><b>' + esc(f.nome) + '</b>' + selo + '</div>' +
+    '<div class="forn-cnpj">' + esc(f.cnpjFormatado) +
+      (f.cidade ? ' · ' + esc(f.cidade) + (f.uf ? '/' + esc(f.uf) : '') : '') + '</div>' +
+    '<div class="forn-linha">' + desempenho + '</div>' +
+    (f.volumeHomologado ? '<div class="forn-linha">contratado: <b>' + moeda(f.volumeHomologado) + '</b></div>' : '') +
+    '<div class="forn-linha d-nulo">' + f.itensDistintos +
+      (f.itensDistintos === 1 ? ' item cotado' : ' itens cotados') +
+      (f.ultimaProposta ? ' · última em ' + esc(f.ultimaProposta) : '') + '</div>' +
+    ((f.categorias || []).length
+      ? '<div class="cartao-etq">' + f.categorias.slice(0, 2).map(function (c) {
+          return '<span class="etq etq-cat">' + esc(c) + '</span>';
+        }).join('') + '</div>'
+      : '') +
+    '</button>';
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Ficha 360° — gaveta lateral
+//
+//  Gaveta e não página: quem clica num fornecedor está no meio de outra
+//  coisa (lendo um mapa, montando uma cotação) e vai voltar. Trocar de
+//  página perderia o lugar; a gaveta devolve com um Esc.
+// ─────────────────────────────────────────────────────────────
+
+function abrirFichaFornecedor(cnpj) {
+  var g = document.getElementById('gaveta');
+  var fundo = document.getElementById('gavetaFundo');
+  document.getElementById('gavetaTitulo').textContent = 'carregando…';
+  document.getElementById('gavetaCorpo').innerHTML = '<div class="carregando">buscando histórico…</div>';
+  g.hidden = false; fundo.hidden = false;
+  requestAnimationFrame(function () { g.classList.add('aberta'); });
+
+  google.script.run
+    .withSuccessHandler(desenharFichaFornecedor)
+    .withFailureHandler(function (e) {
+      document.getElementById('gavetaCorpo').innerHTML = '<div class="aviso erro">' + esc(e.message) + '</div>';
+    })
+    .apiFichaFornecedor(cnpj);
+}
+
+function fecharFichaFornecedor() {
+  var g = document.getElementById('gaveta');
+  g.classList.remove('aberta');
+  document.getElementById('gavetaFundo').hidden = true;
+  setTimeout(function () { g.hidden = true; }, 200);
+}
+
+function desenharFichaFornecedor(f) {
+  var corpo = document.getElementById('gavetaCorpo');
+  if (!f.ok) { corpo.innerHTML = '<div class="aviso erro">' + esc(f.erro) + '</div>'; return; }
+
+  document.getElementById('gavetaTitulo').textContent = f.nome;
+
+  var cadastro = [
+    ['CNPJ', f.cnpjFormatado],
+    ['Nome fantasia', f.nomeFantasia],
+    ['Situação cadastral', f.situacao],
+    ['CNAE', f.cnae],
+    ['Cidade', [f.cidade, f.uf].filter(Boolean).join('/')],
+    ['Código no ERP', f.codigoErp]
+  ].filter(function (l) { return l[1]; });
+
+  var contatos = [
+    ['Contato', f.contato],
+    ['Telefone', f.telefone],
+    ['E-mail', f.email]
+  ].filter(function (l) { return l[1]; });
+
+  var html = '';
+
+  if (cadastro.length) {
+    html += '<h3>Cadastro</h3><dl class="ficha-dl">' +
+      cadastro.map(function (l) {
+        return '<dt>' + esc(l[0]) + '</dt><dd>' + esc(l[1]) + '</dd>';
+      }).join('') + '</dl>';
+  }
+
+  if (contatos.length) {
+    html += '<h3>Contato comercial</h3><dl class="ficha-dl">' +
+      contatos.map(function (l) {
+        var v = esc(l[1]);
+        if (l[0] === 'E-mail') v = '<a href="mailto:' + v + '">' + v + '</a>';
+        if (l[0] === 'Telefone') {
+          var so = String(l[1]).replace(/\D/g, '');
+          if (so.length >= 10) {
+            v += ' <a class="zap" href="https://wa.me/55' + so + '" target="_blank" rel="noopener">WhatsApp ↗</a>';
+          }
+        }
+        return '<dt>' + esc(l[0]) + '</dt><dd>' + v + '</dd>';
+      }).join('') + '</dl>';
+  }
+
+  // ── Desempenho, com o denominador sempre à vista
+  html += '<h3>Desempenho</h3>';
+  if (!f.disputas) {
+    html += '<p class="ficha-nota">Este fornecedor aparece com ' + f.avulsos +
+      (f.avulsos === 1 ? ' orçamento avulso' : ' orçamentos avulsos') +
+      ' e nenhuma disputa. Orçamento avulso não tem concorrente — não é vitória nem derrota.</p>';
+  } else {
+    html += '<div class="ficha-numeros">' +
+      '<div><b>' + f.disputas + '</b><span>disputas</span></div>' +
+      '<div><b>' + f.vitorias + '</b><span>vitórias</span></div>' +
+      (f.volumeHomologado ? '<div><b>' + moeda(f.volumeHomologado) + '</b><span>contratado</span></div>' : '') +
+      '</div>';
+    if (f.taxaVitoria !== null && f.taxaVitoria !== undefined) {
+      html += '<p class="ficha-nota">Aproveitamento de <b>' + Math.round(f.taxaVitoria * 100) +
+        '%</b> em ' + f.disputasDecididas + ' disputas decididas.</p>';
+    } else {
+      html += '<p class="ficha-nota">Só <b>' + f.disputasDecididas +
+        '</b> ' + (f.disputasDecididas === 1 ? 'disputa decidida' : 'disputas decididas') +
+        ' até aqui — poucas para um percentual dizer alguma coisa. ' +
+        'O aproveitamento aparece a partir de cinco.</p>';
+    }
+  }
+
+  // ── Histórico de disputas
+  if (f.historico.length) {
+    html += '<h3>Equalizações que disputou</h3><table class="ficha-tab"><tbody>' +
+      f.historico.map(function (h) {
+        var res = h.venceu ? '<span class="res venceu">venceu</span>'
+                : (h.decidida ? '<span class="res perdeu">perdeu</span>'
+                              : '<span class="res aberta">em aberto</span>');
+        return '<tr><td>' + esc(h.data || '—') + '</td>' +
+          '<td><a href="#" onclick="fecharFichaFornecedor();abrirMapa(\'' + esc(h.idEqualizacao) +
+            '\');aba(\'mapa\');return false;">' + esc(h.projeto || h.idEqualizacao) + '</a>' +
+          '<small>' + esc(h.empreendimento) + '</small></td>' +
+          '<td class="num">' + (semValor(h.valor) ? '—' : moeda(h.valor)) + '</td>' +
+          '<td>' + res + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  // ── Histórico de preço por item — o que a planilha nunca teve
+  if (f.itens.length) {
+    html += '<h3>Preços que praticou</h3>' +
+      '<p class="ficha-nota">Cada arquivo EQU era um retrato isolado. Aqui o mesmo item ' +
+      'aparece ao longo do tempo.</p>' +
+      '<table class="ficha-tab"><thead><tr><th>Item</th><th class="num">Último</th>' +
+      '<th class="num">Faixa</th><th class="num">Variação</th></tr></thead><tbody>' +
+      f.itens.map(function (i) {
+        var varia = '<span class="d-nulo">—</span>';
+        if (i.variacao !== null && i.variacao !== undefined) {
+          var sinal = i.variacao > 0 ? '+' : (i.variacao < 0 ? '−' : '=');
+          var classe = i.variacao > 0 ? 'subiu' : (i.variacao < 0 ? 'caiu' : '');
+          varia = '<span class="delta ' + classe + '">' + sinal +
+            Math.abs(i.variacao * 100).toFixed(1).replace('.', ',') + '%</span>';
+        }
+        return '<tr><td>' + esc(i.descricao) +
+          (i.unidade ? '<small>' + esc(i.unidade) + '</small>' : '') +
+          '<small>' + i.vezes + (i.vezes === 1 ? ' cotação' : ' cotações') + '</small></td>' +
+          '<td class="num">' + moeda(i.ultimo) + '</td>' +
+          '<td class="num">' + (i.menor === i.maior ? '—' : moeda(i.menor) + ' a ' + moeda(i.maior)) + '</td>' +
+          '<td class="num">' + varia + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  corpo.innerHTML = html;
+}
+
+document.addEventListener('keydown', function (ev) {
+  if (ev.key === 'Escape' && !document.getElementById('gaveta').hidden) fecharFichaFornecedor();
+});
 
 // ─────────────────────────────────────────────────────────────
 //  Inicialização direta por ?page=

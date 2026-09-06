@@ -770,17 +770,56 @@ try {
   new vm.Script(js, { filename: 'Interface.html#script' });   // lança se não compilar
 
   // As funções que o HTML chama por onclick/oninput precisam existir: um
-  // onclick apontando para função inexistente falha só quando clicado.
-  const chamadas = ['aba', 'buscar', 'desenharMapa', 'abrirMapa', 'verMapaDe',
-                    'navegarGrade', 'colarColuna', 'salvarRascunho', 'descartarRascunho',
-                    'atualizarNomes', 'mostrarEmpresa', 'addItem', 'removerItem',
-                    'addProponente', 'removerProponente', 'calcular', 'normalizarCampo',
-                    'salvarEqualizacao', 'num', 'alternarFatDir', 'alternarNegociacao',
-                    'digitouCampoProp', 'editarEqualizacao', 'cancelarEdicao', 'carregarDadosParaEdicao'];
-  const faltando = chamadas.filter(function (n) {
+  // onclick apontando para função inexistente falha só quando clicado — e
+  // no navegador de outra pessoa, dias depois.
+  //
+  // A lista é EXTRAÍDA do markup, não escrita à mão. Escrita à mão, ela
+  // só cobre o que alguém lembrou de acrescentar, e o handler novo — que
+  // é justamente o que ainda não foi clicado por ninguém — passa direto.
+  const globais = ['Number','String','Boolean','Array','Object','Date','Math','JSON',
+                   'RegExp','parseInt','parseFloat','isNaN','alert','confirm','prompt',
+                   'setTimeout','clearTimeout','encodeURIComponent','decodeURIComponent',
+                   'window','document','console','if','for','while','return','function',
+                   'switch','catch','typeof'];
+
+  // Varre o arquivo INTEIRO, e não só o markup estático: a maior parte
+  // dos handlers nasce dentro de strings no JS (a lista de cartões, a
+  // grade, a ficha), e são justamente os das telas que mudam mais.
+  const chamadas = {};
+  let m;
+  const reAttr = /\bon(?:click|input|change|blur|focus|paste|keydown|keyup|submit)\s*=\s*\\?"([^"\\]*)/g;
+  while ((m = reAttr.exec(html)) !== null) {
+    const corpo = m[1];
+    let c;
+    const reFn = /(^|[^.\w$])([a-zA-Z_$][\w$]*)\s*\(/g;
+    while ((c = reFn.exec(corpo)) !== null) {
+      if (globais.indexOf(c[2]) < 0) chamadas[c[2]] = true;
+    }
+  }
+
+  const nomes = Object.keys(chamadas);
+  // Um piso: se a varredura achar quase nada, foi o padrão que quebrou —
+  // e um teste que não acha nada passa sempre.
+  assert.ok(nomes.length >= 25,
+    'a extração achou só ' + nomes.length + ' handlers — o padrão deve ter quebrado');
+
+  const faltando = nomes.filter(function (n) {
     return js.indexOf('function ' + n + '(') < 0;
   });
   assert.equal(faltando.length, 0, 'funções chamadas pelo HTML e não definidas: ' + faltando.join(', '));
+
+  // Nome definido duas vezes é pior que nome faltando: não dá erro em
+  // lugar nenhum. A segunda definição substitui a primeira em silêncio, e
+  // o botão que chamava a primeira passa a fazer outra coisa. Aconteceu
+  // com abrirFicha, que era a ficha da equalização e virou a do
+  // fornecedor — o botão antigo continuou lá, chamando a função errada.
+  const definidas = {};
+  let d;
+  const reDef = /\bfunction\s+([a-zA-Z_$][\w$]*)\s*\(/g;
+  while ((d = reDef.exec(js)) !== null) definidas[d[1]] = (definidas[d[1]] || 0) + 1;
+  const duplicadas = Object.keys(definidas).filter(function (n) { return definidas[n] > 1; });
+  assert.equal(duplicadas.length, 0,
+    'funções definidas mais de uma vez (a última vence em silêncio): ' + duplicadas.join(', '));
 
   console.log('✓ CORREÇÃO VERIFICADA: o JavaScript da interface compila e tem as funções que o HTML chama');
 } catch (e) {

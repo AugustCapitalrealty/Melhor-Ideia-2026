@@ -14,6 +14,15 @@
 function cfListarEqualizacoes_() {
   const propostas = cfLerTudo_('Propostas');
 
+  // Descrições por equalização, para deduzir categoria de quem ainda não
+  // tem uma gravada. Uma leitura só: consultar a EAP dentro do laço faria
+  // N leituras da aba inteira.
+  const descricoes = {};
+  cfLerTudo_('EAP').forEach(function (n) {
+    if (!n.ID_EQUALIZACAO || !n.DESCRICAO) return;
+    (descricoes[n.ID_EQUALIZACAO] = descricoes[n.ID_EQUALIZACAO] || []).push(n.DESCRICAO);
+  });
+
   return cfLerTudo_('Equalizacoes').map(function (eq) {
     const minhas = propostas.filter(function (p) {
       return String(p.ID_EQUALIZACAO) === String(eq.ID);
@@ -29,11 +38,23 @@ function cfListarEqualizacoes_() {
       if (menor === null || c < menor) menor = c;
     });
 
+    // Gravada ganha da deduzida: alguém já corrigiu à mão, e a dedução
+    // não pode desfazer correção humana.
+    const categoria = eq.CATEGORIA ||
+      cfCategoriaDerivada_(cfTextosDaEqualizacao_(eq, descricoes[eq.ID]));
+    const daCategoria = cfCategoria_(categoria);
+
     return {
       id: eq.ID,
       empreendimento: eq.ID_EMPREENDIMENTO || '—',
       projeto: eq.PROJETO || '',
       area: eq.AREA || '',
+      categoria: categoria || '',
+      subcategoria: eq.SUBCATEGORIA || '',
+      icone: daCategoria ? daCategoria.icone : '',
+      // Deduzida aparece com marca própria na tela: o comprador precisa
+      // saber quando o sistema chutou.
+      categoriaDeduzida: !eq.CATEGORIA && !!categoria,
       grupoCentroCusto: eq.GRUPO_CENTRO_CUSTO || '',
       data: cfDataTexto_(eq.DATA_EQUALIZACAO),
       ordenacao: eq.DATA_EQUALIZACAO instanceof Date ? eq.DATA_EQUALIZACAO.getTime() : 0,
@@ -42,7 +63,7 @@ function cfListarEqualizacoes_() {
       menor: menor,
       // Para a busca livre não precisar de N comparações no cliente.
       busca: cfNormalizar_([eq.ID, eq.ID_EMPREENDIMENTO, eq.PROJETO, eq.AREA,
-                            eq.GRUPO_CENTRO_CUSTO, eq.STATUS].filter(Boolean).join(' '))
+                            eq.GRUPO_CENTRO_CUSTO, eq.STATUS, categoria].filter(Boolean).join(' '))
     };
   }).sort(function (a, b) {
     // Por data de verdade. Comparar "dd/MM/yyyy" como texto punha 28/04
@@ -179,6 +200,8 @@ function cfMapaEqualizacao_(idEq) {
       projeto: eq.PROJETO || '',
       area: eq.AREA || '',
       grupoCentroCusto: eq.GRUPO_CENTRO_CUSTO || '',
+      categoria: eq.CATEGORIA || '',
+      subcategoria: eq.SUBCATEGORIA || '',
       data: cfDataTexto_(eq.DATA_EQUALIZACAO),
       status: eq.STATUS || '',
       premissas: eq.PREMISSAS || '',
@@ -374,6 +397,9 @@ function cfCriarEqualizacao_(d) {
       PROJETO: d.projeto || '',
       AREA: d.area || '',
       GRUPO_CENTRO_CUSTO: d.grupoCentroCusto || '',
+      CATEGORIA: d.categoria || cfCategoriaDerivada_(
+        cfTextosDaEqualizacao_(d, (itens || []).map(function (i) { return i.descricao; }))),
+      SUBCATEGORIA: d.subcategoria || '',
       DATA_EQUALIZACAO: cfData_(d.data) || agora,
       STATUS: anterior ? (anterior.STATUS || 'em_cotacao') : 'em_cotacao',
       PREMISSAS: d.premissas || '',
@@ -640,4 +666,112 @@ function cfRegistrarTempo_(idEq, segundos, quantosProponentes, quantosNos, ehEdi
   } catch (erro) {
     Logger.log('CF: não consegui registrar o tempo — ' + erro);
   }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Taxonomia de categorias
+//
+//  Sete macro-categorias, cada uma com as palavras que a identificam nos
+//  documentos reais. As palavras não são enfeite: são o que permite
+//  DERIVAR a categoria dos itens em vez de pedir que alguém classifique
+//  cada equalização à mão.
+//
+//  Campo que depende de classificação manual nasce preenchido e morre
+//  desatualizado — e as equalizações que já estão na base ficariam todas
+//  em "sem categoria", o que faria a tela nascer inútil.
+//
+//  A derivação erra às vezes. Por isso é sugestão, não sentença: a tela
+//  mostra o que ela deduziu e deixa trocar.
+// ─────────────────────────────────────────────────────────────
+
+const CF_CATEGORIAS = [
+  { nome: 'Material de Consumo', icone: '☕',
+    chaves: ['copo', 'café', 'cafe', 'açúcar', 'acucar', 'papel higi', 'papel toalha',
+             'detergente', 'sabão', 'sabao', 'desinfetante', 'álcool', 'alcool',
+             'luva', 'saco de lixo', 'guardanapo', 'toner', 'caneta', 'grampo',
+             'sulfite', 'a4', 'copa', 'cozinha', 'higiene', 'limpeza', 'escritório',
+             'escritorio', 'papelaria', 'descartável', 'descartavel'],
+    subs: ['Copa & Cozinha', 'Higiene & Limpeza', 'Papelaria', 'Toners', 'EPIs Descartáveis'] },
+
+  { nome: 'Material de Construção', icone: '🧱',
+    chaves: ['cimento', 'areia', 'brita', 'tijolo', 'bloco', 'argamassa', 'tinta',
+             'verniz', 'massa corrida', 'telha', 'calha', 'tubo', 'conexão', 'conexao',
+             'registro', 'joelho', 'cabo', 'fio', 'disjuntor', 'lâmpada', 'lampada',
+             'luminária', 'luminaria', 'eletroduto', 'alvenaria', 'hidráulic', 'hidraulic',
+             'elétric', 'eletric', 'cobertura'],
+    subs: ['Alvenaria', 'Elétrica & Iluminação', 'Hidráulica', 'Coberturas', 'Tintas'] },
+
+  { nome: 'Obras & Reformas', icone: '🏗️',
+    chaves: ['obra', 'reforma', 'piso industrial', 'junta', 'pavimenta', 'galpão',
+             'galpao', 'mezanino', 'terraplen', 'concretagem', 'demoli', 'alvenaria estrutural',
+             'impermeabiliza', 'pintura predial'],
+    subs: ['Pisos Industriais & Juntas', 'Pavimentação', 'Galpões', 'Mezaninos', 'Terraplenagem'] },
+
+  { nome: 'Serviços & Facilities', icone: '🧹',
+    chaves: ['limpeza predial', 'conservação', 'conservacao', 'portaria', 'vigilância',
+             'vigilancia', 'jardinagem', 'poda', 'praga', 'dedetiza', 'desratiza',
+             'imuniza', 'resíduo', 'residuo', 'coleta', 'mão de obra', 'mao de obra',
+             'terceiriza', 'facilities', 'zeladoria'],
+    subs: ['Limpeza Predial', 'Portaria & Acesso', 'Jardinagem', 'Pragas', 'Gestão de Resíduos'] },
+
+  { nome: 'Manutenção Predial & Engenharia', icone: '⚡',
+    chaves: ['manutenção', 'manutencao', 'subestação', 'subestacao', 'gerador',
+             'doca', 'niveladora', 'sprinkler', 'climatiza', 'ar condicionado',
+             'ar-condicionado', 'chiller', 'bomba', 'casa de bombas', 'hidrante',
+             'extintor', 'preventiv', 'corretiv', 'utilities'],
+    subs: ['Subestações', 'Geradores', 'Docas & Niveladoras', 'Sprinklers', 'Climatização'] },
+
+  { nome: 'Equipamentos & Locação', icone: '🚜',
+    chaves: ['locação', 'locacao', 'aluguel', 'plataforma elevatória', 'plataforma elevatoria',
+             'munck', 'empilhadeira', 'guindaste', 'andaime', 'container', 'contêiner'],
+    subs: ['Plataformas Elevatórias', 'Geradores Móveis', 'Munck', 'Equipamentos de Carga'] },
+
+  { nome: 'Tecnologia & Segurança', icone: '💻',
+    chaves: ['cftv', 'câmera', 'camera', 'catraca', 'biometria', 'controle de acesso',
+             'cabeamento', 'rede', 'wi-fi', 'wifi', 'nobreak', 'switch', 'servidor',
+             'alarme', 'monitoramento'],
+    subs: ['CFTV Perimetral', 'Catracas & Biometria', 'Cabeamento Estruturado'] }
+];
+
+/** A categoria pelo nome, com ícone. Devolve null para nome desconhecido. */
+function cfCategoria_(nome) {
+  const n = cfNormalizar_(nome || '');
+  if (!n) return null;
+  return CF_CATEGORIAS.filter(function (c) { return cfNormalizar_(c.nome) === n; })[0] || null;
+}
+
+/**
+ * Deduz a categoria a partir do que a equalização contém.
+ *
+ * Conta quantas palavras-chave de cada categoria aparecem nos textos, e
+ * devolve a que mais aparece. Empate ou nenhuma aparição devolve ''.
+ *
+ * Devolver '' num empate é deliberado: escolher uma das duas seria
+ * inventar uma classificação que o documento não sustenta, e ela
+ * apareceria na tela com a mesma confiança das que estão certas.
+ */
+function cfCategoriaDerivada_(textos) {
+  const alvo = ' ' + (textos || []).map(function (t) { return cfNormalizar_(t || ''); }).join(' ') + ' ';
+  if (alvo.trim() === '') return '';
+
+  const pontos = CF_CATEGORIAS.map(function (c) {
+    let n = 0;
+    c.chaves.forEach(function (k) {
+      const chave = cfNormalizar_(k);
+      if (chave && alvo.indexOf(chave) >= 0) n++;
+    });
+    return { nome: c.nome, n: n };
+  }).filter(function (p) { return p.n > 0; })
+    .sort(function (a, b) { return b.n - a.n; });
+
+  if (!pontos.length) return '';
+  if (pontos.length > 1 && pontos[0].n === pontos[1].n) return '';
+  return pontos[0].nome;
+}
+
+/** Os textos de uma equalização que valem para deduzir a categoria. */
+function cfTextosDaEqualizacao_(eq, descricoesDosItens) {
+  return [eq.PROJETO || eq.projeto || '', eq.AREA || eq.area || '',
+          eq.GRUPO_CENTRO_CUSTO || eq.grupoCentroCusto || '']
+    .concat(descricoesDosItens || []);
 }

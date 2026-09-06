@@ -18,7 +18,7 @@ const CF_PASTA_ID = '1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G';
 const CF_NOME_PLANILHA = 'Capital Fornecedores — Base';
 
 /** Sobe de 1 a cada mudança no schema. Gravado em Script Properties. */
-const CF_SCHEMA_VERSAO = 3;
+const CF_SCHEMA_VERSAO = 4;
 
 /** Versão do parser de importação. Gravada em cada linha importada,
  *  para dar para reprocessar o que veio de uma geração antiga. */
@@ -211,7 +211,16 @@ const CF_SCHEMA = [
     { campo: 'CRIADO_POR',         tipo: 'texto', largura: 200 },
     { campo: 'CRIADO_EM',          tipo: 'data', largura: 130 },
     { campo: 'ATUALIZADO_EM',      tipo: 'data', largura: 130 },
-    { campo: 'ID_FONTE',           tipo: 'texto', largura: 150, nota: 'ID do arquivo-fonte original' }
+    { campo: 'ID_FONTE',           tipo: 'texto', largura: 150, nota: 'ID do arquivo-fonte original' },
+    // Taxonomia. No FIM da tabela porque cfGarantirAba_ acrescenta coluna
+    // nova sempre no fim — declarada no meio, desalinharia cfFormatarAba_
+    // dali em diante, que é o defeito que já custou uma manhã.
+    //
+    // Derivada dos itens quando dá, escolhida à mão quando não dá. Um
+    // campo que depende de alguém classificar cada equalização nasce
+    // preenchido e morre desatualizado.
+    { campo: 'CATEGORIA',          tipo: 'texto', largura: 200, nota: 'macro-categoria — ver CF_CATEGORIAS' },
+    { campo: 'SUBCATEGORIA',       tipo: 'texto', largura: 200 }
   ]},
 
   { nome: 'Baselines', nota: 'Versão de escopo. Histórico só compara dentro do mesmo baseline.', colunas: [
