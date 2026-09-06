@@ -727,3 +727,50 @@ function relatorioDeTempo() {
     medianaApp: medApp, medianaPlanilha: medPl
   };
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Zerar base operacional para novos testes
+//
+//  Limpa as linhas de dados das abas operacionais (mantendo a linha 1 de cabeçalho),
+//  preservando as abas de infraestrutura e cadastro mestre (Config, Empresas, Empreendimentos).
+//  Em seguida executa setupBaseDeDados() para garantir a estrutura do Schema v4.
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Zera as tabelas operacionais da base para reiniciar testes do zero.
+ * Preserva Config, Empresas e Empreendimentos.
+ * Execute importarTodosOsOrcamentos() em seguida para recarregar o acervo oficial.
+ */
+function zerarBaseOperacional() {
+  return cfComTrava_(function () {
+    const ss = cfPlanilha_();
+    const tabelas = [
+      'Precos', 'EAP', 'Propostas', 'Equalizacoes',
+      'Importacoes', 'Fornecedores', 'Pendencias', 'Historico_Logs'
+    ];
+    let totalLimpas = 0;
+
+    Logger.log('═══ Zerando Base Operacional ═══');
+    tabelas.forEach(function (nome) {
+      const aba = ss.getSheetByName(nome);
+      if (!aba) return;
+      const ultima = aba.getLastRow();
+      if (ultima > 1) {
+        const colunas = Math.max(aba.getLastColumn(), 1);
+        aba.getRange(2, 1, ultima - 1, colunas).clearContent();
+        totalLimpas++;
+        Logger.log('  Aba "' + nome + '": ' + (ultima - 1) + ' linha(s) removida(s).');
+      } else {
+        Logger.log('  Aba "' + nome + '": já estava vazia.');
+      }
+    });
+
+    Logger.log('\nExecutando setupBaseDeDados() para reformatar e validar Schema v4...');
+    setupBaseDeDados();
+
+    cfLog_('zerar_base_operacional', 'planilha', '', JSON.stringify({ abasLimpas: totalLimpas }));
+    Logger.log('\n✓ Base operacional zerada com sucesso!');
+    Logger.log('Próximo passo recomendado: execute importarTodosOsOrcamentos() para carregar os 21 orçamentos.');
+    return { ok: true, abasLimpas: totalLimpas };
+  }, 180);
+}
