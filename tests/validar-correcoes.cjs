@@ -1720,3 +1720,131 @@ try {
   console.log(`✗ FALHA na Correção 30: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 31 — ergonomia da grade: cabeçalho fixo, menor preço ao
+//  vivo e rascunho por contexto
+// ─────────────────────────────────────────────────────────────
+try {
+  const html31 = fs.readFileSync(path.join(root, 'app', 'Interface.html'), 'utf8');
+
+  // ── Cabeçalho congelado.
+  //
+  //  Aqui a verificação é no fonte, e não por comportamento, porque não há
+  //  comportamento a executar: é CSS. O que se afirma é o PAR — sticky sem
+  //  altura limitada no container nunca gruda, porque o scrollport não
+  //  rola. O projeto já tinha aprendido isso na tabela do mapa e não tinha
+  //  aplicado na grade de edição.
+  const mRolo = html31.match(/\.grade-rolo\{[^}]*\}/);
+  assert.ok(mRolo, '.grade-rolo não foi encontrada');
+  assert.ok(/max-height:\s*\d+/.test(mRolo[0]),
+    '.grade-rolo sem max-height: o container não rola e o thead sticky nunca gruda');
+  assert.ok(/overflow:\s*auto/.test(mRolo[0]),
+    '.grade-rolo precisa rolar nos dois eixos');
+
+  const mThead = html31.match(/table\.grade thead th\{[^}]*\}/);
+  assert.ok(mThead, 'a regra do thead da grade não foi encontrada');
+  assert.ok(/position:sticky/.test(mThead[0]) && /top:0/.test(mThead[0]),
+    'o cabeçalho da grade não está congelado no topo');
+  assert.ok(/background:#fff/.test(mThead[0]),
+    'cabeçalho sticky sem fundo opaco deixa a linha de baixo aparecer através dele');
+
+  // O canto (Código e Descrição no cabeçalho) fica acima do cabeçalho E
+  // das colunas fixas do corpo, senão some atrás de um dos dois ao rolar.
+  const mCanto = html31.match(/table\.grade thead th\.col-cod,\s*\n\s*table\.grade thead th\.col-desc \{[^}]*\}/);
+  assert.ok(mCanto, 'a regra do canto congelado não foi encontrada');
+  const zCanto = Number((mCanto[0].match(/z-index:(\d+)/) || [])[1]);
+  const zThead = Number((mThead[0].match(/z-index:(\d+)/) || [])[1]);
+  assert.ok(zCanto > zThead,
+    'o canto (z-index ' + zCanto + ') tem que ficar acima do resto do cabeçalho (z-index ' + zThead + ')');
+
+  // ── Menor preço da linha, enquanto se digita.
+  const ctx31 = vm.createContext({ console: console });
+  ['function num(', 'function marcarMenoresDaLinha('].forEach(function (assinatura) {
+    const i = html31.indexOf(assinatura);
+    assert.ok(i >= 0, assinatura + ' não encontrada na interface');
+    // Recorta até a primeira chave de fechamento em coluna zero.
+    const fim = html31.indexOf('\n}', i);
+    vm.runInContext(html31.slice(i, fim + 2), ctx31);
+  });
+
+  const marcados = {};
+  ctx31.document = {
+    querySelectorAll: function (sel) {
+      const l = Number(sel.match(/data-l="(\d+)"/)[1]);
+      const quantos = ctx31.itens[l].precos.length;
+      const campos = [];
+      for (let j = 0; j < quantos; j++) {
+        campos.push({
+          classList: {
+            toggle: function (cls, ligado) { marcados[l + ':' + j] = !!ligado; }
+          }
+        });
+      }
+      return campos;
+    }
+  };
+
+  //   item 0: A 5,00 · B 4,00        → B é o menor
+  //   item 1: A 9,00 · B 9,00        → empate, marca os dois
+  //   item 2: A 3,00 · B em branco   → sem disputa, não marca
+  //   item 3: A 0,00 · B 4,00        → zero é preço, não ausência
+  ctx31.itens = [
+    { tipo: 'item', quantidade: '10', precos: ['5,00', '4,00'] },
+    { tipo: 'item', quantidade: '1',  precos: ['9,00', '9,00'] },
+    { tipo: 'item', quantidade: '2',  precos: ['3,00', ''] },
+    { tipo: 'item', quantidade: '1',  precos: ['0,00', '4,00'] }
+  ];
+  ctx31.marcarMenoresDaLinha();
+
+  assert.equal(marcados['0:0'], false, 'marcou o preço mais caro da linha');
+  assert.equal(marcados['0:1'], true,  'não marcou o menor preço da linha');
+  assert.equal(marcados['1:0'], true,  'empate tem que marcar os dois');
+  assert.equal(marcados['1:1'], true,  'empate tem que marcar os dois');
+  assert.equal(marcados['2:0'], false, 'preço sozinho não é o menor de nada: não houve comparação');
+
+  // Zero é um preço — item de brinde, item já contratado. Tratá-lo como
+  // campo vazio esconderia justamente a linha mais barata da cotação.
+  assert.equal(marcados['3:0'], true,  'zero é preço cotado, não campo em branco');
+  assert.equal(marcados['3:1'], false, 'com um zero na linha, 4,00 não é o menor');
+
+  // Grupo não é linha de preço.
+  ctx31.itens = [{ tipo: 'grupo', quantidade: '', precos: ['1,00', '2,00'] }];
+  ctx31.baseValores = () => 'unitario';
+  ctx31.marcarMenoresDaLinha();
+  assert.equal(marcados['0:0'], false, 'linha de grupo não tem menor preço');
+  assert.equal(marcados['0:1'], false, 'linha de grupo não tem menor preço');
+
+  // ── Rascunho por contexto.
+  const iChave = html31.indexOf('function chaveRascunho(');
+  assert.ok(iChave >= 0, 'chaveRascunho não encontrada');
+  const ctxR = vm.createContext({ CHAVE_RASCUNHO: 'cf_rascunho_v1', idEmEdicao: null });
+  vm.runInContext(html31.slice(iChave, html31.indexOf('\n}', iChave) + 2), ctxR);
+
+  assert.equal(ctxR.chaveRascunho(), 'cf_rascunho_v1');
+  vm.runInContext("idEmEdicao = 'EQU-2026-0007'", ctxR);
+  assert.equal(ctxR.chaveRascunho(), 'cf_rascunho_edicao_EQU-2026-0007',
+    'editar uma equalização tem que usar chave própria, senão sobrescreve a cotação nova');
+  vm.runInContext("idEmEdicao = 'EQU-2026-0008'", ctxR);
+  assert.notEqual(ctxR.chaveRascunho(), 'cf_rascunho_edicao_EQU-2026-0007',
+    'duas equalizações em edição não podem dividir o mesmo rascunho');
+
+  // A ordem importa: descartar depois de zerar idEmEdicao apagaria a chave
+  // errada e deixaria o rascunho da edição órfão no navegador para sempre.
+  const iLimpar = html31.indexOf('function limparFormulario(');
+  const corpoLimpar = html31.slice(iLimpar, html31.indexOf('\n}', iLimpar));
+  assert.ok(corpoLimpar.indexOf('descartarRascunho()') < corpoLimpar.indexOf('idEmEdicao = null'),
+    'limparFormulario descarta o rascunho depois de zerar idEmEdicao — apaga a chave errada');
+
+  // E editar precisa de fato salvar: o return antecipado deixava a
+  // renegociação inteira sem rede.
+  const iSalvar = html31.indexOf('function salvarRascunho(');
+  const corpoSalvar = html31.slice(iSalvar, html31.indexOf('\n}', iSalvar));
+  assert.ok(corpoSalvar.indexOf('if (idEmEdicao) return;') < 0,
+    'salvarRascunho ainda desiste quando está editando: a renegociação fica sem rascunho');
+
+  console.log('✓ CORREÇÃO VERIFICADA: cabeçalho fixo, menor preço da linha ao vivo e rascunho por contexto');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 31: ${e.message}`);
+  process.exitCode = 1;
+}

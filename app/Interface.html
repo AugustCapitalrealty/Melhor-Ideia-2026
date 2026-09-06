@@ -516,6 +516,16 @@ table.grade input.preco{text-align:right;font-variant-numeric:tabular-nums;paddi
   position:absolute;left:11px;top:50%;transform:translateY(-50%);
   font-style:normal;font-size:13px;font-weight:600;color:var(--suave);pointer-events:none;
 }
+/* O menor preço de cada linha, marcado enquanto se digita.
+   Verde suave e não borda grossa: são dezenas de linhas na tela, e um
+   destaque forte repetido vira ruído — deixa de destacar. */
+table.grade input.preco.eh-menor-linha{
+  background:#F1F9F4;border-color:rgba(31,122,76,.45);
+  color:var(--ok);font-weight:650;
+}
+table.grade input.preco.eh-menor-linha:focus{
+  border-color:var(--ok);box-shadow:0 0 0 3px rgba(31,122,76,.14);
+}
 table.grade thead th small{
   display:block;font-weight:400;font-size:10px;text-transform:none;
   letter-spacing:0;color:var(--suave);margin-top:2px;
@@ -547,10 +557,20 @@ table.grade thead th small{
 .degrau:disabled{opacity:.3;cursor:default}
 tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,241,248,.85)}
 .grade-rolo{
-  overflow-x:auto;
+  max-height:64vh;
+  overflow:auto;
   -webkit-overflow-scrolling:touch;
   margin:0 -4px;
   padding-bottom:12px;
+}
+/* Fundo opaco e não a cor do tema: a linha que passa por baixo
+   apareceria através de um cabeçalho translúcido, e o efeito de vidro
+   que serve à navegação atrapalha quem está conferindo número. */
+table.grade thead th{
+  position:sticky;top:0;z-index:4;
+  background:#fff;
+  padding-top:8px;
+  box-shadow:0 1px 0 rgba(21,30,73,.12);
 }
 
 /* Fixação (freeze) inteligente de Código e Descrição em telas médias e largas */
@@ -566,7 +586,7 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
   }
   table.grade thead th.col-cod,
   table.grade thead th.col-desc {
-    z-index:5;background:#fff;
+    z-index:6;background:#fff;
   }
   table.grade tr.eh-grupo td.col-cod,
   table.grade tr.eh-grupo td.col-desc {
@@ -1559,6 +1579,8 @@ function preencherExemplo() {
 var megaPendenteEdicao = null;
 
 function limparFormulario() {
+  // Nesta ordem: a chave do rascunho depende de idEmEdicao.
+  descartarRascunho();
   idEmEdicao = null;
   var bEd = document.getElementById('barraEdicao');
   if (bEd) bEd.hidden = true;
@@ -1568,7 +1590,7 @@ function limparFormulario() {
   proponentes = [];
   itens = [];
   jaGravada = false;
-  descartarRascunho();
+  descartarRascunho();   // e agora a da cotação nova
 
   document.getElementById('tituloTela').textContent = TITULOS['nova'][0];
   document.getElementById('subTela').textContent = TITULOS['nova'][1];
@@ -2283,6 +2305,8 @@ function calcular() {
     if (menor === null || t < totais[menor]) menor = j;
   });
 
+  marcarMenoresDaLinha();
+
   document.getElementById('totais').innerHTML = proponentes.map(function (p, j) {
     // A cesta incompleta aparece junto do total: o mais barato pode ser
     // só o que deixou item sem cotar.
@@ -2292,6 +2316,46 @@ function calcular() {
       (falta > 0 ? ' <small style="color:var(--alerta)">(' + falta + ' sem cotar)</small>' : '') +
       '</span>';
   }).join('');
+}
+
+/**
+ * Marca o menor preço de cada linha, a cada tecla.
+ *
+ * Compara o número digitado, e não o total da linha — de propósito.
+ * Dentro de uma linha a quantidade é a MESMA para todos os proponentes,
+ * então multiplicar todo mundo por ela não muda quem é o menor. Fazer a
+ * conta aqui seria cerimônia, e cerimônia que parece regra é pior que
+ * nenhuma: quem lesse depois procuraria o caso em que as duas ordens
+ * divergem, e ele não existe.
+ *
+ * (Isso vale só DENTRO da linha. Entre linhas, e no total da proposta,
+ * a quantidade importa — e lá o cálculo é feito, em calcular().)
+ *
+ * Empate marca os dois. Escolher um seria inventar um critério de
+ * desempate que ninguém pediu.
+ */
+function marcarMenoresDaLinha() {
+  itens.forEach(function (it, i) {
+    var campos = document.querySelectorAll('input.preco[data-l="' + i + '"]');
+    if (!campos.length) return;
+
+    var menor = null;
+    var efetivo = it.precos.map(function (p) {
+      var v = num(p);
+      if (v === null || it.tipo === 'grupo') return null;
+      if (menor === null || v < menor) menor = v;
+      return v;
+    });
+
+    // Um preço sozinho não é o menor de nada: sem concorrente, o
+    // destaque afirmaria uma comparação que não houve.
+    var quantos = efetivo.filter(function (t) { return t !== null; }).length;
+
+    for (var j = 0; j < campos.length; j++) {
+      var ganhou = quantos > 1 && efetivo[j] !== null && efetivo[j] === menor;
+      campos[j].classList.toggle('eh-menor-linha', ganhou);
+    }
+  });
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -2385,6 +2449,24 @@ function colarColuna(ev, el) {
 var CHAVE_RASCUNHO = 'cf_rascunho_v1';
 var timerRascunho = null;
 
+/**
+ * Um rascunho por contexto.
+ *
+ * Antes, editar uma equalização simplesmente NÃO salvava rascunho —
+ * havia um `if (idEmEdicao) return` no começo. A intenção era não
+ * sobrescrever o rascunho de uma cotação nova em andamento, e isso
+ * estava certo; o preço foi deixar a renegociação inteira sem rede.
+ * Uma rodada de R02 com trinta itens some num F5, que é exatamente o
+ * caso em que mais dói: os preços vieram de uma conversa por telefone
+ * e não estão em documento nenhum ainda.
+ *
+ * Chave separada resolve os dois: cada equalização em edição guarda a
+ * sua, e nenhuma encosta na cotação nova.
+ */
+function chaveRascunho() {
+  return idEmEdicao ? 'cf_rascunho_edicao_' + idEmEdicao : CHAVE_RASCUNHO;
+}
+
 function estadoAtual() {
   return {
     quando: new Date().toISOString(),
@@ -2412,26 +2494,25 @@ function temConteudo(e) {
 }
 
 function salvarRascunho() {
-  if (idEmEdicao) return;
   clearTimeout(timerRascunho);
   timerRascunho = setTimeout(function () {
     try {
       var e = estadoAtual();
-      if (temConteudo(e)) localStorage.setItem(CHAVE_RASCUNHO, JSON.stringify(e));
+      e.idEmEdicao = idEmEdicao || '';
+      if (temConteudo(e)) localStorage.setItem(chaveRascunho(), JSON.stringify(e));
     } catch (err) { /* navegador sem storage: seguir sem rascunho */ }
   }, 800);
 }
 
 function descartarRascunho() {
-  try { localStorage.removeItem(CHAVE_RASCUNHO); } catch (err) {}
+  try { localStorage.removeItem(chaveRascunho()); } catch (err) {}
   var b = document.getElementById('barraRascunho');
   if (b) b.hidden = true;
 }
 
 function restaurarRascunho() {
-  if (idEmEdicao) return false;
   var bruto;
-  try { bruto = localStorage.getItem(CHAVE_RASCUNHO); } catch (err) { return false; }
+  try { bruto = localStorage.getItem(chaveRascunho()); } catch (err) { return false; }
   if (!bruto) return false;
 
   var e;
@@ -2470,11 +2551,14 @@ function restaurarRascunho() {
   mostrarEmpresa(); desenharProponentes(); desenharGrade();
 
   var b = document.getElementById('barraRascunho');
-  if (b && !idEmEdicao) {
+  if (b) {
     b.hidden = false;
     var txt = document.getElementById('txtRascunho');
     if (txt) {
-      txt.textContent = 'Rascunho de ' + new Date(e.quando).toLocaleString('pt-BR') + ' recuperado.';
+      txt.textContent = idEmEdicao
+        ? 'Alterações não salvas de ' + idEmEdicao + ', de ' +
+          new Date(e.quando).toLocaleString('pt-BR') + ', recuperadas.'
+        : 'Rascunho de ' + new Date(e.quando).toLocaleString('pt-BR') + ' recuperado.';
     }
   }
   return true;
@@ -2565,6 +2649,8 @@ function editarEqualizacao(id) {
 function carregarDadosParaEdicao(m) {
   idEmEdicao = m.equalizacao.id;
 
+  // Escondida por ora; restaurarRascunho() a traz de volta se houver
+  // alteração não salva desta equalização.
   var bRasc = document.getElementById('barraRascunho');
   if (bRasc) bRasc.hidden = true;
 
@@ -2731,6 +2817,10 @@ function carregarDadosParaEdicao(m) {
   desenharProponentes();
   desenharGrade();
 
+  // O rascunho desta equalização vem por cima do que o servidor mandou:
+  // se existe, é alteração posterior à última gravação.
+  restaurarRascunho();
+
   var secNova = document.getElementById('v-nova');
   if (secNova) secNova.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -2738,6 +2828,7 @@ function carregarDadosParaEdicao(m) {
 function cancelarEdicao() {
   if (confirm('Deseja cancelar a edição? Todas as alterações não salvas serão descartadas.')) {
     var idAntigo = idEmEdicao;
+    descartarRascunho();   // cancelou de propósito: o rascunho perdeu a razão
     idEmEdicao = null;
     var bEd = document.getElementById('barraEdicao');
     if (bEd) bEd.hidden = true;
