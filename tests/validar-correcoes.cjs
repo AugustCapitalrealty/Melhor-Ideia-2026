@@ -1979,3 +1979,174 @@ try {
   console.log(`✗ FALHA na Correção 32: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 33 — colar um bloco do Excel, e o teclado no autocomplete
+//
+//  Os dois últimos itens da Fase 2. O da colagem é o que tem casos de
+//  borda de verdade: bloco mais largo que a cotação, linha final vazia
+//  que o Excel sempre acrescenta, e célula única, que precisa continuar
+//  colando do jeito normal do navegador.
+// ─────────────────────────────────────────────────────────────
+try {
+  const html33 = fs.readFileSync(path.join(root, 'app', 'Interface.html'), 'utf8');
+
+  const recortar = function (assinatura) {
+    const i = html33.indexOf(assinatura);
+    assert.ok(i >= 0, assinatura + ' não encontrada');
+    return html33.slice(i, html33.indexOf('\n}', i) + 2);
+  };
+
+  const ctx33 = vm.createContext({ console: console, Math: Math, Number: Number, String: String });
+  ['function num(', 'function linhasComPreco(', 'function colarColuna(']
+    .forEach(function (a) { vm.runInContext(recortar(a), ctx33); });
+
+  // Dublês do que a colagem toca.
+  let redesenhou = 0, salvou = 0, mensagem = '';
+  ctx33.desenharGrade = function () { redesenhou++; };
+  ctx33.salvarRascunho = function () { salvou++; };
+  ctx33.document = {
+    getElementById: function () { return { set innerHTML(v) { mensagem = v; } }; }
+  };
+  ctx33.addItem = function () {
+    ctx33.itens.push({ tipo: 'item', descricao: '', quantidade: '', unidade: 'un',
+                       precos: ctx33.proponentes.map(function () { return ''; }) });
+  };
+  ctx33.window = {};
+
+  const colar = function (texto, l, c) {
+    let impediu = false;
+    ctx33.colarColuna({
+      clipboardData: { getData: function () { return texto; } },
+      preventDefault: function () { impediu = true; }
+    }, { dataset: { l: String(l), c: String(c) } });
+    return impediu;
+  };
+
+  const partida = function () {
+    ctx33.proponentes = [{ nome: 'A' }, { nome: 'B' }, { nome: 'C' }];
+    ctx33.itens = [
+      { tipo: 'grupo', descricao: 'MATERIAIS', precos: ['', '', ''] },
+      { tipo: 'item', descricao: 'Café',  quantidade: '1', precos: ['', '', ''] },
+      { tipo: 'item', descricao: 'Papel', quantidade: '1', precos: ['', '', ''] }
+    ];
+  };
+
+  // ── Bloco 2x2 a partir da primeira coluna
+  partida();
+  assert.equal(colar('10,00\t12,00\n20,00\t22,00', 1, 0), true,
+    'colagem de bloco tem que impedir o comportamento padrão do navegador');
+  assert.equal(ctx33.itens[1].precos[0], '10,00');
+  assert.equal(ctx33.itens[1].precos[1], '12,00');
+  assert.equal(ctx33.itens[2].precos[0], '20,00');
+  assert.equal(ctx33.itens[2].precos[1], '22,00');
+  assert.equal(ctx33.itens[1].precos[2], '', 'coluna não colada não pode ser tocada');
+  assert.equal(ctx33.itens[0].precos[0], '', 'linha de grupo não recebe preço');
+
+  // ── Uma coluna só continua funcionando como antes
+  partida();
+  colar('5,00\n7,00', 1, 2);
+  assert.equal(ctx33.itens[1].precos[2], '5,00');
+  assert.equal(ctx33.itens[2].precos[2], '7,00');
+  assert.equal(ctx33.itens[1].precos[0], '', 'colagem de coluna não pode espalhar para os lados');
+
+  // ── Célula única: o navegador cola sozinho
+  partida();
+  assert.equal(colar('9,90', 1, 0), false,
+    'uma célula só tem que deixar o navegador colar normalmente');
+
+  // ── A linha vazia final que o Excel sempre acrescenta não vira item
+  partida();
+  colar('1,00\t2,00\n3,00\t4,00\n', 1, 0);
+  assert.equal(ctx33.itens.length, 3, 'a linha vazia do fim do Excel virou item novo');
+
+  // ── Bloco mais alto que a grade cria as linhas que faltam
+  partida();
+  colar('1,00\n2,00\n3,00\n4,00', 1, 0);
+  assert.equal(ctx33.itens.length, 5, 'faltou criar as linhas para o que sobrou');
+  assert.equal(ctx33.itens[4].precos[0], '4,00');
+
+  // ── Bloco mais largo que a cotação: avisa, não inventa proponente
+  //
+  //  Proponente anônimo com preços é pior que preço faltando — ele entra
+  //  no comparativo e pode até ganhar.
+  partida();
+  colar('1,00\t2,00\t3,00\t4,00\n5,00\t6,00\t7,00\t8,00', 1, 0);
+  assert.equal(ctx33.proponentes.length, 3, 'a colagem criou proponente que ninguém pediu');
+  assert.equal(ctx33.itens[1].precos[2], '3,00');
+  assert.ok(mensagem.indexOf('ficou de fora') >= 0 || mensagem.indexOf('ficaram') >= 0,
+    'colar mais colunas do que cabe tem que avisar; a mensagem foi: ' + mensagem);
+
+  // ── Colar no meio respeita a coluna de partida
+  partida();
+  colar('7,00\t8,00', 1, 1);
+  assert.equal(ctx33.itens[1].precos[0], '', 'colou à esquerda da célula de partida');
+  assert.equal(ctx33.itens[1].precos[1], '7,00');
+  assert.equal(ctx33.itens[1].precos[2], '8,00');
+
+  // ── Separador decimal: o mesmo num() do resto da tela
+  partida();
+  colar('1.234,56\t1234.56', 1, 0);
+  assert.equal(ctx33.itens[1].precos[0], '1.234,56');
+  assert.equal(ctx33.itens[1].precos[1], '1.234,56',
+    'o formato americano tem que virar o brasileiro na gravação');
+
+  // ── Autocomplete por teclado
+  const ctxN = vm.createContext({ console: console, Array: Array, Object: Object });
+  ['function navegarSugestoes(', 'function fecharSugestoes(', 'function marcarAriaExpandido(']
+    .forEach(function (a) { vm.runInContext(recortar(a), ctxN); });
+
+  const opcoes = [0, 1, 2].map(function () {
+    return {
+      classList: { ativa: false,
+        toggle: function (c, v) { this.ativa = v; } },
+      atributos: {},
+      setAttribute: function (k, v) { this.atributos[k] = v; },
+      scrollIntoView: function () {}
+    };
+  });
+  let escolhido = null, fechou = false;
+  ctxN.escolherFornecedor = function (i, k) { escolhido = k; };
+  ctxN.sugestoesAbertas = { 0: [{}, {}, {}] };
+  ctxN.sugestaoAtiva = {};
+  ctxN.document = {
+    getElementById: function (id) {
+      if (id === 'sug0') {
+        return { hidden: false, querySelectorAll: function () { return opcoes; },
+                 set hidden2(v) {} };
+      }
+      return { setAttribute: function () {} };
+    }
+  };
+
+  const tecla = function (k) {
+    let impediu = false;
+    ctxN.navegarSugestoes({ key: k, preventDefault: function () { impediu = true; } }, 0);
+    return impediu;
+  };
+
+  // Enter sem nada destacado não escolhe: o comprador pode estar só
+  // confirmando o nome que digitou.
+  assert.equal(tecla('Enter'), false, 'Enter sem destaque não pode escolher fornecedor');
+  assert.equal(escolhido, null);
+
+  assert.equal(tecla('ArrowDown'), true, 'a seta tem que impedir a rolagem da página');
+  assert.equal(ctxN.sugestaoAtiva[0], 0);
+  assert.equal(opcoes[0].classList.ativa, true);
+  assert.equal(opcoes[0].atributos['aria-selected'], 'true');
+
+  tecla('ArrowDown'); tecla('ArrowDown');
+  assert.equal(ctxN.sugestaoAtiva[0], 2);
+  tecla('ArrowDown');
+  assert.equal(ctxN.sugestaoAtiva[0], 0, 'passando do fim, a seta volta ao começo');
+  tecla('ArrowUp');
+  assert.equal(ctxN.sugestaoAtiva[0], 2, 'no começo, a seta para cima vai ao fim');
+
+  assert.equal(tecla('Enter'), true);
+  assert.equal(escolhido, 2, 'Enter tem que escolher a opção destacada');
+
+  console.log('✓ CORREÇÃO VERIFICADA: colagem de bloco do Excel e navegação por teclado nas sugestões');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 33: ${e.message}`);
+  process.exitCode = 1;
+}
