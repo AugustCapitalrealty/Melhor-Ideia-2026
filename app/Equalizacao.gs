@@ -124,10 +124,29 @@ function cfMapaEqualizacao_(idEq) {
         numero: p.NUMERO_PROPOSTA || '',
         revisao: p.REVISAO_FORNECEDOR || '',
         data: cfDataTexto_(p.DATA_PROPOSTA),
-        validadeAte: cfDataTexto_(p.VALIDADE_ATE),
+        validadeAte: (function () {
+          if (p.VALIDADE_ATE) return cfDataTexto_(p.VALIDADE_ATE);
+          const dias = cfNumero_(p.VALIDADE_DIAS);
+          const dtProp = cfData_(p.DATA_PROPOSTA);
+          if (dias && dtProp) {
+            const dtVal = new Date(dtProp.getTime() + (dias * 86400000));
+            return cfDataTexto_(dtVal);
+          }
+          return '';
+        })(),
         condicoes: p.CONDICOES_PAGAMENTO || '',
         leadTime: cfNumero_(p.LEAD_TIME_DIAS),
-        prazoExecucao: cfNumero_(p.PRAZO_EXECUCAO_DIAS),
+        prazoExecucao: (function () {
+          let pr = cfNumero_(p.PRAZO_EXECUCAO_DIAS);
+          if (pr === null && p.DATA_PREV_INICIO && p.DATA_PREV_TERMINO) {
+            const d1 = cfData_(p.DATA_PREV_INICIO);
+            const d2 = cfData_(p.DATA_PREV_TERMINO);
+            if (d1 && d2 && d2 >= d1) {
+              pr = Math.max(1, Math.round((d2.getTime() - d1.getTime()) / 86400000));
+            }
+          }
+          return pr;
+        })(),
         dataPrevInicio: cfDataTexto_(p.DATA_PREV_INICIO),
         dataPrevTermino: cfDataTexto_(p.DATA_PREV_TERMINO),
         centroCusto: p.OBSERVACAO || '',
@@ -213,9 +232,48 @@ function cfMapaEqualizacao_(idEq) {
       valorFinal: cfNumero_(eq.VALOR_FINAL),
       numeroOc: eq.NUMERO_OC || ''
     },
-    proponentes: proponentes,
+    proponentes: (function () {
+      const itensParaCotar = linhas.filter(function (l) { return l.tipo !== 'grupo'; });
+      const totalItens = itensParaCotar.length;
+      if (totalItens > 0) {
+        proponentes.forEach(function (p) {
+          let cotados = 0;
+          itensParaCotar.forEach(function (it) {
+            const pr = it.precos[p.id];
+            if (pr && (pr.status === 'cotado' || pr.status === 'incluso_em_outro_item') &&
+                (pr.valor !== null || pr.status === 'incluso_em_outro_item')) {
+              cotados++;
+            }
+          });
+          p.itensCotados = cotados;
+          p.totalItens = totalItens;
+          p.coberturaEscopo = cotados + '/' + totalItens;
+        });
+      }
+      return proponentes;
+    })(),
     linhas: linhas,
-    pendencias: cfPendenciasDaEqualizacao_(idEq)
+    pendencias: (function () {
+      const pends = cfPendenciasDaEqualizacao_(idEq);
+      const itensParaCotar = linhas.filter(function (l) { return l.tipo !== 'grupo'; });
+      const totalItens = itensParaCotar.length;
+      if (totalItens > 0) {
+        proponentes.forEach(function (p) {
+          if (p.itensCotados !== undefined && p.itensCotados < totalItens && p.itensCotados > 0) {
+            const jaExiste = pends.some(function (pend) {
+              return (pend.descricao || '').indexOf(p.nome) >= 0;
+            });
+            if (!jaExiste) {
+              pends.push({
+                tipo: 'cesta_incompleta',
+                descricao: 'Fornecedor ' + p.nome + ' deixou itens sem cotar.'
+              });
+            }
+          }
+        });
+      }
+      return pends;
+    })()
   };
 }
 
@@ -292,8 +350,11 @@ function cfCriarEqualizacao_(d) {
     throw new Error('Empreendimento "' + d.empreendimento + '" não é um dos Megas.');
   }
 
-  const proponentes = (d.proponentes || []).filter(function (p) {
-    return (p.nome && String(p.nome).trim()) || cfSoDigitos_(p.cnpj);
+  const proponentes = [];
+  (d.proponentes || []).forEach(function (p, idx) {
+    if ((p.nome && String(p.nome).trim()) || cfSoDigitos_(p.cnpj)) {
+      proponentes.push(Object.assign({}, p, { _colIndex: idx }));
+    }
   });
   if (!proponentes.length) throw new Error('Inclua ao menos um proponente.');
 
@@ -333,17 +394,20 @@ function cfCriarEqualizacao_(d) {
       });
     }
 
-    // ── proponentes: preserva os IDs de proposta existentes quando o CNPJ ou a ordem coincidir
+    // ── proponentes: preserva os IDs de proposta existentes SOMENTE quando a identidade
+    // (CNPJ ou Nome) coincidir. NUNCA reaproveita por ordem de coluna,
+    // pois substituir Alfa por Gama na mesma coluna faria Gama herdar a decisão de Alfa (C02/A0).
     const propostasUsadas = {};
-    const idsProposta = proponentes.map(function (p, i) {
+    const idsProposta = proponentes.map(function (p) {
       if (ehEdicao && backupPropostas.length) {
         const cnpjP = cfSoDigitos_(p.cnpj);
+        const nomeP = String(p.nome || '').trim().toLowerCase();
         let achada = cnpjP ? backupPropostas.filter(function (pa) {
           return !propostasUsadas[pa.ID] && cfSoDigitos_(pa.CNPJ) === cnpjP;
         })[0] : null;
-        if (!achada) {
+        if (!achada && nomeP) {
           achada = backupPropostas.filter(function (pa) {
-            return !propostasUsadas[pa.ID] && (cfNumero_(pa.ORDEM) || 0) === (i + 1);
+            return !propostasUsadas[pa.ID] && String(pa.RAZAO_SOCIAL_INFORMADA || '').trim().toLowerCase() === nomeP;
           })[0];
         }
         if (achada) {
@@ -388,11 +452,13 @@ function cfCriarEqualizacao_(d) {
       if (item.tipo === 'grupo') return;
 
       proponentes.forEach(function (p, i) {
-        const digitado = cfNumero_((item.precos || [])[i]);
+        const colIdx = p._colIndex !== undefined ? p._colIndex : i;
+        const digitado = cfNumero_((item.precos || [])[colIdx]);
         const cotou = digitado !== null && digitado !== undefined &&
-                      String((item.precos || [])[i]).trim() !== '';
+                      String((item.precos || [])[colIdx]).trim() !== '';
         const qtd = cfNumero_(item.quantidade);
-        const q = (qtd === null || qtd === 0) ? 1 : qtd;
+        // C05: Quantidade zero é zero de fato (não vira 1 silenciosamente).
+        const q = qtd !== null ? qtd : 1;
 
         // O formulário EQU só tem o total da linha; ter o unitário é a
         // melhoria. Quando o comprador transcreve um documento antigo ele
@@ -400,7 +466,7 @@ function cfCriarEqualizacao_(d) {
         // qual dos dois foi informado, para o histórico não misturar preço
         // digitado com preço deduzido.
         const porTotal = d.baseValores === 'total';
-        const unitario = cotou ? (porTotal ? digitado / q : digitado) : null;
+        const unitario = cotou ? (porTotal ? (q !== 0 ? digitado / q : 0) : digitado) : null;
         const total = cotou ? (porTotal ? digitado : digitado * q) : null;
 
         if (cotou) { totais[i] += total; cotouAlgo[i] = true; }
@@ -426,22 +492,36 @@ function cfCriarEqualizacao_(d) {
 
     // Preserva dados de homologação e decisão anterior quando existirem,
     // garantindo que o vencedor aponte para uma proposta válida existente (sem órfãos).
-    const statusFinal = anterior ? (anterior.STATUS || 'em_cotacao') : 'em_cotacao';
+    let statusFinal = anterior ? (anterior.STATUS || 'em_cotacao') : 'em_cotacao';
     let vencedorFinal = anterior ? (anterior.ID_PROPOSTA_VENCEDORA || '') : '';
     let cnpjVencedorFinal = anterior ? (anterior.CNPJ_VENCEDOR || '') : '';
     let valorFinal = anterior ? (anterior.VALOR_FINAL || '') : '';
-    const parecerFinal = anterior ? (anterior.PARECER_FAVORAVEL || '') : '';
-    const ocFinal = anterior ? (anterior.NUMERO_OC || '') : '';
+    let parecerFinal = anterior ? (anterior.PARECER_FAVORAVEL || '') : '';
+    let ocFinal = anterior ? (anterior.NUMERO_OC || '') : '';
 
     // Se o vencedor anterior não estiver diretamente pelo ID nos atuais,
     // localiza pelo CNPJ do vencedor
-    if (vencedorFinal && idsProposta.indexOf(vencedorFinal) < 0 && cnpjVencedorFinal) {
-      const idxPorCnpj = proponentes.findIndex(function (p) { return cfSoDigitos_(p.cnpj) === cnpjVencedorFinal; });
-      if (idxPorCnpj >= 0) {
-        vencedorFinal = idsProposta[idxPorCnpj];
+    if (vencedorFinal && idsProposta.indexOf(vencedorFinal) < 0) {
+      if (cnpjVencedorFinal) {
+        const idxPorCnpj = proponentes.findIndex(function (p) { return cfSoDigitos_(p.cnpj) === cnpjVencedorFinal; });
+        if (idxPorCnpj >= 0) {
+          vencedorFinal = idsProposta[idxPorCnpj];
+        } else {
+          vencedorFinal = '';
+        }
       } else {
         vencedorFinal = '';
       }
+    }
+
+    // Se o fornecedor vencedor foi removido ou substituído por outro fornecedor,
+    // limpa os vínculos de homologação e parecer para evitar que outra empresa
+    // herde indevidamente a decisão (C02 / A0).
+    if (!vencedorFinal) {
+      cnpjVencedorFinal = '';
+      parecerFinal = '';
+      valorFinal = '';
+      if (statusFinal === 'homologada') statusFinal = 'em_cotacao';
     }
 
     // Se há vencedor identificado, atualiza o VALOR_FINAL com o novo valor negociado/declarado
@@ -449,11 +529,15 @@ function cfCriarEqualizacao_(d) {
       const idxV = idsProposta.indexOf(vencedorFinal);
       if (idxV >= 0) {
         const pV = proponentes[idxV];
-        const dec = cfNumero_(pV.totalDeclarado);
         const r02 = cfNumero_(pV.r02);
         const r01 = cfNumero_(pV.r01);
+        const dec = cfNumero_(pV.totalDeclarado);
         const ini = cfNumero_(pV.propostaInicial);
-        const vAtual = dec !== null ? dec : (r02 !== null ? r02 : (r01 !== null ? r01 : (ini !== null ? ini : (cotouAlgo[idxV] ? totais[idxV] : null))));
+        // C08: O valor vigente é a última rodada de negociação preenchida
+        const vAtual = r02 !== null ? r02
+                     : (r01 !== null ? r01
+                     : (dec !== null ? dec
+                     : (ini !== null ? ini : (cotouAlgo[idxV] ? totais[idxV] : null))));
         if (vAtual !== null) valorFinal = vAtual;
       }
     }
@@ -496,16 +580,16 @@ function cfCriarEqualizacao_(d) {
 
       cfInserir_('Propostas', proponentes.map(function (p, i) {
         // A rodada é a última preenchida no histórico de negociação.
-        const rodada = cfNumero_(p.r02) !== null ? 'R02'
-                     : (cfNumero_(p.r01) !== null ? 'R01' : 'inicial');
+        const r02 = cfNumero_(p.r02);
+        const r01 = cfNumero_(p.r01);
+        const rodada = r02 !== null ? 'R02'
+                     : (r01 !== null ? 'R01' : 'inicial');
         const inicial = cfNumero_(p.propostaInicial);
-        // O total que o fornecedor escreveu no documento manda. Ele e a soma
-        // dos itens sao numeros independentes, e a divergencia entre os dois e
-        // erro comum de proposta — a confusao so aparece se ambos existirem.
-        const digitadoDeclarado = cfNumero_(p.totalDeclarado);
-        const declarado = digitadoDeclarado !== null ? digitadoDeclarado
-                        : (cfNumero_(p.r02) !== null ? cfNumero_(p.r02)
-                        : (cfNumero_(p.r01) !== null ? cfNumero_(p.r01) : inicial));
+        const dec = cfNumero_(p.totalDeclarado);
+        // C08: O valor vigente comercial é determinado pela rodada de negociação
+        const declarado = r02 !== null ? r02
+                        : (r01 !== null ? r01
+                        : (dec !== null ? dec : inicial));
 
         return {
           ID: idsProposta[i],
@@ -523,9 +607,9 @@ function cfCriarEqualizacao_(d) {
           PRAZO_EXECUCAO_DIAS: (function () {
             let pr = cfNumero_(p.prazoExecucao);
             if (pr === null && p.dataPrevInicio && p.dataPrevTermino) {
-              const d1 = new Date(p.dataPrevInicio + 'T00:00:00');
-              const d2 = new Date(p.dataPrevTermino + 'T00:00:00');
-              if (!isNaN(d1.getTime()) && !isNaN(d2.getTime()) && d2 >= d1) {
+              const d1 = cfData_(p.dataPrevInicio);
+              const d2 = cfData_(p.dataPrevTermino);
+              if (d1 && d2 && d2 >= d1) {
                 pr = Math.max(1, Math.round((d2.getTime() - d1.getTime()) / 86400000));
               }
             }
@@ -677,6 +761,36 @@ function cfHomologar_(idEq, idProposta, parecer) {
       const d = cfNumero_(p.VALOR_TOTAL_DECLARADO);
       return d !== null ? d : cfNumero_(p.VALOR_TOTAL_CALCULADO);
     };
+
+    const valEscolhido = valorDe(escolhida);
+    if (valEscolhido === null || valEscolhido <= 0) {
+      throw new Error('A proposta escolhida não possui valor válido para homologação (valor deve ser maior que zero).');
+    }
+
+    // C07: Validade vencida exige justificativa ou confirmação de revalidação no parecer
+    if (escolhida.VALIDADE_ATE) {
+      const dtValidade = cfData_(escolhida.VALIDADE_ATE);
+      const hojeZero = new Date();
+      hojeZero.setHours(0, 0, 0, 0);
+      if (dtValidade && dtValidade < hojeZero && !String(parecer || '').trim()) {
+        throw new Error('A proposta selecionada está com validade vencida (' + cfDataTexto_(dtValidade) + '). Justifique a escolha ou informe a revalidação no parecer.');
+      }
+    }
+
+    // C03: Cesta incompleta não pode ser homologada sem parecer justificando adjudicação parcial
+    const precosEq = cfLerTudo_('Precos').filter(function (pr) { return String(pr.ID_EQUALIZACAO) === String(idEq); });
+    const eapEq = cfLerTudo_('EAP').filter(function (eap) { return String(eap.ID_EQUALIZACAO) === String(idEq) && eap.TIPO !== 'grupo'; });
+    const totalItensEq = eapEq.length;
+    if (totalItensEq > 0) {
+      const itensEscolhida = precosEq.filter(function (pr) {
+        return String(pr.ID_PROPOSTA) === String(idProposta) &&
+          (pr.STATUS_PRECO === 'cotado' || pr.STATUS_PRECO === 'incluso_em_outro_item') &&
+          (cfNumero_(pr.PRECO_UNITARIO) !== null || cfNumero_(pr.VALOR_TOTAL) !== null || pr.STATUS_PRECO === 'incluso_em_outro_item');
+      }).length;
+      if (itensEscolhida < totalItensEq && !String(parecer || '').trim()) {
+        throw new Error('A proposta escolhida possui cobertura parcial (' + itensEscolhida + ' de ' + totalItensEq + ' itens). Escreva a justificativa para adjudicação parcial no parecer.');
+      }
+    }
 
     // Escolher a mais cara é decisão legítima — prazo, escopo, histórico do
     // fornecedor. Mas precisa estar escrita: é a defesa de quem comprou.

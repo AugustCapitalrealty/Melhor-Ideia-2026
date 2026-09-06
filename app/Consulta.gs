@@ -135,14 +135,12 @@ function cfAgruparPorItem_(achados, termo) {
     g.variacao = g.minimo > 0 ? ((g.maximo - g.minimo) / g.minimo) * 100 : null;
   });
 
-  // Série: o MESMO item em equalizações diferentes. É a única comparação
-  // ao longo do tempo que se sustenta.
+  // Série: o MESMO item em equalizações diferentes, com mesma unidade de medida.
+  // Comparar preço por unidade com preço por caixa sem conversão envenena o histórico (C11).
   const porChave = {};
   grupos.forEach(function (g) {
-    // cfChaveItem_ e não cfNormalizar_: o mesmo produto vem escrito de dois
-    // jeitos no acervo ("MELITA 500G" e "MELITTA 500 GR") e a série ficava
-    // partida em duas, cada uma mostrando meia história.
-    const k = cfChaveItem_(g.descricao);
+    const un = (g.precos[0] && g.precos[0].unidade) ? String(g.precos[0].unidade).trim().toLowerCase() : '';
+    const k = cfChaveItem_(g.descricao) + (un ? ' § ' + un : '');
     (porChave[k] = porChave[k] || []).push(g);
   });
   const series = Object.keys(porChave)

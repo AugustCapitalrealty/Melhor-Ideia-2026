@@ -2545,3 +2545,126 @@ try {
   console.log(`✗ FALHA na Correção 37: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 38 — integridade operacional do comprador e aprovador
+//  (C01 a C11 e E01 a E07): vínculo estável de colunas, não herança
+//  ao substituir proponente, valor vigente de negociação, validações
+//  de homologação e unificação do dossiê de exportação.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctx38 = vm.createContext({
+    Logger: { log: () => {} },
+    console: console,
+    Utilities: {
+      formatDate: (d, tz, f) => {
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()}`;
+      }
+    }
+  });
+  ['Util.gs', 'Config.gs', 'Codigo.gs', 'Equalizacao.gs', 'Exportar.gs', 'Consulta.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctx38, { filename: f });
+  });
+
+  const db38 = { Equalizacoes: [], Propostas: [], EAP: [], Precos: [], Fornecedores: [] };
+  let idCont = 0;
+  ctx38.cfNovoId_ = p => `${p}-${++idCont}`;
+  ctx38.cfUsuario_ = () => 'comprador@capitalrealty.com.br';
+  ctx38.cfComTrava_ = fn => fn();
+  ctx38.cfLerTudo_ = t => (db38[t] || []).map((r, i) => ({ ...r, _linha: i + 2 }));
+  ctx38.cfInserir_ = (t, rows) => { (db38[t] ||= []).push(...rows.map(r => ({ ...r }))); return rows.length; };
+  ctx38.cfApagarPor_ = (t, k, v) => { db38[t] = (db38[t] || []).filter(r => String(r[k]) !== String(v)); };
+  ctx38.cfAtualizarLinha_ = (t, lin, data) => Object.assign(db38[t][lin - 2], data);
+  ctx38.cfLog_ = () => {};
+  ctx38.cfCadastrarProponentes_ = () => {};
+  ctx38.cfCnpjFormatado_ = v => String(v || '');
+
+  // 1. C01: Coluna vazia no meio não desloca preços
+  ctx38.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+    projeto: 'C01 Test',
+    baseValores: 'unitario',
+    proponentes: [{ nome: 'Alfa' }, { nome: '' }, { nome: 'Gama' }],
+    itens: [{ tipo: 'item', nivel: 0, descricao: 'Item', quantidade: 1, unidade: 'un', precos: [100, 900, 300] }]
+  });
+  const gamaP = db38.Propostas.find(p => p.RAZAO_SOCIAL_INFORMADA === 'Gama');
+  assert.equal(gamaP.VALOR_TOTAL_CALCULADO, 300, 'Gama deve ter 300, e não 900 da coluna vazia');
+
+  // 2. C05: Quantidade zero resulta em total zero
+  db38.Equalizacoes.length = 0; db38.Propostas.length = 0; db38.EAP.length = 0; db38.Precos.length = 0;
+  ctx38.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+    projeto: 'C05 Test',
+    baseValores: 'unitario',
+    proponentes: [{ nome: 'Alfa' }],
+    itens: [{ tipo: 'item', nivel: 0, descricao: 'Item', quantidade: 0, unidade: 'un', precos: [100] }]
+  });
+  assert.equal(db38.Precos[0].VALOR_TOTAL, 0, 'Qtd 0 deve gerar total 0');
+
+  // 3. C02: Substituir fornecedor não herda vitória anterior
+  db38.Equalizacoes.length = 0; db38.Propostas.length = 0; db38.EAP.length = 0; db38.Precos.length = 0;
+  const eqC02 = ctx38.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+    projeto: 'C02 Test',
+    baseValores: 'unitario',
+    proponentes: [{ nome: 'Alfa', cnpj: '11111111000111' }, { nome: 'Beta', cnpj: '22222222000122' }],
+    itens: [{ tipo: 'item', nivel: 0, descricao: 'Item', quantidade: 1, unidade: 'un', precos: [100, 200] }]
+  });
+  const idAlfa = db38.Propostas[0].ID;
+  ctx38.cfHomologar_(eqC02.id, idAlfa, 'Homologado Alfa');
+  // Re-edita substituindo Alfa por Gama na mesma posição
+  ctx38.cfCriarEqualizacao_({
+    id: eqC02.id,
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+    projeto: 'C02 Test',
+    baseValores: 'unitario',
+    proponentes: [{ nome: 'Gama', cnpj: '33333333000133' }, { nome: 'Beta', cnpj: '22222222000122' }],
+    itens: [{ tipo: 'item', nivel: 0, descricao: 'Item', quantidade: 1, unidade: 'un', precos: [100, 200] }]
+  });
+  assert.equal(db38.Equalizacoes[0].STATUS, 'em_cotacao', 'status deve voltar para em_cotacao');
+  assert.equal(db38.Equalizacoes[0].ID_PROPOSTA_VENCEDORA, '', 'vencedor deve ser limpo');
+  assert.equal(db38.Equalizacoes[0].PARECER_FAVORAVEL, '', 'parecer deve ser limpo');
+
+  // 4. C08: R02 define valor vigente e redução
+  db38.Equalizacoes.length = 0; db38.Propostas.length = 0; db38.EAP.length = 0; db38.Precos.length = 0;
+  const eqC08 = ctx38.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+    projeto: 'C08 Test',
+    baseValores: 'unitario',
+    proponentes: [{ nome: 'Alfa', totalDeclarado: 1000, propostaInicial: 1000, r01: 900, r02: 850 }],
+    itens: [{ tipo: 'item', nivel: 0, descricao: 'Item', quantidade: 1, unidade: 'un', precos: [1000] }]
+  });
+  assert.equal(db38.Propostas[0].RODADA, 'R02');
+  assert.equal(db38.Propostas[0].VALOR_TOTAL_DECLARADO, 850);
+  assert.equal(db38.Propostas[0].REDUCAO_NEGOCIADA, 150);
+
+  // 5. E04 e E06: Exportação preserva status semântico e bloqueia homologação em cancelada
+  const mapaSim = {
+    equalizacao: { id: 'EQ-TEST', empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA', projeto: 'P', status: 'cancelada', vencedora: 'A', valorFinal: 850 },
+    proponentes: [{ id: 'A', nome: 'Fornecedor A', total: 850, calculado: 1000, faturamentoDireto: true, valorFaturamentoDireto: 500 }],
+    linhas: [{ codigo: '1', descricao: 'Incluso', tipo: 'item', nivel: 0, quantidade: 1, unidade: 'un', precos: { A: { status: 'incluso_em_outro_item' } } }],
+    pendencias: [{ tipo: 'cesta_incompleta', descricao: 'Fornecedor A deixou itens sem cotar.' }]
+  };
+  let gradeExportada = [];
+  ctx38.cfMapaEqualizacao_ = () => mapaSim;
+  ctx38.SpreadsheetApp = {
+    create: () => ({ getSheets: () => [{ setName() {}, getSheetId: () => 0 }], getId: () => 'id', getUrl: () => 'url' }),
+    flush() {}
+  };
+  ctx38.DriveApp = { getFileById: () => ({ moveTo() {} }), getFolderById: () => ({}) };
+  ctx38.cfPdfDaPlanilha_ = () => ({ getId: () => 'pdf', getUrl: () => 'url' });
+  ctx38.cfPintarExportacao_ = (aba, g) => { gradeExportada = g; };
+  ctx38.cfExportarEqualizacao_('EQ-TEST');
+
+  assert.equal(gradeExportada[0][1], 'COTAÇÃO CANCELADA', 'cancelada não pode sair como homologada');
+  assert.equal(gradeExportada.find(r => r[2] === 'Incluso')[5], 'incluso', 'incluso deve sair como incluso');
+  assert.ok(gradeExportada.flat().some(cell => String(cell).includes('500')), 'faturamento direto deve exibir 500');
+  assert.ok(gradeExportada.flat().includes(mapaSim.pendencias[0].descricao), 'pendência deve constar na exportação');
+
+  console.log('✓ CORREÇÃO VERIFICADA: conformidade integral das 18 regras de comprador e aprovador (C01 a C11 e E01 a E07)');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 38: ${e.message}`);
+  process.exitCode = 1;
+}

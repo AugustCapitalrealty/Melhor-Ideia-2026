@@ -65,7 +65,7 @@ function cfExportarEqualizacao_(idEq) {
   //  cadastro é obrigar a busca visual num documento que já sabe a
   //  resposta.
   cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas,
-                    largura, COL_ROTULO, COL_VALOR);
+                    largura, COL_ROTULO, COL_VALOR, m.pendencias);
 
   // ── título
   linha(vazia());
@@ -146,6 +146,9 @@ function cfExportarEqualizacao_(idEq) {
       props.forEach(function (p, i) {
         const c = item.precos[p.id];
         if (!c) return;
+        if (c.status === 'incluso_em_outro_item') { li[colDe(i) - 1] = 'incluso'; return; }
+        if (c.status === 'excluido') { li[colDe(i) - 1] = 'excluído'; return; }
+        if (c.status === 'nao_aplicavel') { li[colDe(i) - 1] = 'não aplicável'; return; }
         if (c.status !== 'cotado' || c.valor === null) { li[colDe(i) - 1] = 'não cotou'; return; }
         li[colDe(i) - 1] = c.valor;
         li[colDe(i)] = c.total === null ? '' : c.total;
@@ -172,58 +175,56 @@ function cfExportarEqualizacao_(idEq) {
   faixas.total.push(lTotal);
   props.forEach(function (p, i) { moeda.push({ l: lTotal, c: colDe(i), n: 2 }); });
 
-  let menorTotIdx = null;
+  const temDeclarado = props.some(function (p) { return p.total !== null; });
+  let lDecl = null;
+  if (temDeclarado) {
+    li = vazia();
+    li[COL_ROTULO - 1] = 'VALOR TOTAL declarado no documento';
+    props.forEach(function (p, i) { li[colDe(i)] = p.total === null ? '' : p.total; });
+    lDecl = linha(li);
+    merges.push({ l: lDecl, c: COL_ROTULO, nl: 1, nc: 4 });
+    faixas.total.push(lDecl);
+    props.forEach(function (p, i) { moeda.push({ l: lDecl, c: colDe(i), n: 2 }); });
+  }
+
+  // Base comercial unificada com o Scorecard para ranking e variação sobre o menor (A3 / E01)
+  const valorComercialDe = function (p) {
+    if (!p) return null;
+    return p.total !== null ? p.total : p.calculado;
+  };
+
+  let menorComercialIdx = null;
   props.forEach(function (p, i) {
-    if (p.calculado !== null && p.calculado > 0) {
-      if (menorTotIdx === null || p.calculado < props[menorTotIdx].calculado) {
-        menorTotIdx = i;
+    const vc = valorComercialDe(p);
+    if (vc !== null && vc > 0) {
+      if (menorComercialIdx === null || vc < valorComercialDe(props[menorComercialIdx])) {
+        menorComercialIdx = i;
       }
     }
   });
-  if (menorTotIdx !== null) {
-    faixas.melhores.push({ l: lTotal, c: colDe(menorTotIdx), nc: 2 });
-  }
 
-  // Distância até o menor. O total sozinho diz quanto custa; o spread diz
-  // se a disputa foi apertada ou se um fornecedor está fora de mercado —
-  // e é isso que decide se vale renegociar ou recotar.
-  if (menorTotIdx !== null) {
-    const base = props[menorTotIdx].calculado;
+  if (menorComercialIdx !== null) {
+    const base = valorComercialDe(props[menorComercialIdx]);
     li = vazia();
     li[COL_ROTULO - 1] = 'Variação sobre o menor';
     props.forEach(function (p, i) {
-      if (p.calculado === null || p.calculado <= 0) { li[colDe(i)] = '—'; return; }
-      li[colDe(i)] = (p.calculado - base) / base;
+      const vc = valorComercialDe(p);
+      if (vc === null || vc <= 0) { li[colDe(i)] = '—'; return; }
+      li[colDe(i)] = (vc - base) / base;
     });
     const lSpread = linha(li);
     merges.push({ l: lSpread, c: COL_ROTULO, nl: 1, nc: 4 });
     faixas.total.push(lSpread);
     props.forEach(function (p, i) {
-      if (p.calculado === null || p.calculado <= 0) return;
+      const vc = valorComercialDe(p);
+      if (vc === null || vc <= 0) return;
       faixas.percentual.push({ l: lSpread, c: colDe(i) });
     });
-    faixas.melhores.push({ l: lSpread, c: colDe(menorTotIdx), nc: 2 });
-  }
-
-  if (props.some(function (p) { return p.total !== null; })) {
-    li = vazia();
-    li[COL_ROTULO - 1] = 'VALOR TOTAL declarado no documento';
-    props.forEach(function (p, i) { li[colDe(i)] = p.total === null ? '' : p.total; });
-    const lDecl = linha(li);
-    merges.push({ l: lDecl, c: COL_ROTULO, nl: 1, nc: 4 });
-    faixas.total.push(lDecl);
-    props.forEach(function (p, i) { moeda.push({ l: lDecl, c: colDe(i), n: 2 }); });
-
-    let menorDeclIdx = null;
-    props.forEach(function (p, i) {
-      if (p.total !== null && p.total > 0) {
-        if (menorDeclIdx === null || p.total < props[menorDeclIdx].total) {
-          menorDeclIdx = i;
-        }
-      }
-    });
-    if (menorDeclIdx !== null) {
-      faixas.melhores.push({ l: lDecl, c: colDe(menorDeclIdx), nc: 2 });
+    faixas.melhores.push({ l: lSpread, c: colDe(menorComercialIdx), nc: 2 });
+    if (temDeclarado && lDecl) {
+      faixas.melhores.push({ l: lDecl, c: colDe(menorComercialIdx), nc: 2 });
+    } else {
+      faixas.melhores.push({ l: lTotal, c: colDe(menorComercialIdx), nc: 2 });
     }
   }
 
@@ -239,16 +240,20 @@ function cfExportarEqualizacao_(idEq) {
     ['Prazo de execução:', function (p) {
       var pe = p.prazoExecucao;
       if ((pe === null || pe === undefined || pe === '') && p.dataPrevInicio && p.dataPrevTermino) {
-        var dIni = new Date(p.dataPrevInicio + 'T00:00:00');
-        var dFim = new Date(p.dataPrevTermino + 'T00:00:00');
-        if (!isNaN(dIni.getTime()) && !isNaN(dFim.getTime()) && dFim >= dIni) {
+        var dIni = cfData_(p.dataPrevInicio);
+        var dFim = cfData_(p.dataPrevTermino);
+        if (dIni && dFim && dFim >= dIni) {
           pe = Math.max(1, Math.round((dFim.getTime() - dIni.getTime()) / 86400000));
         }
       }
       return (pe === null || pe === undefined || pe === '') ? '' : pe + (pe == 1 ? ' dia' : ' dias');
     }, false],
     ['Validade proposta:', function (p) { return p.validadeAte || ''; }, false],
-    ['Faturamento Direto:', function (p) { return p.faturamentoDireto ? 'sim' : 'não'; }, false],
+    ['Faturamento Direto:', function (p) {
+      if (!p.faturamentoDireto) return 'não';
+      const v = cfNumero_(p.valorFaturamentoDireto);
+      return v ? 'sim (' + cfMoedaTexto_(v) + ')' : 'sim';
+    }, false],
     ['Nome Centro de Custo:', function (p) { return p.centroCusto || ''; }, false],
     ['Data prevista para início:', function (p) { return p.dataPrevInicio || ''; }, false],
     ['Data prevista para término:', function (p) { return p.dataPrevTermino || ''; }, false]
@@ -665,11 +670,11 @@ function cfInserirLogoDemercado_(aba, col, lin, larguraCol, alturaLin) {
  * homologou seria o documento decidindo no lugar de quem assina.
  */
 function cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas,
-                           largura, COL_ROTULO, COL_VALOR) {
+                           largura, COL_ROTULO, COL_VALOR, pendencias) {
   let homologado = false;
   let escolhido = null;
 
-  if (eq.vencedora) {
+  if (eq.status === 'homologada' && eq.vencedora) {
     escolhido = props.filter(function (p) { return p.id === eq.vencedora; })[0] || null;
     homologado = !!escolhido;
   }
@@ -697,7 +702,8 @@ function cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas
   const largo = largura - COL_VALOR + 1;   // de C até o fim da tabela
 
   const titulo = vazia();
-  titulo[COL_ROTULO - 1] = homologado ? 'PROPOSTA HOMOLOGADA' : 'RESUMO PARA APROVAÇÃO';
+  titulo[COL_ROTULO - 1] = eq.status === 'cancelada' ? 'COTAÇÃO CANCELADA'
+    : (homologado ? 'PROPOSTA HOMOLOGADA' : 'INDICAÇÃO DE SUPRIMENTOS — AGUARDANDO APROVAÇÃO');
   const lTit = linha(titulo);
   merges.push({ l: lTit, c: COL_ROTULO, nl: 1, nc: largura - 1 });
   faixas.titulo.push(lTit);
@@ -745,7 +751,7 @@ function cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas
   escreve(homologado ? 'Proposta homologada:' : 'Menor proposta:',
     escolhido.nome,
     'CNPJ ' + (cfCnpjFormatado_(escolhido.cnpj) || '—') +
-    (homologado ? '' : ' · recomendação por menor valor, ainda sem homologação'),
+    (homologado ? '' : ' · indicação por menor valor, aguardando aprovação formal'),
     false, true);
 
   let detalheValor = 'soma dos itens cotados';
@@ -793,6 +799,12 @@ function cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas
       : '—');
   escreve('Início previsto:', prazo,
     escolhido.condicoes ? 'Pagamento: ' + escolhido.condicoes : '', false, false);
+
+  if (pendencias && pendencias.length) {
+    pendencias.forEach(function (pend) {
+      escreve('Ressalva / Pendência:', pend.descricao || pend.tipo, '', false, false);
+    });
+  }
 
   linha(vazia());
 }

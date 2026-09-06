@@ -3297,6 +3297,7 @@ function salvarEqualizacao() {
       baseValores: baseValores(),
       detalhamento: document.getElementById('nDetalhamento').value,
       premissas: document.getElementById('nPremissas').value,
+      notasCr: document.getElementById('nNotasCr') ? document.getElementById('nNotasCr').value : '',
       proponentes: proponentes.map(function (p) {
         var c = Object.assign({}, p);
         if (!c.faturamentoDireto) c.valorFaturamentoDireto = '';

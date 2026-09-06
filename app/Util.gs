@@ -94,6 +94,16 @@ function cfFormatarCnpj_(valor) {
   return d ? 'CNPJ incompleto' : '';
 }
 
+/** Formata valor monetário em texto no padrão R$ #.##0,00 */
+function cfMoedaTexto_(valor) {
+  const n = cfNumero_(valor);
+  if (n === null) return '';
+  const negativo = n < 0;
+  const partes = Math.abs(n).toFixed(2).split('.');
+  const inteiro = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (negativo ? '-R$ ' : 'R$ ') + inteiro + ',' + partes[1];
+}
+
 // ─────────────────────────────────────────────────────────────
 //  Números e datas
 // ─────────────────────────────────────────────────────────────
