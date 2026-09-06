@@ -293,6 +293,8 @@ function cfCriarEqualizacao_(d) {
       DATA_EQUALIZACAO: cfData_(d.data) || agora,
       STATUS: 'em_cotacao',
       PREMISSAS: d.premissas || '',
+      DETALHAMENTO_APROVACAO: d.detalhamento || '',
+      NOTAS_CR: d.notasCr || '',
       ORIGEM: 'app',
       CRIADO_POR: usuario,
       CRIADO_EM: agora,
@@ -300,17 +302,40 @@ function cfCriarEqualizacao_(d) {
     }]);
 
     cfInserir_('Propostas', proponentes.map(function (p, i) {
+      // A rodada é a última preenchida no histórico de negociação.
+      const rodada = cfNumero_(p.r02) !== null ? 'R02'
+                   : (cfNumero_(p.r01) !== null ? 'R01' : 'inicial');
+      const inicial = cfNumero_(p.propostaInicial);
+      const declarado = cfNumero_(p.r02) !== null ? cfNumero_(p.r02)
+                      : (cfNumero_(p.r01) !== null ? cfNumero_(p.r01) : inicial);
+
       return {
         ID: idsProposta[i],
         ID_EQUALIZACAO: idEq,
         CNPJ: cfSoDigitos_(p.cnpj),
         RAZAO_SOCIAL_INFORMADA: String(p.nome || '').trim(),
         ORDEM: i + 1,
-        RODADA: 'inicial',
+        RODADA: rodada,
         NUMERO_PROPOSTA: p.numero || '',
+        REVISAO_FORNECEDOR: p.revisao || '',
         DATA_PROPOSTA: cfData_(p.data) || '',
+        VALIDADE_ATE: cfData_(p.validadeAte) || '',
         CONDICOES_PAGAMENTO: p.condicoes || '',
+        LEAD_TIME_DIAS: cfNumero_(p.leadTime),
+        PRAZO_EXECUCAO_DIAS: cfNumero_(p.prazoExecucao),
+        FATURAMENTO_DIRETO: p.faturamentoDireto === true,
+        VALOR_FATURAMENTO_DIRETO: cfNumero_(p.valorFaturamentoDireto),
+        DATA_PREV_INICIO: cfData_(p.dataPrevInicio) || '',
+        DATA_PREV_TERMINO: cfData_(p.dataPrevTermino) || '',
+        VALOR_TOTAL_DECLARADO: declarado === null ? '' : declarado,
         VALOR_TOTAL_CALCULADO: totais[i],
+        OBSERVACAO: p.centroCusto || '',
+        VALOR_PROPOSTA_INICIAL: inicial === null ? '' : inicial,
+        // Derivada, nunca digitada: na planilha EQU a fórmula de redução
+        // copiava o total quando a inicial estava vazia e reportava 100%
+        // de economia. Aqui, sem inicial não há redução.
+        REDUCAO_NEGOCIADA: (inicial !== null && declarado !== null && inicial > declarado)
+          ? inicial - declarado : '',
         ORIGEM: 'app'
       };
     }));

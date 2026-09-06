@@ -256,7 +256,13 @@ const CF_SCHEMA = [
     { campo: 'ID_FONTE',            tipo: 'texto', largura: 150, nota: 'ID do arquivo-fonte no Drive' },
     { campo: 'REVISAO_DOCUMENTO',   tipo: 'texto', largura: 130, nota: 'Revisão do documento do fornecedor' },
     { campo: 'REVISAO_IMPORTACAO',  tipo: 'inteiro', largura: 100, nota: 'Contador de reimportação' },
-    { campo: 'CNPJ_EMPRESA',        tipo: 'texto', largura: 150, nota: 'CNPJ da empresa contratante da proposta' }
+    { campo: 'CNPJ_EMPRESA',        tipo: 'texto', largura: 150, nota: 'CNPJ da empresa contratante da proposta' },
+    // O rodapé "Histórico da Negociação" da planilha EQU. Guardados na
+    // própria proposta porque descrevem a MESMA proposta ao longo da
+    // negociação — criar uma linha por rodada sem preço de item encheria o
+    // mapa de colunas vazias.
+    { campo: 'VALOR_PROPOSTA_INICIAL', tipo: 'moeda', largura: 150, nota: 'Antes da negociação' },
+    { campo: 'REDUCAO_NEGOCIADA',      tipo: 'moeda', largura: 150, nota: 'Inicial menos o valor final. Derivado, não digitado.' }
   ]},
 
   { nome: 'EAP', nota: 'A árvore. CODIGO não é gravado: é derivado da posição.', colunas: [

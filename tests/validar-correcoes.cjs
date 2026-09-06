@@ -749,3 +749,77 @@ try {
   console.log(`✗ FALHA na Correção 18: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 19 — o rodapé da planilha EQU chega à gravação
+//
+//  Dados da proposta e histórico de negociação existiam no schema e a tela
+//  não capturava nada. Sem eles a equalização gravada é mais pobre que a
+//  planilha que ela substitui — o que derruba o argumento inteiro.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxR = vm.createContext({ Logger: { log: () => {} }, console: console });
+  const gravadoR = {};
+  let seqR = 0;
+
+  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxR, { filename: f });
+  });
+  ctxR.cfLerTudo_ = () => [];
+  ctxR.cfInserir_ = (aba, linhas) => { gravadoR[aba] = (gravadoR[aba] || []).concat(linhas); };
+  ctxR.cfComTrava_ = (fn) => fn();
+  ctxR.cfUsuario_ = () => 'guilherme.marques@capitalrealty.com.br';
+  ctxR.cfLog_ = () => {};
+  ctxR.cfNovoId_ = (p) => p + '-' + (++seqR);
+
+  ctxR.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO ESTEIO',
+    detalhamento: 'Fornecimento de material de consumo',
+    premissas: 'Entrega única',
+    notasCr: 'Conferir NF',
+    proponentes: [{
+      nome: 'Contabilista', cnpj: '11222333000181',
+      numero: '1/062959', data: '2026-04-28', condicoes: 'Boleto para 28 dias',
+      leadTime: '5', prazoExecucao: '0', centroCusto: 'Material de consumo',
+      dataPrevInicio: '2026-05-04', dataPrevTermino: '2026-05-04',
+      faturamentoDireto: true, valorFaturamentoDireto: '100,00',
+      propostaInicial: '2.000,00', r01: '1.687,47'
+    }],
+    itens: [{ tipo: 'item', nivel: 0, descricao: 'Soda', quantidade: '1', unidade: 'kg', precos: ['47,20'] }]
+  });
+
+  const eq = gravadoR.Equalizacoes[0];
+  assert.equal(eq.DETALHAMENTO_APROVACAO, 'Fornecimento de material de consumo');
+  assert.equal(eq.PREMISSAS, 'Entrega única');
+  assert.equal(eq.NOTAS_CR, 'Conferir NF');
+
+  const pr = gravadoR.Propostas[0];
+  assert.equal(pr.NUMERO_PROPOSTA, '1/062959');
+  assert.equal(pr.CONDICOES_PAGAMENTO, 'Boleto para 28 dias');
+  assert.equal(pr.LEAD_TIME_DIAS, 5);
+  assert.equal(pr.OBSERVACAO, 'Material de consumo');
+  assert.equal(pr.FATURAMENTO_DIRETO, true);
+  assert.equal(pr.VALOR_FATURAMENTO_DIRETO, 100);
+
+  // A rodada é a última preenchida, e o declarado acompanha.
+  assert.equal(pr.RODADA, 'R01', 'com R01 preenchida a rodada não é mais "inicial"');
+  assert.equal(pr.VALOR_TOTAL_DECLARADO, 1687.47);
+  assert.equal(pr.VALOR_PROPOSTA_INICIAL, 2000);
+  assert.equal(Math.round(pr.REDUCAO_NEGOCIADA * 100) / 100, 312.53);
+
+  // Sem proposta inicial não existe redução — foi o defeito da planilha,
+  // que copiava o total e reportava 100% de economia.
+  gravadoR.Propostas = [];
+  ctxR.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO ESTEIO',
+    proponentes: [{ nome: 'X', r01: '900,00' }],
+    itens: [{ tipo: 'item', nivel: 0, descricao: 'Y', precos: ['10'] }]
+  });
+  assert.equal(gravadoR.Propostas[0].REDUCAO_NEGOCIADA, '',
+    'sem proposta inicial a redução tem que ficar vazia, não igual ao total');
+
+  console.log('✓ CORREÇÃO VERIFICADA: dados da proposta e negociação são gravados');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 19: ${e.message}`);
+  process.exitCode = 1;
+}

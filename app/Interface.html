@@ -280,6 +280,34 @@ table.mapa tfoot .desc{background:var(--superficie)}
 }
 .selo em{font-style:normal;font-weight:700;opacity:.75;margin-left:4px}
 .selo-receita{background:#E4F2EA;color:var(--ok)}
+
+/* Detalhes da proposta: recolhido por padrão, aberto quando se transcreve. */
+.detalhes-prop{
+  margin:-4px 0 16px;border:1px solid rgba(21,30,73,.1);border-radius:10px;
+  background:rgba(255,255,255,.5);
+}
+.detalhes-prop summary{
+  padding:9px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--royal);
+  list-style:none;
+}
+.detalhes-prop summary::-webkit-details-marker{display:none}
+.detalhes-prop summary::before{content:'▸ ';font-size:11px}
+.detalhes-prop[open] summary::before{content:'▾ '}
+.detalhes-prop summary:hover{color:var(--acao)}
+.detalhes-prop > .campos,.detalhes-prop .negociacao{padding:4px 14px 14px}
+.negociacao{border-top:1px solid rgba(21,30,73,.08);margin-top:6px;padding-top:12px}
+.negociacao h3{
+  margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--suave);
+}
+.reducao{margin-top:10px;font-size:13.5px}
+.check{display:flex;align-items:center;gap:8px;font-weight:400;font-size:14.5px;color:var(--texto);min-height:43px}
+.check input{width:auto}
+.campo textarea{
+  width:100%;padding:10px 12px;font-size:14.5px;font-family:inherit;resize:vertical;
+  border:1.5px solid rgba(21,30,73,.14);border-radius:9px;background:#fff;color:var(--texto);
+}
+.campo textarea:focus{outline:none;border-color:var(--acao);box-shadow:0 0 0 3px rgba(6,92,169,.14)}
 .bt{
   padding:9px 16px;font-size:14px;font-weight:600;font-family:inherit;
   border:1px solid rgba(21,30,73,.16);border-radius:9px;
@@ -430,6 +458,29 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
         <button class="bt" onclick="addItem('grupo')">+ Grupo</button>
       </div>
       <div class="totais" id="totais"></div>
+    </div>
+
+    <div class="bloco vidro">
+      <h2>Aprovação</h2>
+      <p class="dica">Os campos que a planilha traz no rodapé, depois do comparativo.</p>
+      <div class="campo">
+        <label for="nDetalhamento">Detalhar o serviço a ser aprovado</label>
+        <textarea id="nDetalhamento" rows="3"
+          placeholder="O que exatamente está sendo contratado, e em que condições."
+          oninput="salvarRascunho()"></textarea>
+      </div>
+      <div class="campos" style="margin-top:14px">
+        <div class="campo">
+          <label for="nPremissas">Premissas da equalização</label>
+          <textarea id="nPremissas" rows="2"
+            placeholder="O que foi assumido para que as propostas fiquem comparáveis."
+            oninput="salvarRascunho()"></textarea>
+        </div>
+        <div class="campo">
+          <label for="nNotasCr">Notas Capital Realty</label>
+          <textarea id="nNotasCr" rows="2" oninput="salvarRascunho()"></textarea>
+        </div>
+      </div>
     </div>
 
     <div class="acoes">
@@ -834,8 +885,81 @@ function desenharProponentes() {
       '</div>' +
       '<button class="bt some" onclick="removerProponente(' + i + ')" ' +
       (proponentes.length < 2 ? 'disabled' : '') + '>remover</button>' +
-      '</div>';
+      '</div>' + detalhesProposta(p, i);
   }).join('');
+}
+
+/** Um campo do bloco de detalhes, ligado a proponentes[i][chave]. */
+function campoProp(i, chave, rotulo, tipo, dica) {
+  var v = proponentes[i][chave];
+  return '<div class="campo"><label for="' + chave + i + '">' + esc(rotulo) + '</label>' +
+    '<input id="' + chave + i + '" type="' + (tipo || 'text') + '"' +
+    ' value="' + esc(v === undefined || v === null ? '' : v) + '"' +
+    (dica ? ' placeholder="' + esc(dica) + '"' : '') +
+    ' oninput="proponentes[' + i + '].' + chave + '=this.value;calcular();salvarRascunho()"></div>';
+}
+
+/**
+ * O rodapé da planilha EQU, por proponente.
+ *
+ * Fica recolhido porque não se preenche no mesmo momento: primeiro se
+ * monta a grade de preços, depois se transcreve o resto do documento.
+ * Abrir tudo de uma vez transformaria a tela num formulário de 30 campos.
+ */
+function detalhesProposta(p, i) {
+  return '<details class="detalhes-prop">' +
+    '<summary>Dados da proposta ' + (i + 1) +
+      (p.numero ? ' · nº ' + esc(p.numero) : '') + '</summary>' +
+    '<div class="campos">' +
+      campoProp(i, 'numero', 'Número da proposta', 'text', '1/062959') +
+      campoProp(i, 'revisao', 'Revisão do fornecedor', 'text', 'REV02') +
+      campoProp(i, 'data', 'Data da proposta', 'date') +
+      campoProp(i, 'validadeAte', 'Validade até', 'date') +
+      campoProp(i, 'condicoes', 'Condições de pagamento', 'text', 'Boleto para 28 dias') +
+      campoProp(i, 'leadTime', 'Lead time (dias)', 'number') +
+      campoProp(i, 'prazoExecucao', 'Prazo de execução (dias)', 'number') +
+      campoProp(i, 'dataPrevInicio', 'Data prevista para início', 'date') +
+      campoProp(i, 'dataPrevTermino', 'Data prevista para término', 'date') +
+      campoProp(i, 'centroCusto', 'Nome do centro de custo', 'text', 'Material de consumo') +
+      '<div class="campo"><label>Faturamento direto</label>' +
+        '<label class="check"><input type="checkbox"' +
+        (p.faturamentoDireto ? ' checked' : '') +
+        ' onchange="proponentes[' + i + '].faturamentoDireto=this.checked;salvarRascunho()">' +
+        ' sim</label></div>' +
+      campoProp(i, 'valorFaturamentoDireto', 'Valor do faturamento direto', 'text', 'R$') +
+    '</div>' +
+
+    '<div class="negociacao">' +
+      '<h3>Histórico da negociação</h3>' +
+      '<div class="campos">' +
+        campoProp(i, 'propostaInicial', 'Proposta inicial', 'text', 'R$') +
+        campoProp(i, 'r01', 'Proposta R01', 'text', 'R$') +
+        campoProp(i, 'r02', 'Proposta R02', 'text', 'R$') +
+      '</div>' +
+      '<div class="reducao" id="red' + i + '">' + textoReducao(p) + '</div>' +
+    '</div>' +
+  '</details>';
+}
+
+/**
+ * Redução é derivada, nunca digitada.
+ *
+ * Na planilha EQU a fórmula copiava o total quando a proposta inicial
+ * estava vazia e reportava 100% de economia — o defeito está registrado
+ * como pendência em 6 importações do acervo. Sem inicial, não há redução.
+ */
+function textoReducao(p) {
+  var inicial = num(p.propostaInicial);
+  var final_ = num(p.r02) !== null ? num(p.r02) : (num(p.r01) !== null ? num(p.r01) : null);
+
+  if (inicial === null && final_ === null) return '';
+  if (inicial === null) return '<span class="d-nulo">Sem proposta inicial: não há redução a calcular.</span>';
+  if (final_ === null) return '<span class="d-nulo">Preencha R01 ou R02 para calcular a redução.</span>';
+
+  var dif = inicial - final_;
+  if (dif <= 0) return '<span class="d-igual">Sem redução nesta negociação.</span>';
+  return '<span class="d-desce">Redução de ' + moeda(dif) +
+         ' (' + (dif / inicial * 100).toFixed(1).replace('.', ',') + '%)</span>';
 }
 
 /** O que já se sabe sobre o proponente, abaixo do campo. */
@@ -1127,6 +1251,12 @@ function calcular() {
     });
   });
 
+  // A redução acompanha a digitação do histórico de negociação.
+  proponentes.forEach(function (p, j) {
+    var el = document.getElementById('red' + j);
+    if (el) el.innerHTML = textoReducao(p);
+  });
+
   var menor = null;
   totais.forEach(function (t, j) {
     if (cotou[j] === 0) return;
@@ -1350,6 +1480,9 @@ function salvarEqualizacao() {
       projeto: document.getElementById('nProjeto').value,
       area: document.getElementById('nArea').value,
       data: document.getElementById('nData').value,
+      detalhamento: document.getElementById('nDetalhamento').value,
+      premissas: document.getElementById('nPremissas').value,
+      notasCr: document.getElementById('nNotasCr').value,
       proponentes: proponentes,
       itens: itens
     });
