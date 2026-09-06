@@ -545,6 +545,18 @@ var esc = function (s) {
 
 function classeVariacao(p){ return p < 15 ? 'baixa' : (p < 60 ? 'media' : 'alta'); }
 
+/**
+ * Hoje em yyyy-mm-dd, no fuso de quem está usando.
+ * valueAsDate = new Date() grava em UTC: depois das 21h em Brasília o
+ * campo já abria com a data de amanhã.
+ */
+function hojeISO() {
+  var d = new Date();
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  var dd = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + mm + '-' + dd;
+}
+
 // Sinal antes do número: quem lê precisa ver "subiu" sem interpretar valor.
 function delta(d) {
   if (!d) return '<span class="d-nulo">—</span>';
@@ -1060,7 +1072,7 @@ function limparFormulario() {
   var emp = document.getElementById('nEmp');
   if (emp) emp.value = '';
   var data = document.getElementById('nData');
-  if (data) data.valueAsDate = new Date();
+  if (data) data.value = hojeISO();
   mostrarEmpresa();
 
   addProponente(); addProponente(); addProponente();
@@ -1084,7 +1096,7 @@ function carregarOpcoes() {
     document.getElementById('nEmp').onchange = mostrarEmpresa;
   }).apiOpcoes();
 
-  document.getElementById('nData').valueAsDate = new Date();
+  document.getElementById('nData').value = hojeISO();
 
   // Rascunho tem prioridade sobre o estado inicial: se havia trabalho em
   // andamento, começar do zero por cima dele seria perdê-lo de novo.
@@ -1330,8 +1342,15 @@ function aplicarFornecedor(i, a) {
 function atualizarNomes() {
   var ths = document.querySelectorAll('#grade thead th');
   proponentes.forEach(function (p, j) {
-    var th = ths[4 + j];                       // nível, descrição, qtd, un.
-    if (th) th.textContent = p.nome || ('Proponente ' + (j + 1));
+    // 3, não 4: o cabeçalho tem Descrição, Qtd e Unidade antes dos
+    // proponentes. O controle de nível é um botão dentro da célula de
+    // descrição, não uma coluna — com 4 o nome de cada proponente ia
+    // parar na coluna do seguinte, que é exatamente o rótulo trocado que
+    // esta função existe para evitar.
+    var th = ths[3 + j];
+    if (!th) return;
+    // innerHTML, não textContent: textContent apagava o "R$ unitário".
+    th.innerHTML = esc(p.nome || ('Proponente ' + (j + 1))) + '<small>R$ unitário</small>';
   });
   calcular();
 }
@@ -1623,13 +1642,19 @@ function estadoAtual() {
     projeto: document.getElementById('nProjeto').value,
     area: document.getElementById('nArea').value,
     data: document.getElementById('nData').value,
+    // Os três textareas de Aprovação chamavam salvarRascunho no oninput mas
+    // não entravam no estado: um F5 apagava o detalhamento sem aviso, e um
+    // formulário com só esse texto nem disparava o alerta de saída.
+    detalhamento: document.getElementById('nDetalhamento').value,
+    premissas: document.getElementById('nPremissas').value,
+    notasCr: document.getElementById('nNotasCr').value,
     proponentes: proponentes,
     itens: itens
   };
 }
 
 function temConteudo(e) {
-  return !!(e.emp || e.projeto || e.area ||
+  return !!(e.emp || e.projeto || e.area || e.detalhamento || e.premissas || e.notasCr ||
     (e.proponentes || []).some(function (p) { return p.nome || p.cnpj; }) ||
     (e.itens || []).some(function (i) { return i.descricao || i.precos.some(Boolean); }));
 }
@@ -1662,6 +1687,9 @@ function restaurarRascunho() {
   document.getElementById('nEmp').value = e.emp || '';
   document.getElementById('nProjeto').value = e.projeto || '';
   document.getElementById('nArea').value = e.area || '';
+  document.getElementById('nDetalhamento').value = e.detalhamento || '';
+  document.getElementById('nPremissas').value = e.premissas || '';
+  document.getElementById('nNotasCr').value = e.notasCr || '';
   if (e.data) document.getElementById('nData').value = e.data;
   proponentes = e.proponentes || [];
   itens = e.itens || [];

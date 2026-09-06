@@ -139,6 +139,18 @@ function cfData_(valor) {
     return isNaN(d.getTime()) ? null : d;
   }
 
+  // ISO puro, que é o que <input type="date"> devolve.
+  //
+  // Precisa vir ANTES do fallback new Date(valor): o construtor lê
+  // "2026-04-28" como meia-noite UTC, e o Sheets em America/Sao_Paulo
+  // exibe isso como 27/04 21:00. Toda data digitada na tela retrocedia
+  // um dia — validade de proposta vencia na véspera.
+  const iso = String(valor).trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) {
+    const d = new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+    return isNaN(d.getTime()) ? null : d;
+  }
+
   const m = String(valor).trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
   if (m) {
     let ano = Number(m[3]);

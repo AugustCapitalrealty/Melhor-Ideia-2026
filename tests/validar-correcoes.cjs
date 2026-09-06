@@ -539,7 +539,8 @@ try {
     'preço em branco vira nao_cotado com valor vazio — zero mentiria que cotou de graça');
 
   assert.equal(gravado.Propostas[0].VALOR_TOTAL_CALCULADO, 55);
-  assert.equal(gravado.Propostas[1].VALOR_TOTAL_CALCULADO, 0);
+  // Vazio, não zero — ver Correção 23. Zero venceria a comparação.
+  assert.equal(gravado.Propostas[1].VALOR_TOTAL_CALCULADO, '');
   assert.equal(gravado.Fornecedores.length, 1, 'só o proponente com CNPJ válido entra no cadastro');
 
   // Empreendimento é lista fechada: nunca se deduz, nunca se aceita texto solto.
@@ -957,5 +958,77 @@ try {
   console.log('✓ CORREÇÃO VERIFICADA: exportação sai como valor estático, com o conteúdo completo');
 } catch (e) {
   console.log(`✗ FALHA na Correção 21: ${e.message}`);
+  process.exitCode = 1;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 22 — data digitada na tela não pode retroceder um dia
+//
+//  <input type="date"> devolve "2026-04-28". cfData_ só reconhecia
+//  dd/mm/aaaa e caía no new Date(valor), que lê ISO como meia-noite UTC —
+//  em America/Sao_Paulo isso é 27/04 às 21h. Toda data da tela voltava um
+//  dia: validade de proposta vencia na véspera.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxD = vm.createContext({ Logger: { log: () => {} }, console: console });
+  vm.runInContext(fs.readFileSync(path.join(root, 'app', 'Util.gs'), 'utf8'), ctxD, { filename: 'Util.gs' });
+
+  const d = ctxD.cfData_('2026-04-28');
+  // instanceof não vale aqui: o Date nasce dentro do vm, que é outro realm.
+  assert.equal(Object.prototype.toString.call(d), '[object Date]', 'ISO devia virar Date');
+  assert.equal(d.getFullYear(), 2026);
+  assert.equal(d.getMonth(), 3, 'abril');
+  assert.equal(d.getDate(), 28, `dia veio ${d.getDate()} em vez de 28 — a data retrocedeu`);
+
+  // O formato brasileiro segue funcionando.
+  const br = ctxD.cfData_('28/04/2026');
+  assert.equal(br.getDate(), 28);
+  assert.equal(br.getMonth(), 3);
+
+  // E as duas formas têm que concordar: a tela manda ISO, o importador manda BR.
+  assert.equal(d.getTime(), br.getTime(),
+    'ISO e dd/mm/aaaa da mesma data precisam produzir o mesmo instante');
+
+  console.log('✓ CORREÇÃO VERIFICADA: data do formulário não retrocede um dia');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 22: ${e.message}`);
+  process.exitCode = 1;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 23 — quem não cotou nada fica sem total, não com zero
+//
+//  Zero venceria a comparação de menor valor, e o sistema passaria a
+//  exigir justificativa de quem escolhesse qualquer fornecedor real.
+//  Acontece no primeiro convite recusado.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxZ = vm.createContext({ Logger: { log: () => {} }, console: console });
+  const gravadoZ = {};
+  let seqZ = 0;
+
+  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxZ, { filename: f });
+  });
+  ctxZ.cfLerTudo_ = () => [];
+  ctxZ.cfInserir_ = (aba, linhas) => { gravadoZ[aba] = (gravadoZ[aba] || []).concat(linhas); };
+  ctxZ.cfComTrava_ = (fn) => fn();
+  ctxZ.cfUsuario_ = () => 'x@capitalrealty.com.br';
+  ctxZ.cfLog_ = () => {};
+  ctxZ.cfNovoId_ = (p) => p + '-' + (++seqZ);
+
+  ctxZ.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+    proponentes: [{ nome: 'Cotou' }, { nome: 'Nao cotou nada' }],
+    itens: [{ tipo: 'item', nivel: 0, descricao: 'Item', precos: ['10', ''] }]
+  });
+
+  assert.equal(gravadoZ.Propostas[0].VALOR_TOTAL_CALCULADO, 10);
+  assert.equal(gravadoZ.Propostas[1].VALOR_TOTAL_CALCULADO, '',
+    'proponente sem nenhuma cotação ficou com 0 e venceria a comparação');
+
+  console.log('✓ CORREÇÃO VERIFICADA: proponente sem cotação não vira o menor valor');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 23: ${e.message}`);
   process.exitCode = 1;
 }

@@ -24,11 +24,14 @@ function cfListarEqualizacoes_() {
       projeto: eq.PROJETO || '',
       area: eq.AREA || '',
       data: cfDataTexto_(eq.DATA_EQUALIZACAO),
+      ordenacao: eq.DATA_EQUALIZACAO instanceof Date ? eq.DATA_EQUALIZACAO.getTime() : 0,
       status: eq.STATUS || '',
       proponentes: minhas.length
     };
   }).sort(function (a, b) {
-    return String(b.data).localeCompare(String(a.data));
+    // Por data de verdade. Comparar "dd/MM/yyyy" como texto punha 28/04
+    // depois de 05/05, e a lista saía fora de ordem cronológica.
+    return (b.ordenacao || 0) - (a.ordenacao || 0);
   });
 }
 
@@ -248,6 +251,11 @@ function cfCriarEqualizacao_(d) {
   // ── proponentes
   const idsProposta = proponentes.map(function () { return cfNovoId_('PRP'); });
   const totais = proponentes.map(function () { return 0; });
+  // Quem não cotou NADA precisa ficar sem total, não com zero. Zero venceria
+  // a comparação de menor valor e passaria a exigir justificativa de quem
+  // escolhesse qualquer fornecedor de verdade. Acontece no primeiro convite
+  // recusado.
+  const cotouAlgo = proponentes.map(function () { return false; });
 
   // ── árvore: o nível vira ID_PAI. Pilha guarda o último id de cada nível.
   const pilha = {};
@@ -280,7 +288,7 @@ function cfCriarEqualizacao_(d) {
       const cotou = valor !== null && valor !== undefined && String((item.precos || [])[i]).trim() !== '';
       const qtd = cfNumero_(item.quantidade);
       const total = cotou ? valor * (qtd === null ? 1 : qtd) : null;
-      if (cotou) totais[i] += total;
+      if (cotou) { totais[i] += total; cotouAlgo[i] = true; }
 
       linhasPreco.push({
         ID: cfNovoId_('PRC'),
@@ -347,7 +355,7 @@ function cfCriarEqualizacao_(d) {
         DATA_PREV_INICIO: cfData_(p.dataPrevInicio) || '',
         DATA_PREV_TERMINO: cfData_(p.dataPrevTermino) || '',
         VALOR_TOTAL_DECLARADO: declarado === null ? '' : declarado,
-        VALOR_TOTAL_CALCULADO: totais[i],
+        VALOR_TOTAL_CALCULADO: cotouAlgo[i] ? totais[i] : '',
         OBSERVACAO: p.centroCusto || '',
         VALOR_PROPOSTA_INICIAL: inicial === null ? '' : inicial,
         // Derivada, nunca digitada: na planilha EQU a fórmula de redução
