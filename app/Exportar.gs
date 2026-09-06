@@ -296,7 +296,9 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
   // lê número. Sem isto a coluna de texto fica centralizada e ilegível.
   aba.getRange(1, COL_VALOR, grade.length, 1).setHorizontalAlignment('left').setWrap(true);
   aba.getRange(1, 2, grade.length, 1).setHorizontalAlignment('left');
-  aba.setFrozenColumns(COL_VALOR);
+  // Sem congelar coluna: os títulos e rótulos são mesclados de B até o fim,
+  // e o Sheets recusa congelar uma coluna que corta uma célula mesclada ao
+  // meio. Como o PDF sai em paisagem ajustado à largura, não faz falta.
 }
 
 /**

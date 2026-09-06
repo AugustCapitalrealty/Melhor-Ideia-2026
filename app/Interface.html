@@ -150,12 +150,36 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-s
 }
 .abas button[aria-selected="true"]{background:var(--superficie);color:var(--noturno);box-shadow:var(--sombra)}
 
-/* ── mapa de equalização ── */
-.eq-sel{display:flex;gap:10px;align-items:center;margin:20px 0 18px;flex-wrap:wrap}
-.eq-sel select{
-  flex:1;min-width:260px;padding:12px 14px;font-size:15px;border:1.5px solid var(--linha);
-  border-radius:8px;background:var(--superficie);color:var(--texto);
+/* ── lista de equalizações ── */
+.filtros{display:flex;gap:10px;margin:20px 0 14px;flex-wrap:wrap}
+.filtros input,.filtros select{
+  padding:11px 13px;font-size:14.5px;font-family:inherit;border:1.5px solid var(--linha);
+  border-radius:9px;background:var(--superficie);color:var(--texto);
 }
+.filtros input{flex:1 1 320px}
+.filtros select{flex:0 1 210px}
+.filtros input:focus,.filtros select:focus{
+  outline:none;border-color:var(--acao);box-shadow:0 0 0 3px rgba(6,92,169,.12);
+}
+.contagem{font-size:12.5px;color:var(--suave);margin-bottom:10px}
+.cartao{
+  display:block;width:100%;text-align:left;margin-bottom:9px;padding:14px 17px;
+  border:1px solid var(--linha);border-left:3px solid var(--acao);border-radius:10px;
+  background:var(--superficie);cursor:pointer;font-family:inherit;box-shadow:var(--sombra);
+}
+.cartao:hover{border-color:var(--acao);border-left-color:var(--royal);background:#FAFCFF}
+.cartao.fechada{border-left-color:var(--ok)}
+.cartao-topo{display:flex;gap:14px;align-items:baseline}
+.cartao-topo b{font-size:15.5px;color:var(--noturno);flex:1}
+.cartao-topo .valor{font-variant-numeric:tabular-nums;font-weight:700;color:var(--royal);white-space:nowrap}
+.cartao-meta{font-size:12.5px;color:var(--suave);margin-top:3px}
+.cartao-etq{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.etq{
+  font-size:11.5px;padding:2px 9px;border-radius:999px;
+  background:var(--superficie2);color:var(--royal);
+}
+
+/* ── mapa de equalização ── */
 .eq-cab{
   background:var(--superficie);border:1px solid var(--linha);border-radius:8px;
   padding:16px 20px;margin-bottom:16px;box-shadow:var(--sombra);
@@ -451,11 +475,14 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
   </section>
 
   <section id="v-mapa" hidden>
-    <div class="eq-sel">
-      <select id="eqSel" onchange="abrirMapa(this.value)">
-        <option value="">carregando equalizações…</option>
-      </select>
+    <div class="filtros">
+      <input id="fBusca" type="search" placeholder="Buscar por projeto, área, centro de custo ou ID…"
+        autocomplete="off" oninput="filtrarLista()">
+      <select id="fMega" onchange="filtrarLista()"><option value="">Todos os Megas</option></select>
+      <select id="fArea" onchange="filtrarLista()"><option value="">Todas as áreas</option></select>
+      <select id="fStatus" onchange="filtrarLista()"><option value="">Todas as situações</option></select>
     </div>
+    <div id="listaEq"></div>
     <div id="mapa"></div>
   </section>
 
@@ -768,32 +795,96 @@ function aba(nome) {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+//  Lista de equalizações
+//
+//  Era um <select>. Com 8 já não dava para distinguir uma da outra — todas
+//  começam com data e Mega — e com 200 seria inutilizável. Lista com
+//  filtros por Mega, área e situação, mais busca livre.
+// ─────────────────────────────────────────────────────────────
+
+var todasEqualizacoes = [];
+
 function carregarEqualizacoes() {
+  document.getElementById('listaEq').innerHTML = '<div class="carregando">carregando…</div>';
+
   google.script.run
     .withSuccessHandler(function (r) {
-      var sel = document.getElementById('eqSel');
       if (!r.ok) {
-        document.getElementById('mapa').innerHTML = '<div class="aviso erro">' + esc(r.erro) + '</div>';
+        document.getElementById('listaEq').innerHTML = '<div class="aviso erro">' + esc(r.erro) + '</div>';
         return;
       }
-      if (!r.equalizacoes.length) {
-        sel.innerHTML = '<option value="">nenhuma equalização na base</option>';
-        document.getElementById('mapa').innerHTML =
+      todasEqualizacoes = r.equalizacoes;
+
+      if (!todasEqualizacoes.length) {
+        document.getElementById('listaEq').innerHTML =
           '<div class="aviso">A base ainda não tem equalizações. Os 21 orçamentos do acervo' +
           ' são propostas avulsas — aparecem na consulta de preço, não aqui.</div>';
         return;
       }
-      sel.innerHTML = r.equalizacoes.map(function (e) {
-        var rot = [e.data, e.empreendimento, e.area].filter(Boolean).join(' · ') +
-                  ' (' + e.proponentes + ' proponentes)';
-        return '<option value="' + esc(e.id) + '">' + esc(rot) + '</option>';
-      }).join('');
-      abrirMapa(r.equalizacoes[0].id);
+
+      preencherFiltro('fMega', 'empreendimento', 'Todos os Megas');
+      preencherFiltro('fArea', 'area', 'Todas as áreas');
+      preencherFiltro('fStatus', 'status', 'Todas as situações');
+      filtrarLista();
     })
     .withFailureHandler(function (e) {
-      document.getElementById('mapa').innerHTML = '<div class="aviso erro">' + esc(e.message) + '</div>';
+      document.getElementById('listaEq').innerHTML = '<div class="aviso erro">' + esc(e.message) + '</div>';
     })
     .apiEqualizacoes();
+}
+
+/** Opções do filtro saem do que existe, não de uma lista fixa. */
+function preencherFiltro(id, campo, rotuloTodos) {
+  var vistos = {};
+  todasEqualizacoes.forEach(function (e) { if (e[campo]) vistos[e[campo]] = true; });
+  var opcoes = Object.keys(vistos).sort();
+  document.getElementById(id).innerHTML =
+    '<option value="">' + esc(rotuloTodos) + '</option>' +
+    opcoes.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
+}
+
+function filtrarLista() {
+  var termo = document.getElementById('fBusca').value.trim().toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+  var mega = document.getElementById('fMega').value;
+  var area = document.getElementById('fArea').value;
+  var status = document.getElementById('fStatus').value;
+
+  var achadas = todasEqualizacoes.filter(function (e) {
+    if (mega && e.empreendimento !== mega) return false;
+    if (area && e.area !== area) return false;
+    if (status && e.status !== status) return false;
+    if (termo && String(e.busca || '').indexOf(termo) < 0) return false;
+    return true;
+  });
+
+  var el = document.getElementById('listaEq');
+  if (!achadas.length) {
+    el.innerHTML = '<div class="aviso">Nenhuma equalização com esses filtros.</div>';
+    return;
+  }
+
+  el.innerHTML =
+    '<div class="contagem">' + achadas.length +
+    (achadas.length === 1 ? ' equalização' : ' equalizações') +
+    (achadas.length < todasEqualizacoes.length ? ' de ' + todasEqualizacoes.length : '') + '</div>' +
+    achadas.map(function (e) {
+      var etiquetas = [e.area, e.grupoCentroCusto].filter(Boolean)
+        .map(function (t) { return '<span class="etq">' + esc(t) + '</span>'; }).join('');
+      return '<button type="button" class="cartao' +
+        (e.status === 'homologada' ? ' fechada' : '') +
+        '" onclick="abrirMapa(\'' + esc(e.id) + '\')">' +
+        '<div class="cartao-topo">' +
+          '<b>' + esc(e.projeto || e.id) + '</b>' +
+          '<span class="valor">' + (semValor(e.menor) ? '' : moeda(e.menor)) + '</span>' +
+        '</div>' +
+        '<div class="cartao-meta">' + esc(e.data) + ' · ' + esc(e.empreendimento) +
+          ' · ' + e.proponentes + (e.proponentes === 1 ? ' proponente' : ' proponentes') +
+          ' · ' + esc(e.status) + '</div>' +
+        (etiquetas ? '<div class="cartao-etq">' + etiquetas + '</div>' : '') +
+        '</button>';
+    }).join('');
 }
 
 function abrirMapa(id) {
@@ -851,7 +942,7 @@ function desenharMapa(m) {
   // soma dos itens — e mostrar "—" apagava a conclusão da comparação. E
   // quando os dois existem, divergência entre o total que o fornecedor
   // escreveu e a soma real dos itens dele é erro comum de proposta.
-  var temDeclarado = props.some(function (p) { return p.total !== null && p.total !== undefined; });
+  var temDeclarado = props.some(function (p) { return !semValor(p.total); });
 
   var rodape =
     '<tr><td class="desc">Total dos itens</td>' + props.map(function (p) {
@@ -859,7 +950,7 @@ function desenharMapa(m) {
     }).join('') + '</tr>' +
     (temDeclarado
       ? '<tr><td class="desc">Total declarado no documento</td>' + props.map(function (p) {
-          var diverge = p.total !== null && p.calculado !== null &&
+          var diverge = !semValor(p.total) && !semValor(p.calculado) &&
                         Math.abs(p.total - p.calculado) > 0.01;
           return '<td class="preco"' + (diverge ? ' style="color:var(--alerta)"' : '') + '>' +
                  moeda(p.total) + (diverge ? ' <small>≠ soma</small>' : '') + '</td>';
@@ -909,6 +1000,17 @@ function desenharMapa(m) {
  * comparativo só mostra preço: quem decide precisa ver o pacote inteiro.
  * Fica recolhido porque a comparação de preço é o que se olha primeiro.
  */
+/**
+ * Vazio de verdade.
+ *
+ * O google.script.run não preserva null: um campo nulo no servidor chega
+ * como undefined no navegador. Testar só contra null fazia "undefined dias"
+ * aparecer na tela.
+ */
+function semValor(v) {
+  return v === null || v === undefined || v === '';
+}
+
 function dadosDasPropostas(m) {
   var linhas = [
     ['Nº da proposta',  function (p) { return p.numero; }],
@@ -916,25 +1018,22 @@ function dadosDasPropostas(m) {
     ['Data da proposta', function (p) { return p.data; }],
     ['Validade até',    function (p) { return p.validadeAte; }],
     ['Condições de pagamento', function (p) { return p.condicoes; }],
-    ['Lead time',       function (p) { return p.leadTime !== null ? p.leadTime + ' dias' : ''; }],
-    ['Prazo de execução', function (p) { return p.prazoExecucao !== null ? p.prazoExecucao + ' dias' : ''; }],
+    ['Lead time',       function (p) { return semValor(p.leadTime) ? '' : p.leadTime + ' dias'; }],
+    ['Prazo de execução', function (p) { return semValor(p.prazoExecucao) ? '' : p.prazoExecucao + ' dias'; }],
     ['Início previsto', function (p) { return p.dataPrevInicio; }],
     ['Término previsto', function (p) { return p.dataPrevTermino; }],
     ['Centro de custo', function (p) { return p.centroCusto; }],
     ['Faturamento direto', function (p) {
-      return p.faturamentoDireto ? ('sim' + (p.valorFaturamentoDireto !== null ? ' · ' + moeda(p.valorFaturamentoDireto) : '')) : '';
+      return p.faturamentoDireto ? ('sim' + (semValor(p.valorFaturamentoDireto) ? '' : ' · ' + moeda(p.valorFaturamentoDireto))) : '';
     }],
-    ['Proposta inicial', function (p) { return p.propostaInicial !== null ? moeda(p.propostaInicial) : ''; }],
-    ['Redução negociada', function (p) { return p.reducao !== null ? moeda(p.reducao) : ''; }],
+    ['Proposta inicial', function (p) { return semValor(p.propostaInicial) ? '' : moeda(p.propostaInicial); }],
+    ['Redução negociada', function (p) { return semValor(p.reducao) ? '' : moeda(p.reducao); }],
     ['Rodada',          function (p) { return p.rodada; }]
   ];
 
   // Linha sem nenhum valor em nenhum proponente não vira ruído na tela.
   var uteis = linhas.filter(function (l) {
-    return m.proponentes.some(function (p) {
-      var v = l[1](p);
-      return v !== '' && v !== null && v !== undefined;
-    });
+    return m.proponentes.some(function (p) { return !semValor(l[1](p)); });
   });
   if (!uteis.length) return '';
 
@@ -942,7 +1041,7 @@ function dadosDasPropostas(m) {
     return '<tr><th scope="row">' + esc(l[0]) + '</th>' +
       m.proponentes.map(function (p) {
         var v = l[1](p);
-        return '<td>' + (v === '' || v === null || v === undefined ? '<span class="d-nulo">—</span>' : esc(v)) + '</td>';
+        return '<td>' + (semValor(v) ? '<span class="d-nulo">—</span>' : esc(v)) + '</td>';
       }).join('') + '</tr>';
   }).join('');
 
@@ -997,7 +1096,7 @@ function blocoDecisao(m) {
   var homologada = eq.status === 'homologada';
 
   var opcoes = m.proponentes.map(function (p) {
-    var valor = p.total !== null && p.total !== undefined ? p.total : p.calculado;
+    var valor = semValor(p.total) ? p.calculado : p.total;
     var venceu = String(eq.vencedora) === String(p.id);
     return '<label class="escolha' + (venceu ? ' venceu' : '') + '">' +
       '<input type="radio" name="vencedora" value="' + esc(p.id) + '"' +
@@ -1892,16 +1991,15 @@ window.addEventListener('beforeunload', function (ev) {
 /** Leva ao mapa da equalização recém-criada: é o fecho natural da tarefa. */
 function verMapaDe(id) {
   aba('mapa');
+  equalizacoesCarregadas = true;
   google.script.run.withSuccessHandler(function (r) {
-    if (!r.ok) return;
-    var sel = document.getElementById('eqSel');
-    sel.innerHTML = r.equalizacoes.map(function (e) {
-      var rot = [e.data, e.empreendimento, e.area].filter(Boolean).join(' · ') +
-                ' (' + e.proponentes + ' proponentes)';
-      return '<option value="' + esc(e.id) + '">' + esc(rot) + '</option>';
-    }).join('');
-    sel.value = id;
-    equalizacoesCarregadas = true;
+    if (r.ok) {
+      todasEqualizacoes = r.equalizacoes;
+      preencherFiltro('fMega', 'empreendimento', 'Todos os Megas');
+      preencherFiltro('fArea', 'area', 'Todas as áreas');
+      preencherFiltro('fStatus', 'status', 'Todas as situações');
+      filtrarLista();
+    }
     abrirMapa(id);
   }).apiEqualizacoes();
 }

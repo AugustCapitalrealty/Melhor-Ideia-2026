@@ -18,15 +18,31 @@ function cfListarEqualizacoes_() {
     const minhas = propostas.filter(function (p) {
       return String(p.ID_EQUALIZACAO) === String(eq.ID);
     });
+    // O menor total entre quem cotou: é o número que diz "quanto custa
+    // esta compra" e o que permite achar a equalização pela ordem de
+    // grandeza quando não se lembra do nome.
+    let menor = null;
+    minhas.forEach(function (p) {
+      const v = cfNumero_(p.VALOR_TOTAL_DECLARADO);
+      const c = v !== null ? v : cfNumero_(p.VALOR_TOTAL_CALCULADO);
+      if (c === null) return;
+      if (menor === null || c < menor) menor = c;
+    });
+
     return {
       id: eq.ID,
       empreendimento: eq.ID_EMPREENDIMENTO || '—',
       projeto: eq.PROJETO || '',
       area: eq.AREA || '',
+      grupoCentroCusto: eq.GRUPO_CENTRO_CUSTO || '',
       data: cfDataTexto_(eq.DATA_EQUALIZACAO),
       ordenacao: eq.DATA_EQUALIZACAO instanceof Date ? eq.DATA_EQUALIZACAO.getTime() : 0,
       status: eq.STATUS || '',
-      proponentes: minhas.length
+      proponentes: minhas.length,
+      menor: menor,
+      // Para a busca livre não precisar de N comparações no cliente.
+      busca: cfNormalizar_([eq.ID, eq.ID_EMPREENDIMENTO, eq.PROJETO, eq.AREA,
+                            eq.GRUPO_CENTRO_CUSTO, eq.STATUS].filter(Boolean).join(' '))
     };
   }).sort(function (a, b) {
     // Por data de verdade. Comparar "dd/MM/yyyy" como texto punha 28/04
