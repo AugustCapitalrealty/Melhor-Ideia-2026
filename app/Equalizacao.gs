@@ -50,8 +50,16 @@ function cfMapaEqualizacao_(idEq) {
 
   const fornecedores = {};
   cfLerTudo_('Fornecedores').forEach(function (f) {
-    fornecedores[cfSoDigitos_(f.CNPJ)] = f.RAZAO_SOCIAL || f.NOME_FANTASIA || '';
+    fornecedores[cfSoDigitos_(f.CNPJ)] = f;
   });
+  const nomeDe = function (cnpj) {
+    const f = fornecedores[cnpj];
+    return f ? (f.RAZAO_SOCIAL || f.NOME_FANTASIA || '') : '';
+  };
+  const doCadastro = function (cnpj, campo) {
+    const f = fornecedores[cnpj];
+    return f ? (f[campo] || '') : '';
+  };
 
   const proponentes = cfLerTudo_('Propostas')
     .filter(function (p) { return String(p.ID_EQUALIZACAO) === String(idEq); })
@@ -64,7 +72,12 @@ function cfMapaEqualizacao_(idEq) {
         cnpj: cnpj,
         // O nome do cadastro ganha do informado, mas o informado sobrevive
         // quando o CNPJ veio inválido — foi o caso "Golden Phone / Carryer".
-        nome: fornecedores[cnpj] || p.RAZAO_SOCIAL_INFORMADA || '(sem identificação)',
+        nome: nomeDe(cnpj) || p.RAZAO_SOCIAL_INFORMADA || '(sem identificação)',
+        contato: doCadastro(cnpj, 'CONTATO_NOME'),
+        telefone: doCadastro(cnpj, 'CONTATO_TEL'),
+        email: doCadastro(cnpj, 'CONTATO_EMAIL'),
+        cidade: doCadastro(cnpj, 'CIDADE'),
+        uf: doCadastro(cnpj, 'UF'),
         rodada: p.RODADA || '',
         total: cfNumero_(p.VALOR_TOTAL_DECLARADO),
         calculado: cfNumero_(p.VALOR_TOTAL_CALCULADO),
@@ -148,9 +161,11 @@ function cfMapaEqualizacao_(idEq) {
       empreendimento: eq.ID_EMPREENDIMENTO || '—',
       projeto: eq.PROJETO || '',
       area: eq.AREA || '',
+      grupoCentroCusto: eq.GRUPO_CENTRO_CUSTO || '',
       data: cfDataTexto_(eq.DATA_EQUALIZACAO),
       status: eq.STATUS || '',
       premissas: eq.PREMISSAS || '',
+      notasCr: eq.NOTAS_CR || '',
       detalhamento: eq.DETALHAMENTO_APROVACAO || '',
       parecer: eq.PARECER_FAVORAVEL || '',
       vencedora: eq.ID_PROPOSTA_VENCEDORA || ''
@@ -405,10 +420,32 @@ function cfCriarEqualizacao_(d) {
   }, 120);
 }
 
-/** Cadastra quem ainda não existe. Não sobrescreve dado já enriquecido. */
+/**
+ * Cadastra quem ainda não existe e completa o contato de quem já existe.
+ *
+ * O contato digitado é o vendedor que cotou — a Receita devolve o e-mail
+ * cadastral da empresa, que não serve para comprar. Por isso o que vem da
+ * tela sobrescreve, mas só quando foi preenchido: campo vazio não apaga o
+ * que já estava lá.
+ */
 function cfCadastrarProponentes_(proponentes) {
   const existentes = {};
-  cfLerTudo_('Fornecedores').forEach(function (f) { existentes[cfSoDigitos_(f.CNPJ)] = true; });
+  cfLerTudo_('Fornecedores').forEach(function (f) { existentes[cfSoDigitos_(f.CNPJ)] = f; });
+
+  proponentes.forEach(function (p) {
+    const cnpj = cfSoDigitos_(p.cnpj);
+    const atual = existentes[cnpj];
+    if (!atual) return;
+
+    const mudar = {};
+    if (p.contatoNome) mudar.CONTATO_NOME = p.contatoNome;
+    if (p.telefone) mudar.CONTATO_TEL = p.telefone;
+    if (p.email) mudar.CONTATO_EMAIL = p.email;
+    if (Object.keys(mudar).length) {
+      mudar.ATUALIZADO_EM = new Date();
+      cfAtualizarLinha_('Fornecedores', atual._linha, mudar);
+    }
+  });
 
   const novos = [];
   proponentes.forEach(function (p) {
@@ -426,6 +463,7 @@ function cfCadastrarProponentes_(proponentes) {
       UF: p.uf || '',
       SITUACAO_CNPJ: p.situacao || '',
       CNAE_PRINCIPAL: p.cnae || '',
+      CONTATO_NOME: p.contatoNome || '',
       CONTATO_TEL: p.telefone || '',
       CONTATO_EMAIL: p.email || '',
       ORIGEM: 'app',

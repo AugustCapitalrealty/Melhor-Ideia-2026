@@ -892,17 +892,23 @@ try {
   const ctxX = vm.createContext({ Logger: { log: () => {} }, console: console });
 
   let escrito = null;
+  // Dublê encadeável: a formatação usa cadeias longas de setX().
+  const faixaFalsa = {
+    setValues: (m) => { escrito = m; return faixaFalsa; },
+    merge: () => faixaFalsa
+  };
+  ['setFontWeight','setFontSize','setHorizontalAlignment','setVerticalAlignment',
+   'setBackground','setFontColor','setBorder','setNumberFormat','setWrap']
+    .forEach(function (m) { faixaFalsa[m] = function () { return faixaFalsa; }; });
+
   const abaFalsa = {
     setName: () => {}, setColumnWidth: () => {}, setFrozenColumns: () => {},
     getSheetId: () => 0,
-    getRange: () => ({
-      setValues: (m) => { escrito = m; return abaFalsa.getRange(); },
-      setFontWeight: function () { return this; }, setFontSize: function () { return this; },
-      setHorizontalAlignment: function () { return this; }
-    })
+    getRange: () => faixaFalsa
   };
   ctxX.SpreadsheetApp = {
-    create: () => ({ getSheets: () => [abaFalsa], getId: () => 'SS1', getUrl: () => 'url-planilha' })
+    create: () => ({ getSheets: () => [abaFalsa], getId: () => 'SS1', getUrl: () => 'url-planilha' }),
+    BorderStyle: { SOLID: 'SOLID' }
   };
   ctxX.DriveApp = {
     getFileById: () => ({ moveTo: () => {} }),
@@ -915,7 +921,7 @@ try {
   };
   ctxX.Utilities = { formatDate: () => '06/09/2026 10:00', getUuid: () => 'x' };
 
-  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxX, { filename: f });
   });
 
@@ -951,9 +957,22 @@ try {
 
   // O conteúdo essencial precisa estar lá.
   const texto = escrito.map(l => l.join('|')).join('\n');
-  ['EQU', 'Alfa', 'Soda', 'TOTAL DOS ITENS', 'DADOS DA PROPOSTA', 'Menor prazo'].forEach(function (t) {
+  ['EQ1', 'Alfa', 'Soda', 'VALOR TOTAL', 'Menor prazo',
+   'INFORMAÇÕES OBRIGATÓRIAS', 'Unitário', 'Total',
+   'Histórico da Negociação', 'Numero da Proposta:'].forEach(function (t) {
     assert.ok(texto.indexOf(t) >= 0, 'a exportação não trouxe "' + t + '"');
   });
+
+  // O identificador precisa estar no documento, não só no nome do arquivo:
+  // sem ele o retrato não volta para a equalização que o gerou.
+  assert.ok(texto.indexOf('Identificador:') >= 0, 'faltou carimbar o identificador');
+
+  // Dinheiro tem que ser número, não texto já formatado: escrevendo
+  // "182,50" o Sheets reinterpreta e mostra "182,5", e texto não soma.
+  const temMoedaTexto = escrito.some(function (l) {
+    return l.some(function (c) { return typeof c === 'string' && /^R\$\s*[\d.,]+$/.test(c.trim()); });
+  });
+  assert.equal(temMoedaTexto, false, 'valor monetário foi escrito como texto formatado');
 
   console.log('✓ CORREÇÃO VERIFICADA: exportação sai como valor estático, com o conteúdo completo');
 } catch (e) {
