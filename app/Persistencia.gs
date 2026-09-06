@@ -209,13 +209,16 @@ function cfGravarAnalise_(analise, idImportacao) {
   analise.equalizacoes.forEach(function (eq) {
     const idEq = cfNovoId_('EQU');
     const empreendimento = eq.cabecalho.empreendimento || '';
+    // Resolvido uma vez por equalização, não por linha de preço: cada
+    // chamada relê a tabela Empreendimentos inteira.
+    const empreendimentoId = cfResolverEmpreendimento_(empreendimento);
     const uf = cfInferirUf_(empreendimento);
     const data = eq.cabecalho.dataEqualizacao || null;
 
     linhasEq.push({
       ID: idEq,
       CNPJ_EMPRESA: cfResolverEmpresa_(eq.cabecalho.empresa),
-      ID_EMPREENDIMENTO: cfResolverEmpreendimento_(empreendimento),
+      ID_EMPREENDIMENTO: empreendimentoId,
       PROJETO: eq.cabecalho.projeto || '',
       AREA: cfAreaDaAba_(eq.aba),
       GRUPO_CENTRO_CUSTO: eq.cabecalho.grupoCentroCusto || '',
@@ -335,7 +338,7 @@ function cfGravarAnalise_(analise, idImportacao) {
           STATUS_PRECO: preco.status,
           CNPJ: prop.cnpjLimpo || '',
           ID_EQUALIZACAO: idEq,
-          ID_EMPREENDIMENTO: empreendimento,
+          ID_EMPREENDIMENTO: empreendimentoId,
           UF: uf,
           DATA: data,
           ORIGEM: 'import_sheets',

@@ -27,10 +27,10 @@ O sistema foi arquitetado como uma aplicação web nativa no ecossistema **Googl
        REST HTTPS       ▼                               ▼ Relacional
 ┌──────────────────────────────┐        ┌─────────────────────────────────────┐
 │          BRASIL API          │        │        GOOGLE SHEETS (BANCO)        │
-│ • Receita Federal Oficial    │        │  • Aba "Fornecedores" (Cad. Híbrido)│
+│ • Consulta pública de CNPJ   │        │  • Aba "Fornecedores" (Cad. Híbrido)│
 │ • CNPJ, Razão Social, CNAE,  │        │  • Aba "Equalizacoes" (Cabeçalho)   │
 │   UF, Município, Situação    │        │  • Aba "Itens_EAP" (Detalhamento)   │
-│ • Gratuita e de Alta Resp.   │        │  • Aba "Avaliacoes" (Notas e SLA)   │
+│ • Comunitária, sem SLA       │        │  • Aba "Avaliacoes" (Notas e SLA)   │
 └──────────────────────────────┘        └──────────────────┬──────────────────┘
                                                            │
                                         Integração Futura  ▼
@@ -45,7 +45,10 @@ O sistema foi arquitetado como uma aplicação web nativa no ecossistema **Googl
 
 ## 2. O Modelo Híbrido de Dados de Fornecedores
 
-A proposta combina a base oficial da **Receita Federal (BrasilAPI)** com a **memória operacional interna da Capital Realty**:
+A proposta combina a **consulta pública de CNPJ (BrasilAPI)** com a **memória operacional interna da Capital Realty**.
+
+> **Sobre a BrasilAPI:** é um serviço comunitário e gratuito, mantido por voluntários, que republica dados públicos de CNPJ. **Não é um canal oficial da Receita Federal e não oferece SLA.** Por isso ela é o último recurso na cadeia de resolução — atrás do cadastro interno e de um cache de 24 horas — e a sua indisponibilidade nunca bloqueia a cotação: o comprador digita o nome à mão e segue.
+
 
 ```
 [ Usuário digita CNPJ no Web App ]
@@ -88,7 +91,7 @@ Para manter os dados estruturados e auditáveis, o Google Sheets atua com 4 abas
 | `RAZAO_SOCIAL` | Text | Nome oficial da empresa (BrasilAPI) |
 | `NOME_FANTASIA`| Text | Nome comercial (BrasilAPI) |
 | `CIDADE_UF` | Text | Município e Estado (BrasilAPI) |
-| `SITUACAO_CNPJ`| Text | Situação na Receita Federal (ex: ATIVA) |
+| `SITUACAO_CNPJ`| Text | Situação cadastral do CNPJ (ex: ATIVA) |
 | `CONTATO_NOME` | Text | Nome do representante / vendedor |
 | `CONTATO_TEL` | Text | Telefone comercial / WhatsApp |
 | `CONTATO_EMAIL`| Text | E-mail para envio de OCs e cotações |

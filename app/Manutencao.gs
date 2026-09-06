@@ -414,3 +414,177 @@ function cfRelatarTeste_(r, rotulo) {
 
   return r;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Divergências de dados apontadas na conciliação do acervo
+//
+//  Três achados de prioridade alta em dados/relatorio-conciliacao.json.
+//  Enquanto o sistema só exibia esses números na tela, eram incômodos.
+//  A Fase 1 põe o Valor Homologado no topo do PDF que vai à Diretoria —
+//  e aí um total inflado em 12x deixa de ser incômodo e vira documento
+//  assinado com número errado. Por isso vêm antes da funcionalidade.
+//
+//  Rode: diagnosticarDivergenciasAltas   (neste arquivo, Manutencao.gs)
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Qual Mega é este texto, seja como for que tenham escrito.
+ * "Mega Curitiba", "MEGA CENTRO LOGÍSTICO CURITIBA" e "curitiba" são o
+ * mesmo lugar; a chave exata de CF_EMPRESA_DO_MEGA não perdoa variação.
+ */
+function cfMegaCanonico_(texto) {
+  const t = cfNormalizar_(String(texto || ''));
+  if (!t) return '';
+  if (t.indexOf('curitiba') >= 0) return 'MEGA CENTRO LOGÍSTICO CURITIBA';
+  if (t.indexOf('esteio') >= 0)   return 'MEGA CENTRO LOGÍSTICO ESTEIO';
+  if (t.indexOf('itajai') >= 0)   return 'MEGA CENTRO LOGÍSTICO ITAJAÍ';
+  return '';
+}
+
+/** Relatório de leitura. Não escreve nada. */
+function diagnosticarDivergenciasAltas() {
+  const eqs = cfLerTudo_('Equalizacoes');
+  const props = cfLerTudo_('Propostas');
+  const eap = cfLerTudo_('EAP');
+
+  Logger.log('═══ Divergências de prioridade alta ═══');
+  Logger.log('Equalizações na base: ' + eqs.length + ' · Propostas: ' + props.length);
+  Logger.log('');
+
+  // ── 1. Equalização sem CNPJ da empresa contratante
+  Logger.log('── 1. Empresa contratante ausente ──');
+  let semEmpresa = 0;
+  eqs.forEach(function (e) {
+    const atual = cfSoDigitos_(e.CNPJ_EMPRESA);
+    const mega = cfMegaCanonico_(e.ID_EMPREENDIMENTO);
+    const devido = mega ? cfEmpresaDoMega_(mega) : { cnpj: '', nome: '' };
+    if (atual === devido.cnpj) return;
+    semEmpresa++;
+    Logger.log('  ' + e.ID + ' · ' + (e.ID_EMPREENDIMENTO || '(sem Mega)') +
+               ' · ' + (e.PROJETO || '') +
+               '\n      tem: ' + (atual || '(vazio)') +
+               '\n      devia ser: ' + (devido.cnpj || '(Mega não reconhecido — corrija o empreendimento primeiro)') +
+               (devido.nome ? ' — ' + devido.nome : ''));
+  });
+  Logger.log(semEmpresa === 0 ? '  Nada a corrigir.'
+    : '  ' + semEmpresa + ' equalização(ões). Rode corrigirEmpresaDasEqualizacoes() para aplicar.');
+  Logger.log('');
+
+  // ── 2. Total declarado muito acima do calculado
+  //
+  //  Mensalidade lida como anual dá razão 12. Não corrijo automaticamente:
+  //  só o documento original diz qual dos dois números é o certo.
+  Logger.log('── 2. Total declarado x calculado ──');
+  let suspeitas = 0;
+  props.forEach(function (p) {
+    const dec = cfNumero_(p.VALOR_TOTAL_DECLARADO);
+    const calc = cfNumero_(p.VALOR_TOTAL_CALCULADO);
+    if (!dec || !calc || calc <= 0) return;
+    const razao = dec / calc;
+    if (razao < 1.02 && razao > 0.98) return;
+    suspeitas++;
+    const pista = (razao > 11.5 && razao < 12.5) ? '  ← 12x: mensal lido como anual'
+                : (razao > 0.079 && razao < 0.088) ? '  ← 1/12: anual lido como mensal' : '';
+    Logger.log('  ' + p.ID + ' · eq ' + (p.ID_EQUALIZACAO || '(avulso)') +
+               ' · ' + (p.RAZAO_SOCIAL_INFORMADA || p.CNPJ) +
+               '\n      declarado: ' + dec.toFixed(2) +
+               ' · itens somam: ' + calc.toFixed(2) +
+               ' · razão: ' + razao.toFixed(2) + pista);
+  });
+  Logger.log(suspeitas === 0 ? '  Nada divergente.'
+    : '  ' + suspeitas + ' proposta(s). Confira no documento original qual número vale.');
+  Logger.log('');
+
+  // ── 3. Possível duplicação
+  Logger.log('── 3. Possível duplicação ──');
+  let dups = 0;
+
+  // Mesmo CNPJ duas vezes na mesma equalização: são duas rodadas ou é
+  // a mesma proposta lançada duas vezes?
+  const porEq = {};
+  props.forEach(function (p) {
+    if (!p.ID_EQUALIZACAO) return;
+    const k = p.ID_EQUALIZACAO + '§' + cfSoDigitos_(p.CNPJ);
+    (porEq[k] = porEq[k] || []).push(p);
+  });
+  Object.keys(porEq).forEach(function (k) {
+    const lista = porEq[k];
+    if (lista.length < 2) return;
+    dups++;
+    Logger.log('  eq ' + lista[0].ID_EQUALIZACAO + ' · CNPJ ' + lista[0].CNPJ +
+               ' aparece ' + lista.length + 'x: ' +
+               lista.map(function (p) {
+                 return p.ID + ' (rodada ' + (p.RODADA || '?') + ', total ' +
+                        (cfNumero_(p.VALOR_TOTAL_CALCULADO) || 0).toFixed(2) + ')';
+               }).join(', '));
+  });
+
+  // Mesma descrição repetida na mesma equalização.
+  const porDesc = {};
+  eap.forEach(function (n) {
+    if (!n.ID_EQUALIZACAO || n.TIPO === 'grupo') return;
+    const d = cfNormalizar_(n.DESCRICAO);
+    if (!d) return;
+    const k = n.ID_EQUALIZACAO + '§' + d;
+    (porDesc[k] = porDesc[k] || []).push(n);
+  });
+  Object.keys(porDesc).forEach(function (k) {
+    const lista = porDesc[k];
+    if (lista.length < 2) return;
+    dups++;
+    Logger.log('  eq ' + lista[0].ID_EQUALIZACAO + ' · "' + lista[0].DESCRICAO +
+               '" aparece ' + lista.length + 'x (' +
+               lista.map(function (n) { return n.ID; }).join(', ') + ')');
+  });
+
+  Logger.log(dups === 0 ? '  Nada duplicado.'
+    : '  ' + dups + ' caso(s). Confira no documento original antes de apagar — ' +
+      'item repetido pode ser legítimo (duas marcas, dois turnos).');
+
+  return { semEmpresa: semEmpresa, totaisSuspeitos: suspeitas, duplicacoes: dups };
+}
+
+/** Só mostra o que mudaria. */
+function simularCorrecaoEmpresaDasEqualizacoes() {
+  return cfCorrigirEmpresa_(false);
+}
+
+/**
+ * Preenche CNPJ_EMPRESA a partir do Mega.
+ *
+ * Derivar é seguro porque a regra é fechada: Curitiba é Demercado, Esteio
+ * e Itajaí são Capital Realty. Equalização cujo Mega não é reconhecido
+ * fica intocada — chutar a contratante é pior que deixar vazio.
+ */
+function corrigirEmpresaDasEqualizacoes() {
+  return cfCorrigirEmpresa_(true);
+}
+
+function cfCorrigirEmpresa_(aplicar) {
+  const eqs = cfLerTudo_('Equalizacoes');
+  const mudou = [], pulou = [];
+
+  eqs.forEach(function (e) {
+    const atual = cfSoDigitos_(e.CNPJ_EMPRESA);
+    const mega = cfMegaCanonico_(e.ID_EMPREENDIMENTO);
+    if (!mega) { pulou.push(e.ID + ' (Mega não reconhecido: "' + e.ID_EMPREENDIMENTO + '")'); return; }
+    const devido = cfEmpresaDoMega_(mega);
+    if (!devido.cnpj || atual === devido.cnpj) return;
+    mudou.push({ id: e.ID, linha: e._linha, de: atual || '(vazio)', para: devido.cnpj, nome: devido.nome });
+  });
+
+  Logger.log(aplicar ? '═══ Corrigindo empresa contratante ═══' : '═══ Simulação (nada foi gravado) ═══');
+  mudou.forEach(function (m) {
+    Logger.log('  ' + m.id + ': ' + m.de + ' → ' + m.para + ' (' + m.nome + ')');
+    if (aplicar) cfAtualizarLinha_('Equalizacoes', m.linha, { CNPJ_EMPRESA: m.para });
+  });
+  pulou.forEach(function (p) { Logger.log('  pulada: ' + p); });
+
+  Logger.log(mudou.length === 0 ? '  Nada a corrigir.'
+    : '  ' + mudou.length + (aplicar ? ' corrigida(s).' : ' seriam corrigidas. Rode corrigirEmpresaDasEqualizacoes() para aplicar.'));
+
+  if (aplicar && mudou.length) {
+    cfLog_('corrigir_empresa', 'equalizacoes', '', JSON.stringify(mudou.map(function (m) { return m.id; })));
+  }
+  return { corrigidas: mudou.length, puladas: pulou.length, aplicado: !!aplicar };
+}

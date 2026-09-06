@@ -8,7 +8,7 @@
  *   3. BrasilAPI         — rede, pode falhar, nunca bloqueia o trabalho
  *
  * A base local vem primeiro de propósito. O nome que a operação ajustou à
- * mão vale mais que a razão social crua da Receita, e o cadastro se
+ * mão vale mais que a razão social crua da consulta pública, e o cadastro se
  * constrói sozinho a partir das cotações que já são feitas.
  *
  * BrasilAPI é serviço comunitário, sem SLA. Não é "a Receita Federal" —
@@ -86,26 +86,26 @@ function cfConsultarCnpj_(valor) {
       validateHttpsCertificates: true
     });
   } catch (erro) {
-    return { achou: false, fonte: 'rede', erro: 'Não consegui falar com a Receita agora. Digite o nome à mão.' };
+    return { achou: false, fonte: 'rede', erro: 'Não consegui consultar o CNPJ agora. Digite o nome à mão.' };
   }
 
   const codigo = resposta.getResponseCode();
   if (codigo === 404) {
-    return { achou: false, fonte: 'receita', erro: 'CNPJ não encontrado na base da Receita.' };
+    return { achou: false, fonte: 'consulta_publica', erro: 'CNPJ não encontrado na consulta pública.' };
   }
   if (codigo !== 200) {
-    return { achou: false, fonte: 'receita', erro: 'A consulta falhou (HTTP ' + codigo + '). Digite o nome à mão.' };
+    return { achou: false, fonte: 'consulta_publica', erro: 'A consulta falhou (HTTP ' + codigo + '). Digite o nome à mão.' };
   }
 
   let dados;
   try {
     dados = JSON.parse(resposta.getContentText());
   } catch (erro) {
-    return { achou: false, fonte: 'receita', erro: 'Resposta ilegível da consulta.' };
+    return { achou: false, fonte: 'consulta_publica', erro: 'Resposta ilegível da consulta.' };
   }
 
   const saida = {
-    achou: true, fonte: 'receita', cnpj: d,
+    achou: true, fonte: 'consulta_publica', cnpj: d,
     razaoSocial: dados.razao_social || '',
     nomeFantasia: dados.nome_fantasia || '',
     cidade: dados.municipio || '',
@@ -123,7 +123,7 @@ function cfConsultarCnpj_(valor) {
 /**
  * Um campo só: CNPJ ou nome.
  *
- * Com dígitos suficientes, trata como CNPJ e vai à Receita. Com texto,
+ * Com dígitos suficientes, trata como CNPJ e vai à consulta pública. Com texto,
  * procura no cadastro interno — que é onde estão os fornecedores com quem
  * a empresa já trabalhou, e é a busca que o comprador faz 9 vezes em 10.
  */
@@ -134,7 +134,7 @@ function cfBuscarFornecedor_(termo) {
   const digitos = cfSoDigitos_(bruto);
 
   // Só trata como CNPJ quando o termo é predominantemente numérico: nome de
-  // empresa com número ("Alfa 2000") não pode disparar consulta à Receita.
+  // empresa com número ("Alfa 2000") não pode disparar consulta externa.
   if (digitos.length >= 11 && digitos.length >= bruto.replace(/\s/g, '').length - 4) {
     const r = cfConsultarCnpj_(digitos);
     return r.achou

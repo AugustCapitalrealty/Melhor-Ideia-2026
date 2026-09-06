@@ -467,7 +467,7 @@ function cfCriarEqualizacao_(d) {
 /**
  * Cadastra quem ainda não existe e completa o contato de quem já existe.
  *
- * O contato digitado é o vendedor que cotou — a Receita devolve o e-mail
+ * O contato digitado é o vendedor que cotou — a consulta pública devolve o e-mail
  * cadastral da empresa, que não serve para comprar. Por isso o que vem da
  * tela sobrescreve, mas só quando foi preenchido: campo vazio não apaga o
  * que já estava lá.

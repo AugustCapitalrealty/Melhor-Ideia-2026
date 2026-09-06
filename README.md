@@ -2,7 +2,7 @@
 ### Sistema de Equalização Inteligente e Avaliação Contínua de Prestadores de Serviço
 **Projeto Inscrito no Concurso da Melhor Ideia 2026 — Capital Realty & Demercado**
 
-![Status](https://img.shields.io/badge/Status-Fase%20de%20Planejamento-065CA9)
+![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-065CA9)
 ![Plataforma](https://img.shields.io/badge/Plataforma-Google%20Apps%20Script%20Web%20App-003D7B)
 ![Design](https://img.shields.io/badge/Design%20System-Apple%20Liquid%20Glass-151E49)
 ![Custo](https://img.shields.io/badge/Custo%20Infra-R$%200%2C00-34C759)
@@ -11,11 +11,38 @@
 
 ## 🎯 Sobre o Projeto
 
-O **Capital Fornecedores** é uma solução corporativa inovadora concebida para modernizar ponta a ponta o ciclo de contratação e gestão de prestadores de serviço da **Capital Realty** e **Demercado**, iniciando pelo departamento de **Facilities nos Megas**.
+O **Capital Fornecedores** substitui a planilha `EQU_AAAAMMDD-MEGA_PROJETO_ÁREA.xlsx`, usada hoje pelo departamento de **Facilities nos Megas** da **Capital Realty** e da **Demercado** para equalizar cotações de fornecedores.
 
-A solução resolve simultaneamente duas dores históricas da operação:
-1. **Pré-Contratação**: Substitui a planilha descentralizada `EQU_AAAAMMDD-MEGA_PROJETO_ÁREA.xlsx` por um **Web App inteligente**, flexível (N proponentes), imune a quebras de fórmulas e integrado à **BrasilAPI (Receita Federal)** para consulta instantânea de CNPJ e retenção automática de contatos.
-2. **Pós-Contratação (Diretriz do Comitê)**: Transforma a funcionalidade subutilizada do Fluig em um **fluxo ativo e automatizado de Avaliação Pós-Ordem de Compra**, gerando o **Índice de Qualificação do Fornecedor (IQF)** e um Scorecard que orienta diretamente as futuras decisões de contratação.
+A planilha equaliza, mas não lembra. Cada arquivo nasce isolado: o preço cotado em abril não conversa com o de setembro, o fornecedor que atendeu Curitiba não aparece quando Esteio cota o mesmo item, e a fórmula quebra quando alguém insere uma linha. O que este projeto acrescenta é **memória** — cada equalização feita aqui alimenta um histórico consultável de preços por item, por fornecedor e por Mega.
+
+**O que o sistema faz hoje:**
+- Web App com criação, edição e consulta de equalizações, com N proponentes (sem limite de colunas)
+- Histórico de preços por item, com variação entre a cotação atual, a anterior e a primeira
+- Identificação de fornecedor por CNPJ ou por nome, com cadastro interno na frente da consulta externa
+- Empresa contratante derivada do Mega, não escolhida à mão (Curitiba → Demercado; Esteio e Itajaí → Capital Realty)
+- Código da EAP derivado da hierarquia, não digitado
+- Homologação da proposta vencedora com parecer registrado
+- Exportação no layout da EQU, em planilha e PDF, com unitário e total
+
+**O que ainda não existe** — e está declarado aqui de propósito, para que o escopo entregue seja verificável:
+- Avaliação pós-Ordem de Compra e Índice de Qualificação do Fornecedor (IQF), diretriz do comitê: mapeada, sem código
+- Taxonomia de categorias e ficha 360° do fornecedor: planejadas para o ciclo seguinte (ver plano diretor abaixo)
+- Medição do tempo por equalização: instrumentação em andamento; nenhum número foi apurado ainda
+
+---
+
+## 📊 Estado da base (auditado em 05/09/2026)
+
+| | |
+| :--- | ---: |
+| Equalizações na base | 4 |
+| Propostas registradas | 12 |
+| Linhas de preço | 78 |
+| Acervo histórico importado (documentos) | 21 |
+| Registros no acervo | 274 |
+| Fornecedores distintos | 7 |
+
+O acervo de 274 registros é composto **integralmente de orçamentos avulsos** — documentos de fornecedor importados para formar o histórico de preços. Ele alimenta a consulta de preço; não são disputas com vencedor apurado.
 
 ---
 
@@ -33,35 +60,56 @@ Seguindo as diretrizes do Brandbook oficial da Capital Realty e o catálogo do *
 
 ---
 
-## 📚 Documentos Estratégicos do Projeto
+## 🔌 Consulta de CNPJ — o que é e o que não é
 
-Toda a fundamentação, planejamento e estratégia para conquistar a vitória no concurso estão organizados na pasta [`docs/`](file:///workspaces/Melhor-Ideia-2026/docs):
+O sistema consulta CNPJ pela **BrasilAPI**, um serviço **comunitário e gratuito**, mantido por voluntários, que republica dados públicos de CNPJ. **Não é um canal oficial da Receita Federal e não tem SLA.**
+
+Isso é dito aqui porque muda o desenho: a consulta externa é o **último** recurso, atrás do cadastro interno e de um cache de 24 horas, e nunca bloqueia a cotação — se ela falhar, o comprador digita o nome à mão e segue. Uma dependência sem SLA pode ficar fora do ar; o processo, não.
+
+---
+
+## 📚 Documentos do Projeto
 
 | Documento | Descrição |
 | :--- | :--- |
-| **[Plano Estratégico Master (Começo, Meio e Fim)](file:///workspaces/Melhor-Ideia-2026/docs/PLANO_ESTRATEGICO_PROJETO.md)** | Cronograma completo de fevereiro a dezembro de 2026, marcos, entregáveis, pilotos nos Megas e matriz de KPIs. |
-| **[O Playbook da Vitória: Rumo ao MacBook](file:///workspaces/Melhor-Ideia-2026/docs/DEFESA_DA_MELHOR_IDEIA_MACBOOK.md)** | Mapeamento detalhado de como pontuar nota 10 nos 4 critérios do concurso e vencer nos critérios de desempate. |
-| **[Minuta de Resposta ao Comitê](file:///workspaces/Melhor-Ideia-2026/docs/RESPOSTA_AO_COMITE.md)** | Texto formal e executivo pronto para envio ao RH/Comitê em resposta ao e-mail de devolutiva. |
-| **[Arquitetura Técnica e Fluxos de Dados](file:///workspaces/Melhor-Ideia-2026/docs/ARQUITETURA_TECNICA_E_FLUXO.md)** | Especificação de backend (GAS), frontend (Liquid Glass), modelo relacional do Google Sheets e integrações. |
+| [Plano Diretor de Ecossistema e Aprovação de Diretoria](docs/PLANO_ECOSSISTEMA_E_APROVACAO_DIRETORIA_2026.md) | Roadmap em 4 fases. As fases 3 e 4 estão declaradas como ciclo seguinte. |
+| [Plano Estratégico do Projeto](docs/PLANO_ESTRATEGICO_PROJETO.md) | Marcos, entregáveis e matriz de KPIs. |
+| [Arquitetura Técnica e Fluxos de Dados](docs/ARQUITETURA_TECNICA_E_FLUXO.md) | Backend (Apps Script), frontend, modelo relacional do Google Sheets e integrações. |
+| [Plano de Correções](docs/PLANO_DE_CORRECOES.md) | Defeitos encontrados, correção aplicada e teste que impede o retorno. |
+| [Histórico](docs/HISTORICO.md) | Registro cronológico das decisões técnicas. |
+| [Resposta ao Comitê](docs/RESPOSTA_AO_COMITE.md) | Texto formal em resposta à devolutiva do comitê. |
+| [O Playbook da Vitória](docs/DEFESA_DA_MELHOR_IDEIA_MACBOOK.md) | Leitura dos critérios do concurso. |
 
 ---
 
 ## 🏆 Alinhamento aos Critérios do Regulamento
 
-| Critério Oficial | Peso | Como o Capital Fornecedores Garante a Nota Máxima |
+| Critério Oficial | Peso | Situação |
 | :--- | :---: | :--- |
-| **Impacto para a Empresa** *(Desempate 1)* | **30%** | Redução comprovada de custos (Saving rastreado), redução de 70% no tempo gasto por equalização e qualificação preventiva da base de fornecedores. |
-| **Qualidade da Implementação** *(Desempate 2)* | **30%** | Entrega de uma aplicação web real e funcional em produção nos Megas, muito além de um mero conceito teórico. |
-| **Viabilidade e Sustentabilidade** | **20%** | Custo zero de servidores (Google Apps Script), usando a infraestrutura existente do Google Workspace da Capital Realty. |
-| **Inovação** | **20%** | Eliminação da planilha estática, consulta automatizada à Receita Federal e fechamento do ciclo 360° do fornecedor. |
+| **Impacto para a Empresa** *(Desempate 1)* | **30%** | O ganho pretendido é tempo por equalização e visibilidade de preço entre Megas. **A medição está pendente** — a instrumentação de tempo e o piloto com cotações reais são a próxima entrega, e nenhum número será afirmado antes de ser apurado. |
+| **Qualidade da Implementação** *(Desempate 2)* | **30%** | Aplicação web funcional, implantada e em uso de teste, com suíte de testes automatizados que reprova de fato: cada defeito corrigido tem um teste que falha se ele voltar. |
+| **Viabilidade e Sustentabilidade** | **20%** | Custo zero de servidores (Google Apps Script sobre o Workspace já contratado). A dependência externa é a BrasilAPI, comunitária e sem SLA, com degradação prevista: o processo continua sem ela. |
+| **Inovação** | **20%** | O histórico de preço entre equalizações — o que a planilha, por ser um arquivo por cotação, não tem como fazer. |
 
 ---
 
-## 🗓️ Cronograma Oficial de Marcos (2026)
+## 🗓️ Cronograma (regulamento, §13)
 
-- **01/06/2026**: Encerramento das inscrições e alinhamento com Comitê.
-- **Junho a Setembro/2026**: Operação do piloto em Facilities nos Megas (Mega Curitiba / Mega Itajaí).
+- **01/06/2026**: Encerramento das inscrições e alinhamento com o Comitê.
+- **30/09/2026**: Encerramento do período de consultoria do Comitê.
 - **10/10/2026**: Conclusão do período de implementação prática.
-- **15/10/2026**: Protocolo formal do **Relatório Final de Resultados** junto ao RH.
-- **Novembro/2026**: Apresentação presencial ao vivo perante a Presidência e Comitê Avaliador.
-- **Dezembro/2026**: Premiação na Festa de Final de Ano 💻🥇.
+- **15/10/2026**: Protocolo do **Relatório Final de Resultados** junto ao RH.
+- **Novembro/2026**: Apresentação presencial à Presidência e ao Comitê Avaliador.
+- **Dezembro/2026**: Premiação na Festa de Final de Ano.
+
+---
+
+## 🛠️ Como rodar
+
+```bash
+npm test          # suíte completa: ciclo de dados + regressões
+npm run push      # roda os testes e publica no Apps Script (clasp)
+npm run status    # o que está sincronizado com o Apps Script
+```
+
+Requer Node ≥ 20 e `clasp` autenticado. O `push` só publica se os testes passarem — foi assim que o Apps Script deixou de ficar à frente do que está versionado.

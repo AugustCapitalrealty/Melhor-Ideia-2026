@@ -20,81 +20,191 @@ loadFiles(['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'ImportOrcame
 
 console.log('Validando correções contra os defeitos originais...\n');
 
-try {
-  const code = fs.readFileSync(path.join(root, 'app', 'Persistencia.gs'), 'utf8');
-  if (code.includes('propostasAvulsas')) {
-    console.log('✓ CORREÇÃO VERIFICADA: desfazerImportacao contempla propostas avulsas');
-  } else {
-    console.log('✗ FALHA: desfazerImportacao não contempla propostas avulsas');
-  }
-} catch (e) {
-  console.log(`✗ Erro na Correção 1: ${e.message}`);
+// ─────────────────────────────────────────────────────────────
+//  Correções 1 a 6 — os seis defeitos do diagnóstico inicial
+//
+//  Estas seis já foram "verificadas" antes por busca de texto no
+//  código-fonte (code.includes('propostasAvulsas')), o que passa com a
+//  função quebrada desde que o identificador exista — e, pior, imprimiam
+//  FALHA sem lançar: a suíte saía com exit 0 mesmo reprovando.
+//  Agora cada uma exercita o comportamento e quebra o teste se voltar.
+// ─────────────────────────────────────────────────────────────
+
+const crypto = require('node:crypto');
+
+// cfHash_ e cfNovoId_ dependem de Utilities. Sem isso, os testes de
+// impressão digital não rodam.
+context.Utilities = {
+  DigestAlgorithm: { SHA_256: 'SHA_256' },
+  computeDigest: function (_alg, texto) {
+    return Array.from(crypto.createHash('sha256').update(String(texto)).digest())
+      .map(function (b) { return b > 127 ? b - 256 : b; });   // Apps Script devolve bytes com sinal
+  },
+  formatDate: function () { return '20260906'; },
+  getUuid: function () { return 'abcd-efgh'; }
+};
+
+// ── 1. Desfazer importação alcança a proposta avulsa
+//
+//  Orçamento em PDF entra sem equalização. O rollback percorria só as
+//  equalizações da importação, então o avulso ficava para trás e a base
+//  guardava preço de um documento que o usuário mandou apagar.
+{
+  const apagou = [];
+  context.cfLerTudo_ = function (t) {
+    if (t === 'Propostas') return [{ ID: 'PRP-1', ID_IMPORTACAO: 'IMP-1', ID_EQUALIZACAO: '' }];
+    return [];                                    // nenhuma equalização nesta importação
+  };
+  context.cfApagarPor_ = function (tabela, campo, valor) {
+    apagou.push(tabela + ':' + campo + '=' + valor);
+    return 1;
+  };
+  context.cfLog_ = function () {};
+
+  const apagados = context.cfDesfazerImportacao_('IMP-1', false);
+
+  assert.ok(apagou.indexOf('Propostas:ID=PRP-1') >= 0,
+    'a proposta avulsa da importação não foi apagada');
+  assert.ok(apagou.indexOf('Precos:ID_PROPOSTA=PRP-1') >= 0,
+    'os preços da proposta avulsa continuaram na base');
+  assert.equal(apagados.Propostas, 1);
+  console.log('✓ CORREÇÃO VERIFICADA: desfazer importação alcança a proposta avulsa');
 }
 
-try {
-  context.cfLerTudo_ = (tabela) => {
-    if (tabela === 'Empresas') {
-      return [{
-        CNPJ: '00000000000191',
-        GRAFIAS_ALTERNATIVAS: 'Demercado',
-        RAZAO_SOCIAL: 'Demercado S.A.'
-      }];
-    }
+// ── 2. Texto de empresa vira CNPJ
+//
+//  A planilha traz "Demercado" escrito à mão, em grafias que variam. O
+//  hash e o vínculo precisam do CNPJ, não da grafia do dia.
+{
+  context.cfLerTudo_ = function (t) {
+    if (t === 'Empresas') return [{
+      CNPJ: '08601964000105',
+      GRAFIAS_ALTERNATIVAS: 'Demercado|Demercado Ltda',
+      RAZAO_SOCIAL: 'DEMERCADO COMERCIO S.A.'
+    }];
     return [];
   };
-  
-  const cnpj = context.cfResolverEmpresa_('Demercado');
-  if (cnpj !== '') {
-    console.log('✓ CORREÇÃO VERIFICADA: cfResolverEmpresa_ resolve texto para CNPJ');
-  } else {
-    console.log('✗ FALHA: cfResolverEmpresa_ não resolveu texto');
-  }
-} catch (e) {
-  console.log(`✗ Erro na Correção 2: ${e.message}`);
+  assert.equal(context.cfResolverEmpresa_('Demercado'), '08601964000105');
+  assert.equal(context.cfResolverEmpresa_('DEMERCADO COMERCIO S.A.'), '08601964000105',
+    'a razão social cadastrada tem que resolver igual à grafia curta');
+  assert.equal(context.cfResolverEmpresa_('Empresa Que Não Existe'), '',
+    'texto desconhecido não pode resolver para um CNPJ qualquer');
+  console.log('✓ CORREÇÃO VERIFICADA: texto de empresa resolve para o CNPJ cadastrado');
 }
 
-try {
-  const code = fs.readFileSync(path.join(root, 'app', 'Persistencia.gs'), 'utf8');
-  if (code.includes('cfResolverEmpresa_') && code.includes('cfResolverEmpreendimento_')) {
-    console.log('✓ CORREÇÃO VERIFICADA: hash inclui empresa normalizada e empreendimento');
-  } else {
-    console.log('✗ FALHA: hash não inclui resolução de empresa ou empreendimento');
-  }
-} catch (e) {
-  console.log(`✗ Erro na Correção 3: ${e.message}`);
+// ── 3. A impressão digital do arquivo olha o conteúdo que importa
+//
+//  Duas grafias da mesma empresa não podem gerar duas importações. E
+//  mudar a unidade de embalagem tem que gerar, porque muda o preço.
+{
+  context.cfLerTudo_ = function (t) {
+    if (t === 'Empresas') return [{ CNPJ: '08601964000105', GRAFIAS_ALTERNATIVAS: 'Demercado' }];
+    if (t === 'Empreendimentos') return [{ ID: 'MEGA-CWB', NOME: 'MEGA CENTRO LOGÍSTICO CURITIBA', APELIDOS: 'Mega Curitiba' }];
+    return [];
+  };
+  const analise = function (empresa, unidade, valor) {
+    return { equalizacoes: [{
+      aba: 'Mapa_Demercado_Consumo',
+      cabecalho: { empresa: empresa, empreendimento: 'Mega Curitiba', projeto: 'Consumo' },
+      proponentes: [{ cnpjLimpo: '11111111000111', razaoSocial: 'ALFA',
+                      condicoesPagamento: '30 dias', prazoExecucao: '' }],
+      eap: [{ codigoOriginal: '1', descricao: 'Café em pó', unidade: unidade,
+              precos: [{ valor: valor, status: 'cotado' }] }]
+    }] };
+  };
+  const base = context.cfImpressaoDoArquivo_(analise('Demercado', 'CX 500g', 100));
+
+  assert.equal(context.cfImpressaoDoArquivo_(analise('Demercado Ltda', 'CX 500g', 100)), base,
+    'a mesma empresa escrita de outro jeito gerou impressão digital diferente');
+  assert.notEqual(context.cfImpressaoDoArquivo_(analise('Demercado', 'PCT 250g', 100)), base,
+    'trocar a unidade de embalagem não mudou a impressão digital');
+  assert.notEqual(context.cfImpressaoDoArquivo_(analise('Demercado', 'CX 500g', 120)), base,
+    'trocar o preço não mudou a impressão digital');
+  console.log('✓ CORREÇÃO VERIFICADA: impressão digital normaliza a empresa e inclui unidade e preço');
 }
 
-try {
-  const code = fs.readFileSync(path.join(root, 'app', 'ImportOrcamento.gs'), 'utf8');
-  if (code.includes('unit === null && total === null') || code.includes('unit !== null || total !== null')) {
-    console.log('✓ CORREÇÃO VERIFICADA: preço global (total sem unitário) agora marcado como cotado');
-  } else {
-    console.log('✗ FALHA: STATUS_PRECO para globais não foi corrigido');
-  }
-} catch (e) {
-  console.log(`✗ Erro na Correção 4: ${e.message}`);
+// ── 4. Preço global é preço cotado
+//
+//  Muito orçamento traz só o total da linha, sem unitário. Isso é uma
+//  cotação — marcá-la como "não cotado" tirava o fornecedor da
+//  comparação e falseava o menor preço.
+{
+  const gravado = { Precos: [], EAP: [], Propostas: [], Fornecedores: [], Pendencias: [] };
+  context.cfIndexarPor_ = function () { return {}; };
+  context.cfInserir_ = function (tabela, linhas) {
+    (gravado[tabela] = gravado[tabela] || []).push.apply(gravado[tabela], linhas);
+  };
+  context.cfLerTudo_ = function () { return []; };
+
+  context.cfGravarOrcamento_({
+    fornecedor: { cnpj: '11.111.111/0001-11', razaoSocial: 'ALFA', uf: 'PR' },
+    numero: '123', data: '2026-04-28', empreendimento: 'Mega Curitiba',
+    itens: [
+      { descricao: 'Serviço fechado', quantidade: 1, precoUnitario: '', valorTotal: '2.200,00' },
+      { descricao: 'Item sem preço',  quantidade: 5, precoUnitario: '', valorTotal: '' }
+    ]
+  }, 'IMP-1');
+
+  const comTotal = gravado.Precos[0], semNada = gravado.Precos[1];
+  assert.equal(comTotal.STATUS_PRECO, 'cotado',
+    'total da linha sem unitário tem que contar como cotado');
+  assert.equal(comTotal.VALOR_TOTAL, 2200);
+  assert.equal(semNada.STATUS_PRECO, 'nao_cotado',
+    'linha sem unitário e sem total continua não cotada');
+  console.log('✓ CORREÇÃO VERIFICADA: preço só com total da linha conta como cotado');
 }
 
-try {
-  const code = fs.readFileSync(path.join(root, 'app', 'Consulta.gs'), 'utf8');
-  if (code.includes('r.idEqualizacao || r.idProposta')) {
-    console.log('✓ CORREÇÃO VERIFICADA: avulsos são agrupados por proposta, não por equalização vazia');
-  } else {
-    console.log('✗ FALHA: agrupamento ainda mistura avulsos');
-  }
-} catch (e) {
-  console.log(`✗ Erro na Correção 5: ${e.message}`);
+// ── 5. Avulsos não se misturam
+//
+//  A chave de agrupamento usava a equalização. Como o avulso não tem
+//  equalização, dois orçamentos de fornecedores diferentes caíam no
+//  mesmo grupo e apareciam como se disputassem a mesma cotação.
+{
+  const agrupar = vm.runInContext('cfAgruparPorItem_', context);
+  const linha = function (idProposta, cnpj, valor) {
+    return { chave: 'cafe', descricao: 'Café em pó', codigo: '', data: new Date(2026, 3, 28),
+             empreendimento: 'Mega Curitiba', projeto: '', area: '',
+             idEqualizacao: '', idProposta: idProposta, cnpj: cnpj,
+             valor: valor, status: 'cotado' };
+  };
+  const r = agrupar([linha('PRP-1', '111', 100), linha('PRP-2', '222', 130)], 'café');
+
+  assert.equal(r.grupos.length, 2,
+    'dois orçamentos avulsos diferentes foram agrupados como se fossem a mesma cotação');
+  console.log('✓ CORREÇÃO VERIFICADA: orçamentos avulsos não são agrupados entre si');
 }
 
-try {
-  const code = fs.readFileSync(path.join(root, 'app', 'Persistencia.gs'), 'utf8');
-  if (code.includes('cfResolverEmpreendimento_(')) {
-    console.log('✓ CORREÇÃO VERIFICADA: ID_EMPREENDIMENTO usa cfResolverEmpreendimento_ para normalizar');
-  } else {
-    console.log('✗ FALHA: ID_EMPREENDIMENTO não foi corrigido');
-  }
-} catch (e) {
-  console.log(`✗ Erro na Correção 6: ${e.message}`);
+// ── 6. Empreendimento gravado em forma canônica
+//
+//  "Mega Curitiba", "MEGA CENTRO LOGÍSTICO CURITIBA" e "Curitiba" são o
+//  mesmo lugar. Gravar o texto cru fragmenta o histórico de preço em
+//  três, e a comparação ao longo do tempo deixa de existir.
+{
+  context.cfLerTudo_ = function (t) {
+    if (t === 'Empreendimentos') return [{
+      ID: 'MEGA-CWB', NOME: 'MEGA CENTRO LOGÍSTICO CURITIBA', APELIDOS: 'Mega Curitiba|Curitiba'
+    }];
+    return [];
+  };
+  assert.equal(context.cfResolverEmpreendimento_('Mega Curitiba'), 'MEGA-CWB');
+  assert.equal(context.cfResolverEmpreendimento_('MEGA CENTRO LOGÍSTICO CURITIBA'), 'MEGA-CWB');
+  assert.equal(context.cfResolverEmpreendimento_('Lugar Novo'), 'Lugar Novo',
+    'sem cadastro correspondente, o texto original é preservado');
+
+  // E o caminho de gravação usa isso — nos dois lados, planilha e PDF.
+  const gravado = { Precos: [], EAP: [], Propostas: [], Fornecedores: [] };
+  context.cfIndexarPor_ = function () { return {}; };
+  context.cfInserir_ = function (tabela, linhas) {
+    (gravado[tabela] = gravado[tabela] || []).push.apply(gravado[tabela], linhas);
+  };
+  context.cfGravarOrcamento_({
+    fornecedor: { cnpj: '11.111.111/0001-11', razaoSocial: 'ALFA', uf: 'PR' },
+    numero: '123', data: '2026-04-28', empreendimento: 'Mega Curitiba',
+    itens: [{ descricao: 'Café', quantidade: 1, precoUnitario: '10', valorTotal: '10' }]
+  }, 'IMP-1');
+  assert.equal(gravado.Precos[0].ID_EMPREENDIMENTO, 'MEGA-CWB',
+    'a importação de orçamento avulso gravou o empreendimento em texto cru');
+  console.log('✓ CORREÇÃO VERIFICADA: empreendimento é gravado em forma canônica');
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -681,7 +791,7 @@ try {
 // ─────────────────────────────────────────────────────────────
 //  Correção 18 — busca de fornecedor por CNPJ ou nome
 //
-//  Um campo só. Dígitos vão à Receita; texto procura no cadastro. A ordem
+//  Um campo só. Dígitos vão à consulta pública; texto procura no cadastro. A ordem
 //  importa: cadastro interno antes da rede, porque o nome que a operação
 //  ajustou à mão vale mais que a razão social crua — e não gasta consulta.
 // ─────────────────────────────────────────────────────────────
@@ -732,7 +842,7 @@ try {
   const daReceita = ctxC.cfBuscarFornecedor_('34.028.316/0001-03');
   assert.equal(foiARede, true);
   assert.equal(daReceita.achados[0].razaoSocial, 'FORNECEDOR DA RECEITA LTDA');
-  assert.equal(daReceita.achados[0].fonte, 'receita');
+  assert.equal(daReceita.achados[0].fonte, 'consulta_publica');
 
   // Texto procura por nome, no cadastro.
   foiARede = false;
@@ -746,7 +856,7 @@ try {
   ctxC.cfBuscarFornecedor_('Alfa 2000 Serviços');
   assert.equal(foiARede, false, '"Alfa 2000" foi tratado como CNPJ');
 
-  console.log('✓ CORREÇÃO VERIFICADA: fornecedor vem do cadastro antes da Receita, por CNPJ ou por nome');
+  console.log('✓ CORREÇÃO VERIFICADA: fornecedor vem do cadastro antes da consulta pública, por CNPJ ou por nome');
 } catch (e) {
   console.log(`✗ FALHA na Correção 18: ${e.message}`);
   process.exitCode = 1;
@@ -1366,3 +1476,61 @@ try {
   process.exitCode = 1;
 }
 
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 29 — a contratante das equalizações já gravadas
+//
+//  As 4 equalizações da base estão sem CNPJ_EMPRESA. Como a regra é
+//  fechada (Curitiba é Demercado; Esteio e Itajaí são Capital Realty),
+//  a correção deriva do Mega em vez de perguntar. O que este teste
+//  protege é a parte perigosa: derivar errado assinaria o contrato com a
+//  empresa errada, e não deixar rastro é pior que deixar vazio.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxM = vm.createContext({ Logger: { log: () => {} }, console: console });
+  ['Util.gs', 'Config.gs', 'Equalizacao.gs', 'Manutencao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxM, { filename: f });
+  });
+
+  // Toda grafia que aparece no acervo tem que cair no mesmo Mega.
+  assert.equal(ctxM.cfMegaCanonico_('MEGA CENTRO LOGÍSTICO CURITIBA'), 'MEGA CENTRO LOGÍSTICO CURITIBA');
+  assert.equal(ctxM.cfMegaCanonico_('Mega Curitiba'), 'MEGA CENTRO LOGÍSTICO CURITIBA');
+  assert.equal(ctxM.cfMegaCanonico_('mega centro logistico esteio'), 'MEGA CENTRO LOGÍSTICO ESTEIO');
+  assert.equal(ctxM.cfMegaCanonico_('Itajaí'), 'MEGA CENTRO LOGÍSTICO ITAJAÍ');
+  assert.equal(ctxM.cfMegaCanonico_('Mega Sorocaba'), '',
+    'Mega desconhecido não pode ser adivinhado');
+  assert.equal(ctxM.cfMegaCanonico_(''), '');
+
+  const gravadas = [];
+  ctxM.cfLerTudo_ = () => ([
+    { _linha: 2, ID: 'EQU-1', ID_EMPREENDIMENTO: 'MEGA CENTRO LOGÍSTICO CURITIBA', CNPJ_EMPRESA: '' },
+    { _linha: 3, ID: 'EQU-2', ID_EMPREENDIMENTO: 'Mega Esteio',                    CNPJ_EMPRESA: '' },
+    { _linha: 4, ID: 'EQU-3', ID_EMPREENDIMENTO: 'MEGA CENTRO LOGÍSTICO ITAJAÍ',   CNPJ_EMPRESA: '03015145000154' },
+    { _linha: 5, ID: 'EQU-4', ID_EMPREENDIMENTO: 'Depósito Provisório',            CNPJ_EMPRESA: '' }
+  ]);
+  ctxM.cfAtualizarLinha_ = (aba, linha, campos) => gravadas.push({ aba, linha, campos });
+  ctxM.cfLog_ = () => {};
+
+  // Simular não pode tocar em nada.
+  const simulado = ctxM.simularCorrecaoEmpresaDasEqualizacoes();
+  assert.equal(gravadas.length, 0, 'a simulação gravou na planilha');
+  assert.equal(simulado.corrigidas, 2);
+  assert.equal(simulado.aplicado, false);
+
+  const aplicado = ctxM.corrigirEmpresaDasEqualizacoes();
+  assert.equal(aplicado.corrigidas, 2);
+  assert.equal(gravadas.length, 2);
+
+  const porLinha = {};
+  gravadas.forEach(g => { porLinha[g.linha] = g.campos.CNPJ_EMPRESA; });
+  assert.equal(porLinha[2], '08601964000105', 'Curitiba tem que ser Demercado');
+  assert.equal(porLinha[3], '03015145000154', 'Esteio tem que ser Capital Realty');
+  assert.equal(porLinha[4], undefined, 'equalização já correta não pode ser reescrita');
+  assert.equal(porLinha[5], undefined, 'Mega não reconhecido não pode receber contratante chutada');
+  assert.equal(aplicado.puladas, 1);
+
+  console.log('✓ CORREÇÃO VERIFICADA: contratante das equalizações antigas deriva do Mega, e o desconhecido fica vazio');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 29: ${e.message}`);
+  process.exitCode = 1;
+}
