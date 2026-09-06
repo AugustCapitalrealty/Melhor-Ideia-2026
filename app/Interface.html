@@ -289,6 +289,14 @@ table.mapa tfoot .desc{background:var(--superficie)}
   box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 10px 34px -18px rgba(21,30,73,.45);
   border-radius:14px;
 }
+.barra-edicao{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 16px;margin-bottom:16px;border-radius:10px;
+  background:#E8EDF5;border:1.5px solid var(--acao);
+  color:var(--noturno);font-size:13.5px;font-weight:600;
+  box-shadow:var(--sombra);flex-wrap:wrap;
+}
+.barra-edicao-texto{flex:1}
 .rascunho{
   display:flex;align-items:center;gap:10px;
   padding:8px 14px;margin-bottom:14px;border-radius:8px;
@@ -549,6 +557,12 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
   </section>
 
   <section id="v-nova" hidden>
+    <div class="barra-edicao" id="barraEdicao" hidden>
+      <span class="barra-edicao-icone">✏️</span>
+      <span class="barra-edicao-texto" id="txtEdicao"></span>
+      <button type="button" class="bt" onclick="cancelarEdicao()">Cancelar edição</button>
+    </div>
+
     <div class="rascunho" id="barraRascunho" hidden>
       <span class="rascunho-icone">💾</span>
       <span class="rascunho-texto"></span>
@@ -670,8 +684,19 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
 // aberto, pronta para imprimir e para mandar o link a alguém.
 var PAGINA = '<?= pagina ?>';
 var EQ_INICIAL = '<?= eq ?>';
+var EDITAR_INICIAL = '<?= editar ?>';
 var URL_BASE = '<?= urlBase ?>';
 var EH_FICHA = PAGINA === 'ficha' && !!EQ_INICIAL;
+var idEmEdicao = null;
+
+function paraISO(dStr) {
+  if (!dStr) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return dStr;
+  var m = String(dStr).match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (m) return m[3] + '-' + m[2] + '-' + m[1];
+  var d = new Date(dStr);
+  return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+}
 
 var moeda = function (v) {
   if (v === null || v === undefined) return '—';
@@ -1055,6 +1080,7 @@ function desenharMapa(m) {
         '<div><h2>' + esc(eq.projeto || eq.id) + '</h2>' +
         '<div class="meta">' + meta + '</div></div>' +
         '<div class="eq-acoes">' +
+          '<button class="bt" onclick="editarEqualizacao(\'' + esc(eq.id) + '\')">✏ Editar equalização</button>' +
           (EH_FICHA
             ? '<button class="bt" onclick="window.print()">Imprimir</button>'
             : '<button class="bt" onclick="alternarCompleto()" id="btCompleto">Ver detalhes aqui</button>' +
@@ -1438,7 +1464,15 @@ function preencherExemplo() {
     ' proponentes, ' + (itens.length - 1) + ' itens. Marcado como ' + MARCA_TESTE + '.</span>';
 }
 
+var megaPendenteEdicao = null;
+
 function limparFormulario() {
+  idEmEdicao = null;
+  var bEd = document.getElementById('barraEdicao');
+  if (bEd) bEd.hidden = true;
+  var btSalvar = document.getElementById('btSalvar');
+  if (btSalvar) btSalvar.textContent = 'Salvar equalização';
+
   proponentes = [];
   itens = [];
   jaGravada = false;
@@ -1473,6 +1507,11 @@ function carregarOpcoes() {
                esc(e.nome) + '</option>';
       }).join('');
     document.getElementById('nEmp').onchange = mostrarEmpresa;
+    if (megaPendenteEdicao) {
+      document.getElementById('nEmp').value = megaPendenteEdicao;
+      mostrarEmpresa();
+      megaPendenteEdicao = null;
+    }
   }).apiOpcoes();
 
   document.getElementById('nData').value = hojeISO();
@@ -2206,6 +2245,7 @@ function temConteudo(e) {
 }
 
 function salvarRascunho() {
+  if (idEmEdicao) return;
   clearTimeout(timerRascunho);
   timerRascunho = setTimeout(function () {
     try {
@@ -2289,8 +2329,14 @@ window.addEventListener('beforeunload', function (ev) {
   ev.returnValue = '';
 });
 
-/** Leva ao mapa da equalização recém-criada: é o fecho natural da tarefa. */
+/** Leva ao mapa da equalização: abre em nova janela/aba ou na tela atual se sem URL base. */
 function verMapaDe(id) {
+  if (URL_BASE) {
+    try {
+      var win = window.open(URL_BASE + '?page=mapa&eq=' + encodeURIComponent(id), '_blank');
+      if (win) return;
+    } catch (e) {}
+  }
   aba('mapa');
   equalizacoesCarregadas = true;
   google.script.run.withSuccessHandler(function (r) {
@@ -2303,6 +2349,205 @@ function verMapaDe(id) {
     }
     abrirMapa(id);
   }).apiEqualizacoes();
+}
+
+/** Carrega uma equalização existente no formulário para edição. */
+function editarEqualizacao(id) {
+  if (!id) return;
+  aba('nova');
+  var bEd = document.getElementById('barraEdicao');
+  var txtEd = document.getElementById('txtEdicao');
+  if (bEd) {
+    bEd.hidden = false;
+    if (txtEd) txtEd.textContent = 'Carregando equalização ' + id + ' para edição…';
+  }
+  var msg = document.getElementById('salvoMsg');
+  if (msg) msg.innerHTML = '<span style="color:var(--alerta)">Carregando equalização ' + esc(id) + '…</span>';
+
+  google.script.run
+    .withSuccessHandler(function (m) {
+      if (!m || !m.ok) {
+        if (msg) msg.innerHTML = '<span style="color:var(--critico)">Erro ao carregar equalização: ' + esc(m ? m.erro : 'resposta inválida') + '</span>';
+        if (bEd) bEd.hidden = true;
+        return;
+      }
+      carregarDadosParaEdicao(m);
+    })
+    .withFailureHandler(function (err) {
+      if (msg) msg.innerHTML = '<span style="color:var(--critico)">Erro ao carregar equalização: ' + esc(err.message) + '</span>';
+      if (bEd) bEd.hidden = true;
+    })
+    .apiMapa(id);
+}
+
+function carregarDadosParaEdicao(m) {
+  idEmEdicao = m.equalizacao.id;
+  var bEd = document.getElementById('barraEdicao');
+  var txtEd = document.getElementById('txtEdicao');
+  if (bEd) {
+    bEd.hidden = false;
+    if (txtEd) {
+      txtEd.textContent = 'Editando equalização ' + m.equalizacao.id +
+        (m.equalizacao.projeto ? ' · ' + m.equalizacao.projeto : '');
+    }
+  }
+
+  var btSalvar = document.getElementById('btSalvar');
+  if (btSalvar) {
+    btSalvar.textContent = 'Atualizar equalização';
+    btSalvar.disabled = false;
+  }
+
+  var msg = document.getElementById('salvoMsg');
+  if (msg) msg.innerHTML = '<span style="color:var(--ok)">Dados de ' + esc(m.equalizacao.id) + ' carregados no formulário. Faça os ajustes e clique em Atualizar equalização.</span>';
+
+  // Cabeçalho
+  var empVal = m.equalizacao.empreendimento || '';
+  var selEmp = document.getElementById('nEmp');
+  if (selEmp && selEmp.options.length > 1) {
+    selEmp.value = empVal;
+    mostrarEmpresa();
+  } else {
+    megaPendenteEdicao = empVal;
+  }
+
+  document.getElementById('nProjeto').value = m.equalizacao.projeto || '';
+
+  var selArea = document.getElementById('nArea');
+  if (selArea) {
+    var areaVal = m.equalizacao.area || '';
+    if (areaVal) {
+      var achou = false;
+      for (var a = 0; a < selArea.options.length; a++) {
+        if (selArea.options[a].value === areaVal) { achou = true; break; }
+      }
+      if (!achou) {
+        var opt = document.createElement('option');
+        opt.value = areaVal;
+        opt.textContent = areaVal;
+        selArea.appendChild(opt);
+      }
+      selArea.value = areaVal;
+    } else {
+      selArea.value = '';
+    }
+  }
+
+  document.getElementById('nGrupoCC').value = m.equalizacao.grupoCentroCusto || '';
+  document.getElementById('nData').value = paraISO(m.equalizacao.data) || hojeISO();
+  document.getElementById('nDetalhamento').value = m.equalizacao.detalhamento || '';
+  document.getElementById('nPremissas').value = m.equalizacao.premissas || '';
+  document.getElementById('nNotasCr').value = m.equalizacao.notasCr || '';
+
+  // Proponentes
+  proponentes = (m.proponentes || []).map(function (p) {
+    var temFatDir = !!p.faturamentoDireto;
+    var teveNeg = !!(p.propostaInicial || p.reducao || (p.rodada && p.rodada !== 'inicial'));
+
+    var vFatDir = '';
+    if (p.valorFaturamentoDireto !== null && p.valorFaturamentoDireto !== undefined && p.valorFaturamentoDireto !== '') {
+      vFatDir = typeof p.valorFaturamentoDireto === 'number'
+        ? p.valorFaturamentoDireto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : String(p.valorFaturamentoDireto);
+    }
+
+    var vTotDec = '';
+    if (p.total !== null && p.total !== undefined && p.total !== '') {
+      vTotDec = typeof p.total === 'number'
+        ? p.total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : String(p.total);
+    }
+
+    var vIni = '';
+    if (p.propostaInicial !== null && p.propostaInicial !== undefined && p.propostaInicial !== '') {
+      vIni = typeof p.propostaInicial === 'number'
+        ? p.propostaInicial.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : String(p.propostaInicial);
+    }
+
+    var vR01 = '', vR02 = '';
+    if (p.rodada === 'R02') {
+      vR02 = vTotDec;
+    } else if (p.rodada === 'R01') {
+      vR01 = vTotDec;
+    }
+
+    return {
+      nome: p.nome || '',
+      busca: p.nome || '',
+      cnpj: p.cnpj || '',
+      numero: p.numero || '',
+      revisao: p.revisao || '',
+      data: paraISO(p.data),
+      validadeAte: paraISO(p.validadeAte),
+      condicoes: p.condicoes || '',
+      leadTime: p.leadTime !== null && p.leadTime !== undefined ? String(p.leadTime) : '',
+      prazoExecucao: p.prazoExecucao !== null && p.prazoExecucao !== undefined ? String(p.prazoExecucao) : '',
+      dataPrevInicio: paraISO(p.dataPrevInicio),
+      dataPrevTermino: paraISO(p.dataPrevTermino),
+      centroCusto: p.centroCusto || '',
+      totalDeclarado: vTotDec,
+      contatoNome: p.contato || '',
+      telefone: p.telefone || '',
+      email: p.email || '',
+      cidade: p.cidade || '',
+      uf: p.uf || '',
+      faturamentoDireto: temFatDir,
+      valorFaturamentoDireto: vFatDir,
+      teveNegociacao: teveNeg,
+      propostaInicial: vIni,
+      r01: vR01,
+      r02: vR02
+    };
+  });
+
+  if (proponentes.length === 0) {
+    proponentes = [{ nome: '', cnpj: '' }];
+  }
+
+  // Itens
+  itens = (m.linhas || []).map(function (l) {
+    var precos = (m.proponentes || []).map(function (p) {
+      var precoObj = l.precos ? l.precos[p.id] : null;
+      if (!precoObj || precoObj.status !== 'cotado' || precoObj.valor === null || precoObj.valor === undefined) {
+        return '';
+      }
+      return typeof precoObj.valor === 'number'
+        ? precoObj.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : String(precoObj.valor);
+    });
+
+    return {
+      tipo: l.tipo || 'item',
+      nivel: Number(l.nivel) || 0,
+      codigo: l.codigo || '',
+      descricao: l.descricao || '',
+      quantidade: (l.quantidade !== null && l.quantidade !== undefined) ? String(l.quantidade) : '',
+      unidade: l.unidade || 'un',
+      precos: precos
+    };
+  });
+
+  if (itens.length === 0) {
+    itens = [{ tipo: 'item', nivel: 0, descricao: '', quantidade: '', unidade: 'un', precos: proponentes.map(function () { return ''; }) }];
+  }
+
+  desenharProponentes();
+  desenharGrade();
+
+  var secNova = document.getElementById('v-nova');
+  if (secNova) secNova.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelarEdicao() {
+  if (confirm('Deseja cancelar a edição? Todas as alterações não salvas serão descartadas.')) {
+    var idAntigo = idEmEdicao;
+    limparFormulario();
+    if (idAntigo) {
+      aba('mapa');
+      abrirMapa(idAntigo);
+    }
+  }
 }
 
 function salvarEqualizacao() {
@@ -2318,22 +2563,26 @@ function salvarEqualizacao() {
         msg.innerHTML = '<span style="color:var(--critico)">' + esc(r.erro) + '</span>';
         return;
       }
-      // Continua desabilitado de propósito. Reabilitar com o formulário
-      // intacto fazia dois cliques criarem duas equalizações idênticas —
-      // não há chave de idempotência no servidor que segure isso.
+      var ehEdicao = !!(r.resultado && r.resultado.editada);
+      var verbo = ehEdicao ? 'Atualizada ' : 'Gravada ';
       descartarRascunho();   // gravado: o rascunho perdeu a razão de existir
       jaGravada = true;      // o próximo "+ Nova cotação" começa limpo
-      msg.innerHTML = '<span style="color:var(--ok)">Gravada ' + esc(r.resultado.id) + ' · ' +
+      msg.innerHTML = '<span style="color:var(--ok)">' + verbo + esc(r.resultado.id) + ' · ' +
         r.resultado.nos + ' nós · ' + r.resultado.precos + ' preços.</span> ' +
         '<button class="bt" onclick="verMapaDe(\'' + esc(r.resultado.id) + '\')">Abrir o mapa</button> ' +
         '<button class="bt" onclick="limparFormulario()">Começar outra</button>';
       equalizacoesCarregadas = false;   // o seletor do mapa precisa recarregar
+      idEmEdicao = null;
+      var bEd = document.getElementById('barraEdicao');
+      if (bEd) bEd.hidden = true;
+      bt.textContent = 'Salvar equalização';
     })
     .withFailureHandler(function (e) {
       bt.disabled = false;
       msg.innerHTML = '<span style="color:var(--critico)">' + esc(e.message) + '</span>';
     })
     .apiCriarEqualizacao({
+      id: idEmEdicao || undefined,
       empreendimento: document.getElementById('nEmp').value,
       projeto: document.getElementById('nProjeto').value,
       area: document.getElementById('nArea').value,
@@ -2362,8 +2611,14 @@ function salvarEqualizacao() {
 // ─────────────────────────────────────────────────────────────
 if (PAGINA === 'nova') {
   aba('nova');
+  if (EDITAR_INICIAL) {
+    editarEqualizacao(EDITAR_INICIAL);
+  }
 } else if (PAGINA === 'mapa') {
   aba('mapa');
+  if (EQ_INICIAL) {
+    abrirMapa(EQ_INICIAL);
+  }
 }
 </script>
 </body>

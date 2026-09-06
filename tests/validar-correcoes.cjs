@@ -666,7 +666,7 @@ try {
                     'atualizarNomes', 'mostrarEmpresa', 'addItem', 'removerItem',
                     'addProponente', 'removerProponente', 'calcular', 'normalizarCampo',
                     'salvarEqualizacao', 'num', 'alternarFatDir', 'alternarNegociacao',
-                    'digitouCampoProp'];
+                    'digitouCampoProp', 'editarEqualizacao', 'cancelarEdicao', 'carregarDadosParaEdicao'];
   const faltando = chamadas.filter(function (n) {
     return js.indexOf('function ' + n + '(') < 0;
   });
@@ -1261,3 +1261,108 @@ try {
   console.log(`✗ FALHA na Correção 27: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 28 — edição de equalização atualiza no mesmo ID sem duplicar
+//
+//  Ao salvar uma equalização que já existe (passando dados.id),
+//  cfCriarEqualizacao_ deve limpar os nós, preços e propostas antigos daquela
+//  equalização, regravar os dados atualizados preservando o mesmo ID e
+//  a auditoria original (CRIADO_POR, CRIADO_EM, STATUS), definir ATUALIZADO_EM
+//  e retornar editada: true.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxEd = vm.createContext({ Logger: { log: () => {} }, console: console });
+  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Equalizacao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxEd, { filename: f });
+  });
+
+  const ID_EXISTENTE = 'EQU-20260906-TESTE';
+  const agoraOriginal = new Date(2026, 8, 1, 10, 0, 0);
+  const tabelas = {
+    Equalizacoes: [{
+      ID: ID_EXISTENTE,
+      CNPJ_EMPRESA: '03015145000154',
+      ID_EMPREENDIMENTO: 'MEGA CENTRO LOGÍSTICO ITAJAÍ',
+      PROJETO: 'Projeto Original',
+      AREA: 'Facilities',
+      DATA_EQUALIZACAO: agoraOriginal,
+      STATUS: 'em_cotacao',
+      ORIGEM: 'app',
+      CRIADO_POR: 'usuario.antigo@capitalrealty.com.br',
+      CRIADO_EM: agoraOriginal
+    }],
+    Propostas: [
+      { ID: 'PRP-1', ID_EQUALIZACAO: ID_EXISTENTE, CNPJ: '11222333000181', ORDEM: 1 }
+    ],
+    EAP: [
+      { ID: 'EAP-1', ID_EQUALIZACAO: ID_EXISTENTE, ORDEM: 1, TIPO: 'item', DESCRICAO: 'Item Antigo' }
+    ],
+    Precos: [
+      { ID: 'PRC-1', ID_EQUALIZACAO: ID_EXISTENTE, ID_EAP: 'EAP-1', ID_PROPOSTA: 'PRP-1', PRECO_UNITARIO: 10 }
+    ],
+    Fornecedores: []
+  };
+
+  const operacoesApagar = [];
+  ctxEd.cfLerTudo_ = (n) => tabelas[n] || [];
+  ctxEd.cfInserir_ = (aba, linhas) => { tabelas[aba] = (tabelas[aba] || []).concat(linhas); };
+  ctxEd.cfApagarPor_ = (aba, campo, valor) => {
+    operacoesApagar.push({ aba, campo, valor });
+    if (tabelas[aba]) {
+      tabelas[aba] = tabelas[aba].filter(r => String(r[campo]) !== String(valor));
+    }
+  };
+  ctxEd.cfComTrava_ = (fn) => fn();
+  ctxEd.cfUsuario_ = () => 'editor@capitalrealty.com.br';
+  ctxEd.cfLog_ = () => {};
+  let seq = 100;
+  ctxEd.cfNovoId_ = (p) => p + '-' + (++seq);
+
+  const res = ctxEd.cfCriarEqualizacao_({
+    id: ID_EXISTENTE,
+    empreendimento: 'MEGA CENTRO LOGÍSTICO ITAJAÍ',
+    projeto: 'Projeto Atualizado',
+    area: 'Engenharia',
+    data: '06/09/2026',
+    proponentes: [
+      { nome: 'Alfa Editada', cnpj: '11.222.333/0001-81' },
+      { nome: 'Beta Nova', cnpj: '' }
+    ],
+    itens: [
+      { tipo: 'grupo', nivel: 0, descricao: 'SERVIÇOS', precos: ['', ''] },
+      { tipo: 'item', nivel: 1, descricao: 'Instalação Elétrica', quantidade: '2', unidade: 'un', precos: ['150,00', '200,00'] }
+    ]
+  });
+
+  assert.equal(res.id, ID_EXISTENTE, 'deve manter o mesmo ID');
+  assert.equal(res.editada, true, 'deve marcar editada: true');
+
+  // Verifica que apagou os registros antigos antes de reinserir
+  const abasLimpas = operacoesApagar.map(o => o.aba);
+  assert.ok(abasLimpas.includes('Precos'), 'deve limpar Precos antigos');
+  assert.ok(abasLimpas.includes('EAP'), 'deve limpar EAP antigo');
+  assert.ok(abasLimpas.includes('Propostas'), 'deve limpar Propostas antigas');
+  assert.ok(abasLimpas.includes('Equalizacoes'), 'deve limpar Equalizacoes antiga');
+
+  // Verifica a equalização regravada
+  const eqAtual = tabelas.Equalizacoes.find(e => e.ID === ID_EXISTENTE);
+  assert.ok(eqAtual, 'equalização atualizada deve estar presente');
+  assert.equal(eqAtual.PROJETO, 'Projeto Atualizado');
+  assert.equal(eqAtual.AREA, 'Engenharia');
+  assert.equal(eqAtual.CRIADO_POR, 'usuario.antigo@capitalrealty.com.br', 'deve preservar criador original');
+  assert.ok(eqAtual.ATUALIZADO_EM, 'deve ter data de atualização');
+
+  // Verifica nós e preços atualizados
+  assert.equal(tabelas.EAP.length, 2);
+  assert.equal(tabelas.Precos.length, 2);
+  const prc = tabelas.Precos.filter(p => p.STATUS_PRECO === 'cotado');
+  assert.equal(prc.length, 2);
+  assert.equal(prc[0].PRECO_UNITARIO, 150);
+
+  console.log('✓ CORREÇÃO VERIFICADA: edição de equalização atualiza no mesmo ID preservando auditoria');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 28: ${e.message}`);
+  process.exitCode = 1;
+}
+

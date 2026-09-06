@@ -9,12 +9,18 @@
 const CF_VERSAO_APP = '2026-09-05.3';
 
 function doGet(e) {
-  const pagina = (e && e.parameter && e.parameter.page) || 'consulta';
+  let pagina = (e && e.parameter && e.parameter.page) || '';
+  if (!pagina) {
+    if (e && e.parameter && e.parameter.editar) pagina = 'nova';
+    else if (e && e.parameter && e.parameter.eq) pagina = 'mapa';
+    else pagina = 'consulta';
+  }
   const t = HtmlService.createTemplateFromFile('Interface');
   t.pagina = pagina;
   // ?page=ficha&eq=EQU-... abre a equalização inteira numa janela própria,
   // sem navegação, pronta para ler ao lado do documento e para imprimir.
   t.eq = (e && e.parameter && e.parameter.eq) || '';
+  t.editar = (e && e.parameter && e.parameter.editar) || '';
   // A URL publicada, para a tela conseguir montar o link da ficha. O
   // servidor sabe qual é; o navegador dentro do iframe do Apps Script, não.
   t.urlBase = cfUrlPublicada_();

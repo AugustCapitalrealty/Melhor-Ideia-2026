@@ -275,7 +275,8 @@ function cfCriarEqualizacao_(d) {
   });
   if (!itens.length) throw new Error('Inclua ao menos um item.');
 
-  const idEq = cfNovoId_('EQU');
+  const ehEdicao = !!(d.id && String(d.id).trim());
+  const idEq = ehEdicao ? String(d.id).trim() : cfNovoId_('EQU');
   const agora = new Date();
   const usuario = cfUsuario_();
 
@@ -352,6 +353,17 @@ function cfCriarEqualizacao_(d) {
   });
 
   return cfComTrava_(function () {
+    let anterior = null;
+    if (ehEdicao) {
+      anterior = cfLerTudo_('Equalizacoes').filter(function (e) {
+        return String(e.ID) === String(idEq);
+      })[0];
+      cfApagarPor_('Precos', 'ID_EQUALIZACAO', idEq);
+      cfApagarPor_('EAP', 'ID_EQUALIZACAO', idEq);
+      cfApagarPor_('Propostas', 'ID_EQUALIZACAO', idEq);
+      cfApagarPor_('Equalizacoes', 'ID', idEq);
+    }
+
     cfInserir_('Equalizacoes', [{
       ID: idEq,
       // Derivada do Mega, não do que a tela mandou: a relação é fixa e o
@@ -362,13 +374,13 @@ function cfCriarEqualizacao_(d) {
       AREA: d.area || '',
       GRUPO_CENTRO_CUSTO: d.grupoCentroCusto || '',
       DATA_EQUALIZACAO: cfData_(d.data) || agora,
-      STATUS: 'em_cotacao',
+      STATUS: anterior ? (anterior.STATUS || 'em_cotacao') : 'em_cotacao',
       PREMISSAS: d.premissas || '',
       DETALHAMENTO_APROVACAO: d.detalhamento || '',
       NOTAS_CR: d.notasCr || '',
-      ORIGEM: 'app',
-      CRIADO_POR: usuario,
-      CRIADO_EM: agora,
+      ORIGEM: anterior ? (anterior.ORIGEM || 'app') : 'app',
+      CRIADO_POR: anterior ? (anterior.CRIADO_POR || usuario) : usuario,
+      CRIADO_EM: anterior ? (anterior.CRIADO_EM || agora) : agora,
       ATUALIZADO_EM: agora
     }]);
 
@@ -433,15 +445,16 @@ function cfCriarEqualizacao_(d) {
     // identificação)" e a próxima cotação redigita tudo de novo.
     cfCadastrarProponentes_(proponentes);
 
-    cfLog_('criar_equalizacao', 'equalizacao', idEq, JSON.stringify({
-      proponentes: proponentes.length, nos: linhasEap.length, precos: linhasPreco.length
+    cfLog_(ehEdicao ? 'editar_equalizacao' : 'criar_equalizacao', 'equalizacao', idEq, JSON.stringify({
+      proponentes: proponentes.length, nos: linhasEap.length, precos: linhasPreco.length, editada: ehEdicao
     }));
 
     return {
       id: idEq,
       proponentes: proponentes.length,
       nos: linhasEap.length,
-      precos: linhasPreco.length
+      precos: linhasPreco.length,
+      editada: ehEdicao
     };
   }, 120);
 }
