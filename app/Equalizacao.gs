@@ -379,6 +379,11 @@ function cfCriarEqualizacao_(d) {
       DETALHAMENTO_APROVACAO: d.detalhamento || '',
       NOTAS_CR: d.notasCr || '',
       ORIGEM: anterior ? (anterior.ORIGEM || 'app') : 'app',
+      PARECER_FAVORAVEL: anterior ? (anterior.PARECER_FAVORAVEL || '') : '',
+      ID_PROPOSTA_VENCEDORA: anterior ? (anterior.ID_PROPOSTA_VENCEDORA || '') : '',
+      NUMERO_OC: anterior ? (anterior.NUMERO_OC || '') : '',
+      CNPJ_VENCEDOR: anterior ? (anterior.CNPJ_VENCEDOR || '') : '',
+      VALOR_FINAL: anterior ? (anterior.VALOR_FINAL || '') : '',
       CRIADO_POR: anterior ? (anterior.CRIADO_POR || usuario) : usuario,
       CRIADO_EM: anterior ? (anterior.CRIADO_EM || agora) : agora,
       ATUALIZADO_EM: agora

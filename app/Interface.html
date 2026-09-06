@@ -559,7 +559,12 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
   <section id="v-nova" hidden>
     <div class="barra-edicao" id="barraEdicao" hidden>
       <span class="barra-edicao-icone">✏️</span>
-      <span class="barra-edicao-texto" id="txtEdicao"></span>
+      <div style="flex:1">
+        <span class="barra-edicao-texto" id="txtEdicao"></span>
+        <div style="font-size:12px;font-weight:400;color:var(--suave);margin-top:2px">
+          Utilize para registrar <b>renegociação</b> (rodadas R01/R02, novos preços e descontos) ou para <b>corrigir dados</b> da cotação.
+        </div>
+      </div>
       <button type="button" class="bt" onclick="cancelarEdicao()">Cancelar edição</button>
     </div>
 
@@ -1080,7 +1085,7 @@ function desenharMapa(m) {
         '<div><h2>' + esc(eq.projeto || eq.id) + '</h2>' +
         '<div class="meta">' + meta + '</div></div>' +
         '<div class="eq-acoes">' +
-          '<button class="bt" onclick="editarEqualizacao(\'' + esc(eq.id) + '\')">✏ Editar equalização</button>' +
+          '<button class="bt" onclick="editarEqualizacao(\'' + esc(eq.id) + '\')">✏ Editar / Renegociar</button>' +
           (EH_FICHA
             ? '<button class="bt" onclick="window.print()">Imprimir</button>'
             : '<button class="bt" onclick="alternarCompleto()" id="btCompleto">Ver detalhes aqui</button>' +
@@ -1730,6 +1735,29 @@ function alternarNegociacao(i, marcado) {
     });
     var red = document.getElementById('red' + i);
     if (red) red.innerHTML = '';
+  } else {
+    // Ao ativar negociação, se a proposta inicial ainda estiver vazia,
+    // preenche com o total declarado ou a soma dos itens já calculada
+    if (!proponentes[i].propostaInicial) {
+      var tot = proponentes[i].totalDeclarado;
+      if (!tot) {
+        var porTotal = baseValores() === 'total';
+        var soma = 0;
+        itens.forEach(function (it) {
+          if (it.tipo === 'grupo') return;
+          var q = num(it.quantidade);
+          var mult = (q === null || q === 0) ? 1 : q;
+          var v = num(it.precos[i]);
+          if (v !== null) soma += porTotal ? v : v * mult;
+        });
+        if (soma > 0) tot = soma.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      if (tot) {
+        proponentes[i].propostaInicial = tot;
+        var inpIni = document.getElementById('propostaInicial' + i);
+        if (inpIni) inpIni.value = tot;
+      }
+    }
   }
   calcular();
   salvarRascunho();
