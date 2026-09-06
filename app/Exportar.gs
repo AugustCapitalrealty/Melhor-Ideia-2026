@@ -343,18 +343,6 @@ function cfExportarEqualizacao_(idEq) {
 function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colDe, COL_VALOR, PRIMEIRA, lLinhaEmpresa, ehDemercado) {
   aba.getRange(1, 1, grade.length, largura).setValues(grade);
 
-  if (lLinhaEmpresa && ehDemercado) {
-    try {
-      if (aba && typeof aba.setRowHeight === 'function') aba.setRowHeight(lLinhaEmpresa, 46);
-      const colocou = cfInserirLogoDemercado_(aba, COL_VALOR, lLinhaEmpresa);
-      if (colocou) {
-        try { aba.getRange(lLinhaEmpresa, COL_VALOR).setValue(''); } catch (eLimpa) {}
-      }
-    } catch (eLogo) {
-      Logger.log('Aviso ao ajustar linha empresa: ' + eLogo);
-    }
-  }
-
   // Larguras pensadas para o rótulo mais longo de cada coluna:
   // "Data da equalização:" na B, "Cidade/Estado:" em D+E mescladas.
   aba.setColumnWidth(1, 22);
@@ -365,6 +353,25 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
   for (let i = 0; i < n; i++) {
     aba.setColumnWidth(colDe(i), 125);
     aba.setColumnWidth(colDe(i) + 1, 125);
+  }
+
+  if (lLinhaEmpresa && ehDemercado) {
+    try {
+      if (aba && typeof aba.setRowHeight === 'function') aba.setRowHeight(lLinhaEmpresa, 46);
+      if (aba && typeof aba.getRange === 'function') {
+        try {
+          aba.getRange(lLinhaEmpresa, COL_VALOR)
+            .setHorizontalAlignment('center')
+            .setVerticalAlignment('middle');
+        } catch (eAlign) {}
+      }
+      const colocou = cfInserirLogoDemercado_(aba, COL_VALOR, lLinhaEmpresa, 330, 46);
+      if (colocou) {
+        try { aba.getRange(lLinhaEmpresa, COL_VALOR).setValue(''); } catch (eLimpa) {}
+      }
+    } catch (eLogo) {
+      Logger.log('Aviso ao ajustar linha empresa: ' + eLogo);
+    }
   }
 
   merges.forEach(function (m) {
@@ -507,10 +514,10 @@ function cfDataHoraTexto_(d) {
 }
 
 /**
- * Insere a imagem da logo da Demercado diretamente na planilha.
+ * Insere a imagem da logo da Demercado diretamente na planilha de forma centralizada.
  * O blob incorporado na planilha garante que a imagem saia impressa no PDF sem depender de carregamento externo.
  */
-function cfInserirLogoDemercado_(aba, col, lin) {
+function cfInserirLogoDemercado_(aba, col, lin, larguraCol, alturaLin) {
   try {
     const idLogo = '168kVyD9dXiZctYNl27f_-Ic9S1W3wm-T';
     let blob = null;
@@ -523,10 +530,28 @@ function cfInserirLogoDemercado_(aba, col, lin) {
       } catch (eFetch) {}
     }
     if (blob && aba && aba.insertImage) {
-      const img = aba.insertImage(blob, col, lin, 4, 3);
+      let colW = larguraCol || 330;
+      let rowH = alturaLin || 46;
+      try {
+        if (typeof aba.getColumnWidth === 'function') {
+          const w = aba.getColumnWidth(col);
+          if (w && w > 50) colW = w;
+        }
+        if (typeof aba.getRowHeight === 'function') {
+          const h = aba.getRowHeight(lin);
+          if (h && h > 20) rowH = h;
+        }
+      } catch (eDim) {}
+
+      const imgW = 140;
+      const imgH = 42;
+      const offsetX = Math.max(0, Math.round((colW - imgW) / 2));
+      const offsetY = Math.max(0, Math.round((rowH - imgH) / 2));
+
+      const img = aba.insertImage(blob, col, lin, offsetX, offsetY);
       if (img && img.setWidth && img.setHeight) {
-        img.setWidth(140);
-        img.setHeight(42);
+        img.setWidth(imgW);
+        img.setHeight(imgH);
       }
       return true;
     }
