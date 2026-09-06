@@ -665,7 +665,8 @@ try {
                     'navegarGrade', 'colarColuna', 'salvarRascunho', 'descartarRascunho',
                     'atualizarNomes', 'mostrarEmpresa', 'addItem', 'removerItem',
                     'addProponente', 'removerProponente', 'calcular', 'normalizarCampo',
-                    'salvarEqualizacao', 'num', 'alternarFatDir', 'alternarNegociacao'];
+                    'salvarEqualizacao', 'num', 'alternarFatDir', 'alternarNegociacao',
+                    'digitouCampoProp'];
   const faltando = chamadas.filter(function (n) {
     return js.indexOf('function ' + n + '(') < 0;
   });
@@ -942,12 +943,14 @@ try {
   })[n] || [];
   ctxX.cfDataTexto_ = () => '06/09/2026';
   ctxX.cfUsuario_ = () => 'guilherme.marques@capitalrealty.com.br';
-  ctxX.cfLog_ = () => {};
+  const coresAplicadas = [];
+  faixaFalsa.setBackground = function (c) { coresAplicadas.push(c); return faixaFalsa; };
 
   const r = ctxX.cfExportarEqualizacao_('EQ1');
   assert.equal(r.planilha, 'url-planilha');
   assert.equal(r.pdf, 'url-pdf');
   assert.ok(escrito && escrito.length, 'nada foi escrito na planilha');
+  assert.ok(coresAplicadas.indexOf('#E4F2EA') >= 0, 'não destacou os melhores valores em verde (#E4F2EA)');
 
   // Nenhuma célula pode começar com "=".
   const comFormula = [];

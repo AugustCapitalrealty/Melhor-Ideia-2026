@@ -45,7 +45,7 @@ function cfExportarEqualizacao_(idEq) {
   const grade = [];
   const merges = [];        // {l, c, nl, nc}
   const moeda = [];         // {l, c, n}
-  const faixas = { titulo: [], secao: [], grupo: [], total: [], cabecalho: [], rodape: [], livre: [] };
+  const faixas = { titulo: [], secao: [], grupo: [], total: [], cabecalho: [], rodape: [], livre: [], melhores: [] };
 
   const vazia = function () {
     const l = [];
@@ -137,9 +137,14 @@ function cfExportarEqualizacao_(idEq) {
     }
     const num = linha(li);
     if (item.tipo === 'grupo') faixas.grupo.push(num);
-    else props.forEach(function (p, i) {
-      moeda.push({ l: num, c: colDe(i), n: 2 });
-    });
+    else {
+      props.forEach(function (p, i) {
+        moeda.push({ l: num, c: colDe(i), n: 2 });
+        if (item.menor && p.id === item.menor) {
+          faixas.melhores.push({ l: num, c: colDe(i), nc: 2 });
+        }
+      });
+    }
   });
 
   // ── totais
@@ -151,6 +156,18 @@ function cfExportarEqualizacao_(idEq) {
   faixas.total.push(lTotal);
   props.forEach(function (p, i) { moeda.push({ l: lTotal, c: colDe(i), n: 2 }); });
 
+  let menorTotIdx = null;
+  props.forEach(function (p, i) {
+    if (p.calculado !== null && p.calculado > 0) {
+      if (menorTotIdx === null || p.calculado < props[menorTotIdx].calculado) {
+        menorTotIdx = i;
+      }
+    }
+  });
+  if (menorTotIdx !== null) {
+    faixas.melhores.push({ l: lTotal, c: colDe(menorTotIdx), nc: 2 });
+  }
+
   if (props.some(function (p) { return p.total !== null; })) {
     li = vazia();
     li[COL_ROTULO - 1] = 'VALOR TOTAL declarado no documento';
@@ -159,6 +176,18 @@ function cfExportarEqualizacao_(idEq) {
     merges.push({ l: lDecl, c: COL_ROTULO, nl: 1, nc: 4 });
     faixas.total.push(lDecl);
     props.forEach(function (p, i) { moeda.push({ l: lDecl, c: colDe(i), n: 2 }); });
+
+    let menorDeclIdx = null;
+    props.forEach(function (p, i) {
+      if (p.total !== null && p.total > 0) {
+        if (menorDeclIdx === null || p.total < props[menorDeclIdx].total) {
+          menorDeclIdx = i;
+        }
+      }
+    });
+    if (menorDeclIdx !== null) {
+      faixas.melhores.push({ l: lDecl, c: colDe(menorDeclIdx), nc: 2 });
+    }
   }
 
   linha(vazia());
@@ -169,8 +198,18 @@ function cfExportarEqualizacao_(idEq) {
     ['Revisão do fornecedor:', function (p) { return p.revisao || ''; }, false],
     ['Data da Proposta:', function (p) { return p.data || ''; }, false],
     ['Condições de pagamento:', function (p) { return p.condicoes || ''; }, false],
-    ['Lead time para início:', function (p) { return p.leadTime === null ? '' : p.leadTime + ' dias'; }, false],
-    ['Prazo de execução:', function (p) { return p.prazoExecucao === null ? '' : p.prazoExecucao + ' dias'; }, false],
+    ['Lead time para início:', function (p) { return p.leadTime === null || p.leadTime === '' ? '' : p.leadTime + (p.leadTime == 1 ? ' dia' : ' dias'); }, false],
+    ['Prazo de execução:', function (p) {
+      var pe = p.prazoExecucao;
+      if ((pe === null || pe === undefined || pe === '') && p.dataPrevInicio && p.dataPrevTermino) {
+        var dIni = new Date(p.dataPrevInicio + 'T00:00:00');
+        var dFim = new Date(p.dataPrevTermino + 'T00:00:00');
+        if (!isNaN(dIni.getTime()) && !isNaN(dFim.getTime()) && dFim >= dIni) {
+          pe = Math.max(1, Math.round((dFim.getTime() - dIni.getTime()) / 86400000));
+        }
+      }
+      return (pe === null || pe === undefined || pe === '') ? '' : pe + (pe == 1 ? ' dia' : ' dias');
+    }, false],
     ['Validade proposta:', function (p) { return p.validadeAte || ''; }, false],
     ['Faturamento Direto:', function (p) { return p.faturamentoDireto ? 'sim' : 'não'; }, false],
     ['Nome Centro de Custo:', function (p) { return p.centroCusto || ''; }, false],
@@ -347,6 +386,26 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
   aba.getRange(1, PRIMEIRA, grade.length, n * 2).setHorizontalAlignment('center');
   moeda.forEach(function (f) {
     aba.getRange(f.l, f.c, 1, f.n).setHorizontalAlignment('right');
+  });
+
+  // Centraliza colunas de Quantidade e Unidade no comparativo
+  aba.getRange(1, 4, grade.length, 2).setHorizontalAlignment('center');
+
+  // Centraliza dados dos proponentes no cabeçalho e rodapé
+  faixas.cabecalho.concat(faixas.rodape).forEach(function (l) {
+    for (let i = 0; i < n; i++) {
+      aba.getRange(l, colDe(i), 1, 2).setHorizontalAlignment('center');
+    }
+  });
+
+  // Destaque em verde para os melhores valores (menor preço por item e menor total)
+  const CF_EXP_VERDE_FUNDO = '#E4F2EA';
+  const CF_EXP_VERDE_TEXTO = '#1F7A4C';
+  (faixas.melhores || []).forEach(function (m) {
+    aba.getRange(m.l, m.c, 1, m.nc || 1)
+      .setBackground(CF_EXP_VERDE_FUNDO)
+      .setFontColor(CF_EXP_VERDE_TEXTO)
+      .setFontWeight('bold');
   });
   // Sem congelar coluna: os títulos e rótulos são mesclados de B até o fim,
   // e o Sheets recusa congelar uma coluna que corta uma célula mesclada ao

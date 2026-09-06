@@ -228,7 +228,8 @@ body.ficha .mapa-rolo{max-height:none}   /* na ficha a página rola, não a tabe
   text-transform:none;letter-spacing:0;background:var(--superficie);
   position:sticky;left:0;min-width:220px;
 }
-.dados-prop table.mapa td{text-align:right;font-size:13.5px}
+.dados-prop table.mapa th:not([scope="row"]){text-align:center}
+.dados-prop table.mapa td{text-align:center;font-size:13.5px}
 
 /* A matriz rola sozinha: a página nunca rola de lado. */
 /* max-height é obrigatório aqui. Com só overflow-x:auto o eixo Y também
@@ -1103,8 +1104,20 @@ function dadosDasPropostas(m) {
     ['Data da proposta', function (p) { return p.data; }],
     ['Validade até',    function (p) { return p.validadeAte; }],
     ['Condições de pagamento', function (p) { return p.condicoes; }],
-    ['Lead time',       function (p) { return semValor(p.leadTime) ? '' : p.leadTime + ' dias'; }],
-    ['Prazo de execução', function (p) { return semValor(p.prazoExecucao) ? '' : p.prazoExecucao + ' dias'; }],
+    ['Lead time',       function (p) {
+      return semValor(p.leadTime) ? '' : p.leadTime + (p.leadTime == 1 ? ' dia' : ' dias');
+    }],
+    ['Prazo de execução', function (p) {
+      var pe = p.prazoExecucao;
+      if (semValor(pe) && p.dataPrevInicio && p.dataPrevTermino) {
+        var dIni = new Date(p.dataPrevInicio + 'T00:00:00');
+        var dFim = new Date(p.dataPrevTermino + 'T00:00:00');
+        if (!isNaN(dIni.getTime()) && !isNaN(dFim.getTime()) && dFim >= dIni) {
+          pe = Math.max(1, Math.round((dFim.getTime() - dIni.getTime()) / 86400000));
+        }
+      }
+      return semValor(pe) ? '' : pe + (pe == 1 ? ' dia' : ' dias');
+    }],
     ['Início previsto', function (p) { return p.dataPrevInicio; }],
     ['Término previsto', function (p) { return p.dataPrevTermino; }],
     ['Centro de custo', function (p) { return p.centroCusto; }],
@@ -1546,7 +1559,43 @@ function campoProp(i, chave, rotulo, tipo, dica) {
     '<input id="' + chave + i + '" type="' + (tipo || 'text') + '"' +
     ' value="' + esc(v === undefined || v === null ? '' : v) + '"' +
     (dica ? ' placeholder="' + esc(dica) + '"' : '') +
-    ' oninput="proponentes[' + i + '].' + chave + '=this.value;calcular();salvarRascunho()"></div>';
+    ' oninput="digitouCampoProp(' + i + ', \'' + chave + '\', this.value)"' +
+    (tipo === 'date' ? ' onchange="digitouCampoProp(' + i + ', \'' + chave + '\', this.value)"' : '') +
+    '></div>';
+}
+
+function digitouCampoProp(i, chave, valor) {
+  proponentes[i][chave] = valor;
+  var p = proponentes[i];
+
+  if (chave === 'dataPrevInicio' || chave === 'dataPrevTermino') {
+    if (p.dataPrevInicio && p.dataPrevTermino) {
+      var dIni = new Date(p.dataPrevInicio + 'T00:00:00');
+      var dFim = new Date(p.dataPrevTermino + 'T00:00:00');
+      if (!isNaN(dIni.getTime()) && !isNaN(dFim.getTime()) && dFim >= dIni) {
+        var diff = Math.round((dFim.getTime() - dIni.getTime()) / 86400000);
+        var dias = Math.max(1, diff);
+        p.prazoExecucao = dias;
+        var elPrazo = document.getElementById('prazoExecucao' + i);
+        if (elPrazo) elPrazo.value = dias;
+      }
+    }
+  } else if (chave === 'prazoExecucao') {
+    var n = parseInt(valor, 10);
+    if (!isNaN(n) && n >= 1 && p.dataPrevInicio && !p.dataPrevTermino) {
+      var dIni = new Date(p.dataPrevInicio + 'T00:00:00');
+      if (!isNaN(dIni.getTime())) {
+        var dFim = new Date(dIni.getTime() + (n === 1 ? 0 : n * 86400000));
+        var sFim = dFim.toISOString().slice(0, 10);
+        p.dataPrevTermino = sFim;
+        var elFim = document.getElementById('dataPrevTermino' + i);
+        if (elFim) elFim.value = sFim;
+      }
+    }
+  }
+
+  calcular();
+  salvarRascunho();
 }
 
 /**

@@ -398,7 +398,17 @@ function cfCriarEqualizacao_(d) {
         VALIDADE_ATE: cfData_(p.validadeAte) || '',
         CONDICOES_PAGAMENTO: p.condicoes || '',
         LEAD_TIME_DIAS: cfNumero_(p.leadTime),
-        PRAZO_EXECUCAO_DIAS: cfNumero_(p.prazoExecucao),
+        PRAZO_EXECUCAO_DIAS: (function () {
+          let pr = cfNumero_(p.prazoExecucao);
+          if (pr === null && p.dataPrevInicio && p.dataPrevTermino) {
+            const d1 = new Date(p.dataPrevInicio + 'T00:00:00');
+            const d2 = new Date(p.dataPrevTermino + 'T00:00:00');
+            if (!isNaN(d1.getTime()) && !isNaN(d2.getTime()) && d2 >= d1) {
+              pr = Math.max(1, Math.round((d2.getTime() - d1.getTime()) / 86400000));
+            }
+          }
+          return pr;
+        })(),
         FATURAMENTO_DIRETO: p.faturamentoDireto === true,
         VALOR_FATURAMENTO_DIRETO: cfNumero_(p.valorFaturamentoDireto),
         DATA_PREV_INICIO: cfData_(p.dataPrevInicio) || '',
