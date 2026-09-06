@@ -455,6 +455,8 @@ function cfCriarEqualizacao_(d) {
     // identificação)" e a próxima cotação redigita tudo de novo.
     cfCadastrarProponentes_(proponentes);
 
+    cfRegistrarTempo_(idEq, d.segundosPreenchimento, proponentes.length, linhasEap.length, ehEdicao);
+
     cfLog_(ehEdicao ? 'editar_equalizacao' : 'criar_equalizacao', 'equalizacao', idEq, JSON.stringify({
       proponentes: proponentes.length, nos: linhasEap.length, precos: linhasPreco.length, editada: ehEdicao
     }));
@@ -594,4 +596,48 @@ function cfHomologar_(idEq, idProposta, parecer) {
       eraMenor: eMaisBarata
     };
   }, 60);
+}
+
+
+/**
+ * Registra quanto tempo esta equalização levou para ser preenchida.
+ *
+ * O projeto se justifica por economizar o tempo de quem equaliza, e esse
+ * tempo nunca foi medido — o que circulava era estimativa. Sem medida, a
+ * afirmação de ganho não se sustenta diante de quem perguntar "em relação
+ * a quê?".
+ *
+ * Três cuidados, porque um número ruim é pior que nenhum:
+ *
+ * 1. Os segundos vêm decorridos do navegador, não calculados entre
+ *    relógios diferentes. Relógio de estação errado não contamina.
+ * 2. Fora da faixa plausível, não grava. Uma aba esquecida aberta a noite
+ *    toda produziria 40 mil segundos e envenenaria qualquer média.
+ * 3. Grava o TAMANHO junto. "12 minutos" não quer dizer nada sozinho; 12
+ *    minutos para 30 itens e 4 proponentes, sim — e é a única forma de
+ *    comparar com o tempo da planilha para o mesmo trabalho.
+ *
+ * Nunca lança: perder a medição não pode derrubar a gravação.
+ */
+function cfRegistrarTempo_(idEq, segundos, quantosProponentes, quantosNos, ehEdicao) {
+  try {
+    const s = cfNumero_(segundos);
+    if (s === null) return;                       // tela antiga, ou sem início marcado
+
+    // Menos de 20 segundos é gerador de exemplo ou teste, não trabalho.
+    // Mais de 4 horas é aba esquecida aberta.
+    if (s < 20 || s > 14400) {
+      Logger.log('Tempo fora da faixa plausível (' + s + 's) em ' + idEq + ': não registrado.');
+      return;
+    }
+
+    cfLog_('tempo_equalizacao', 'equalizacao', idEq, JSON.stringify({
+      segundos: s,
+      proponentes: quantosProponentes,
+      nos: quantosNos,
+      edicao: !!ehEdicao
+    }));
+  } catch (erro) {
+    Logger.log('CF: não consegui registrar o tempo — ' + erro);
+  }
 }

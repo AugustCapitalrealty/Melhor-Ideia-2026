@@ -1590,6 +1590,7 @@ function limparFormulario() {
   proponentes = [];
   itens = [];
   jaGravada = false;
+  inicioPreenchimento = null;
   descartarRascunho();   // e agora a da cotação nova
 
   document.getElementById('tituloTela').textContent = TITULOS['nova'][0];
@@ -2450,6 +2451,28 @@ var CHAVE_RASCUNHO = 'cf_rascunho_v1';
 var timerRascunho = null;
 
 /**
+ * Quando esta equalização começou a ser preenchida.
+ *
+ * O projeto inteiro se justifica por economizar tempo de quem equaliza,
+ * e até aqui esse tempo nunca foi medido — o número que circulava era
+ * estimativa. Isto o transforma em dado, sem pedir nada ao usuário.
+ *
+ * Marca no primeiro conteúdo digitado, não na abertura da tela: abrir e
+ * sair para o café contaria o café.
+ */
+var inicioPreenchimento = null;
+
+function marcarInicioPreenchimento() {
+  if (inicioPreenchimento === null) inicioPreenchimento = Date.now();
+}
+
+/** Segundos decorridos, ou null se não houve início marcado. */
+function segundosDecorridos() {
+  if (inicioPreenchimento === null) return null;
+  return Math.round((Date.now() - inicioPreenchimento) / 1000);
+}
+
+/**
  * Um rascunho por contexto.
  *
  * Antes, editar uma equalização simplesmente NÃO salvava rascunho —
@@ -2494,11 +2517,13 @@ function temConteudo(e) {
 }
 
 function salvarRascunho() {
+  marcarInicioPreenchimento();
   clearTimeout(timerRascunho);
   timerRascunho = setTimeout(function () {
     try {
       var e = estadoAtual();
       e.idEmEdicao = idEmEdicao || '';
+      e.inicioPreenchimento = inicioPreenchimento;
       if (temConteudo(e)) localStorage.setItem(chaveRascunho(), JSON.stringify(e));
     } catch (err) { /* navegador sem storage: seguir sem rascunho */ }
   }, 800);
@@ -2548,6 +2573,8 @@ function restaurarRascunho() {
   if (e.data) document.getElementById('nData').value = e.data;
   proponentes = e.proponentes || [];
   itens = e.itens || [];
+  // O relógio do rascunho vale mais que um novo: o trabalho começou lá.
+  if (e.inicioPreenchimento) inicioPreenchimento = e.inicioPreenchimento;
   mostrarEmpresa(); desenharProponentes(); desenharGrade();
 
   var b = document.getElementById('barraRascunho');
@@ -2875,6 +2902,7 @@ function salvarEqualizacao() {
     })
     .apiCriarEqualizacao({
       id: idEmEdicao || undefined,
+      segundosPreenchimento: segundosDecorridos(),
       empreendimento: document.getElementById('nEmp').value,
       projeto: document.getElementById('nProjeto').value,
       area: document.getElementById('nArea').value,
