@@ -6,8 +6,8 @@
 | | |
 | :--- | ---: |
 | Fases entregues | **4 de 4** |
-| Trabalho ativo | **16,7 h** |
-| Defeitos com teste de regressão | **34** |
+| Trabalho ativo | **17,5 h** |
+| Defeitos com teste de regressão | **37** |
 | Dias até o relatório final | **39** |
 
 ---
@@ -63,9 +63,9 @@ Três decisões de projeto que sustentam esses números e que valem registro:
 | Indicador | Valor | Leitura |
 | :--- | ---: | :--- |
 | Linhas de código da aplicação | 12.642 | Em 24 arquivos, dos quais 3.829 na interface |
-| Linhas de teste automatizado | 2.512 | Rodam antes de cada publicação: o deploy só acontece se passarem |
-| Defeitos com teste de regressão | 34 | Cada correção tem um teste que falha se o defeito voltar |
-| Asserções de comportamento | 322 | Testes que exercitam a função, não que procuram texto no código-fonte |
+| Linhas de teste automatizado | 2.760 | Rodam antes de cada publicação: o deploy só acontece se passarem |
+| Defeitos com teste de regressão | 37 | Cada correção tem um teste que falha se o defeito voltar |
+| Asserções de comportamento | 335 | Testes que exercitam a função, não que procuram texto no código-fonte |
 
 ---
 

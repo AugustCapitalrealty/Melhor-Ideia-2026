@@ -666,15 +666,26 @@ function cfInserirLogoDemercado_(aba, col, lin, larguraCol, alturaLin) {
  */
 function cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas,
                            largura, COL_ROTULO, COL_VALOR) {
-  const valorDe = function (p) {
-    return p.calculado !== null ? p.calculado : p.total;
-  };
+  let homologado = false;
+  let escolhido = null;
 
-  let escolhido = null, homologado = false;
   if (eq.vencedora) {
     escolhido = props.filter(function (p) { return p.id === eq.vencedora; })[0] || null;
     homologado = !!escolhido;
   }
+
+  // Política unificada de valor (alinhada com cfHomologar_):
+  // 1. Se homologado e com valorFinal carimbado em ata/equalização, ele é a autoridade máxima.
+  // 2. O total declarado no documento (com desconto/negociação global) prevalece.
+  // 3. Caso não haja declarado, utiliza-se a soma calculada dos itens cotados.
+  const valorDe = function (p) {
+    if (!p) return null;
+    if (homologado && eq.vencedora && p.id === eq.vencedora && eq.valorFinal !== null && eq.valorFinal !== undefined) {
+      return eq.valorFinal;
+    }
+    return p.total !== null ? p.total : p.calculado;
+  };
+
   if (!escolhido) {
     props.forEach(function (p) {
       const v = valorDe(p);
@@ -737,8 +748,23 @@ function cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas
     (homologado ? '' : ' · recomendação por menor valor, ainda sem homologação'),
     false, true);
 
+  let detalheValor = 'soma dos itens cotados';
+  if (homologado && eq.valorFinal !== null && eq.valorFinal !== undefined) {
+    if (escolhido.calculado !== null && Math.abs(valor - escolhido.calculado) > 0.01) {
+      detalheValor = 'valor homologado com ajuste (soma dos itens: R$ ' + cfValorTexto_(escolhido.calculado) + ')';
+    } else {
+      detalheValor = 'valor homologado em ata';
+    }
+  } else if (escolhido.total !== null) {
+    if (escolhido.calculado !== null && Math.abs(escolhido.total - escolhido.calculado) > 0.01) {
+      detalheValor = 'total declarado com ajuste (soma dos itens: R$ ' + cfValorTexto_(escolhido.calculado) + ')';
+    } else {
+      detalheValor = 'total declarado no documento';
+    }
+  }
+
   escreve('Valor:', valor === null ? '—' : valor,
-    escolhido.calculado !== null ? 'soma dos itens cotados' : 'total declarado no documento',
+    detalheValor,
     valor !== null, true);
 
   // Economia da disputa: só existe se houve com quem comparar.

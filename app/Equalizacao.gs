@@ -208,7 +208,10 @@ function cfMapaEqualizacao_(idEq) {
       notasCr: eq.NOTAS_CR || '',
       detalhamento: eq.DETALHAMENTO_APROVACAO || '',
       parecer: eq.PARECER_FAVORAVEL || '',
-      vencedora: eq.ID_PROPOSTA_VENCEDORA || ''
+      vencedora: eq.ID_PROPOSTA_VENCEDORA || '',
+      cnpjVencedor: eq.CNPJ_VENCEDOR || '',
+      valorFinal: cfNumero_(eq.VALOR_FINAL),
+      numeroOc: eq.NUMERO_OC || ''
     },
     proponentes: proponentes,
     linhas: linhas,
@@ -304,178 +307,247 @@ function cfCriarEqualizacao_(d) {
   const agora = new Date();
   const usuario = cfUsuario_();
 
-  // ── proponentes
-  const idsProposta = proponentes.map(function () { return cfNovoId_('PRP'); });
-  const totais = proponentes.map(function () { return 0; });
-  // Quem não cotou NADA precisa ficar sem total, não com zero. Zero venceria
-  // a comparação de menor valor e passaria a exigir justificativa de quem
-  // escolhesse qualquer fornecedor de verdade. Acontece no primeiro convite
-  // recusado.
-  const cotouAlgo = proponentes.map(function () { return false; });
-
-  // ── árvore: o nível vira ID_PAI. Pilha guarda o último id de cada nível.
-  const pilha = {};
-  const linhasEap = [];
-  const linhasPreco = [];
-
-  itens.forEach(function (item, ordem) {
-    const nivel = Number(item.nivel) || 0;
-    const idNo = cfNovoId_('EAP');
-    pilha[nivel] = idNo;
-
-    linhasEap.push({
-      ID: idNo,
-      ID_EQUALIZACAO: idEq,
-      ID_PAI: nivel > 0 ? (pilha[nivel - 1] || '') : '',
-      ORDEM: ordem + 1,
-      TIPO: item.tipo === 'grupo' ? 'grupo' : 'item',
-      DESCRICAO: String(item.descricao).trim(),
-      QUANTIDADE_REFERENCIA: cfNumero_(item.quantidade),
-      UNIDADE_REFERENCIA: item.unidade || '',
-      CODIGO_ORIGINAL: item.codigo || ''
-    });
-
-    // Grupo agrega; preço só existe em item. Gravar preço no grupo faz o
-    // total contar duas vezes na hora de somar.
-    if (item.tipo === 'grupo') return;
-
-    proponentes.forEach(function (p, i) {
-      const digitado = cfNumero_((item.precos || [])[i]);
-      const cotou = digitado !== null && digitado !== undefined &&
-                    String((item.precos || [])[i]).trim() !== '';
-      const qtd = cfNumero_(item.quantidade);
-      const q = (qtd === null || qtd === 0) ? 1 : qtd;
-
-      // O formulário EQU só tem o total da linha; ter o unitário é a
-      // melhoria. Quando o comprador transcreve um documento antigo ele
-      // digita o total, e o unitário é derivado — ORIGEM_CALCULO guarda
-      // qual dos dois foi informado, para o histórico não misturar preço
-      // digitado com preço deduzido.
-      const porTotal = d.baseValores === 'total';
-      const unitario = cotou ? (porTotal ? digitado / q : digitado) : null;
-      const total = cotou ? (porTotal ? digitado : digitado * q) : null;
-
-      if (cotou) { totais[i] += total; cotouAlgo[i] = true; }
-
-      linhasPreco.push({
-        ID: cfNovoId_('PRC'),
-        ID_EAP: idNo,
-        ID_PROPOSTA: idsProposta[i],
-        ID_EQUALIZACAO: idEq,
-        QUANTIDADE: qtd,
-        UNIDADE: item.unidade || '',
-        PRECO_UNITARIO: cotou ? unitario : '',
-        VALOR_TOTAL: cotou ? total : '',
-        STATUS_PRECO: cotou ? 'cotado' : 'nao_cotado',
-        ORIGEM_CALCULO: cotou ? (porTotal ? 'calculado' : 'informado') : 'ausente',
-        CNPJ: cfSoDigitos_(p.cnpj),
-        ID_EMPREENDIMENTO: d.empreendimento,
-        DATA: agora,
-        ORIGEM: 'app'
-      });
-    });
-  });
-
   return cfComTrava_(function () {
     let anterior = null;
+    let backupEqualizacoes = [];
+    let backupPropostas = [];
+    let backupEap = [];
+    let backupPrecos = [];
+
     if (ehEdicao) {
-      anterior = cfLerTudo_('Equalizacoes').filter(function (e) {
+      backupEqualizacoes = cfLerTudo_('Equalizacoes').filter(function (e) {
         return String(e.ID) === String(idEq);
-      })[0];
-      cfApagarPor_('Precos', 'ID_EQUALIZACAO', idEq);
-      cfApagarPor_('EAP', 'ID_EQUALIZACAO', idEq);
-      cfApagarPor_('Propostas', 'ID_EQUALIZACAO', idEq);
-      cfApagarPor_('Equalizacoes', 'ID', idEq);
+      });
+      anterior = backupEqualizacoes[0] || null;
+
+      backupPropostas = cfLerTudo_('Propostas').filter(function (p) {
+        return String(p.ID_EQUALIZACAO) === String(idEq);
+      });
+
+      backupEap = cfLerTudo_('EAP').filter(function (ea) {
+        return String(ea.ID_EQUALIZACAO) === String(idEq);
+      });
+
+      backupPrecos = cfLerTudo_('Precos').filter(function (pr) {
+        return String(pr.ID_EQUALIZACAO) === String(idEq);
+      });
     }
 
-    cfInserir_('Equalizacoes', [{
-      ID: idEq,
-      // Derivada do Mega, não do que a tela mandou: a relação é fixa e o
-      // cliente não tem por que opinar sobre ela.
-      CNPJ_EMPRESA: cfEmpresaDoMega_(d.empreendimento).cnpj,
-      ID_EMPREENDIMENTO: d.empreendimento,
-      PROJETO: d.projeto || '',
-      AREA: d.area || '',
-      GRUPO_CENTRO_CUSTO: d.grupoCentroCusto || '',
-      CATEGORIA: d.categoria || cfCategoriaDerivada_(
-        cfTextosDaEqualizacao_(d, (itens || []).map(function (i) { return i.descricao; }))),
-      SUBCATEGORIA: d.subcategoria || '',
-      DATA_EQUALIZACAO: cfData_(d.data) || agora,
-      STATUS: anterior ? (anterior.STATUS || 'em_cotacao') : 'em_cotacao',
-      PREMISSAS: d.premissas || '',
-      DETALHAMENTO_APROVACAO: d.detalhamento || '',
-      NOTAS_CR: d.notasCr || '',
-      ORIGEM: anterior ? (anterior.ORIGEM || 'app') : 'app',
-      PARECER_FAVORAVEL: anterior ? (anterior.PARECER_FAVORAVEL || '') : '',
-      ID_PROPOSTA_VENCEDORA: anterior ? (anterior.ID_PROPOSTA_VENCEDORA || '') : '',
-      NUMERO_OC: anterior ? (anterior.NUMERO_OC || '') : '',
-      CNPJ_VENCEDOR: anterior ? (anterior.CNPJ_VENCEDOR || '') : '',
-      VALOR_FINAL: anterior ? (anterior.VALOR_FINAL || '') : '',
-      CRIADO_POR: anterior ? (anterior.CRIADO_POR || usuario) : usuario,
-      CRIADO_EM: anterior ? (anterior.CRIADO_EM || agora) : agora,
-      ATUALIZADO_EM: agora
-    }]);
+    // ── proponentes: preserva os IDs de proposta existentes quando o CNPJ ou a ordem coincidir
+    const propostasUsadas = {};
+    const idsProposta = proponentes.map(function (p, i) {
+      if (ehEdicao && backupPropostas.length) {
+        const cnpjP = cfSoDigitos_(p.cnpj);
+        let achada = cnpjP ? backupPropostas.filter(function (pa) {
+          return !propostasUsadas[pa.ID] && cfSoDigitos_(pa.CNPJ) === cnpjP;
+        })[0] : null;
+        if (!achada) {
+          achada = backupPropostas.filter(function (pa) {
+            return !propostasUsadas[pa.ID] && (cfNumero_(pa.ORDEM) || 0) === (i + 1);
+          })[0];
+        }
+        if (achada) {
+          propostasUsadas[achada.ID] = true;
+          return achada.ID;
+        }
+      }
+      return cfNovoId_('PRP');
+    });
 
-    cfInserir_('Propostas', proponentes.map(function (p, i) {
-      // A rodada é a última preenchida no histórico de negociação.
-      const rodada = cfNumero_(p.r02) !== null ? 'R02'
-                   : (cfNumero_(p.r01) !== null ? 'R01' : 'inicial');
-      const inicial = cfNumero_(p.propostaInicial);
-      // O total que o fornecedor escreveu no documento manda. Ele e a soma
-      // dos itens sao numeros independentes, e a divergencia entre os dois e
-      // erro comum de proposta — a confusao so aparece se ambos existirem.
-      const digitadoDeclarado = cfNumero_(p.totalDeclarado);
-      const declarado = digitadoDeclarado !== null ? digitadoDeclarado
-                      : (cfNumero_(p.r02) !== null ? cfNumero_(p.r02)
-                      : (cfNumero_(p.r01) !== null ? cfNumero_(p.r01) : inicial));
+    const totais = proponentes.map(function () { return 0; });
+    // Quem não cotou NADA precisa ficar sem total, não com zero. Zero venceria
+    // a comparação de menor valor e passaria a exigir justificativa de quem
+    // escolhesse qualquer fornecedor de verdade. Acontece no primeiro convite
+    // recusado.
+    const cotouAlgo = proponentes.map(function () { return false; });
 
-      return {
-        ID: idsProposta[i],
+    // ── árvore: o nível vira ID_PAI. Pilha guarda o último id de cada nível.
+    const pilha = {};
+    const linhasEap = [];
+    const linhasPreco = [];
+
+    itens.forEach(function (item, ordem) {
+      const nivel = Number(item.nivel) || 0;
+      const idNo = cfNovoId_('EAP');
+      pilha[nivel] = idNo;
+
+      linhasEap.push({
+        ID: idNo,
         ID_EQUALIZACAO: idEq,
-        CNPJ: cfSoDigitos_(p.cnpj),
-        RAZAO_SOCIAL_INFORMADA: String(p.nome || '').trim(),
-        ORDEM: i + 1,
-        RODADA: rodada,
-        NUMERO_PROPOSTA: p.numero || '',
-        REVISAO_FORNECEDOR: p.revisao || '',
-        DATA_PROPOSTA: cfData_(p.data) || '',
-        VALIDADE_ATE: cfData_(p.validadeAte) || '',
-        CONDICOES_PAGAMENTO: p.condicoes || '',
-        LEAD_TIME_DIAS: cfNumero_(p.leadTime),
-        PRAZO_EXECUCAO_DIAS: (function () {
-          let pr = cfNumero_(p.prazoExecucao);
-          if (pr === null && p.dataPrevInicio && p.dataPrevTermino) {
-            const d1 = new Date(p.dataPrevInicio + 'T00:00:00');
-            const d2 = new Date(p.dataPrevTermino + 'T00:00:00');
-            if (!isNaN(d1.getTime()) && !isNaN(d2.getTime()) && d2 >= d1) {
-              pr = Math.max(1, Math.round((d2.getTime() - d1.getTime()) / 86400000));
-            }
-          }
-          return pr;
-        })(),
-        FATURAMENTO_DIRETO: p.faturamentoDireto === true,
-        VALOR_FATURAMENTO_DIRETO: cfNumero_(p.valorFaturamentoDireto),
-        DATA_PREV_INICIO: cfData_(p.dataPrevInicio) || '',
-        DATA_PREV_TERMINO: cfData_(p.dataPrevTermino) || '',
-        VALOR_TOTAL_DECLARADO: declarado === null ? '' : declarado,
-        VALOR_TOTAL_CALCULADO: cotouAlgo[i] ? totais[i] : '',
-        OBSERVACAO: p.centroCusto || '',
-        VALOR_PROPOSTA_INICIAL: inicial === null ? '' : inicial,
-        // Derivada, nunca digitada: na planilha EQU a fórmula de redução
-        // copiava o total quando a inicial estava vazia e reportava 100%
-        // de economia. Aqui, sem inicial não há redução.
-        REDUCAO_NEGOCIADA: (inicial !== null && declarado !== null && inicial > declarado)
-          ? inicial - declarado : '',
-        // Normalizado na gravação, não na leitura: assim o que está na
-        // planilha já é o link final, e quem abrir a aba direto vê o mesmo
-        // que a tela vê.
-        LINK_PROPOSTA: cfLinkDoDrive_(p.linkProposta),
-        ORIGEM: 'app'
-      };
-    }));
+        ID_PAI: nivel > 0 ? (pilha[nivel - 1] || '') : '',
+        ORDEM: ordem + 1,
+        TIPO: item.tipo === 'grupo' ? 'grupo' : 'item',
+        DESCRICAO: String(item.descricao).trim(),
+        QUANTIDADE_REFERENCIA: cfNumero_(item.quantidade),
+        UNIDADE_REFERENCIA: item.unidade || '',
+        CODIGO_ORIGINAL: item.codigo || ''
+      });
 
-    cfInserir_('EAP', linhasEap);
-    if (linhasPreco.length) cfInserir_('Precos', linhasPreco);
+      // Grupo agrega; preço só existe em item. Gravar preço no grupo faz o
+      // total contar duas vezes na hora de somar.
+      if (item.tipo === 'grupo') return;
+
+      proponentes.forEach(function (p, i) {
+        const digitado = cfNumero_((item.precos || [])[i]);
+        const cotou = digitado !== null && digitado !== undefined &&
+                      String((item.precos || [])[i]).trim() !== '';
+        const qtd = cfNumero_(item.quantidade);
+        const q = (qtd === null || qtd === 0) ? 1 : qtd;
+
+        // O formulário EQU só tem o total da linha; ter o unitário é a
+        // melhoria. Quando o comprador transcreve um documento antigo ele
+        // digita o total, e o unitário é derivado — ORIGEM_CALCULO guarda
+        // qual dos dois foi informado, para o histórico não misturar preço
+        // digitado com preço deduzido.
+        const porTotal = d.baseValores === 'total';
+        const unitario = cotou ? (porTotal ? digitado / q : digitado) : null;
+        const total = cotou ? (porTotal ? digitado : digitado * q) : null;
+
+        if (cotou) { totais[i] += total; cotouAlgo[i] = true; }
+
+        linhasPreco.push({
+          ID: cfNovoId_('PRC'),
+          ID_EAP: idNo,
+          ID_PROPOSTA: idsProposta[i],
+          ID_EQUALIZACAO: idEq,
+          QUANTIDADE: qtd,
+          UNIDADE: item.unidade || '',
+          PRECO_UNITARIO: cotou ? unitario : '',
+          VALOR_TOTAL: cotou ? total : '',
+          STATUS_PRECO: cotou ? 'cotado' : 'nao_cotado',
+          ORIGEM_CALCULO: cotou ? (porTotal ? 'calculado' : 'informado') : 'ausente',
+          CNPJ: cfSoDigitos_(p.cnpj),
+          ID_EMPREENDIMENTO: d.empreendimento,
+          DATA: agora,
+          ORIGEM: 'app'
+        });
+      });
+    });
+
+    // Se estava homologada e foi editada, condições comerciais foram alteradas:
+    // revoga homologação, reabre para nova negociação/aprovação e limpa decisão anterior.
+    const estavaHomologada = !!(anterior && anterior.STATUS === 'homologada');
+    const statusFinal = estavaHomologada ? 'em_negociacao' : (anterior ? (anterior.STATUS || 'em_cotacao') : 'em_cotacao');
+    const vencedorFinal = estavaHomologada ? '' : (anterior ? (anterior.ID_PROPOSTA_VENCEDORA || '') : '');
+    const cnpjVencedorFinal = estavaHomologada ? '' : (anterior ? (anterior.CNPJ_VENCEDOR || '') : '');
+    const valorFinal = estavaHomologada ? '' : (anterior ? (anterior.VALOR_FINAL || '') : '');
+    const parecerFinal = estavaHomologada ? '' : (anterior ? (anterior.PARECER_FAVORAVEL || '') : '');
+    const ocFinal = estavaHomologada ? '' : (anterior ? (anterior.NUMERO_OC || '') : '');
+
+    try {
+      if (ehEdicao) {
+        cfApagarPor_('Precos', 'ID_EQUALIZACAO', idEq);
+        cfApagarPor_('EAP', 'ID_EQUALIZACAO', idEq);
+        cfApagarPor_('Propostas', 'ID_EQUALIZACAO', idEq);
+        cfApagarPor_('Equalizacoes', 'ID', idEq);
+      }
+
+      cfInserir_('Equalizacoes', [{
+        ID: idEq,
+        // Derivada do Mega, não do que a tela mandou: a relação é fixa e o
+        // cliente não tem por que opinar sobre ela.
+        CNPJ_EMPRESA: cfEmpresaDoMega_(d.empreendimento).cnpj,
+        ID_EMPREENDIMENTO: d.empreendimento,
+        PROJETO: d.projeto || '',
+        AREA: d.area || '',
+        GRUPO_CENTRO_CUSTO: d.grupoCentroCusto || '',
+        CATEGORIA: d.categoria || cfCategoriaDerivada_(
+          cfTextosDaEqualizacao_(d, (itens || []).map(function (i) { return i.descricao; }))),
+        SUBCATEGORIA: d.subcategoria || '',
+        DATA_EQUALIZACAO: cfData_(d.data) || agora,
+        STATUS: statusFinal,
+        PREMISSAS: d.premissas || '',
+        DETALHAMENTO_APROVACAO: d.detalhamento || '',
+        NOTAS_CR: d.notasCr || '',
+        ORIGEM: anterior ? (anterior.ORIGEM || 'app') : 'app',
+        PARECER_FAVORAVEL: parecerFinal,
+        ID_PROPOSTA_VENCEDORA: vencedorFinal,
+        NUMERO_OC: ocFinal,
+        CNPJ_VENCEDOR: cnpjVencedorFinal,
+        VALOR_FINAL: valorFinal,
+        CRIADO_POR: anterior ? (anterior.CRIADO_POR || usuario) : usuario,
+        CRIADO_EM: anterior ? (anterior.CRIADO_EM || agora) : agora,
+        ATUALIZADO_EM: agora
+      }]);
+
+      cfInserir_('Propostas', proponentes.map(function (p, i) {
+        // A rodada é a última preenchida no histórico de negociação.
+        const rodada = cfNumero_(p.r02) !== null ? 'R02'
+                     : (cfNumero_(p.r01) !== null ? 'R01' : 'inicial');
+        const inicial = cfNumero_(p.propostaInicial);
+        // O total que o fornecedor escreveu no documento manda. Ele e a soma
+        // dos itens sao numeros independentes, e a divergencia entre os dois e
+        // erro comum de proposta — a confusao so aparece se ambos existirem.
+        const digitadoDeclarado = cfNumero_(p.totalDeclarado);
+        const declarado = digitadoDeclarado !== null ? digitadoDeclarado
+                        : (cfNumero_(p.r02) !== null ? cfNumero_(p.r02)
+                        : (cfNumero_(p.r01) !== null ? cfNumero_(p.r01) : inicial));
+
+        return {
+          ID: idsProposta[i],
+          ID_EQUALIZACAO: idEq,
+          CNPJ: cfSoDigitos_(p.cnpj),
+          RAZAO_SOCIAL_INFORMADA: String(p.nome || '').trim(),
+          ORDEM: i + 1,
+          RODADA: rodada,
+          NUMERO_PROPOSTA: p.numero || '',
+          REVISAO_FORNECEDOR: p.revisao || '',
+          DATA_PROPOSTA: cfData_(p.data) || '',
+          VALIDADE_ATE: cfData_(p.validadeAte) || '',
+          CONDICOES_PAGAMENTO: p.condicoes || '',
+          LEAD_TIME_DIAS: cfNumero_(p.leadTime),
+          PRAZO_EXECUCAO_DIAS: (function () {
+            let pr = cfNumero_(p.prazoExecucao);
+            if (pr === null && p.dataPrevInicio && p.dataPrevTermino) {
+              const d1 = new Date(p.dataPrevInicio + 'T00:00:00');
+              const d2 = new Date(p.dataPrevTermino + 'T00:00:00');
+              if (!isNaN(d1.getTime()) && !isNaN(d2.getTime()) && d2 >= d1) {
+                pr = Math.max(1, Math.round((d2.getTime() - d1.getTime()) / 86400000));
+              }
+            }
+            return pr;
+          })(),
+          FATURAMENTO_DIRETO: p.faturamentoDireto === true,
+          VALOR_FATURAMENTO_DIRETO: cfNumero_(p.valorFaturamentoDireto),
+          DATA_PREV_INICIO: cfData_(p.dataPrevInicio) || '',
+          DATA_PREV_TERMINO: cfData_(p.dataPrevTermino) || '',
+          VALOR_TOTAL_DECLARADO: declarado === null ? '' : declarado,
+          VALOR_TOTAL_CALCULADO: cotouAlgo[i] ? totais[i] : '',
+          OBSERVACAO: p.centroCusto || '',
+          VALOR_PROPOSTA_INICIAL: inicial === null ? '' : inicial,
+          // Derivada, nunca digitada: na planilha EQU a fórmula de redução
+          // copiava o total quando a inicial estava vazia e reportava 100%
+          // de economia. Aqui, sem inicial não há redução.
+          REDUCAO_NEGOCIADA: (inicial !== null && declarado !== null && inicial > declarado)
+            ? inicial - declarado : '',
+          // Normalizado na gravação, não na leitura: assim o que está na
+          // planilha já é o link final, e quem abrir a aba direto vê o mesmo
+          // que a tela vê.
+          LINK_PROPOSTA: cfLinkDoDrive_(p.linkProposta),
+          VENCEDORA: estavaHomologada ? false : (!vencedorFinal ? false : idsProposta[i] === vencedorFinal),
+          ORIGEM: 'app'
+        };
+      }));
+
+      cfInserir_('EAP', linhasEap);
+      if (linhasPreco.length) cfInserir_('Precos', linhasPreco);
+    } catch (errGravar) {
+      if (ehEdicao) {
+        try {
+          cfApagarPor_('Precos', 'ID_EQUALIZACAO', idEq);
+          cfApagarPor_('EAP', 'ID_EQUALIZACAO', idEq);
+          cfApagarPor_('Propostas', 'ID_EQUALIZACAO', idEq);
+          cfApagarPor_('Equalizacoes', 'ID', idEq);
+          if (backupEqualizacoes.length) cfInserir_('Equalizacoes', backupEqualizacoes);
+          if (backupPropostas.length) cfInserir_('Propostas', backupPropostas);
+          if (backupEap.length) cfInserir_('EAP', backupEap);
+          if (backupPrecos.length) cfInserir_('Precos', backupPrecos);
+        } catch (errRollback) {
+          cfLog_('erro_rollback_edicao', 'Equalizacoes', idEq, String(errRollback.message || errRollback));
+        }
+      }
+      throw errGravar;
+    }
 
     // Fornecedor novo entra no cadastro: sem isso o mapa mostra "(sem
     // identificação)" e a próxima cotação redigita tudo de novo.
@@ -484,7 +556,7 @@ function cfCriarEqualizacao_(d) {
     cfRegistrarTempo_(idEq, d.segundosPreenchimento, proponentes.length, linhasEap.length, ehEdicao);
 
     cfLog_(ehEdicao ? 'editar_equalizacao' : 'criar_equalizacao', 'equalizacao', idEq, JSON.stringify({
-      proponentes: proponentes.length, nos: linhasEap.length, precos: linhasPreco.length, editada: ehEdicao
+      proponentes: proponentes.length, nos: linhasEap.length, precos: linhasPreco.length, editada: ehEdicao, reaberta: estavaHomologada
     }));
 
     return {
@@ -492,7 +564,8 @@ function cfCriarEqualizacao_(d) {
       proponentes: proponentes.length,
       nos: linhasEap.length,
       precos: linhasPreco.length,
-      editada: ehEdicao
+      editada: ehEdicao,
+      reaberta: estavaHomologada
     };
   }, 120);
 }

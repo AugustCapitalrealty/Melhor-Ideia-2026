@@ -2308,3 +2308,238 @@ try {
   console.log(`✗ FALHA na Correção 34: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 35 (P0-1) — edição de equalização homologada revoga homologação,
+//  reabre para 'em_negociacao' e preserva IDs de propostas de mesmo CNPJ
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctx35 = vm.createContext({ Logger: { log: () => {} }, console: console });
+  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Equalizacao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctx35, { filename: f });
+  });
+
+  const ID_EQ = 'EQU-HOMOLOGADA-TESTE';
+  const agora = new Date(2026, 8, 1, 10, 0, 0);
+  const tabelas = {
+    Equalizacoes: [{
+      ID: ID_EQ,
+      CNPJ_EMPRESA: '03015145000154',
+      ID_EMPREENDIMENTO: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+      PROJETO: 'Pintura',
+      AREA: 'Facilities',
+      DATA_EQUALIZACAO: agora,
+      STATUS: 'homologada',
+      ORIGEM: 'app',
+      ID_PROPOSTA_VENCEDORA: 'PRP-ORIG-1',
+      CNPJ_VENCEDOR: '11222333000181',
+      VALOR_FINAL: 1500,
+      PARECER_FAVORAVEL: 'Menor preço homologado.',
+      CRIADO_POR: 'usuario@capitalrealty.com.br',
+      CRIADO_EM: agora
+    }],
+    Propostas: [
+      { ID: 'PRP-ORIG-1', ID_EQUALIZACAO: ID_EQ, CNPJ: '11222333000181', ORDEM: 1, VENCEDORA: true },
+      { ID: 'PRP-ORIG-2', ID_EQUALIZACAO: ID_EQ, CNPJ: '44555666000192', ORDEM: 2, VENCEDORA: false }
+    ],
+    EAP: [
+      { ID: 'EAP-1', ID_EQUALIZACAO: ID_EQ, ORDEM: 1, TIPO: 'item', DESCRICAO: 'Pintura Epóxi' }
+    ],
+    Precos: [
+      { ID: 'PRC-1', ID_EQUALIZACAO: ID_EQ, ID_EAP: 'EAP-1', ID_PROPOSTA: 'PRP-ORIG-1', PRECO_UNITARIO: 1500 }
+    ],
+    Fornecedores: []
+  };
+
+  ctx35.cfLerTudo_ = (n) => (tabelas[n] ? JSON.parse(JSON.stringify(tabelas[n])) : []);
+  ctx35.cfInserir_ = (aba, linhas) => { tabelas[aba] = (tabelas[aba] || []).concat(linhas); };
+  ctx35.cfApagarPor_ = (aba, campo, valor) => {
+    if (tabelas[aba]) {
+      tabelas[aba] = tabelas[aba].filter(r => String(r[campo]) !== String(valor));
+    }
+  };
+  ctx35.cfComTrava_ = (fn) => fn();
+  ctx35.cfUsuario_ = () => 'usuario@capitalrealty.com.br';
+  ctx35.cfLog_ = () => {};
+  let seq = 500;
+  ctx35.cfNovoId_ = (p) => p + '-' + (++seq);
+
+  // Edita alterando o preço (renegociação)
+  const res = ctx35.cfCriarEqualizacao_({
+    id: ID_EQ,
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+    projeto: 'Pintura Renegociada',
+    area: 'Facilities',
+    proponentes: [
+      { nome: 'Fornecedor A', cnpj: '11.222.333/0001-81' },
+      { nome: 'Fornecedor B', cnpj: '44.555.666/0001-92' }
+    ],
+    itens: [
+      { tipo: 'item', nivel: 0, descricao: 'Pintura Epóxi', quantidade: '1', precos: ['1400,00', '1600,00'] }
+    ]
+  });
+
+  assert.equal(res.editada, true);
+  assert.equal(res.reaberta, true, 'deve sinalizar reaberta: true');
+
+  const eqAtual = tabelas.Equalizacoes.find(e => e.ID === ID_EQ);
+  assert.equal(eqAtual.STATUS, 'em_negociacao', 'deve reabrir status para em_negociacao');
+  assert.equal(eqAtual.ID_PROPOSTA_VENCEDORA, '', 'deve limpar ID_PROPOSTA_VENCEDORA');
+  assert.equal(eqAtual.CNPJ_VENCEDOR, '', 'deve limpar CNPJ_VENCEDOR');
+  assert.equal(eqAtual.VALOR_FINAL, '', 'deve limpar VALOR_FINAL');
+  assert.equal(eqAtual.PARECER_FAVORAVEL, '', 'deve limpar PARECER_FAVORAVEL');
+
+  // Os IDs de proposta devem ter sido preservados porque o CNPJ bateu
+  const prop1 = tabelas.Propostas.find(p => p.CNPJ === '11222333000181');
+  assert.equal(prop1.ID, 'PRP-ORIG-1', 'deve reaproveitar PRP-ORIG-1 para o mesmo CNPJ');
+  assert.equal(prop1.VENCEDORA, false, 'proposta não deve continuar vencedora tacitamente');
+
+  console.log('✓ CORREÇÃO VERIFICADA: edição de homologação revoga status e preserva IDs sem referências órfãs');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 35: ${e.message}`);
+  process.exitCode = 1;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 36 (P0-2) — rollback transacional em memória restaura estado se gravação falhar
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctx36 = vm.createContext({ Logger: { log: () => {} }, console: console });
+  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Equalizacao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctx36, { filename: f });
+  });
+
+  const ID_EQ = 'EQU-ROLLBACK-TESTE';
+  const tabelas = {
+    Equalizacoes: [{ ID: ID_EQ, PROJETO: 'Original Intacto', STATUS: 'em_cotacao' }],
+    Propostas: [{ ID: 'PRP-R1', ID_EQUALIZACAO: ID_EQ, CNPJ: '11222333000181' }],
+    EAP: [{ ID: 'EAP-R1', ID_EQUALIZACAO: ID_EQ, DESCRICAO: 'Item Seguro' }],
+    Precos: [{ ID: 'PRC-R1', ID_EQUALIZACAO: ID_EQ, ID_PROPOSTA: 'PRP-R1', VALOR_TOTAL: 500 }],
+    Fornecedores: []
+  };
+
+  ctx36.cfLerTudo_ = (n) => (tabelas[n] ? JSON.parse(JSON.stringify(tabelas[n])) : []);
+  let deveFalhar = true;
+  ctx36.cfInserir_ = (aba, linhas) => {
+    // Simula falha transitória ao tentar inserir Precos na nova versão
+    if (aba === 'Precos' && deveFalhar) {
+      deveFalhar = false;
+      throw new Error('Falha de quota ou timeout simulado no Google Sheets');
+    }
+    tabelas[aba] = (tabelas[aba] || []).concat(linhas);
+  };
+  ctx36.cfApagarPor_ = (aba, campo, valor) => {
+    if (tabelas[aba]) {
+      tabelas[aba] = tabelas[aba].filter(r => String(r[campo]) !== String(valor));
+    }
+  };
+  ctx36.cfComTrava_ = (fn) => fn();
+  ctx36.cfUsuario_ = () => 'usuario@capitalrealty.com.br';
+  ctx36.cfLog_ = () => {};
+  ctx36.cfNovoId_ = (p) => p + '-novo';
+
+  let disparouErro = false;
+  try {
+    ctx36.cfCriarEqualizacao_({
+      id: ID_EQ,
+      empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+      projeto: 'Tentativa Quebrada',
+      proponentes: [{ nome: 'Alfa', cnpj: '11222333000181' }],
+      itens: [{ tipo: 'item', nivel: 0, descricao: 'Item Novo', quantidade: '1', precos: ['700'] }]
+    });
+  } catch (err) {
+    disparouErro = true;
+    assert.ok(err.message.includes('Falha de quota'), 'deve propagar o erro original');
+  }
+
+  assert.ok(disparouErro, 'deve ter lançado exceção');
+  // Verifica se o rollback restaurou as 4 tabelas
+  assert.equal(tabelas.Equalizacoes.length, 1, 'Equalizacoes restaurada');
+  assert.equal(tabelas.Equalizacoes[0].PROJETO, 'Original Intacto', 'conteúdo original restaurado');
+  assert.equal(tabelas.Propostas.length, 1, 'Propostas restaurada');
+  assert.equal(tabelas.EAP.length, 1, 'EAP restaurada');
+  assert.equal(tabelas.Precos.length, 1, 'Precos restaurada');
+  assert.equal(tabelas.Precos[0].VALOR_TOTAL, 500, 'Preco original restaurado');
+
+  console.log('✓ CORREÇÃO VERIFICADA: rollback transacional restaura dados íntegros após falha parcial');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 36: ${e.message}`);
+  process.exitCode = 1;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 37 (P0-3) — alinhamento estrito de valores entre homologação e exportação
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctx37 = vm.createContext({ Logger: { log: () => {} }, console: console });
+  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctx37, { filename: f });
+  });
+  ctx37.cfDataTexto_ = () => '06/09/2026';
+
+  const ID_EQ = 'EQU-VALORES-TESTE';
+  const agora = new Date(2026, 8, 1);
+  const tabelas = {
+    Equalizacoes: [{
+      _linha: 2,
+      ID: ID_EQ,
+      CNPJ_EMPRESA: '03015145000154',
+      ID_EMPREENDIMENTO: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+      PROJETO: 'Instalação Ar Condicionado',
+      STATUS: 'em_cotacao',
+      ORIGEM: 'app',
+      DATA_EQUALIZACAO: agora
+    }],
+    Propostas: [
+      {
+        _linha: 2,
+        ID: 'PRP-V1',
+        ID_EQUALIZACAO: ID_EQ,
+        CNPJ: '11222333000181',
+        RAZAO_SOCIAL_INFORMADA: 'Clima Bom Ltda',
+        ORDEM: 1,
+        VALOR_TOTAL_DECLARADO: 900, // Fornecedor deu desconto global no total
+        VALOR_TOTAL_CALCULADO: 1000 // Soma dos itens dá 1000
+      }
+    ],
+    EAP: [{ ID: 'EAP-1', ID_EQUALIZACAO: ID_EQ, ORDEM: 1, TIPO: 'item', DESCRICAO: 'Aparelho Split' }],
+    Precos: [{ ID: 'PRC-1', ID_EQUALIZACAO: ID_EQ, ID_EAP: 'EAP-1', ID_PROPOSTA: 'PRP-V1', VALOR_TOTAL: 1000 }],
+    Fornecedores: [{ CNPJ: '11222333000181', RAZAO_SOCIAL: 'Clima Bom Ltda' }]
+  };
+
+  ctx37.cfLerTudo_ = (n) => (tabelas[n] ? JSON.parse(JSON.stringify(tabelas[n])) : []);
+  ctx37.cfAtualizarLinha_ = (aba, linha, dados) => {
+    Object.assign(tabelas[aba][linha - 2], dados);
+  };
+  ctx37.cfComTrava_ = (fn) => fn();
+  ctx37.cfLog_ = () => {};
+
+  // Homologa a proposta
+  const resHomolog = ctx37.cfHomologar_(ID_EQ, 'PRP-V1', 'Negociação com desconto global.');
+  assert.equal(resHomolog.valor, 900, 'homologação deve considerar total declarado de 900');
+  assert.equal(tabelas.Equalizacoes[0].VALOR_FINAL, 900, 'VALOR_FINAL deve ser 900');
+
+  // Agora testa o mapa e o bloco de scorecard exportado
+  const mapa = ctx37.cfMapaEqualizacao_(ID_EQ);
+  assert.equal(mapa.equalizacao.valorFinal, 900, 'mapa deve expor valorFinal 900');
+
+  const grade = [];
+  const merges = [];
+  const moeda = [];
+  const faixas = { titulo: [], cabecalho: [], destaque: [] };
+  const vazia = () => ['', '', '', '', ''];
+  const linha = (conteudo) => { grade.push(conteudo); return grade.length; };
+
+  ctx37.cfBlocoScorecard_(mapa.equalizacao, mapa.proponentes, linha, vazia, grade, merges, moeda, faixas, 5, 2, 3);
+
+  // Procura a linha de Valor no scorecard gerado
+  const linhaValor = grade.find(l => l[1] === 'Valor:');
+  assert.ok(linhaValor, 'deve existir linha de Valor');
+  assert.equal(linhaValor[2], 900, 'valor no scorecard exportado DEVE ser 900, igual à homologação');
+  assert.ok(linhaValor[3].includes('1.000,00'), 'deve explicitar a soma dos itens cotados de R$ 1.000,00');
+
+  console.log('✓ CORREÇÃO VERIFICADA: homologação e exportação concordam rigorosamente no valor homologado com ajuste');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 37: ${e.message}`);
+  process.exitCode = 1;
+}
