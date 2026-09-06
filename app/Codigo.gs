@@ -215,6 +215,19 @@ function apiCriarEqualizacao(dados) {
 }
 
 /**
+ * Registra a proposta vencedora e o parecer.
+ * Escrita, portanto passa por cfExigeAutorizacao_.
+ */
+function apiHomologar(idEqualizacao, idProposta, parecer) {
+  try {
+    cfExigeAutorizacao_();
+    return { ok: true, resultado: cfHomologar_(idEqualizacao, idProposta, parecer) };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/**
  * O comparativo de uma equalização.
  * cfMapaEqualizacao_ já devolve tudo serializável — datas viram texto lá,
  * porque Date não atravessa google.script.run de forma confiável.

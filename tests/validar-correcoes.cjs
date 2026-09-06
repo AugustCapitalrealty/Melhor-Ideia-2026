@@ -823,3 +823,59 @@ try {
   console.log(`✗ FALHA na Correção 19: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 20 — homologar exige justificativa fora do menor valor
+//
+//  Escolher a proposta mais cara é decisão legítima: prazo, escopo,
+//  histórico do fornecedor. Mas precisa estar escrita — é a defesa de quem
+//  comprou quando alguém perguntar meses depois.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxH = vm.createContext({ Logger: { log: () => {} }, console: console });
+  const atualizado = [];
+
+  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxH, { filename: f });
+  });
+
+  const tabelas = {
+    Equalizacoes: [{ ID: 'EQ1', _linha: 2, STATUS: 'em_cotacao' }],
+    Propostas: [
+      { ID: 'P1', _linha: 2, ID_EQUALIZACAO: 'EQ1', CNPJ: '11222333000181',
+        VALOR_TOTAL_DECLARADO: 1000, VENCEDORA: false },
+      { ID: 'P2', _linha: 3, ID_EQUALIZACAO: 'EQ1', CNPJ: '22333444000199',
+        VALOR_TOTAL_DECLARADO: 1500, VENCEDORA: false }
+    ]
+  };
+  ctxH.cfLerTudo_ = (n) => tabelas[n] || [];
+  ctxH.cfAtualizarLinha_ = (aba, linha, campos) => atualizado.push({ aba, linha, campos });
+  ctxH.cfComTrava_ = (fn) => fn();
+  ctxH.cfLog_ = () => {};
+
+  // A mais cara, sem justificativa: tem que recusar.
+  assert.throws(() => ctxH.cfHomologar_('EQ1', 'P2', ''), /justificativa/i,
+    'aceitou homologar a proposta mais cara sem justificativa');
+
+  // A mais barata não precisa de justificativa.
+  atualizado.length = 0;
+  const r = ctxH.cfHomologar_('EQ1', 'P1', '');
+  assert.equal(r.eraMenor, true);
+  const eq = atualizado.filter(a => a.aba === 'Equalizacoes')[0];
+  assert.equal(eq.campos.STATUS, 'homologada');
+  assert.equal(eq.campos.ID_PROPOSTA_VENCEDORA, 'P1');
+  assert.equal(eq.campos.VALOR_FINAL, 1000);
+  assert.ok(atualizado.some(a => a.aba === 'Propostas' && a.linha === 2 && a.campos.VENCEDORA === true));
+
+  // A mais cara COM justificativa passa.
+  atualizado.length = 0;
+  const r2 = ctxH.cfHomologar_('EQ1', 'P2', 'Único com prazo de 10 dias.');
+  assert.equal(r2.eraMenor, false);
+  assert.equal(atualizado.filter(a => a.aba === 'Equalizacoes')[0].campos.PARECER_FAVORAVEL,
+               'Único com prazo de 10 dias.');
+
+  console.log('✓ CORREÇÃO VERIFICADA: homologação registra vencedor e cobra justificativa');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 20: ${e.message}`);
+  process.exitCode = 1;
+}

@@ -308,6 +308,26 @@ table.mapa tfoot .desc{background:var(--superficie)}
   border:1.5px solid rgba(21,30,73,.14);border-radius:9px;background:#fff;color:var(--texto);
 }
 .campo textarea:focus{outline:none;border-color:var(--acao);box-shadow:0 0 0 3px rgba(6,92,169,.14)}
+
+/* ── decisão ── */
+.decisao{
+  margin-top:22px;padding:20px 22px;border-radius:12px;
+  background:var(--superficie);border:1px solid var(--linha);box-shadow:var(--sombra);
+}
+.decisao h2{
+  margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--royal);
+}
+.escolhas{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.escolha{
+  display:flex;align-items:center;gap:10px;padding:11px 15px;cursor:pointer;
+  border:1.5px solid var(--linha);border-radius:10px;background:#fff;flex:1 1 220px;
+}
+.escolha:hover{border-color:var(--acao)}
+.escolha.venceu{border-color:var(--ok);background:#F2F9F5}
+.escolha b{display:block;font-size:14px;color:var(--noturno)}
+.escolha small{display:block;font-size:13px;color:var(--suave);font-variant-numeric:tabular-nums}
+.escolha input{width:auto;margin:0}
 .bt{
   padding:9px 16px;font-size:14px;font-weight:600;font-family:inherit;
   border:1px solid rgba(21,30,73,.16);border-radius:9px;
@@ -802,8 +822,83 @@ function desenharMapa(m) {
       '<tbody>' + corpo + '</tbody>' +
       '<tfoot>' + rodape + '</tfoot>' +
     '</table></div>' +
-    '<div class="legenda"><span><b>verde</b> = menor preço da linha, entre quem cotou</span>' +
-    '<span>· = fornecedor não recebeu esta linha</span></div>';
+    '<div class="legenda"><span><b>✓ verde</b> = menor preço da linha, entre quem cotou</span>' +
+    '<span>· = fornecedor não recebeu esta linha</span></div>' +
+    blocoDecisao(m);
+}
+
+/**
+ * A decisão. Sem isto o app compara e para justamente onde a planilha era
+ * usada: registrar quem venceu e por quê.
+ *
+ * A ordem de compra não entra aqui — é emitida depois da aprovação.
+ */
+function blocoDecisao(m) {
+  mapaAberto = m;
+  var eq = m.equalizacao;
+  var homologada = eq.status === 'homologada';
+
+  var opcoes = m.proponentes.map(function (p) {
+    var valor = p.total !== null && p.total !== undefined ? p.total : p.calculado;
+    var venceu = String(eq.vencedora) === String(p.id);
+    return '<label class="escolha' + (venceu ? ' venceu' : '') + '">' +
+      '<input type="radio" name="vencedora" value="' + esc(p.id) + '"' +
+      (venceu ? ' checked' : '') + '>' +
+      '<span><b>' + esc(p.nome) + '</b><small>' + moeda(valor) + '</small></span>' +
+      '</label>';
+  }).join('');
+
+  return '<div class="decisao">' +
+    '<h2>Decisão</h2>' +
+    (homologada
+      ? '<p class="dica">Esta equalização já está homologada. Escolher outra proposta substitui a decisão anterior e fica registrado no Log.</p>'
+      : '<p class="dica">Escolher a proposta que não é a de menor valor exige justificativa — é a defesa de quem comprou.</p>') +
+    '<div class="escolhas">' + opcoes + '</div>' +
+    '<div class="campo" style="margin-top:14px">' +
+      '<label for="parecer">Favorável à contratação e por quê</label>' +
+      '<textarea id="parecer" rows="3" placeholder="Prazo, escopo, histórico do fornecedor…">' +
+      esc(eq.parecer) + '</textarea>' +
+    '</div>' +
+    '<div class="acoes" style="margin-top:12px">' +
+      '<button class="bt primario" id="btHomologar" onclick="homologar()">' +
+      (homologada ? 'Atualizar decisão' : 'Homologar equalização') + '</button>' +
+      '<span id="homologMsg"></span>' +
+    '</div>' +
+  '</div>';
+}
+
+var mapaAberto = null;
+
+function homologar() {
+  var escolhido = document.querySelector('input[name="vencedora"]:checked');
+  var msg = document.getElementById('homologMsg');
+  if (!escolhido) {
+    msg.innerHTML = '<span style="color:var(--critico)">Escolha uma proposta.</span>';
+    return;
+  }
+
+  var bt = document.getElementById('btHomologar');
+  bt.disabled = true;
+  msg.innerHTML = 'gravando…';
+
+  google.script.run
+    .withSuccessHandler(function (r) {
+      bt.disabled = false;
+      if (!r.ok) {
+        msg.innerHTML = '<span style="color:var(--critico)">' + esc(r.erro) + '</span>';
+        return;
+      }
+      msg.innerHTML = '<span style="color:var(--ok)">Homologada · ' +
+        moeda(r.resultado.valor) +
+        (r.resultado.eraMenor ? '' : ' · fora do menor valor, com justificativa') + '</span>';
+      abrirMapa(mapaAberto.equalizacao.id);   // redesenha com o vencedor marcado
+    })
+    .withFailureHandler(function (e) {
+      bt.disabled = false;
+      msg.innerHTML = '<span style="color:var(--critico)">' + esc(e.message) + '</span>';
+    })
+    .apiHomologar(mapaAberto.equalizacao.id, escolhido.value,
+                  document.getElementById('parecer').value);
 }
 
 function rotuloStatus(s) {

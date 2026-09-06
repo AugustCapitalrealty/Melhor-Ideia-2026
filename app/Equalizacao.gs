@@ -131,7 +131,10 @@ function cfMapaEqualizacao_(idEq) {
       area: eq.AREA || '',
       data: cfDataTexto_(eq.DATA_EQUALIZACAO),
       status: eq.STATUS || '',
-      premissas: eq.PREMISSAS || ''
+      premissas: eq.PREMISSAS || '',
+      detalhamento: eq.DETALHAMENTO_APROVACAO || '',
+      parecer: eq.PARECER_FAVORAVEL || '',
+      vencedora: eq.ID_PROPOSTA_VENCEDORA || ''
     },
     proponentes: proponentes,
     linhas: linhas,
@@ -390,4 +393,76 @@ function cfCadastrarProponentes_(proponentes) {
 
   if (novos.length) cfInserir_('Fornecedores', novos);
   return novos.length;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Homologação — escolher a proposta vencedora
+//
+//  É o passo que fecha o ciclo. Sem ele o app compara e para justamente
+//  onde a planilha era usada: registrar a decisão e o porquê dela.
+//
+//  A ordem de compra não entra aqui — ela é emitida depois da aprovação,
+//  fora deste fluxo.
+// ─────────────────────────────────────────────────────────────
+
+function cfHomologar_(idEq, idProposta, parecer) {
+  if (!idEq || !idProposta) throw new Error('Equalização e proposta são obrigatórias.');
+
+  return cfComTrava_(function () {
+    const eq = cfLerTudo_('Equalizacoes').filter(function (e) {
+      return String(e.ID) === String(idEq);
+    })[0];
+    if (!eq) throw new Error('Equalização "' + idEq + '" não encontrada.');
+
+    const propostas = cfLerTudo_('Propostas').filter(function (p) {
+      return String(p.ID_EQUALIZACAO) === String(idEq);
+    });
+    const escolhida = propostas.filter(function (p) { return String(p.ID) === String(idProposta); })[0];
+    if (!escolhida) throw new Error('Proposta "' + idProposta + '" não é desta equalização.');
+
+    const valorDe = function (p) {
+      const d = cfNumero_(p.VALOR_TOTAL_DECLARADO);
+      return d !== null ? d : cfNumero_(p.VALOR_TOTAL_CALCULADO);
+    };
+
+    // Escolher a mais cara é decisão legítima — prazo, escopo, histórico do
+    // fornecedor. Mas precisa estar escrita: é a defesa de quem comprou.
+    const comValor = propostas.filter(function (p) { return valorDe(p) !== null; });
+    const menor = comValor.reduce(function (a, p) {
+      return (a === null || valorDe(p) < valorDe(a)) ? p : a;
+    }, null);
+    const eMaisBarata = !menor || String(menor.ID) === String(idProposta);
+
+    if (!eMaisBarata && !String(parecer || '').trim()) {
+      throw new Error('Esta não é a proposta de menor valor. Escreva a justificativa da escolha.');
+    }
+
+    propostas.forEach(function (p) {
+      const venceu = String(p.ID) === String(idProposta);
+      if (p.VENCEDORA !== venceu) cfAtualizarLinha_('Propostas', p._linha, { VENCEDORA: venceu });
+    });
+
+    cfAtualizarLinha_('Equalizacoes', eq._linha, {
+      STATUS: 'homologada',
+      CNPJ_VENCEDOR: cfSoDigitos_(escolhida.CNPJ),
+      ID_PROPOSTA_VENCEDORA: escolhida.ID,
+      VALOR_FINAL: valorDe(escolhida),
+      PARECER_FAVORAVEL: String(parecer || '').trim(),
+      ATUALIZADO_EM: new Date()
+    });
+
+    cfLog_('homologar', 'equalizacao', idEq, JSON.stringify({
+      proposta: escolhida.ID,
+      fornecedor: escolhida.RAZAO_SOCIAL_INFORMADA || cfSoDigitos_(escolhida.CNPJ),
+      valor: valorDe(escolhida),
+      eraMenor: eMaisBarata
+    }));
+
+    return {
+      id: idEq,
+      proposta: escolhida.ID,
+      valor: valorDe(escolhida),
+      eraMenor: eMaisBarata
+    };
+  }, 60);
 }
