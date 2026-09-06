@@ -175,7 +175,12 @@ function apiEqualizacoes() {
 /** Os Megas e as empresas, para os seletores da tela de criação. */
 function apiOpcoes() {
   try {
-    return { ok: true, empreendimentos: CF_EMPREENDIMENTOS, empresas: CF_EMPRESAS };
+    return {
+      ok: true,
+      empreendimentos: CF_EMPREENDIMENTOS.map(function (e) {
+        return { nome: e, empresa: cfEmpresaDoMega_(e).nome };
+      })
+    };
   } catch (erro) {
     return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
   }

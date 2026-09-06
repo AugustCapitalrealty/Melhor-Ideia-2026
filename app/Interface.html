@@ -13,16 +13,49 @@
 }
 *{box-sizing:border-box}
 body{
-  margin:0; background:var(--fundo); color:var(--texto);
+  margin:0; color:var(--texto);
+  /* Profundidade em toda a aplicação, não só numa aba: a tela trocava de
+     aparência ao mudar de contexto e parecia dois produtos diferentes. */
+  background:
+    radial-gradient(1100px 560px at 10% -10%, rgba(6,92,169,.13), transparent 60%),
+    radial-gradient(900px 520px at 98% 2%,   rgba(21,30,73,.11),  transparent 62%),
+    var(--fundo);
+  background-attachment:fixed;
   font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   -webkit-font-smoothing:antialiased;
 }
-.wrap{max-width:940px;margin:0 auto;padding:0 20px 80px}
+/* Largura útil maior: a grade comparativa e o formulário são densos e a
+   tela larga estava sendo desperdiçada nas laterais. */
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px 80px}
 
-header{padding:34px 0 22px;border-bottom:2px solid var(--noturno);margin-bottom:26px}
-.marca{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--suave);margin-bottom:8px}
-h1{margin:0;font-size:30px;letter-spacing:-.02em;color:var(--noturno);font-weight:700}
-.sub{margin:6px 0 0;color:var(--suave);font-size:15px}
+/* ── barra de navegação fixa ──
+   O vidro vive aqui, no cromo, com o conteúdo passando por baixo. Nunca
+   no plano onde se digita dinheiro. */
+.barra{
+  position:sticky;top:0;z-index:50;margin-bottom:26px;
+  background:linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.66));
+  backdrop-filter:blur(22px) saturate(180%);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  border-bottom:1px solid rgba(21,30,73,.12);
+  box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 6px 22px -18px rgba(21,30,73,.5);
+}
+.barra-in{
+  max-width:1240px;margin:0 auto;padding:11px 24px;
+  display:flex;align-items:center;gap:22px;
+}
+.marca{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--suave)}
+.marca-nome{font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--noturno);line-height:1.2}
+.barra .abas{margin:0}
+.barra #ab-nova{margin-left:auto;white-space:nowrap}
+
+h1{margin:22px 0 0;font-size:27px;letter-spacing:-.02em;color:var(--noturno);font-weight:700}
+.sub{margin:5px 0 0;color:var(--suave);font-size:15px}
+
+/* Um anel de foco só, para tudo. Nenhum controle tinha :focus-visible. */
+a:focus-visible,button:focus-visible,input:focus-visible,
+select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--acao);outline-offset:2px;border-radius:6px;
+}
 
 .busca{display:flex;gap:10px;margin:24px 0 8px}
 .busca input{
@@ -188,12 +221,11 @@ table.mapa tfoot .desc{background:var(--superficie)}
   box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 10px 34px -18px rgba(21,30,73,.45);
   border-radius:14px;
 }
-body.criando{
-  background:
-    radial-gradient(900px 500px at 12% -8%,  rgba(6,92,169,.16), transparent 60%),
-    radial-gradient(760px 460px at 96% 4%,   rgba(21,30,73,.14),  transparent 62%),
-    var(--fundo);
-  background-attachment:fixed;
+/* Campo derivado: mostra o valor sem fingir que é editável. */
+.derivado{
+  padding:10px 12px;font-size:14.5px;font-weight:600;color:var(--noturno);
+  background:rgba(21,30,73,.045);border:1.5px solid transparent;border-radius:9px;
+  min-height:43px;display:flex;align-items:center;
 }
 
 /* ── formulário da nova cotação ── */
@@ -207,7 +239,9 @@ body.criando{
 .campo input,.campo select,.campo textarea{
   width:100%;padding:10px 12px;font-size:14.5px;font-family:inherit;
   border:1.5px solid rgba(21,30,73,.14);border-radius:9px;
-  background:rgba(255,255,255,.75);color:var(--texto);
+  /* Opaco de propósito: com fundo translúcido o contraste do que se digita
+     passa a depender do gradiente atrás, ou seja, fica indeterminado. */
+  background:#fff;color:var(--texto);
 }
 .campo input:focus,.campo select:focus,.campo textarea:focus{
   outline:none;border-color:var(--acao);background:#fff;
@@ -234,7 +268,7 @@ table.grade th{
 table.grade td{padding:5px 4px;vertical-align:middle}
 table.grade input,table.grade select{
   width:100%;padding:8px 10px;font-size:14px;font-family:inherit;
-  border:1.5px solid rgba(21,30,73,.12);border-radius:8px;background:rgba(255,255,255,.7);
+  border:1.5px solid rgba(21,30,73,.12);border-radius:8px;background:#fff;
 }
 table.grade input:focus,table.grade select:focus{
   outline:none;border-color:var(--acao);background:#fff;box-shadow:0 0 0 3px rgba(6,92,169,.12);
@@ -251,19 +285,25 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
 </style>
 </head>
 <body>
+
+<div class="barra">
+  <div class="barra-in">
+    <div class="marca-bloco">
+      <div class="marca">Capital Realty &amp; Demercado</div>
+      <div class="marca-nome">Capital Fornecedores</div>
+    </div>
+    <div class="abas" role="tablist">
+      <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
+      <button id="ab-mapa"     role="tab" aria-selected="false" onclick="aba('mapa')">Equalizações</button>
+    </div>
+    <button id="ab-nova" class="bt primario" onclick="aba('nova')">+ Nova cotação</button>
+  </div>
+</div>
+
 <div class="wrap">
 
-  <header>
-    <div class="marca">Capital Realty &amp; Demercado</div>
-    <h1>Capital Fornecedores</h1>
-    <p class="sub">O que já pagamos por isso?</p>
-  </header>
-
-  <div class="abas" role="tablist">
-    <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
-    <button id="ab-mapa"     role="tab" aria-selected="false" onclick="aba('mapa')">Mapa de equalização</button>
-    <button id="ab-nova"     role="tab" aria-selected="false" onclick="aba('nova')">Nova cotação</button>
-  </div>
+  <h1 id="tituloTela">Consulta de preço</h1>
+  <p class="sub" id="subTela">O que já pagamos por isso?</p>
 
   <section id="v-consulta">
     <div class="busca">
@@ -294,8 +334,8 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
           <select id="nEmp"><option value="">selecione o Mega…</option></select>
         </div>
         <div class="campo">
-          <label for="nEmpresa">Empresa contratante</label>
-          <select id="nEmpresa"></select>
+          <label>Empresa contratante</label>
+          <div class="derivado" id="nEmpresa">escolha o Mega primeiro</div>
         </div>
         <div class="campo">
           <label for="nProjeto">Projeto</label>
@@ -499,14 +539,28 @@ function desenhar(r) {
 
 var equalizacoesCarregadas = false;
 
+var TITULOS = {
+  consulta: ['Consulta de preço', 'O que já pagamos por isso?'],
+  mapa:     ['Equalizações', 'O comparativo lado a lado, item a item.'],
+  nova:     ['Nova cotação', 'Uma linha por item, uma coluna por proponente.']
+};
+
 function aba(nome) {
   ['consulta', 'mapa', 'nova'].forEach(function (n) {
     document.getElementById('v-' + n).hidden = n !== nome;
-    document.getElementById('ab-' + n).setAttribute('aria-selected', n === nome);
   });
 
-  // O fundo com profundidade só existe onde há vidro sobre ele.
-  document.body.classList.toggle('criando', nome === 'nova');
+  // Só as duas de leitura são abas. "Nova cotação" é um editor, e por isso
+  // é botão de ação: trocar entre leituras é reversível, sair de um
+  // formulário com dado digitado não é.
+  document.getElementById('ab-consulta').setAttribute('aria-selected', nome === 'consulta');
+  document.getElementById('ab-mapa').setAttribute('aria-selected', nome === 'mapa');
+  document.getElementById('ab-nova').classList.toggle('ativo', nome === 'nova');
+
+  // O título da página diz onde se está — a barra é compacta demais para
+  // carregar isso sozinha.
+  document.getElementById('tituloTela').textContent = TITULOS[nome][0];
+  document.getElementById('subTela').textContent = TITULOS[nome][1];
 
   // Carrega só quando a aba é aberta pela primeira vez.
   if (nome === 'mapa' && !equalizacoesCarregadas) {
@@ -660,16 +714,28 @@ function carregarOpcoes() {
     document.getElementById('nEmp').innerHTML =
       '<option value="">selecione o Mega…</option>' +
       r.empreendimentos.map(function (e) {
-        return '<option value="' + esc(e) + '">' + esc(e) + '</option>';
+        return '<option value="' + esc(e.nome) + '" data-empresa="' + esc(e.empresa) + '">' +
+               esc(e.nome) + '</option>';
       }).join('');
-    document.getElementById('nEmpresa').innerHTML = r.empresas.map(function (e) {
-      return '<option value="' + esc(e.cnpj) + '">' + esc(e.nome) + '</option>';
-    }).join('');
+    document.getElementById('nEmp').onchange = mostrarEmpresa;
   }).apiOpcoes();
 
   document.getElementById('nData').valueAsDate = new Date();
   addProponente(); addProponente(); addProponente();   // três é o mínimo usual
   addItem('grupo'); addItem('item');
+}
+
+/**
+ * A contratante sai do Mega: Curitiba é Demercado, Esteio e Itajaí são
+ * Capital Realty. A relação é fixa, então escolher à mão seria só um
+ * campo a mais para preencher errado. O servidor deriva de novo por conta
+ * própria e ignora o que a tela mandar.
+ */
+function mostrarEmpresa() {
+  var sel = document.getElementById('nEmp');
+  var op = sel.options[sel.selectedIndex];
+  var nome = op ? op.getAttribute('data-empresa') : '';
+  document.getElementById('nEmpresa').textContent = nome || 'escolha o Mega primeiro';
 }
 
 function addProponente() {
@@ -878,7 +944,6 @@ function salvarEqualizacao() {
     })
     .apiCriarEqualizacao({
       empreendimento: document.getElementById('nEmp').value,
-      empresaCnpj: document.getElementById('nEmpresa').value,
       projeto: document.getElementById('nProjeto').value,
       area: document.getElementById('nArea').value,
       data: document.getElementById('nData').value,

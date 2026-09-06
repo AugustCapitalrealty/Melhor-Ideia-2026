@@ -175,14 +175,35 @@ const CF_EMPREENDIMENTOS = [
 /**
  * As duas contratantes do grupo, com CNPJ.
  *
- * O CNPJ não é decorativo: cfEmpresaDoCnpj_ deriva a etiqueta "Capital
- * Realty"/"Demercado" da consulta a partir dele. Com os dois em branco,
- * como estavam, tudo criado pela tela saía sem empresa nenhuma.
+ * O CNPJ não é decorativo: a etiqueta "Capital Realty"/"Demercado" na
+ * consulta é derivada dele. Com os dois em branco, como estavam, tudo
+ * criado pela tela saía sem empresa nenhuma.
  */
 const CF_EMPRESAS = [
   { cnpj: '08601964000105', nome: 'DEMERCADO INVESTIMENTOS S.A.' },
   { cnpj: '03015145000154', nome: 'CAPITAL REALTY INFRAESTRUTURA LOGÍSTICA LTDA' }
 ];
+
+/**
+ * Qual empresa contrata em cada Mega. Curitiba é Demercado; Esteio e
+ * Itajaí são Capital Realty.
+ *
+ * É determinístico, então não se pergunta: escolher a contratante à mão
+ * é um campo que só existe para ser preenchido errado. O servidor deriva
+ * daqui e ignora o que a tela mandar.
+ */
+const CF_EMPRESA_DO_MEGA = {
+  'MEGA CENTRO LOGÍSTICO CURITIBA': '08601964000105',
+  'MEGA CENTRO LOGÍSTICO ESTEIO':   '03015145000154',
+  'MEGA CENTRO LOGÍSTICO ITAJAÍ':   '03015145000154'
+};
+
+function cfEmpresaDoMega_(empreendimento) {
+  const cnpj = CF_EMPRESA_DO_MEGA[empreendimento];
+  if (!cnpj) return { cnpj: '', nome: '' };
+  const empresa = CF_EMPRESAS.filter(function (e) { return e.cnpj === cnpj; })[0];
+  return { cnpj: cnpj, nome: empresa ? empresa.nome : '' };
+}
 
 function cfCriarEqualizacao_(d) {
   if (!d) throw new Error('Nada recebido.');
@@ -263,7 +284,9 @@ function cfCriarEqualizacao_(d) {
   return cfComTrava_(function () {
     cfInserir_('Equalizacoes', [{
       ID: idEq,
-      CNPJ_EMPRESA: cfSoDigitos_(d.empresaCnpj),
+      // Derivada do Mega, não do que a tela mandou: a relação é fixa e o
+      // cliente não tem por que opinar sobre ela.
+      CNPJ_EMPRESA: cfEmpresaDoMega_(d.empreendimento).cnpj,
       ID_EMPREENDIMENTO: d.empreendimento,
       PROJETO: d.projeto || '',
       AREA: d.area || '',

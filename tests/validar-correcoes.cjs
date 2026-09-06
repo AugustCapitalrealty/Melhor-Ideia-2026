@@ -595,3 +595,49 @@ try {
   console.log(`✗ FALHA na Correção 15: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 16 — a contratante sai do Mega, não da escolha do usuário
+//
+//  Curitiba é Demercado; Esteio e Itajaí são Capital Realty. A relação é
+//  fixa, então o seletor de empresa só existia para ser preenchido errado.
+//  O servidor deriva e ignora o que a tela mandar.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxE = vm.createContext({ Logger: { log: () => {} }, console: console });
+  const gravadoE = {};
+  let seqE = 0;
+
+  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxE, { filename: f });
+  });
+  ctxE.cfLerTudo_ = () => [];
+  ctxE.cfInserir_ = (aba, linhas) => { gravadoE[aba] = (gravadoE[aba] || []).concat(linhas); };
+  ctxE.cfComTrava_ = (fn) => fn();
+  ctxE.cfUsuario_ = () => 'guilherme.marques@capitalrealty.com.br';
+  ctxE.cfLog_ = () => {};
+  ctxE.cfNovoId_ = (p) => p + '-' + (++seqE);
+
+  const DEMERCADO = '08601964000105';
+  const CAPITAL = '03015145000154';
+
+  assert.equal(ctxE.cfEmpresaDoMega_('MEGA CENTRO LOGÍSTICO CURITIBA').cnpj, DEMERCADO);
+  assert.equal(ctxE.cfEmpresaDoMega_('MEGA CENTRO LOGÍSTICO ESTEIO').cnpj, CAPITAL);
+  assert.equal(ctxE.cfEmpresaDoMega_('MEGA CENTRO LOGÍSTICO ITAJAÍ').cnpj, CAPITAL);
+
+  // Mesmo que a tela mande outra empresa, o servidor usa a do Mega.
+  ctxE.cfCriarEqualizacao_({
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+    empresaCnpj: CAPITAL,
+    proponentes: [{ nome: 'Alfa' }],
+    itens: [{ tipo: 'item', nivel: 0, descricao: 'X', precos: ['1'] }]
+  });
+
+  assert.equal(gravadoE.Equalizacoes[0].CNPJ_EMPRESA, DEMERCADO,
+    'a tela mandou Capital Realty num Mega de Curitiba e o servidor obedeceu');
+
+  console.log('✓ CORREÇÃO VERIFICADA: contratante derivada do Mega, não do cliente');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 16: ${e.message}`);
+  process.exitCode = 1;
+}
