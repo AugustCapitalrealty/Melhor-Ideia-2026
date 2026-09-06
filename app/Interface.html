@@ -26,7 +26,7 @@ body{
 }
 /* Largura útil maior: a grade comparativa e o formulário são densos e a
    tela larga estava sendo desperdiçada nas laterais. */
-.wrap{max-width:1240px;margin:0 auto;padding:0 24px 80px}
+.wrap{max-width:1480px;margin:0 auto;padding:0 24px 80px}
 
 /* ── barra de navegação fixa ──
    O vidro vive aqui, no cromo, com o conteúdo passando por baixo. Nunca
@@ -40,7 +40,7 @@ body{
   box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 6px 22px -18px rgba(21,30,73,.5);
 }
 .barra-in{
-  max-width:1240px;margin:0 auto;padding:11px 24px;
+  max-width:1480px;margin:0 auto;padding:11px 24px;
   display:flex;align-items:center;gap:22px;
 }
 .marca{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--suave)}
@@ -479,15 +479,17 @@ tr.eh-grupo .cod-auto{color:var(--noturno)}
 .bt:disabled{opacity:.45;cursor:default}
 .acoes{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
 
-table.grade{width:100%;border-collapse:separate;border-spacing:0}
+table.grade{width:100%;min-width:max-content;border-collapse:separate;border-spacing:0}
 table.grade th{
   font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);
   text-align:left;padding:0 8px 8px;border-bottom:1px solid rgba(21,30,73,.12);
+  white-space:nowrap;
 }
 table.grade td{padding:5px 4px;vertical-align:middle}
 table.grade input,table.grade select{
   width:100%;padding:8px 10px;font-size:14px;font-family:inherit;
   border:1.5px solid rgba(21,30,73,.12);border-radius:8px;background:#fff;
+  box-sizing:border-box;
 }
 table.grade input:focus,table.grade select:focus{
   outline:none;border-color:var(--acao);background:#fff;box-shadow:0 0 0 3px rgba(6,92,169,.12);
@@ -503,8 +505,23 @@ table.grade thead th small{
   display:block;font-weight:400;font-size:10px;text-transform:none;
   letter-spacing:0;color:var(--suave);margin-top:2px;
 }
+
+/* Larguras mínimas por coluna: impedem que a descrição seja esmagada com muitas propostas */
+.col-cod{width:68px;min-width:68px;max-width:68px;box-sizing:border-box;text-align:center}
+.col-desc{min-width:320px;width:360px;box-sizing:border-box}
+.col-qtd{width:76px;min-width:70px;box-sizing:border-box}
+.col-un{width:96px;min-width:90px;box-sizing:border-box}
+.col-preco{width:145px;min-width:135px;box-sizing:border-box}
+.col-del{width:38px;min-width:38px;text-align:center;box-sizing:border-box}
+
 /* Controle de hierarquia: recuar é o gesto, não escolher um número. */
-.cel-desc{display:flex;align-items:center;gap:8px}
+.cel-desc{
+  display:flex;align-items:center;gap:8px;
+  min-width:280px;width:100%;box-sizing:border-box;
+}
+.cel-desc input.desc{
+  flex:1 1 auto;min-width:180px;
+}
 .degraus{display:inline-flex;gap:2px;flex:0 0 auto}
 .degrau{
   width:22px;height:28px;padding:0;border:1px solid rgba(21,30,73,.12);
@@ -514,7 +531,33 @@ table.grade thead th small{
 .degrau:hover:not(:disabled){background:var(--superficie2);border-color:var(--acao)}
 .degrau:disabled{opacity:.3;cursor:default}
 tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,241,248,.85)}
-.grade-rolo{overflow-x:auto}
+.grade-rolo{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  margin:0 -4px;
+  padding-bottom:12px;
+}
+
+/* Fixação (freeze) inteligente de Código e Descrição em telas médias e largas */
+@media (min-width: 820px) {
+  table.grade th.col-cod,
+  table.grade td.col-cod {
+    position:sticky;left:0;z-index:2;background:#fff;
+  }
+  table.grade th.col-desc,
+  table.grade td.col-desc {
+    position:sticky;left:68px;z-index:2;background:#fff;
+    box-shadow:3px 0 8px -3px rgba(21,30,73,.14);
+  }
+  table.grade thead th.col-cod,
+  table.grade thead th.col-desc {
+    z-index:5;background:#fff;
+  }
+  table.grade tr.eh-grupo td.col-cod,
+  table.grade tr.eh-grupo td.col-desc {
+    background:#EDF1F8;
+  }
+}
 .totais{
   display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;padding-top:14px;
   border-top:1px solid rgba(21,30,73,.12);font-size:14px;
@@ -2025,25 +2068,28 @@ function recalcularCodigos() {
 function desenharGrade() {
   recalcularCodigos();
   var rotuloBase = baseValores() === 'total' ? 'R$ total da linha' : 'R$ unitário';
-  var cab = '<thead><tr><th style="width:76px">Código</th><th>Descrição</th>' +
-    '<th style="width:80px">Qtd</th><th style="width:104px">Unidade</th>' +
+  var cab = '<thead><tr>' +
+    '<th class="col-cod">Código</th>' +
+    '<th class="col-desc">Descrição</th>' +
+    '<th class="col-qtd">Qtd</th>' +
+    '<th class="col-un">Unidade</th>' +
     proponentes.map(function (p, i) {
       // data-prop identifica a coluna pelo proponente, não pela posição:
       // contar colunas fixas com um número mágico já mandou o nome de um
       // proponente para a coluna do seguinte quando a grade mudou.
-      return '<th data-prop="' + i + '" style="width:150px">' +
+      return '<th class="col-preco" data-prop="' + i + '">' +
              esc(p.nome || ('Proponente ' + (i + 1))) +
              '<small>' + rotuloBase + '</small></th>';
-    }).join('') + '<th style="width:40px"></th></tr></thead>';
+    }).join('') + '<th class="col-del"></th></tr></thead>';
 
   var corpo = itens.map(function (it, i) {
     var precos = it.tipo === 'grupo'
       // Grupo agrega e não recebe preço: gravar aqui contaria duas vezes.
-      ? proponentes.map(function () { return '<td></td>'; }).join('')
+      ? proponentes.map(function () { return '<td class="col-preco"></td>'; }).join('')
       : proponentes.map(function (p, j) {
           // Cifrão fixo à esquerda: deixa claro que o campo é dinheiro e
           // que o valor é UNITÁRIO, não o total da linha.
-          return '<td><span class="moeda-campo">' +
+          return '<td class="col-preco"><span class="moeda-campo">' +
                  '<i>R$</i>' +
                  '<input class="preco" inputmode="decimal" value="' + esc(it.precos[j]) + '"' +
                  ' placeholder="—" data-l="' + i + '" data-c="' + j + '"' +
@@ -2069,17 +2115,20 @@ function desenharGrade() {
     return '<tr class="' + (it.tipo === 'grupo' ? 'eh-grupo' : '') + '">' +
       // Derivado, então mostrado e não editável: um campo que se pode
       // digitar convida a divergir da hierarquia que o gera.
-      '<td><span class="cod-auto">' + esc(it.codigo || '') + '</span></td>' +
-      '<td class="cel-desc" style="' + recuo + '">' +
-        '<span class="degraus">' + controles + '</span>' +
-        '<input class="desc" value="' + esc(it.descricao) + '" placeholder="' +
-        (it.tipo === 'grupo' ? 'NOME DO GRUPO' : 'descrição do item') +
-        '" oninput="itens[' + i + '].descricao=this.value;salvarRascunho()"></td>' +
-      '<td><input value="' + esc(it.quantidade) + '" inputmode="decimal" placeholder="1"' +
+      '<td class="col-cod"><span class="cod-auto">' + esc(it.codigo || '') + '</span></td>' +
+      '<td class="col-desc">' +
+        '<div class="cel-desc" style="' + recuo + '">' +
+          '<span class="degraus">' + controles + '</span>' +
+          '<input class="desc" value="' + esc(it.descricao) + '" placeholder="' +
+          (it.tipo === 'grupo' ? 'NOME DO GRUPO' : 'descrição do item') +
+          '" oninput="itens[' + i + '].descricao=this.value;salvarRascunho()">' +
+        '</div>' +
+      '</td>' +
+      '<td class="col-qtd"><input value="' + esc(it.quantidade) + '" inputmode="decimal" placeholder="1"' +
         ' oninput="itens[' + i + '].quantidade=this.value;calcular();salvarRascunho()"></td>' +
-      '<td>' + seletorUnidade(i, it.unidade) + '</td>' +
+      '<td class="col-un">' + seletorUnidade(i, it.unidade) + '</td>' +
       precos +
-      '<td><button class="bt some" style="padding:6px 9px" onclick="removerItem(' + i + ')">×</button></td>' +
+      '<td class="col-del"><button class="bt some" style="padding:6px 9px" onclick="removerItem(' + i + ')">×</button></td>' +
       '</tr>';
   }).join('');
 
