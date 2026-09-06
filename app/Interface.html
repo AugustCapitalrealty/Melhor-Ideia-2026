@@ -150,6 +150,28 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-s
 }
 .abas button[aria-selected="true"]{background:var(--superficie);color:var(--noturno);box-shadow:var(--sombra)}
 
+/* ── ficha: a equalização sozinha, numa janela própria ── */
+body.ficha .barra,
+body.ficha .filtros,
+body.ficha #listaEq{display:none}
+body.ficha .wrap{padding-top:8px}
+body.ficha .mapa-rolo{max-height:none}   /* na ficha a página rola, não a tabela */
+
+/* Impressão: sem cromo, sem sombra, tudo em branco e as cores das faixas
+   preservadas — é a hierarquia que faz o comparativo ser legível no papel. */
+@media print{
+  .barra,.filtros,#listaEq,.eq-acoes,.decisao .acoes,footer{display:none !important}
+  body{background:#fff !important}
+  .wrap{max-width:none;padding:0}
+  .eq-cab,.dados-prop,.mapa-rolo,.decisao{box-shadow:none;break-inside:avoid}
+  .mapa-rolo{max-height:none;overflow:visible}
+  table.mapa thead th{position:static}
+  table.mapa .desc{position:static;box-shadow:none}
+  .dados-prop summary{display:none}
+  .dados-prop[open]{border:0}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
 /* ── lista de equalizações ── */
 .filtros{display:flex;gap:10px;margin:20px 0 14px;flex-wrap:wrap}
 .filtros input,.filtros select{
@@ -590,6 +612,13 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
 </div>
 
 <script>
+// Vindos do doGet. A ficha é uma janela própria: sem navegação, tudo
+// aberto, pronta para imprimir e para mandar o link a alguém.
+var PAGINA = '<?= pagina ?>';
+var EQ_INICIAL = '<?= eq ?>';
+var URL_BASE = '<?= urlBase ?>';
+var EH_FICHA = PAGINA === 'ficha' && !!EQ_INICIAL;
+
 var moeda = function (v) {
   if (v === null || v === undefined) return '—';
   return 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
@@ -972,7 +1001,10 @@ function desenharMapa(m) {
         '<div><h2>' + esc(eq.projeto || eq.id) + '</h2>' +
         '<div class="meta">' + meta + '</div></div>' +
         '<div class="eq-acoes">' +
-          '<button class="bt" onclick="alternarCompleto()" id="btCompleto">Ver completo</button>' +
+          (EH_FICHA
+            ? '<button class="bt" onclick="window.print()">Imprimir</button>'
+            : '<button class="bt" onclick="alternarCompleto()" id="btCompleto">Ver detalhes aqui</button>' +
+              '<button class="bt primario" onclick="abrirFicha()">Abrir ficha completa ↗</button>') +
           '<button class="bt" onclick="exportar()" id="btExportar">Exportar planilha e PDF</button>' +
         '</div>' +
       '</div>' +
@@ -1045,7 +1077,8 @@ function dadosDasPropostas(m) {
       }).join('') + '</tr>';
   }).join('');
 
-  return '<details class="dados-prop" id="dadosProp">' +
+  // Na ficha nada fica escondido: quem abriu a janela inteira quer ver tudo.
+  return '<details class="dados-prop" id="dadosProp"' + (EH_FICHA ? ' open' : '') + '>' +
     '<summary>Dados das propostas</summary>' +
     '<div class="mapa-rolo" style="max-height:none;border:0">' +
     '<table class="mapa"><thead><tr><th class="desc"></th>' +
@@ -1053,13 +1086,31 @@ function dadosDasPropostas(m) {
     '</tr></thead><tbody>' + corpo + '</tbody></table></div></details>';
 }
 
-/** Abre tudo de uma vez — é o "ver completo". */
+/**
+ * Abre a equalização inteira numa janela própria.
+ *
+ * Sem navegação, tudo expandido, com botão de imprimir. Serve para deixar
+ * aberta ao lado do documento do fornecedor, mandar o link para quem
+ * aprova, e imprimir sem passar pela exportação.
+ */
+function abrirFicha() {
+  if (!mapaAberto) return;
+  if (!URL_BASE) {
+    // Sem implantação publicada não há URL para abrir. Cai no comportamento
+    // antigo em vez de falhar em silêncio.
+    alternarCompleto();
+    return;
+  }
+  window.open(URL_BASE + '?page=ficha&eq=' + encodeURIComponent(mapaAberto.equalizacao.id), '_blank');
+}
+
+/** Abre o quadro de dados sem sair da tela. */
 function alternarCompleto() {
   var d = document.getElementById('dadosProp');
   var bt = document.getElementById('btCompleto');
   if (!d) return;
   d.open = !d.open;
-  bt.textContent = d.open ? 'Ver resumido' : 'Ver completo';
+  if (bt) bt.textContent = d.open ? 'Ver resumido' : 'Ver detalhes aqui';
   if (d.open) d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -1156,6 +1207,20 @@ function homologar() {
     })
     .apiHomologar(mapaAberto.equalizacao.id, escolhido.value,
                   document.getElementById('parecer').value);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Abertura em modo ficha
+// ─────────────────────────────────────────────────────────────
+if (EH_FICHA) {
+  document.body.classList.add('ficha');
+  document.getElementById('tituloTela').textContent = 'Equalização';
+  document.getElementById('subTela').textContent = EQ_INICIAL;
+  document.getElementById('v-consulta').hidden = true;
+  document.getElementById('v-mapa').hidden = false;
+  document.getElementById('v-nova').hidden = true;
+  equalizacoesCarregadas = true;      // a ficha não precisa da lista
+  abrirMapa(EQ_INICIAL);
 }
 
 function rotuloStatus(s) {

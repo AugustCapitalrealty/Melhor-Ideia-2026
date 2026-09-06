@@ -12,6 +12,12 @@ function doGet(e) {
   const pagina = (e && e.parameter && e.parameter.page) || 'consulta';
   const t = HtmlService.createTemplateFromFile('Interface');
   t.pagina = pagina;
+  // ?page=ficha&eq=EQU-... abre a equalização inteira numa janela própria,
+  // sem navegação, pronta para ler ao lado do documento e para imprimir.
+  t.eq = (e && e.parameter && e.parameter.eq) || '';
+  // A URL publicada, para a tela conseguir montar o link da ficha. O
+  // servidor sabe qual é; o navegador dentro do iframe do Apps Script, não.
+  t.urlBase = cfUrlPublicada_();
   return t.evaluate()
     .setTitle('Capital Fornecedores')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
@@ -277,7 +283,16 @@ function cfExigeAutorizacao_() {
 
 /** Imprime a URL publicada. O menu não mostra, e sempre se procura. */
 function urlDoWebApp() {
-  const url = ScriptApp.getService().getUrl();
+  const url = cfUrlPublicada_();
   Logger.log(url || 'Ainda não implantado. Vá em Implantar → Nova implantação → Aplicativo da Web.');
   return url;
+}
+
+/** Nunca lança: sem implantação, a ficha em janela própria só não aparece. */
+function cfUrlPublicada_() {
+  try {
+    return ScriptApp.getService().getUrl() || '';
+  } catch (erro) {
+    return '';
+  }
 }
