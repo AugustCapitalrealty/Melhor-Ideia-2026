@@ -1848,3 +1848,95 @@ try {
   console.log(`✗ FALHA na Correção 31: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 32 — a medição de tempo, que é o dado que falta
+//
+//  O que este teste protege não é o cálculo: é a recusa a registrar
+//  número ruim. Uma média envenenada por uma aba esquecida aberta a noite
+//  toda é pior que nenhuma média, porque parece dado.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxT = vm.createContext({ Logger: { log: () => {} }, console: console });
+  ['Util.gs', 'Config.gs', 'Equalizacao.gs', 'Manutencao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxT, { filename: f });
+  });
+
+  const registros = [];
+  ctxT.cfLog_ = (acao, entidade, alvo, detalhe) => registros.push({ acao, alvo, detalhe });
+
+  // ── O que entra
+  ctxT.cfRegistrarTempo_('EQ1', 600, 3, 12, false);
+  assert.equal(registros.length, 1, 'medição plausível não foi registrada');
+  assert.equal(registros[0].acao, 'tempo_equalizacao');
+  const d = JSON.parse(registros[0].detalhe);
+  assert.equal(d.segundos, 600);
+  assert.equal(d.nos, 12);
+  assert.equal(d.proponentes, 3,
+    'o tamanho tem que ir junto: "10 minutos" sozinho não se compara com nada');
+
+  // ── O que não entra
+  registros.length = 0;
+  ctxT.cfRegistrarTempo_('EQ2', 5, 3, 12, false);
+  assert.equal(registros.length, 0, '5 segundos é gerador de exemplo, não trabalho medido');
+
+  ctxT.cfRegistrarTempo_('EQ3', 40000, 3, 12, false);
+  assert.equal(registros.length, 0, 'aba esquecida aberta a noite toda envenenaria a média');
+
+  ctxT.cfRegistrarTempo_('EQ4', null, 3, 12, false);
+  assert.equal(registros.length, 0, 'tela antiga não manda o tempo: ausência não é zero');
+
+  ctxT.cfRegistrarTempo_('EQ5', undefined, 3, 12, false);
+  assert.equal(registros.length, 0);
+
+  // Registrar tempo nunca pode derrubar a gravação da equalização.
+  ctxT.cfLog_ = () => { throw new Error('Log indisponível'); };
+  assert.doesNotThrow(() => ctxT.cfRegistrarTempo_('EQ6', 600, 3, 12, false),
+    'falha ao registrar o tempo não pode derrubar a gravação');
+
+  // ── Mediana, e não média: com poucas medições uma equalização atípica
+  //    desloca a média inteira e não desloca a mediana.
+  assert.equal(ctxT.cfMediana_([300, 600, 3000]), 600,
+    'a mediana de 5/10/50 minutos é 10, não os 21 da média');
+  assert.equal(ctxT.cfMediana_([100, 200]), 150);
+  assert.equal(ctxT.cfMediana_([]), null);
+  assert.equal(ctxT.cfMediana_([42]), 42);
+
+  // ── A linha de base do Excel entra por mão, e recusa entrada inválida.
+  const regB = [];
+  ctxT.cfLog_ = (acao, entidade, alvo, detalhe) => regB.push({ acao, detalhe });
+  ctxT.registrarTempoNaPlanilha(47, '12 itens, 3 proponentes');
+  assert.equal(regB.length, 1);
+  assert.equal(regB[0].acao, 'tempo_planilha');
+  assert.equal(JSON.parse(regB[0].detalhe).segundos, 2820, '47 minutos são 2820 segundos');
+
+  regB.length = 0;
+  ctxT.registrarTempoNaPlanilha(0, 'x');
+  ctxT.registrarTempoNaPlanilha(-5, 'x');
+  ctxT.registrarTempoNaPlanilha('', 'x');
+  assert.equal(regB.length, 0, 'minutos ausentes ou negativos não podem virar linha de base');
+
+  // ── O front manda os segundos decorridos, não a hora de início.
+  //
+  //  Enviar a hora do cliente e subtrair da hora do servidor misturaria
+  //  dois relógios: uma estação com o horário errado produziria durações
+  //  negativas ou de horas. A diferença entre dois instantes do MESMO
+  //  relógio não tem esse problema.
+  const htmlT = fs.readFileSync(path.join(root, 'app', 'Interface.html'), 'utf8');
+  const iSeg = htmlT.indexOf('function segundosDecorridos(');
+  assert.ok(iSeg >= 0, 'segundosDecorridos não encontrada na interface');
+  const ctxS = vm.createContext({ inicioPreenchimento: null, Date: Date, Math: Math });
+  vm.runInContext(htmlT.slice(iSeg, htmlT.indexOf('\n}', iSeg) + 2), ctxS);
+  assert.equal(ctxS.segundosDecorridos(), null, 'sem início marcado não há tempo a informar');
+  vm.runInContext('inicioPreenchimento = Date.now() - 65000', ctxS);
+  const s = ctxS.segundosDecorridos();
+  assert.ok(s >= 64 && s <= 66, 'os segundos decorridos saíram errados: ' + s);
+
+  assert.ok(htmlT.indexOf('segundosPreenchimento: segundosDecorridos()') >= 0,
+    'o tempo não está sendo enviado na gravação');
+
+  console.log('✓ CORREÇÃO VERIFICADA: tempo por equalização é medido, e medição implausível é recusada');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 32: ${e.message}`);
+  process.exitCode = 1;
+}

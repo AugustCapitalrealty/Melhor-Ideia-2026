@@ -588,3 +588,142 @@ function cfCorrigirEmpresa_(aplicar) {
   }
   return { corrigidas: mudou.length, puladas: pulou.length, aplicado: !!aplicar };
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Medição de tempo — o número que falta para sustentar o ganho
+//
+//  "Redução de 70% no tempo por equalização" era estimativa. Um comitê
+//  que pergunte "em relação a quê?" derruba a afirmação inteira, e é o
+//  critério que mais pesa. Estas funções transformam a estimativa em
+//  dado, ou mostram que ela era otimista — as duas respostas servem, a
+//  ausência de resposta não.
+//
+//  Rode: relatorioDeTempo   (neste arquivo, Manutencao.gs)
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Cronometre 3 equalizações feitas NA PLANILHA e registre aqui.
+ *
+ * Sem esta linha de base não há com o que comparar: o tempo do app
+ * sozinho não é ganho nenhum. E a janela para medir é irreversível —
+ * depois que a operação migrar, ninguém mais faz uma equalização no
+ * Excel só para cronometrar.
+ *
+ * Exemplo: registrarTempoNaPlanilha(47, '12 itens, 3 proponentes, material de consumo')
+ */
+function registrarTempoNaPlanilha(minutos, descricao) {
+  const m = cfNumero_(minutos);
+  if (m === null || m <= 0) {
+    Logger.log('Informe os minutos. Ex.: registrarTempoNaPlanilha(47, "12 itens, 3 proponentes")');
+    return;
+  }
+  cfLog_('tempo_planilha', 'baseline', '', JSON.stringify({
+    segundos: Math.round(m * 60),
+    descricao: String(descricao || '')
+  }));
+  Logger.log('Registrado: ' + m + ' minutos na planilha — ' + (descricao || 'sem descrição'));
+  Logger.log('Rode relatorioDeTempo() para ver a comparação.');
+}
+
+/** Mediana. Com poucas medições ela é mais honesta que a média: uma
+ *  equalização atípica desloca a média e não desloca a mediana. */
+function cfMediana_(numeros) {
+  if (!numeros.length) return null;
+  const v = numeros.slice().sort(function (a, b) { return a - b; });
+  const meio = Math.floor(v.length / 2);
+  return v.length % 2 ? v[meio] : (v[meio - 1] + v[meio]) / 2;
+}
+
+function cfMinutos_(segundos) {
+  if (segundos === null || segundos === undefined) return '—';
+  const m = Math.floor(segundos / 60), s = Math.round(segundos % 60);
+  return m + 'min' + (s ? ' ' + s + 's' : '');
+}
+
+/**
+ * O que foi medido até agora, e o que ainda falta para o número valer.
+ */
+function relatorioDeTempo() {
+  const log = cfLerTudo_('Log');
+
+  const parse = function (acao) {
+    return log.filter(function (l) { return String(l.ACAO) === acao; })
+      .map(function (l) {
+        try { return Object.assign({ quando: l.DATA, alvo: l.ID_ALVO }, JSON.parse(l.DETALHE)); }
+        catch (e) { return null; }
+      })
+      .filter(Boolean);
+  };
+
+  const noApp = parse('tempo_equalizacao').filter(function (r) { return !r.edicao; });
+  const edicoes = parse('tempo_equalizacao').filter(function (r) { return r.edicao; });
+  const naPlanilha = parse('tempo_planilha');
+
+  Logger.log('═══ Tempo por equalização ═══');
+  Logger.log('');
+
+  Logger.log('── No app (criação) ──');
+  if (!noApp.length) {
+    Logger.log('  Nenhuma medição ainda. Cada equalização criada pela tela passa a registrar');
+    Logger.log('  sozinha, do primeiro campo digitado até gravar.');
+  } else {
+    noApp.forEach(function (r) {
+      Logger.log('  ' + cfDataHoraTexto_(r.quando) + ' · ' + r.alvo + ' · ' + cfMinutos_(r.segundos) +
+                 '  (' + r.nos + ' itens, ' + r.proponentes + ' proponentes)');
+    });
+    const medApp = cfMediana_(noApp.map(function (r) { return r.segundos; }));
+    Logger.log('  Mediana: ' + cfMinutos_(medApp) + ' em ' + noApp.length + ' medição(ões)');
+  }
+  Logger.log('');
+
+  if (edicoes.length) {
+    Logger.log('── No app (edição/renegociação) ──');
+    Logger.log('  ' + edicoes.length + ' medição(ões) · mediana ' +
+               cfMinutos_(cfMediana_(edicoes.map(function (r) { return r.segundos; }))));
+    Logger.log('  Contadas à parte: editar não é o mesmo trabalho que criar do zero,');
+    Logger.log('  e misturar as duas produziria uma média que não descreve nenhuma.');
+    Logger.log('');
+  }
+
+  Logger.log('── Na planilha (linha de base) ──');
+  if (!naPlanilha.length) {
+    Logger.log('  NENHUMA. Sem isto não existe comparação, e o ganho continua sendo afirmação.');
+    Logger.log('  Cronometre 3 equalizações no Excel e registre com:');
+    Logger.log('    registrarTempoNaPlanilha(47, "12 itens, 3 proponentes")');
+    Logger.log('  A janela é irreversível: depois da migração ninguém volta ao Excel para medir.');
+  } else {
+    naPlanilha.forEach(function (r) {
+      Logger.log('  ' + cfDataHoraTexto_(r.quando) + ' · ' + cfMinutos_(r.segundos) +
+                 (r.descricao ? '  (' + r.descricao + ')' : ''));
+    });
+    Logger.log('  Mediana: ' + cfMinutos_(cfMediana_(naPlanilha.map(function (r) { return r.segundos; }))) +
+               ' em ' + naPlanilha.length + ' medição(ões)');
+  }
+  Logger.log('');
+
+  const medApp = noApp.length ? cfMediana_(noApp.map(function (r) { return r.segundos; })) : null;
+  const medPl = naPlanilha.length ? cfMediana_(naPlanilha.map(function (r) { return r.segundos; })) : null;
+
+  Logger.log('── Comparação ──');
+  if (medApp === null || medPl === null) {
+    Logger.log('  Ainda não dá para comparar. Faltam: ' +
+      [medPl === null ? 'medições na planilha' : null,
+       medApp === null ? 'equalizações feitas no app' : null].filter(Boolean).join(' e ') + '.');
+  } else {
+    const reducao = (medPl - medApp) / medPl;
+    Logger.log('  Planilha: ' + cfMinutos_(medPl) + ' · App: ' + cfMinutos_(medApp));
+    Logger.log('  Redução: ' + (reducao * 100).toFixed(1).replace('.', ',') + '%');
+    if (noApp.length < 5 || naPlanilha.length < 3) {
+      Logger.log('');
+      Logger.log('  ATENÇÃO: amostra pequena (' + naPlanilha.length + ' na planilha, ' +
+                 noApp.length + ' no app). Este número serve para acompanhar,');
+      Logger.log('  não para publicar. Um relatório que apresenta n=2 como resultado');
+      Logger.log('  convida exatamente a pergunta que ele deveria responder.');
+    }
+  }
+
+  return {
+    app: noApp.length, edicoes: edicoes.length, planilha: naPlanilha.length,
+    medianaApp: medApp, medianaPlanilha: medPl
+  };
+}
