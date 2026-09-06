@@ -380,6 +380,21 @@ tr.eh-grupo .cod-auto{color:var(--noturno)}
   color:var(--critico);background:rgba(176,48,36,.06);
 }
 .campo label{display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:5px}
+/* O link é a única entrada da ficha que o comprador precisa conferir
+   antes de gravar — daí o botão colado no campo, e não numa barra de
+   ações longe dele. Ocupa a linha inteira porque URL de Drive é longa
+   e, espremida em 210px, não dá para ver se está certa. */
+.campo-link{grid-column:1/-1}
+.linha-acao{display:flex;gap:8px;align-items:stretch}
+.linha-acao input{flex:1;min-width:0}
+.btn-conferir{
+  flex:0 0 auto;padding:0 14px;border:1px solid var(--borda);border-radius:9px;
+  background:#fff;color:var(--acao);font-size:12.5px;font-weight:650;cursor:pointer;
+  white-space:nowrap;transition:background .15s,border-color .15s;
+}
+.btn-conferir:hover{background:var(--claro);border-color:var(--acao)}
+.link-proposta{color:var(--acao);font-weight:600;text-decoration:none}
+.link-proposta:hover{text-decoration:underline}
 .campo input,.campo select,.campo textarea{
   width:100%;padding:10px 12px;font-size:14.5px;font-family:inherit;
   border:1.5px solid rgba(21,30,73,.14);border-radius:9px;
@@ -1220,7 +1235,12 @@ function dadosDasPropostas(m) {
     }],
     ['Proposta inicial', function (p) { return semValor(p.propostaInicial) ? '' : moeda(p.propostaInicial); }],
     ['Redução negociada', function (p) { return semValor(p.reducao) ? '' : moeda(p.reducao); }],
-    ['Rodada',          function (p) { return (p.rodada && p.rodada !== 'inicial') ? p.rodada : ''; }]
+    ['Rodada',          function (p) { return (p.rodada && p.rodada !== 'inicial') ? p.rodada : ''; }],
+    ['Proposta original', function (p) {
+      var url = linkDoDrive(p.linkProposta);
+      if (!url) return '';
+      return '<a class="link-proposta" href="' + esc(url) + '" target="_blank" rel="noopener">Abrir proposta ↗</a>';
+    }, true]
   ];
 
   // Linha sem nenhum valor em nenhum proponente não vira ruído na tela.
@@ -1233,7 +1253,10 @@ function dadosDasPropostas(m) {
     return '<tr><th scope="row">' + esc(l[0]) + '</th>' +
       m.proponentes.map(function (p) {
         var v = l[1](p);
-        return '<td>' + (semValor(v) ? '<span class="d-nulo">—</span>' : esc(v)) + '</td>';
+        if (semValor(v)) return '<td><span class="d-nulo">—</span></td>';
+        // l[2] marca a linha que já produz HTML montado aqui dentro. O
+        // conteúdo que vem do usuário passa por esc() na origem.
+        return '<td>' + (l[2] ? v : esc(v)) + '</td>';
       }).join('') + '</tr>';
   }).join('');
 
@@ -1497,7 +1520,8 @@ function preencherExemplo() {
       dataPrevTermino: dataISO(inteiro(16, 60)),
       centroCusto: document.getElementById('nGrupoCC').value,
       contatoNome: 'Vendas', telefone: '(41) 3' + inteiro(100, 999) + '-' + inteiro(1000, 9999),
-      email: 'vendas@exemplo.com.br'
+      email: 'vendas@exemplo.com.br',
+      linkProposta: 'https://drive.google.com/file/d/EXEMPLO' + inteiro(100000, 999999) + 'TESTE00000/view'
     });
   }
 
@@ -1674,6 +1698,38 @@ function campoProp(i, chave, rotulo, tipo, dica) {
     '></div>';
 }
 
+/**
+ * Espelha cfLinkDoDrive_ do Util.gs.
+ *
+ * As duas pontas precisam concordar sobre o que é um link válido: se a
+ * tela abrisse algo que o servidor recusa a gravar, o comprador
+ * conferiria um link que não vai para o documento. Foi o mesmo tipo de
+ * divergência que fez a tela mostrar R$ 12.500 e o servidor gravar 12,5.
+ */
+function linkDoDrive(valor) {
+  var t = String(valor === null || valor === undefined ? '' : valor).trim();
+  if (!t) return '';
+  if (/^[A-Za-z0-9_-]{25,}$/.test(t)) {
+    return 'https://drive.google.com/file/d/' + t + '/view';
+  }
+  if (!/^https?:\/\//i.test(t)) return '';
+  return t;
+}
+
+function conferirLink(i) {
+  var url = linkDoDrive(proponentes[i].linkProposta);
+  var msg = document.getElementById('salvoMsg');
+  if (!url) {
+    if (msg) {
+      msg.innerHTML = '<span style="color:var(--critico)">Link não reconhecido na proposta ' + (i + 1) +
+        '. Cole a URL completa (começando com https://) ou apenas o ID do arquivo no Drive.</span>';
+    }
+    return;
+  }
+  if (msg) msg.innerHTML = '';
+  window.open(url, '_blank', 'noopener');
+}
+
 function digitouCampoProp(i, chave, valor) {
   proponentes[i][chave] = valor;
   var p = proponentes[i];
@@ -1739,6 +1795,17 @@ function detalhesProposta(p, i) {
       campoProp(i, 'contatoNome', 'Contato', 'text', 'nome de quem cotou') +
       campoProp(i, 'telefone', 'Telefone', 'text', '(41) 3330-8000') +
       campoProp(i, 'email', 'E-mail do vendedor', 'email', 'vendas@fornecedor.com.br') +
+      '<div class="campo campo-link">' +
+        '<label for="linkProposta' + i + '">Link da proposta original</label>' +
+        '<div class="linha-acao">' +
+          '<input id="linkProposta' + i + '" type="text"' +
+          ' value="' + esc(p.linkProposta || '') + '"' +
+          ' placeholder="cole a URL do Drive ou só o ID do arquivo"' +
+          ' oninput="digitouCampoProp(' + i + ', \'linkProposta\', this.value)">' +
+          '<button type="button" class="btn-conferir" onclick="conferirLink(' + i + ')"' +
+          ' title="Abre o link numa aba nova para você conferir se é a proposta certa">Conferir ↗</button>' +
+        '</div>' +
+      '</div>' +
       '<div class="campo"><label>Faturamento direto</label>' +
         '<label class="check"><input type="checkbox" id="chkFatDir' + i + '"' +
         (temFatDir ? ' checked' : '') +
@@ -2622,6 +2689,7 @@ function carregarDadosParaEdicao(m) {
       uf: p.uf || '',
       faturamentoDireto: temFatDir,
       valorFaturamentoDireto: vFatDir,
+      linkProposta: p.linkProposta || '',
       teveNegociacao: teveNeg,
       propostaInicial: vIni,
       r01: vR01,

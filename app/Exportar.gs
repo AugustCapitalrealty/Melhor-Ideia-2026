@@ -45,7 +45,11 @@ function cfExportarEqualizacao_(idEq) {
   const grade = [];
   const merges = [];        // {l, c, nl, nc}
   const moeda = [];         // {l, c, n}
-  const faixas = { titulo: [], secao: [], grupo: [], total: [], cabecalho: [], rodape: [], livre: [], melhores: [] };
+  const faixas = { titulo: [], secao: [], grupo: [], total: [], cabecalho: [], rodape: [], livre: [], melhores: [],
+                   // Percentual e link precisam ser aplicados DEPOIS do
+                   // setValues da grade: ele reescreve a célula inteira e
+                   // levaria junto o formato e a âncora do hyperlink.
+                   percentual: [], links: [], assinatura: [], destaque: [] };
 
   const vazia = function () {
     const l = [];
@@ -53,6 +57,15 @@ function cfExportarEqualizacao_(idEq) {
     return l;
   };
   const linha = function (conteudo) { grade.push(conteudo); return grade.length; };
+
+  // ── scorecard: a decisão em cima, o detalhamento embaixo
+  //
+  //  Quem homologa não lê a equalização inteira para decidir — lê para
+  //  conferir. Enterrar o valor recomendado depois de trinta linhas de
+  //  cadastro é obrigar a busca visual num documento que já sabe a
+  //  resposta.
+  cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas,
+                    largura, COL_ROTULO, COL_VALOR);
 
   // ── título
   linha(vazia());
@@ -171,6 +184,27 @@ function cfExportarEqualizacao_(idEq) {
     faixas.melhores.push({ l: lTotal, c: colDe(menorTotIdx), nc: 2 });
   }
 
+  // Distância até o menor. O total sozinho diz quanto custa; o spread diz
+  // se a disputa foi apertada ou se um fornecedor está fora de mercado —
+  // e é isso que decide se vale renegociar ou recotar.
+  if (menorTotIdx !== null) {
+    const base = props[menorTotIdx].calculado;
+    li = vazia();
+    li[COL_ROTULO - 1] = 'Variação sobre o menor';
+    props.forEach(function (p, i) {
+      if (p.calculado === null || p.calculado <= 0) { li[colDe(i)] = '—'; return; }
+      li[colDe(i)] = (p.calculado - base) / base;
+    });
+    const lSpread = linha(li);
+    merges.push({ l: lSpread, c: COL_ROTULO, nl: 1, nc: 4 });
+    faixas.total.push(lSpread);
+    props.forEach(function (p, i) {
+      if (p.calculado === null || p.calculado <= 0) return;
+      faixas.percentual.push({ l: lSpread, c: colDe(i) });
+    });
+    faixas.melhores.push({ l: lSpread, c: colDe(menorTotIdx), nc: 2 });
+  }
+
   if (props.some(function (p) { return p.total !== null; })) {
     li = vazia();
     li[COL_ROTULO - 1] = 'VALOR TOTAL declarado no documento';
@@ -229,6 +263,28 @@ function cfExportarEqualizacao_(idEq) {
     props.forEach(function (p, i) { merges.push({ l: num, c: colDe(i), nl: 1, nc: 2 }); });
     faixas.rodape.push(num);
   });
+
+  // ── a proposta assinada, a um clique
+  //
+  //  O mapa é a leitura de quem cotou; a proposta é a prova do que foi
+  //  oferecido. Quem homologa precisa das duas na mesma tela, e procurar
+  //  o PDF numa pasta do Drive é onde a conferência costuma parar.
+  if (props.some(function (p) { return !!p.linkProposta; })) {
+    li = vazia();
+    li[COL_ROTULO - 1] = 'Proposta original:';
+    props.forEach(function (p, i) {
+      li[colDe(i) - 1] = p.linkProposta ? 'Abrir proposta ↗' : '—';
+    });
+    const lLink = linha(li);
+    merges.push({ l: lLink, c: COL_ROTULO, nl: 1, nc: 4 });
+    props.forEach(function (p, i) {
+      merges.push({ l: lLink, c: colDe(i), nl: 1, nc: 2 });
+      if (p.linkProposta) {
+        faixas.links.push({ l: lLink, c: colDe(i), url: p.linkProposta, texto: 'Abrir proposta ↗' });
+      }
+    });
+    faixas.rodape.push(lLink);
+  }
 
   linha(vazia());
 
@@ -313,6 +369,8 @@ function cfExportarEqualizacao_(idEq) {
       faixas.total.push(lv);
     }
   }
+
+  cfBlocoAlcadas_(linha, vazia, merges, faixas, largura, COL_ROTULO, COL_VALOR);
 
   linha(vazia());
   li = vazia();
@@ -462,6 +520,38 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
       .setFontColor(CF_EXP_VERDE_TEXTO)
       .setFontWeight('bold');
   });
+  (faixas.percentual || []).forEach(function (f) {
+    aba.getRange(f.l, f.c, 1, 2).setNumberFormat('+0.0%;-0.0%;0.0%').setHorizontalAlignment('center');
+  });
+
+  // Linha para assinar: só a borda de baixo, grossa o suficiente para
+  // sobreviver à impressão.
+  (faixas.assinatura || []).forEach(function (f) {
+    aba.getRange(f.l, f.c, 1, f.nc)
+      .setBorder(null, null, true, null, null, null, CF_EXP_NOTURNO, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  });
+
+  (faixas.destaque || []).forEach(function (f) {
+    aba.getRange(f.l, f.c, 1, f.nc || 1).setFontWeight('bold').setFontSize(f.tamanho || 12);
+  });
+
+  // Por último, e não é preferência de estilo: o setValues lá em cima
+  // reescreve a célula inteira e devolveria o rich text a texto puro. Foi
+  // medido em spike — na ordem que o plano propunha, o link some.
+  (faixas.links || []).forEach(function (f) {
+    try {
+      const rico = SpreadsheetApp.newRichTextValue()
+        .setText(f.texto)
+        .setLinkUrl(f.url)
+        .build();
+      aba.getRange(f.l, f.c).setRichTextValue(rico);
+    } catch (erro) {
+      // Link inválido não pode derrubar a exportação inteira: o texto já
+      // está na célula, só deixa de ser clicável.
+      Logger.log('Link não aplicado em ' + f.l + ',' + f.c + ': ' + erro);
+    }
+  });
+
   // Sem congelar coluna: os títulos e rótulos são mesclados de B até o fim,
   // e o Sheets recusa congelar uma coluna que corta uma célula mesclada ao
   // meio. Como o PDF sai em paisagem ajustado à largura, não faz falta.
@@ -561,3 +651,183 @@ function cfInserirLogoDemercado_(aba, col, lin, larguraCol, alturaLin) {
   return false;
 }
 
+
+/**
+ * O resumo que decide, no topo do documento.
+ *
+ * Antes deste bloco, quem homologava precisava percorrer o comparativo
+ * inteiro para responder três perguntas: qual proposta, quanto custa e
+ * quanto se economizou. As três respostas já existiam no documento —
+ * estavam espalhadas por trinta linhas.
+ *
+ * Enquanto não há homologação, o bloco mostra a MENOR proposta e diz que
+ * é recomendação, não decisão. Chamar de "vencedora" o que ninguém
+ * homologou seria o documento decidindo no lugar de quem assina.
+ */
+function cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas,
+                           largura, COL_ROTULO, COL_VALOR) {
+  const valorDe = function (p) {
+    return p.calculado !== null ? p.calculado : p.total;
+  };
+
+  let escolhido = null, homologado = false;
+  if (eq.vencedora) {
+    escolhido = props.filter(function (p) { return p.id === eq.vencedora; })[0] || null;
+    homologado = !!escolhido;
+  }
+  if (!escolhido) {
+    props.forEach(function (p) {
+      const v = valorDe(p);
+      if (v === null || v <= 0) return;
+      if (!escolhido || v < valorDe(escolhido)) escolhido = p;
+    });
+  }
+
+  const largo = largura - COL_VALOR + 1;   // de C até o fim da tabela
+
+  const titulo = vazia();
+  titulo[COL_ROTULO - 1] = homologado ? 'PROPOSTA HOMOLOGADA' : 'RESUMO PARA APROVAÇÃO';
+  const lTit = linha(titulo);
+  merges.push({ l: lTit, c: COL_ROTULO, nl: 1, nc: largura - 1 });
+  faixas.titulo.push(lTit);
+
+  if (!escolhido) {
+    const nada = vazia();
+    nada[COL_ROTULO - 1] = 'Nenhuma proposta com valor apurado até o momento.';
+    const lN = linha(nada);
+    merges.push({ l: lN, c: COL_ROTULO, nl: 1, nc: largura - 1 });
+    faixas.cabecalho.push(lN);
+    linha(vazia());
+    return;
+  }
+
+  const valor = valorDe(escolhido);
+
+  // Maior proposta comparável: é contra ela que a disputa gerou economia.
+  let maior = null;
+  props.forEach(function (p) {
+    const v = valorDe(p);
+    if (v === null || v <= 0) return;
+    if (maior === null || v > maior) maior = v;
+  });
+
+  // Rótulo em B, valor em C, explicação de D até o fim. O valor fica numa
+  // célula só para poder ser número com formato de moeda — texto formatado
+  // à mão é o que fazia "182,50" virar "182,5" na planilha.
+  const escreve = function (rotulo, valorCelula, detalhe, ehMoeda, destaque) {
+    const li = vazia();
+    li[COL_ROTULO - 1] = rotulo;
+    li[COL_VALOR - 1] = valorCelula;
+    const num = linha(li);
+    if (detalhe) {
+      grade[num - 1][COL_VALOR] = detalhe;
+      merges.push({ l: num, c: COL_VALOR + 1, nl: 1, nc: largo - 1 });
+    } else {
+      merges.push({ l: num, c: COL_VALOR, nl: 1, nc: largo });
+    }
+    if (ehMoeda) moeda.push({ l: num, c: COL_VALOR, n: 1 });
+    if (destaque) faixas.destaque.push({ l: num, c: COL_VALOR, nc: 1, tamanho: 12 });
+    faixas.cabecalho.push(num);
+    return num;
+  };
+
+  escreve(homologado ? 'Proposta homologada:' : 'Menor proposta:',
+    escolhido.nome,
+    'CNPJ ' + (cfCnpjFormatado_(escolhido.cnpj) || '—') +
+    (homologado ? '' : ' · recomendação por menor valor, ainda sem homologação'),
+    false, true);
+
+  escreve('Valor:', valor === null ? '—' : valor,
+    escolhido.calculado !== null ? 'soma dos itens cotados' : 'total declarado no documento',
+    valor !== null, true);
+
+  // Economia da disputa: só existe se houve com quem comparar.
+  if (maior !== null && valor !== null && maior > valor) {
+    escreve('Economia na disputa:', maior - valor,
+      cfPct_((maior - valor) / maior) + ' abaixo da proposta mais cara (R$ ' +
+      cfValorTexto_(maior) + ')', true, false);
+  } else if (props.length < 2) {
+    escreve('Economia na disputa:', '—', 'proposta única: não houve comparação', false, false);
+  }
+
+  // Economia da negociação: o que a conversa com o fornecedor rendeu.
+  const inicial = escolhido.propostaInicial;
+  if (escolhido.reducao !== null && escolhido.reducao !== undefined && escolhido.reducao !== '') {
+    escreve('Economia na negociação:', escolhido.reducao,
+      inicial ? 'de R$ ' + cfValorTexto_(inicial) + ' para R$ ' + cfValorTexto_(valor) +
+                ' (' + cfPct_(escolhido.reducao / inicial) + ')' : '',
+      true, false);
+  } else {
+    escreve('Economia na negociação:', '—', 'não houve renegociação registrada', false, false);
+  }
+
+  const prazo = escolhido.dataPrevInicio ||
+    (escolhido.leadTime !== null && escolhido.leadTime !== undefined && escolhido.leadTime !== ''
+      ? escolhido.leadTime + (escolhido.leadTime == 1 ? ' dia após a OC' : ' dias após a OC')
+      : '—');
+  escreve('Início previsto:', prazo,
+    escolhido.condicoes ? 'Pagamento: ' + escolhido.condicoes : '', false, false);
+
+  linha(vazia());
+}
+
+/** Percentual com uma casa, no formato que se lê em português. */
+function cfPct_(fracao) {
+  if (fracao === null || fracao === undefined || !isFinite(fracao)) return '—';
+  return (fracao * 100).toFixed(1).replace('.', ',') + '%';
+}
+
+/**
+ * Valor em texto, para caber dentro de uma frase.
+ * Feito à mão porque toLocaleString('pt-BR') depende de ICU completo, que
+ * o runtime do Apps Script não garante — e um número que sai "1,234.56"
+ * dentro de uma frase em português passa despercebido até alguém somar.
+ */
+function cfValorTexto_(v) {
+  if (v === null || v === undefined || v === '') return '—';
+  const n = Number(v);
+  if (!isFinite(n)) return '—';
+  const negativo = n < 0;
+  const partes = Math.abs(n).toFixed(2).split('.');
+  const inteiro = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (negativo ? '-' : '') + inteiro + ',' + partes[1];
+}
+
+/**
+ * Quem assina o quê.
+ *
+ * A equalização circula entre três pessoas com responsabilidades
+ * diferentes: quem cotou, quem valida o escopo e quem autoriza o gasto.
+ * Sem o quadro, as três assinam no mesmo espaço em branco e depois não se
+ * sabe quem validou o quê — que é exatamente a pergunta que uma auditoria
+ * faz primeiro.
+ */
+function cfBlocoAlcadas_(linha, vazia, merges, faixas, largura, COL_ROTULO, COL_VALOR) {
+  const largo = largura - COL_VALOR + 1;
+  linha(vazia());
+
+  let li = vazia();
+  li[COL_ROTULO - 1] = 'HOMOLOGAÇÃO';
+  const lTit = linha(li);
+  merges.push({ l: lTit, c: COL_ROTULO, nl: 1, nc: largura - 1 });
+  faixas.secao.push(lTit);
+
+  li = vazia();
+  li[COL_ROTULO - 1] = 'Decisão da Diretoria:';
+  li[COL_VALOR - 1] = '(   ) Aprovado          (   ) Aprovado com ressalvas          (   ) Rejeitado';
+  const lDec = linha(li);
+  merges.push({ l: lDec, c: COL_VALOR, nl: 1, nc: largo });
+  faixas.cabecalho.push(lDec);
+
+  [['Elaborado por (Suprimentos):', 'nome, data e assinatura'],
+   ['Parecer técnico (Gestor da área):', 'escopo validado — nome, data e assinatura'],
+   ['Homologação (Diretoria Executiva):', 'nome, data e assinatura']].forEach(function (c) {
+    const li = vazia();
+    li[COL_ROTULO - 1] = c[0];
+    li[COL_VALOR - 1] = c[1];
+    const num = linha(li);
+    merges.push({ l: num, c: COL_VALOR, nl: 1, nc: largo });
+    faixas.cabecalho.push(num);
+    faixas.assinatura.push({ l: num, c: COL_VALOR, nc: largo });
+  });
+}

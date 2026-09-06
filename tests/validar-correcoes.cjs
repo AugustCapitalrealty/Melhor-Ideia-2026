@@ -1534,3 +1534,189 @@ try {
   console.log(`✗ FALHA na Correção 29: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 30 — o dossiê de aprovação: scorecard, spread e o link
+//
+//  Três coisas que o documento passou a levar para quem homologa, e uma
+//  armadilha de ordem.
+//
+//  A armadilha: o plano mandava aplicar o hyperlink durante a montagem da
+//  grade. Só que a grade inteira é escrita depois, num setValues único, e
+//  setValues devolve a célula a texto puro — o link seria criado e apagado
+//  no mesmo request, sem erro nenhum. Só se descobre abrindo o PDF.
+//  Por isso este teste afirma a ORDEM, não só o resultado.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxL = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  const ordem = [];               // a sequência de operações na planilha
+  let escrito = null;
+  const linksAplicados = [];
+
+  const faixaL = {
+    setValues: (m) => { escrito = m; ordem.push('setValues'); return faixaL; },
+    merge: () => faixaL,
+    setRichTextValue: (v) => { ordem.push('setRichTextValue'); linksAplicados.push(v); return faixaL; }
+  };
+  ['setFontWeight','setFontSize','setHorizontalAlignment','setVerticalAlignment',
+   'setBackground','setFontColor','setBorder','setNumberFormat','setWrap']
+    .forEach(m => { faixaL[m] = () => faixaL; });
+
+  const formatos = [];
+  faixaL.setNumberFormat = (f) => { formatos.push(f); return faixaL; };
+
+  const abaL = {
+    setName: () => {}, setColumnWidth: () => {}, setRowHeight: () => {},
+    getSheetId: () => 0, getRange: () => faixaL
+  };
+
+  ctxL.SpreadsheetApp = {
+    create: () => ({ getSheets: () => [abaL], getId: () => 'SS1', getUrl: () => 'url-planilha' }),
+    flush: () => {},
+    BorderStyle: { SOLID: 'SOLID', SOLID_MEDIUM: 'SOLID_MEDIUM' },
+    newRichTextValue: () => {
+      const v = { texto: '', url: '' };
+      const b = {
+        setText: (t) => { v.texto = t; return b; },
+        setLinkUrl: (u) => { v.url = u; return b; },
+        build: () => v
+      };
+      return b;
+    }
+  };
+  ctxL.DriveApp = {
+    getFileById: () => ({ moveTo: () => {} }),
+    getFolderById: () => ({ createFile: () => ({ getId: () => 'PDF1', getUrl: () => 'url-pdf' }) }),
+    createFile: () => ({ getId: () => 'PDF1', getUrl: () => 'url-pdf' })
+  };
+  ctxL.ScriptApp = { getOAuthToken: () => 't' };
+  ctxL.UrlFetchApp = {
+    fetch: () => ({ getResponseCode: () => 200, getBlob: () => ({
+      setName: function () { return this; },
+      getBytes: () => new Array(9000).fill(0)
+    }) })
+  };
+  ctxL.Utilities = { formatDate: () => '06/09/2026 10:00', getUuid: () => 'x' };
+
+  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxL, { filename: f });
+  });
+
+  // ── O normalizador de link, antes de tudo: é ele que decide o que vira
+  //    âncora clicável num PDF que circula fora da empresa.
+  assert.equal(ctxL.cfLinkDoDrive_('https://drive.google.com/file/d/ABC/view'),
+    'https://drive.google.com/file/d/ABC/view');
+  assert.equal(ctxL.cfLinkDoDrive_('1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7'),
+    'https://drive.google.com/file/d/1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7/view',
+    'ID solto do Drive tem que virar URL');
+  assert.equal(ctxL.cfLinkDoDrive_(''), '');
+  assert.equal(ctxL.cfLinkDoDrive_('   '), '');
+  assert.equal(ctxL.cfLinkDoDrive_('javascript:alert(1)'), '',
+    'javascript: não pode virar link — o PDF circula fora da empresa');
+  assert.equal(ctxL.cfLinkDoDrive_('data:text/html,<script>'), '');
+  assert.equal(ctxL.cfLinkDoDrive_('drive.google.com/file/d/ABC'), '',
+    'sem esquema não é URL: o navegador trataria como caminho relativo');
+
+  // ── A tela precisa concordar com o servidor sobre o que é link válido.
+  const htmlL = fs.readFileSync(path.join(root, 'app', 'Interface.html'), 'utf8');
+  const mL = htmlL.match(/function linkDoDrive\(valor\)[\s\S]*?\n\}/);
+  assert.ok(mL, 'linkDoDrive não foi encontrada na interface');
+  const ctxTela = vm.createContext({});
+  vm.runInContext(mL[0], ctxTela);
+  ['https://x.com/a', '1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7', 'javascript:alert(1)', '', 'x.com/a']
+    .forEach(function (entrada) {
+      assert.equal(ctxTela.linkDoDrive(entrada), ctxL.cfLinkDoDrive_(entrada),
+        'tela e servidor discordam sobre o link "' + entrada + '"');
+    });
+
+  // ── Uma equalização com dois proponentes, vencedor homologado e
+  //    negociação: é o caso que o dossiê existe para resumir.
+  ctxL.cfLerTudo_ = (n) => ({
+    Equalizacoes: [{ ID: 'EQ1', ID_EMPREENDIMENTO: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+                     PROJETO: 'Limpeza', STATUS: 'homologada',
+                     ID_PROPOSTA_VENCEDORA: 'P1', PARECER_FAVORAVEL: 'Menor prazo' }],
+    Propostas: [
+      { ID: 'P1', ID_EQUALIZACAO: 'EQ1', CNPJ: '11222333000181', ORDEM: 1,
+        RAZAO_SOCIAL_INFORMADA: 'Alfa', VALOR_TOTAL_CALCULADO: 100,
+        VALOR_PROPOSTA_INICIAL: 125, REDUCAO_NEGOCIADA: 25, VENCEDORA: true,
+        CONDICOES_PAGAMENTO: '28 dias', LEAD_TIME_DIAS: 5,
+        LINK_PROPOSTA: 'https://drive.google.com/file/d/PROPOSTA-ALFA/view' },
+      { ID: 'P2', ID_EQUALIZACAO: 'EQ1', CNPJ: '11222333000262', ORDEM: 2,
+        RAZAO_SOCIAL_INFORMADA: 'Beta', VALOR_TOTAL_CALCULADO: 130 }
+    ],
+    EAP: [{ ID: 'N1', ID_EQUALIZACAO: 'EQ1', ID_PAI: '', ORDEM: 1, TIPO: 'item', DESCRICAO: 'Soda' }],
+    Precos: [
+      { ID_EAP: 'N1', ID_PROPOSTA: 'P1', ID_EQUALIZACAO: 'EQ1', PRECO_UNITARIO: 100, VALOR_TOTAL: 100, STATUS_PRECO: 'cotado' },
+      { ID_EAP: 'N1', ID_PROPOSTA: 'P2', ID_EQUALIZACAO: 'EQ1', PRECO_UNITARIO: 130, VALOR_TOTAL: 130, STATUS_PRECO: 'cotado' }
+    ],
+    Fornecedores: [], Pendencias: []
+  })[n] || [];
+  ctxL.cfDataTexto_ = () => '06/09/2026';
+  ctxL.cfUsuario_ = () => 'guilherme.marques@capitalrealty.com.br';
+
+  ctxL.cfExportarEqualizacao_('EQ1');
+  const texto = escrito.map(l => l.join('|')).join('\n');
+
+  // ── Scorecard
+  assert.ok(texto.indexOf('PROPOSTA HOMOLOGADA') >= 0,
+    'equalização homologada tem que abrir dizendo que foi homologada');
+  assert.ok(texto.indexOf('Economia na disputa:') >= 0, 'faltou a economia da disputa');
+  assert.ok(texto.indexOf('Economia na negociação:') >= 0, 'faltou a economia da negociação');
+  // Duas porcentagens diferentes convivem no documento, e a base de cada
+  // uma decide se o número faz sentido:
+  //   economia na disputa = 30/130 = 23,1% — do que se deixou de gastar
+  //   variação sobre o menor = 30/100 = +30,0% — quanto o outro é mais caro
+  // Trocar as bases é o erro clássico de relatório de saving, e é
+  // sempre para mais: 30% soa melhor que 23% na apresentação.
+  assert.ok(texto.indexOf('23,1% abaixo da proposta mais cara (R$ 130,00)') >= 0,
+    'a economia da disputa tem que ser sobre a proposta mais cara (30/130), não sobre a vencedora');
+
+  // O scorecard vem ANTES do cadastro: quem homologa lê para conferir, não
+  // para descobrir.
+  assert.ok(escrito.findIndex(l => l.join('|').indexOf('PROPOSTA HOMOLOGADA') >= 0) <
+            escrito.findIndex(l => l.join('|').indexOf('INFORMAÇÕES OBRIGATÓRIAS') >= 0),
+    'o resumo tem que vir antes das informações obrigatórias');
+
+  // ── Spread: quanto o segundo está acima do menor
+  const lSpread = escrito.filter(l => l[1] === 'Variação sobre o menor')[0];
+  assert.ok(lSpread, 'faltou a linha de variação sobre o menor');
+  const valoresSpread = lSpread.filter(v => typeof v === 'number');
+  // Comparado com tolerância, não com igualdade: (130-100)/100 dá
+  // 0.30000000000000004 em ponto flutuante. O formato de percentual
+  // arredonda para +30,0% na tela, mas o teste veria a diferença.
+  assert.equal(valoresSpread.length, 2, 'o spread tem que sair para os dois proponentes');
+  assert.equal(valoresSpread[0], 0, 'o menor preço é a base: variação zero');
+  assert.ok(Math.abs(valoresSpread[1] - 0.3) < 1e-9,
+    'quem cotou 130 contra 100 está 30% acima, e saiu ' + valoresSpread[1]);
+  assert.ok(formatos.indexOf('+0.0%;-0.0%;0.0%') >= 0,
+    'a variação precisa de formato de percentual, senão sai 0,3 em vez de +30,0%');
+
+  // ── Alçadas
+  ['HOMOLOGAÇÃO', 'Elaborado por (Suprimentos):', 'Parecer técnico (Gestor da área):',
+   'Homologação (Diretoria Executiva):', '(   ) Aprovado'].forEach(function (t) {
+    assert.ok(texto.indexOf(t) >= 0, 'faltou o quadro de alçadas: "' + t + '"');
+  });
+
+  // ── O link: aplicado, correto, e DEPOIS do setValues
+  assert.equal(linksAplicados.length, 1, 'o link da proposta não foi aplicado');
+  assert.equal(linksAplicados[0].url, 'https://drive.google.com/file/d/PROPOSTA-ALFA/view');
+  assert.equal(linksAplicados[0].texto, 'Abrir proposta ↗');
+  // lastIndexOf, não indexOf: o que quebra o link é QUALQUER setValues
+  // depois dele, inclusive um acrescentado sem querer numa mudança
+  // futura. Comparar com o primeiro deixaria essa porta aberta.
+  assert.ok(ordem.lastIndexOf('setValues') < ordem.indexOf('setRichTextValue'),
+    'houve setValues depois do rich text — ele devolve a célula a texto puro e o link some');
+  assert.ok(texto.indexOf('Proposta original:') >= 0,
+    'a linha da proposta original tem que existir mesmo antes do rich text');
+
+  // Quem não mandou link fica com o travessão, não com célula vazia
+  // ambígua nem com o link do vizinho.
+  const lLink = escrito.filter(l => l[1] === 'Proposta original:')[0];
+  assert.ok(lLink.indexOf('—') >= 0, 'proponente sem link tem que mostrar travessão');
+
+  console.log('✓ CORREÇÃO VERIFICADA: dossiê de aprovação — resumo, spread, alçadas e link clicável na ordem certa');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 30: ${e.message}`);
+  process.exitCode = 1;
+}

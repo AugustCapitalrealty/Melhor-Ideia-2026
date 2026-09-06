@@ -262,7 +262,11 @@ const CF_SCHEMA = [
     // negociação — criar uma linha por rodada sem preço de item encheria o
     // mapa de colunas vazias.
     { campo: 'VALOR_PROPOSTA_INICIAL', tipo: 'moeda', largura: 150, nota: 'Antes da negociação' },
-    { campo: 'REDUCAO_NEGOCIADA',      tipo: 'moeda', largura: 150, nota: 'Inicial menos o valor final. Derivado, não digitado.' }
+    { campo: 'REDUCAO_NEGOCIADA',      tipo: 'moeda', largura: 150, nota: 'Inicial menos o valor final. Derivado, não digitado.' },
+    // A proposta assinada pelo fornecedor, no Drive. O mapa diz o que foi
+    // cotado; só o documento original prova o que foi oferecido, e quem
+    // homologa precisa dele à mão — não depois de procurar numa pasta.
+    { campo: 'LINK_PROPOSTA',          tipo: 'texto', largura: 280, nota: 'URL do documento original no Drive' }
   ]},
 
   { nome: 'EAP', nota: 'A árvore. CODIGO não é gravado: é derivado da posição.', colunas: [

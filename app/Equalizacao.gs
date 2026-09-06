@@ -113,7 +113,8 @@ function cfMapaEqualizacao_(idEq) {
         faturamentoDireto: p.FATURAMENTO_DIRETO === true,
         valorFaturamentoDireto: cfNumero_(p.VALOR_FATURAMENTO_DIRETO),
         propostaInicial: cfNumero_(p.VALOR_PROPOSTA_INICIAL),
-        reducao: cfNumero_(p.REDUCAO_NEGOCIADA)
+        reducao: cfNumero_(p.REDUCAO_NEGOCIADA),
+        linkProposta: cfLinkDoDrive_(p.LINK_PROPOSTA)
       };
     });
 
@@ -439,6 +440,10 @@ function cfCriarEqualizacao_(d) {
         // de economia. Aqui, sem inicial não há redução.
         REDUCAO_NEGOCIADA: (inicial !== null && declarado !== null && inicial > declarado)
           ? inicial - declarado : '',
+        // Normalizado na gravação, não na leitura: assim o que está na
+        // planilha já é o link final, e quem abrir a aba direto vê o mesmo
+        // que a tela vê.
+        LINK_PROPOSTA: cfLinkDoDrive_(p.linkProposta),
         ORIGEM: 'app'
       };
     }));
