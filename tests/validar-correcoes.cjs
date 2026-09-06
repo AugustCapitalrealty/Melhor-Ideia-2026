@@ -1116,3 +1116,56 @@ try {
   console.log(`✗ FALHA na Correção 24: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 25 — a faxina de teste só toca no que é de teste
+//
+//  Dado fictício misturado ao histórico envenena a consulta de preço. A
+//  marca no PROJETO é o que permite apagar exatamente o inventado — e o
+//  risco desta rotina é o oposto: apagar o que é real.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxT = vm.createContext({ Logger: { log: () => {} }, console: console });
+  const apagados = [];
+
+  ['Util.gs', 'Config.gs', 'Manutencao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxT, { filename: f });
+  });
+
+  const tabelas = {
+    Equalizacoes: [
+      { ID: 'EQ-REAL', PROJETO: 'Contrato anual de limpeza' },
+      { ID: 'EQ-TESTE', PROJETO: '::TESTE:: Reposição trimestral' }
+    ],
+    Propostas: [{ ID_EQUALIZACAO: 'EQ-REAL' }, { ID_EQUALIZACAO: 'EQ-TESTE' }],
+    EAP: [{ ID_EQUALIZACAO: 'EQ-TESTE' }, { ID_EQUALIZACAO: 'EQ-TESTE' }],
+    Precos: [{ ID_EQUALIZACAO: 'EQ-REAL' }, { ID_EQUALIZACAO: 'EQ-TESTE' },
+             { ID_EQUALIZACAO: 'EQ-TESTE' }, { ID_EQUALIZACAO: 'EQ-TESTE' }]
+  };
+  ctxT.cfLerTudo_ = (n) => tabelas[n] || [];
+  ctxT.cfApagarPor_ = (aba, campo, valor) => { apagados.push({ aba, campo, valor }); };
+  ctxT.cfComTrava_ = (fn) => fn();
+  ctxT.cfLog_ = () => {};
+
+  const sim = ctxT.cfLimpezaDeTeste_(false);
+  assert.equal(sim.equalizacoes.length, 1, 'só a marcada devia entrar na conta');
+  assert.equal(sim.equalizacoes[0].ID, 'EQ-TESTE');
+  assert.equal(sim.detalhe.Precos, 3);
+  assert.equal(apagados.length, 0, 'a simulação apagou alguma coisa');
+
+  ctxT.cfLimpezaDeTeste_(true);
+  assert.ok(apagados.length > 0);
+  assert.ok(apagados.every(a => a.valor === 'EQ-TESTE'),
+    'a faxina tocou em algo que não é de teste: ' + JSON.stringify(apagados));
+
+  // Filhos antes do pai: parar no meio pode deixar a equalização, que se
+  // acha e se apaga de novo — nunca preços órfãos, que ninguém encontra.
+  const ordem = apagados.map(a => a.aba);
+  assert.ok(ordem.indexOf('Precos') < ordem.indexOf('Equalizacoes'),
+    'apagou a equalização antes dos preços, deixando órfãos');
+
+  console.log('✓ CORREÇÃO VERIFICADA: faxina de teste apaga só o marcado, filhos antes do pai');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 25: ${e.message}`);
+  process.exitCode = 1;
+}

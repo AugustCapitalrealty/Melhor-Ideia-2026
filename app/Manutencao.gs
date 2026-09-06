@@ -336,3 +336,81 @@ function cfRelatarBooleanos_(r, rotulo) {
 
   return r;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Dados de teste
+//
+//  O botão "Gerar exemplo" da tela carimba CF_MARCA_TESTE no PROJETO. Só
+//  isso permite apagar depois exatamente o que foi inventado, sem tocar em
+//  nada real — dado fictício misturado ao histórico envenena a consulta de
+//  preço, que é a razão de existir do sistema.
+// ─────────────────────────────────────────────────────────────
+
+function simularLimpezaDeTeste() {
+  return cfRelatarTeste_(cfLimpezaDeTeste_(false), 'SIMULAÇÃO');
+}
+
+function limparDadosDeTeste() {
+  return cfComTrava_(function () {
+    const r = cfLimpezaDeTeste_(true);
+    cfLog_('limpar_dados_teste', 'planilha', '', JSON.stringify({
+      equalizacoes: r.equalizacoes.length, linhas: r.linhas
+    }));
+    return cfRelatarTeste_(r, 'APLICADO');
+  }, 120);
+}
+
+function cfLimpezaDeTeste_(aplicar) {
+  const alvo = cfLerTudo_('Equalizacoes').filter(function (e) {
+    return String(e.PROJETO || '').indexOf(CF_MARCA_TESTE) >= 0;
+  });
+
+  const ids = {};
+  alvo.forEach(function (e) { ids[e.ID] = true; });
+
+  // Conta antes de apagar, para o relatório dizer o que sumiu.
+  const contar = function (aba) {
+    return cfLerTudo_(aba).filter(function (l) { return ids[l.ID_EQUALIZACAO]; }).length;
+  };
+  const detalhe = {
+    Precos: contar('Precos'), EAP: contar('EAP'),
+    Propostas: contar('Propostas'), Equalizacoes: alvo.length
+  };
+  let linhas = 0;
+  Object.keys(detalhe).forEach(function (k) { linhas += detalhe[k]; });
+
+  if (aplicar) {
+    // Filhos antes do pai: se parar no meio, sobra a equalização — que se
+    // acha e se apaga de novo. Na ordem inversa sobrariam preços órfãos,
+    // que ninguém encontra.
+    Object.keys(ids).forEach(function (id) {
+      cfApagarPor_('Precos', 'ID_EQUALIZACAO', id);
+      cfApagarPor_('EAP', 'ID_EQUALIZACAO', id);
+      cfApagarPor_('Propostas', 'ID_EQUALIZACAO', id);
+      cfApagarPor_('Equalizacoes', 'ID', id);
+    });
+  }
+
+  return { equalizacoes: alvo, detalhe: detalhe, linhas: linhas, aplicado: aplicar };
+}
+
+function cfRelatarTeste_(r, rotulo) {
+  Logger.log('── Dados de teste (' + rotulo + ') ──');
+
+  if (!r.equalizacoes.length) {
+    Logger.log('Nenhuma equalização marcada com ' + CF_MARCA_TESTE + '.');
+    return r;
+  }
+
+  r.equalizacoes.forEach(function (e) {
+    Logger.log('  ' + e.ID + '  ' + (e.PROJETO || ''));
+  });
+  Logger.log('');
+  Object.keys(r.detalhe).forEach(function (k) {
+    Logger.log('  ' + k + ': ' + r.detalhe[k]);
+  });
+  Logger.log('  total: ' + r.linhas + ' linhas');
+  if (!r.aplicado) Logger.log('Nada foi alterado. Rode limparDadosDeTeste() para apagar.');
+
+  return r;
+}

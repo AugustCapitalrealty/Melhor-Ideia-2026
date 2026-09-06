@@ -553,6 +553,8 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
 
     <div class="acoes">
       <button class="bt primario" id="btSalvar" onclick="salvarEqualizacao()">Salvar equalização</button>
+      <button class="bt" onclick="preencherExemplo()"
+        title="Preenche a tela inteira com dados fictícios, marcados como ::TESTE::">Gerar exemplo</button>
       <span id="salvoMsg"></span>
     </div>
   </section>
@@ -1084,6 +1086,120 @@ var jaGravada = false;     // a cotação da tela já foi salva?
 function novaCotacao() {
   if (jaGravada) limparFormulario();
   aba('nova');
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Preenchimento de exemplo
+//
+//  Serve para testar o fluxo inteiro sem digitar 30 campos. Tudo que sai
+//  daqui leva a marca ::TESTE:: no projeto — aparece no seletor do mapa e
+//  some com limparDadosDeTeste(), em Manutencao.gs. Dado de teste
+//  misturado ao histórico de preço envenena a consulta, que é a razão de
+//  existir do sistema.
+// ─────────────────────────────────────────────────────────────
+
+var MARCA_TESTE = '::TESTE::';
+
+var EXEMPLOS = {
+  megas: ['MEGA CENTRO LOGÍSTICO CURITIBA', 'MEGA CENTRO LOGÍSTICO ESTEIO', 'MEGA CENTRO LOGÍSTICO ITAJAÍ'],
+  areas: ['Facilities', 'Equipamentos', 'Mão de obra', 'Utilities'],
+  centros: ['Limpeza e conservação', 'Material de consumo', 'Manutenção predial', 'Segurança'],
+  projetos: ['Reposição trimestral', 'Contrato anual de limpeza', 'Troca de luminárias',
+             'Monitoramento de utilities', 'Insumos de copa'],
+  fornecedores: [
+    { nome: 'Contabilista Suprimentos Para Escritório', cnpj: '77.765.840/0001-70' },
+    { nome: 'Essenza Comercial Ltda', cnpj: '22.748.778/0001-16' },
+    { nome: 'Fabesul Comércio', cnpj: '89.054.050/0006-70' },
+    { nome: 'Base Papéis Distribuidora', cnpj: '11.222.333/0001-81' },
+    { nome: 'Canaveral Serviços', cnpj: '34.028.316/0001-03' },
+    { nome: 'Litoral Suprimentos', cnpj: '45.997.418/0001-53' }
+  ],
+  grupos: ['MATERIAIS', 'SERVIÇOS', 'EQUIPAMENTOS'],
+  itens: [
+    ['Açúcar refinado 1kg', 'kg'], ['Café torrado 500g', 'un'], ['Filtro de café 103', 'cx'],
+    ['Água sanitária 5L', 'l'], ['Álcool gel 5L', 'l'], ['Detergente neutro 500ml', 'un'],
+    ['Papel toalha interfolhado', 'fardo'], ['Papel higiênico rolão', 'fardo'],
+    ['Saco de lixo 200L', 'pct'], ['Luva de limpeza M', 'un'],
+    ['Pano de chão', 'un'], ['Rodo 60cm', 'un'], ['Vassoura piaçava', 'un'],
+    ['Desinfetante 5L', 'l'], ['Sabão em pó 1kg', 'kg']
+  ],
+  condicoes: ['Boleto para 28 dias', 'Boleto 30/60', 'À vista com 3% de desconto', 'Faturamento mensal']
+};
+
+function sorteio(lista) { return lista[Math.floor(Math.random() * lista.length)]; }
+function inteiro(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function dataISO(diasAFrente) {
+  var d = new Date();
+  d.setDate(d.getDate() + diasAFrente);
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+
+function preencherExemplo() {
+  limparFormulario();
+
+  document.getElementById('nEmp').value = sorteio(EXEMPLOS.megas);
+  mostrarEmpresa();
+  document.getElementById('nProjeto').value = MARCA_TESTE + ' ' + sorteio(EXEMPLOS.projetos);
+  document.getElementById('nArea').value = sorteio(EXEMPLOS.areas);
+  document.getElementById('nGrupoCC').value = sorteio(EXEMPLOS.centros);
+  document.getElementById('nDetalhamento').value =
+    'Equalização gerada para teste do sistema. Não corresponde a uma compra real.';
+  document.getElementById('nPremissas').value = 'Entrega única, frete incluso.';
+
+  // 3 a 5 proponentes, sem repetir fornecedor.
+  var disponiveis = EXEMPLOS.fornecedores.slice();
+  var quantos = inteiro(3, 5);
+  proponentes = [];
+  for (var i = 0; i < quantos && disponiveis.length; i++) {
+    var f = disponiveis.splice(Math.floor(Math.random() * disponiveis.length), 1)[0];
+    proponentes.push({
+      nome: f.nome, busca: f.nome, cnpj: f.cnpj,
+      numero: String(inteiro(1000, 99999)),
+      data: dataISO(-inteiro(1, 20)),
+      validadeAte: dataISO(inteiro(5, 45)),
+      condicoes: sorteio(EXEMPLOS.condicoes),
+      leadTime: String(inteiro(0, 15)),
+      prazoExecucao: String(inteiro(0, 60)),
+      dataPrevInicio: dataISO(inteiro(3, 15)),
+      dataPrevTermino: dataISO(inteiro(16, 60)),
+      centroCusto: document.getElementById('nGrupoCC').value,
+      contatoNome: 'Vendas', telefone: '(41) 3' + inteiro(100, 999) + '-' + inteiro(1000, 9999),
+      email: 'vendas@exemplo.com.br'
+    });
+  }
+
+  // Um grupo e 6 a 12 itens, com preços que variam entre proponentes.
+  var sorteados = EXEMPLOS.itens.slice()
+    .sort(function () { return Math.random() - 0.5; })
+    .slice(0, inteiro(6, 12));
+
+  itens = [{ tipo: 'grupo', nivel: 0, codigo: '1.', descricao: sorteio(EXEMPLOS.grupos),
+             quantidade: '', unidade: 'un', precos: proponentes.map(function () { return ''; }) }];
+
+  sorteados.forEach(function (item, k) {
+    var base = inteiro(500, 60000) / 100;          // R$ 5,00 a R$ 600,00
+    itens.push({
+      tipo: 'item', nivel: 1, codigo: '1.' + (k + 1),
+      descricao: item[0], quantidade: String(inteiro(1, 20)), unidade: item[1],
+      precos: proponentes.map(function () {
+        // 1 em 8 não cota: é o caso que faz o total mais barato enganar.
+        if (Math.random() < 0.125) return '';
+        var v = base * (0.8 + Math.random() * 0.5);
+        return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      })
+    });
+  });
+
+  desenharProponentes();
+  desenharGrade();
+  salvarRascunho();
+
+  document.getElementById('salvoMsg').innerHTML =
+    '<span style="color:var(--alerta)">Exemplo gerado — ' + proponentes.length +
+    ' proponentes, ' + (itens.length - 1) + ' itens. Marcado como ' + MARCA_TESTE + '.</span>';
 }
 
 function limparFormulario() {
