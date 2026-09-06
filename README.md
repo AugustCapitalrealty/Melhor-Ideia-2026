@@ -22,12 +22,17 @@ A planilha equaliza, mas não lembra. Cada arquivo nasce isolado: o preço cotad
 - Empresa contratante derivada do Mega, não escolhida à mão (Curitiba → Demercado; Esteio e Itajaí → Capital Realty)
 - Código da EAP derivado da hierarquia, não digitado
 - Homologação da proposta vencedora com parecer registrado
-- Exportação no layout da EQU, em planilha e PDF, com unitário e total
+- Exportação no layout da EQU, em planilha e PDF, com unitário e total, resumo executivo no topo, variação percentual entre propostas, quadro de alçadas e link clicável para a proposta original
+- Catálogo de equalizações por categoria, deduzida dos itens, em cartões ou tabela densa
+- Ficha 360° do fornecedor: cadastro, contatos, disputas e histórico de preço por item ao longo do tempo
+- Colagem de bloco do Excel na grade e navegação completa por teclado
+- Tempo por equalização medido automaticamente, do primeiro campo até a gravação
 
 **O que ainda não existe** — e está declarado aqui de propósito, para que o escopo entregue seja verificável:
 - Avaliação pós-Ordem de Compra e Índice de Qualificação do Fornecedor (IQF), diretriz do comitê: mapeada, sem código
-- Taxonomia de categorias e ficha 360° do fornecedor: planejadas para o ciclo seguinte (ver plano diretor abaixo)
-- Medição do tempo por equalização: instrumentação em andamento; nenhum número foi apurado ainda
+- **Linha de base de tempo na planilha**: a instrumentação existe dos dois lados, mas ninguém cronometrou ainda uma equalização feita no Excel. Sem ela não há comparação, e o ganho continua sendo afirmação
+- **Piloto com cotações reais**: as equalizações da base são de teste e do acervo importado
+- Taxa de vitória por fornecedor: calculada, mas ainda sem disputas homologadas suficientes para virar percentual (a tela mostra a fração crua até lá)
 
 ---
 
@@ -72,7 +77,7 @@ Isso é dito aqui porque muda o desenho: a consulta externa é o **último** rec
 
 | Documento | Descrição |
 | :--- | :--- |
-| [Plano Diretor de Ecossistema e Aprovação de Diretoria](docs/PLANO_ECOSSISTEMA_E_APROVACAO_DIRETORIA_2026.md) | Roadmap em 4 fases. As fases 3 e 4 estão declaradas como ciclo seguinte. |
+| [Plano Diretor de Ecossistema e Aprovação de Diretoria](docs/PLANO_ECOSSISTEMA_E_APROVACAO_DIRETORIA_2026.md) | Roadmap em 4 fases, todas construídas. A nota de abertura registra o que mudou em relação ao texto original e por quê. |
 | [Plano Estratégico do Projeto](docs/PLANO_ESTRATEGICO_PROJETO.md) | Marcos, entregáveis e matriz de KPIs. |
 | [Arquitetura Técnica e Fluxos de Dados](docs/ARQUITETURA_TECNICA_E_FLUXO.md) | Backend (Apps Script), frontend, modelo relacional do Google Sheets e integrações. |
 | [Plano de Correções](docs/PLANO_DE_CORRECOES.md) | Defeitos encontrados, correção aplicada e teste que impede o retorno. |
@@ -86,7 +91,7 @@ Isso é dito aqui porque muda o desenho: a consulta externa é o **último** rec
 
 | Critério Oficial | Peso | Situação |
 | :--- | :---: | :--- |
-| **Impacto para a Empresa** *(Desempate 1)* | **30%** | O ganho pretendido é tempo por equalização e visibilidade de preço entre Megas. **A medição está pendente** — a instrumentação de tempo e o piloto com cotações reais são a próxima entrega, e nenhum número será afirmado antes de ser apurado. |
+| **Impacto para a Empresa** *(Desempate 1)* | **30%** | O ganho pretendido é tempo por equalização e visibilidade de preço entre Megas. O tempo já é medido automaticamente; **falta a linha de base da planilha e o piloto real**. Nenhum número será afirmado antes de ser apurado. |
 | **Qualidade da Implementação** *(Desempate 2)* | **30%** | Aplicação web funcional, implantada e em uso de teste, com suíte de testes automatizados que reprova de fato: cada defeito corrigido tem um teste que falha se ele voltar. |
 | **Viabilidade e Sustentabilidade** | **20%** | Custo zero de servidores (Google Apps Script sobre o Workspace já contratado). A dependência externa é a BrasilAPI, comunitária e sem SLA, com degradação prevista: o processo continua sem ela. |
 | **Inovação** | **20%** | O histórico de preço entre equalizações — o que a planilha, por ser um arquivo por cotação, não tem como fazer. |

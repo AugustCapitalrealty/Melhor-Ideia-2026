@@ -6,35 +6,48 @@
 
 ---
 
-## 0. Nota de revisão — 06/09/2026
+## 0. Nota de execução — 06/09/2026
 
-Este plano passou por parecer técnico independente antes de virar trabalho. O parecer aprovou as Fases 1 e 2 com ressalvas e **reprovou as Fases 3 e 4 para o ciclo 2026**. O documento fica no acervo como escrito, com as correções abaixo registradas em vez de apagadas.
+**As quatro fases deste plano foram construídas.** Esta nota registra o que mudou em relação ao texto original e por quê.
 
-**Escopo revisado:**
+O plano passou por parecer técnico independente antes de virar trabalho. O parecer recomendava **adiar as Fases 3 e 4** para o ciclo seguinte, por julgamento de valor: com 4 equalizações na base, um acordeão por categoria adiciona um clique para esconder o que já cabia na tela, e uma taxa de vitória sobre amostra mínima é ruído apresentado como inteligência.
 
-| Fase | Veredito | Motivo |
-| :--- | :--- | :--- |
-| 1 — Dossiê de Diretoria | **Executar**, com escopo cortado | É o único entregável que o comitê enxerga. Requer correção prévia de dados (ver abaixo). |
-| 2 — Ergonomia | **Executar 3 dos 6 itens** | Cabeçalho fixo, menor preço ao vivo e rascunho por rodada. Colagem bidimensional fica para depois. |
-| 3 — Catálogo em escala | **Ciclo 2027** | Resolve um problema que ainda não existe. |
-| 4 — Ecossistema 360° | **Ciclo 2027** | Depende de dados que ainda não foram produzidos. |
+**A decisão do dono do projeto foi construir as quatro agora**, e ela prevalece: o julgamento sobre o volume que vem por aí é de quem conhece a operação. O que era fato técnico, e não preferência, está tratado item a item abaixo.
 
-O regulamento, §5.3, prevê exatamente isso: *"Ideias validadas que não forem concluídas devido a limitações de orçamento ou tempo permanecerão elegíveis para execução no próximo ciclo anual."*
+### Estado de entrega
 
-**Correções de fato apuradas no parecer:**
+| Fase | Situação |
+| :--- | :--- |
+| 1 — Dossiê de Diretoria | Completa |
+| 2 — Ergonomia e teclado | Completa (6 de 6) |
+| 3 — Catálogo em escala | Completa |
+| 4 — Ecossistema 360° | Completa, com a ressalva de amostra descrita abaixo |
 
-1. **Os volumes citados na Fase 3 são hipotéticos.** A base tem **4 equalizações**, não "100+". Os contadores do exemplo de *Category Pills* (§3.3) — `Todas (142)`, `Mat. Consumo (48)` — são ilustrativos, não medições. Leia-os como maquete de tela.
-2. **Três das sete macro-categorias propostas (§3.2) não têm um único registro no acervo:** Obras & Reformas, Equipamentos & Locação, Tecnologia & Segurança. As categorias reais são Material de consumo (156 registros), Material de manutenção (75), Material de construção (28), Material de escritório (12) e Serviço de limpeza de piso (3).
-3. **O win-rate da Fase 4 (§4.3) não é calculável hoje.** Os 274 registros do acervo são todos orçamentos avulsos; nenhum é disputa com vencedor apurado. E a tabela `Convites`, que seria o denominador de "concorrências convocadas", está vazia por motivo conhecido: Engenharia registra convites, Facilities não. Um índice sobre essa amostra seria ruído apresentado como inteligência.
-4. **As três colunas novas propostas para `Fornecedores` (§4.1) são desnecessárias.** `TOTAL_CONTRATADO` em especial é cache de algo já derivável de `Equalizacoes.VALOR_FINAL`, e divergiria na primeira homologação corrigida.
-5. **O trecho de `setRichTextValue` da §1.4 não funciona como escrito.** Verificado em spike (06/09): o link aplicado antes do `setValues` da linha 344 do `Exportar.gs` é apagado por ele. A regra correta é uma só — **rich text depois do `setValues`**. Ao contrário do que o parecer supunha, `setFontSize` e `setBorder` **não** achatam os runs, e o range de duas células mescladas funciona.
-6. **O link sobrevive ao PDF — confirmado, não suposto.** O mesmo spike gerou o PDF pelo caminho real (`cfPdfDaPlanilha_`, endpoint `?format=pdf` com token OAuth) e encontrou `/Annots` e `/URI` com a URL. A Fase 1 pode incluir `LINK_PROPOSTA`.
-7. **Subir `CF_SCHEMA_VERSAO` de 3 para 4 exige congelar a migração atual primeiro.** `migrarParaSchemaV3()` deriva a versão da constante em vez de usar literais: bumpar a constante faria ela carimbar "migrado para v4" sem executar nenhum passo de v4.
-8. **Pré-requisito da Fase 1 — três divergências de dados.** O Scorecard executivo publica o Valor Homologado no topo do documento que vai à Diretoria. Antes disso: as 4 equalizações estão sem CNPJ da empresa; uma tem totais declarados equivalentes a 12× o calculado (mensalidade lida como anual); e Eletrobarras aparece com mão de obra duplicada em duas colunas.
+### Correções ao plano original
 
-**O que o plano não previu e virou prioridade:** medir. Impacto vale 30% da nota e é o primeiro critério de desempate, e não há uma única medição de tempo apurada. A instrumentação via `cfLog_` e um piloto com cotações reais valem mais, para o concurso, que as Fases 3 e 4 somadas.
+1. **O trecho de `setRichTextValue` da §1.4 não funcionava como escrito.** Verificado em spike: o link aplicado antes do `setValues` da linha 344 do `Exportar.gs` é apagado por ele, sem erro nenhum — só se descobre abrindo o PDF. A regra é uma só: **rich text depois do `setValues`**. Ao contrário do que o parecer supunha, `setFontSize` e `setBorder` **não** achatam os runs, e o range de duas células mescladas funciona.
 
----
+2. **O link sobrevive ao PDF — medido, não suposto.** O mesmo spike gerou o PDF pelo caminho real (`cfPdfDaPlanilha_`, endpoint `?format=pdf` com token OAuth) e encontrou `/Annots` e `/URI` com a URL.
+
+3. **Os volumes citados na Fase 3 eram hipotéticos.** A base tem 4 equalizações, não "100+". Os contadores do exemplo de *Category Pills* (§3.3) — `Todas (142)`, `Mat. Consumo (48)` — são maquete, não medição. As pílulas implementadas mostram a contagem real, e categoria sem nenhuma equalização não vira pílula: um hub que abre com sete botões, quatro deles em zero, ensina que os botões não valem nada.
+
+4. **As categorias reais do acervo são outras.** Material de consumo (156 registros), Material de manutenção (75), Material de construção (28), Material de escritório (12), Serviço de limpeza de piso (3). Três das sete macro-categorias propostas — Obras & Reformas, Equipamentos & Locação, Tecnologia & Segurança — ainda não têm registro. Elas existem na taxonomia e aparecem quando houver.
+
+5. **O plano não previa quem preencheria a categoria.** Era a lacuna que faria a tela nascer vazia. A categoria é **deduzida** das descrições dos itens, do projeto e da área; empate ou nenhuma palavra reconhecida deixa em branco de propósito, porque chute gravado fica indistinguível de acerto. Categoria definida à mão sempre ganha da deduzida, e o que foi deduzido aparece marcado na tela.
+
+6. **As três colunas novas propostas para `Fornecedores` (§4.1) não foram criadas.** `STATUS_HOMOLOGACAO` e `TOTAL_CONTRATADO` são deriváveis de `Equalizacoes`, e `TOTAL_CONTRATADO` em especial é cache que divergiria na primeira homologação corrigida. As métricas são calculadas na leitura.
+
+7. **O win-rate da §4.3 foi construído com trava de amostra.** Percentual só aparece a partir de **5 disputas decididas**; abaixo disso a tela mostra a fração crua ("venceu 2 de 3") com etiqueta de amostra curta. O denominador são as disputas **decididas** — equalização em aberto não foi perdida, está em andamento. E disputa nunca soma com orçamento avulso: orçamento solto não tem concorrente, não é vitória nem derrota. Assim a funcionalidade existe inteira sem que nenhum número fique frágil diante de "de quantas cotações estamos falando?".
+
+8. **Subir `CF_SCHEMA_VERSAO` de 3 para 4 exigiu congelar a migração anterior.** `migrarParaSchemaV3()` derivava a versão da constante: bumpar a constante a faria carimbar "migrado para v4" sem executar nenhum passo de v4, e o log de auditoria registraria uma migração que não aconteceu. A v3 agora usa literais, e há `migrarParaSchemaV4()` própria, que também classifica o que já existia.
+
+9. **Três divergências de dados eram pré-requisito da Fase 1**, e o plano não as mencionava: as 4 equalizações estavam sem CNPJ da empresa contratante; uma tinha totais declarados equivalentes a 12× o calculado (mensalidade lida como anual); e Eletrobarras aparecia com mão de obra duplicada. O Scorecard publica o Valor Homologado no topo do documento que vai à Diretoria — um número inflado em 12× ali é pior que não ter Scorecard. `diagnosticarDivergenciasAltas()` e `corrigirEmpresaDasEqualizacoes()` tratam disso.
+
+### O que o plano não previu e virou entrega
+
+**Medição.** Impacto vale 30% da nota e é o primeiro critério de desempate, e não havia uma única medição de tempo — o "70% de redução" que circulava era estimativa. O tempo por equalização agora é registrado sozinho, do primeiro campo digitado até gravar, com o tamanho junto (itens e proponentes), porque "12 minutos" não se compara com nada sozinho. Medição implausível é recusada: abaixo de 20 segundos é gerador de exemplo, acima de 4 horas é aba esquecida aberta.
+
+Falta a linha de base: cronometrar equalizações feitas **na planilha** e registrar com `registrarTempoNaPlanilha(minutos, descricao)`. Sem ela não existe comparação, e a janela é irreversível — depois que a operação migrar, ninguém volta ao Excel para medir.
 
 ## 1. Visão Geral e Propósito
 
