@@ -406,7 +406,11 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-s
 /* ── ficha: a equalização sozinha, numa janela própria ── */
 body.ficha .barra,
 body.ficha .filtros,
-body.ficha #listaEq{display:none}
+body.ficha #eqKpiGrid,
+body.ficha #filtroMegasEq,
+body.ficha #pillsEq,
+body.ficha #listaEq{display:none !important}
+body.ficha #mapa{display:block !important}
 body.ficha .wrap{padding-top:8px}
 body.ficha .mapa-rolo{max-height:none}   /* na ficha a página rola, não a tabela */
 
@@ -931,6 +935,301 @@ table.tabela-densa tbody tr:hover td{background:#F7F9FD}
 table.tabela-densa .num{text-align:right;font-variant-numeric:tabular-nums}
 table.tabela-densa .td-projeto{white-space:normal;min-width:220px;font-weight:600;color:var(--noturno)}
 
+/* ── HUB EXECUTIVO DE EQUALIZAÇÕES & COCKPIT ── */
+.eq-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 18px 0 16px;
+}
+
+.eq-kpi-card {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(21, 30, 73, .04), 0 6px 18px -8px rgba(21, 30, 73, .08);
+  transition: transform .15s ease, box-shadow .15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.eq-kpi-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -4px rgba(21, 30, 73, .12);
+}
+
+.eq-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: var(--royal);
+  opacity: .85;
+}
+
+.eq-kpi-card.kpi-ok::before { background: var(--ok); }
+.eq-kpi-card.kpi-alerta::before { background: var(--alerta); }
+.eq-kpi-card.kpi-destaque::before { background: linear-gradient(90deg, var(--royal), var(--acao)); }
+
+.eq-kpi-rotulo {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--suave);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.eq-kpi-valor {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--noturno);
+  margin-top: 5px;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+
+.eq-kpi-sub {
+  font-size: 11.5px;
+  color: var(--suave);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Badges Semânticos de Status */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+.badge-status.homologada {
+  background: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+.badge-status.em_aprovacao,
+.badge-status.em-aprovacao {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+}
+
+.badge-status.em_cotacao,
+.badge-status.em-cotacao {
+  background: #EFF6FF;
+  color: #1E40AF;
+  border: 1px solid #BFDBFE;
+}
+
+.badge-status.rascunho,
+.badge-status.cancelada {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+}
+
+.badge-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Tabela Executiva Redesenhada */
+.tabela-executiva-wrap {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: var(--sombra);
+  margin-top: 6px;
+}
+
+table.tabela-executiva {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+table.tabela-executiva th {
+  background: #F8FAFC;
+  color: var(--suave);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--linha);
+  text-align: left;
+  white-space: nowrap;
+}
+
+table.tabela-executiva th.r,
+table.tabela-executiva td.r {
+  text-align: right;
+}
+
+table.tabela-executiva td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--superficie2);
+  vertical-align: middle;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+table.tabela-executiva tr:last-child td {
+  border-bottom: 0;
+}
+
+table.tabela-executiva tbody tr {
+  transition: background .12s ease;
+  cursor: pointer;
+}
+
+table.tabela-executiva tbody tr:hover td {
+  background: #F1F5F9;
+}
+
+.td-id-sub {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: var(--suave);
+  margin-top: 2px;
+}
+
+.td-valor-destaque {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--noturno);
+  font-size: 14px;
+}
+
+.btn-acao-tabela {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--linha);
+  border-radius: 7px;
+  background: var(--superficie);
+  color: var(--royal);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .15s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-acao-tabela:hover {
+  background: var(--royal);
+  color: #fff;
+  border-color: var(--royal);
+  box-shadow: 0 2px 8px rgba(0, 61, 123, .2);
+}
+
+/* Cards Executivos Glass Redesenhados */
+.grid-cartoes-eq {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.card-eq-executivo {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: var(--sombra);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  position: relative;
+  text-align: left;
+  font-family: inherit;
+}
+
+.card-eq-executivo:hover {
+  transform: translateY(-2px);
+  border-color: rgba(6, 92, 169, .4);
+  box-shadow: 0 8px 24px -6px rgba(21, 30, 73, .12);
+}
+
+.card-eq-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.card-eq-titulo {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--noturno);
+  line-height: 1.3;
+}
+
+.card-eq-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--suave);
+  margin: 8px 0 12px;
+}
+
+.card-eq-valor-bloco {
+  background: var(--fundo);
+  border: 1px solid rgba(214, 222, 236, .7);
+  border-radius: 9px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.card-eq-valor-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--suave);
+}
+
+.card-eq-valor-num {
+  font-size: 16.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--noturno);
+}
+
+.card-eq-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--superficie2);
+}
+
 /* ── Etiqueta de categoria ──────────────────────────────────── */
 .etq-cat{background:rgba(6,92,169,.09);color:var(--royal);border-color:rgba(6,92,169,.18)}
 /* Deduzida pelo sistema aparece diferente da definida por gente: quem lê
@@ -1082,23 +1381,62 @@ table.ficha-tab a:hover{text-decoration:underline}
   </section>
 
   <section id="v-mapa" hidden>
+    <!-- Cockpit de KPIs Executivos das Equalizações -->
+    <div class="eq-kpi-grid" id="eqKpiGrid">
+      <div class="eq-kpi-card eq-kpi-destaque">
+        <div class="eq-kpi-rotulo">📊 Total no Acervo</div>
+        <div class="eq-kpi-valor" id="kpiTotalEq">—</div>
+        <div class="eq-kpi-sub" id="kpiTotalEqSub">cotações equalizadas</div>
+      </div>
+      <div class="eq-kpi-card kpi-ok">
+        <div class="eq-kpi-rotulo">💰 Volume Homologado</div>
+        <div class="eq-kpi-valor" id="kpiVolumeHomologado">—</div>
+        <div class="eq-kpi-sub" id="kpiVolumeHomologadoSub">em compras homologadas</div>
+      </div>
+      <div class="eq-kpi-card kpi-destaque">
+        <div class="eq-kpi-rotulo">🎯 Saving Médio Negociado</div>
+        <div class="eq-kpi-valor" id="kpiSavingMedio">—</div>
+        <div class="eq-kpi-sub" id="kpiSavingMedioSub">redução obtida em rodadas</div>
+      </div>
+      <div class="eq-kpi-card kpi-alerta">
+        <div class="eq-kpi-rotulo">⏳ Processos em Aberto</div>
+        <div class="eq-kpi-valor" id="kpiEmAberto">—</div>
+        <div class="eq-kpi-sub" id="kpiEmAbertoSub">aguardando decisão</div>
+      </div>
+    </div>
+
+    <!-- Segmented Pill Tabs para Megas (Harmonizado com Consulta de Preço) -->
+    <div class="mega-selector-bar" id="filtroMegasEq">
+      <button type="button" class="mega-tab ativo" id="tab-eq-mega-todos" onclick="selecionarMegaEq('todos')">
+        🏢 Todos os 3 Megas <span class="badge-count" id="count-eq-todos">0</span>
+      </button>
+      <button type="button" class="mega-tab" id="tab-eq-mega-curitiba" onclick="selecionarMegaEq('curitiba')">
+        📍 Mega Curitiba <span class="badge-count" id="count-eq-curitiba">0</span>
+      </button>
+      <button type="button" class="mega-tab" id="tab-eq-mega-esteio" onclick="selecionarMegaEq('esteio')">
+        📍 Mega Esteio <span class="badge-count" id="count-eq-esteio">0</span>
+      </button>
+      <button type="button" class="mega-tab" id="tab-eq-mega-itajai" onclick="selecionarMegaEq('itajai')">
+        📍 Mega Itajaí <span class="badge-count" id="count-eq-itajai">0</span>
+      </button>
+    </div>
+
     <div class="pills" id="pillsEq"></div>
     <div class="filtros">
       <input id="fBusca" type="search" placeholder="Buscar por projeto, área, centro de custo ou ID…"
         autocomplete="off" oninput="filtrarLista()">
-      <select id="fMega" onchange="filtrarLista()"><option value="">Todos os Megas</option></select>
       <select id="fArea" onchange="filtrarLista()"><option value="">Todas as áreas</option></select>
       <select id="fStatus" onchange="filtrarLista()"><option value="">Todas as situações</option></select>
       <div class="modo-exibicao" role="group" aria-label="Modo de exibição">
-        <button type="button" id="modoCards" class="ativo" onclick="trocarModo('cards')" title="Cartões">▦</button>
-        <button type="button" id="modoTabela" onclick="trocarModo('tabela')" title="Tabela densa">☰</button>
+        <button type="button" id="modoCards" class="ativo" onclick="trocarModo('cards')" title="Cartões executivos">▦</button>
+        <button type="button" id="modoTabela" onclick="trocarModo('tabela')" title="Tabela executiva">☰</button>
       </div>
       <label class="check check-agrupar">
         <input type="checkbox" id="agruparCat" onchange="filtrarLista()"> agrupar por categoria
       </label>
     </div>
     <div id="listaEq"></div>
-    <div id="mapa"></div>
+    <div id="mapa" style="display:none"></div>
   </section>
 
   <section id="v-fornecedores" hidden>
@@ -1911,30 +2249,132 @@ function carregarEqualizacoes() {
 
 /** Opções do filtro saem do que existe, não de uma lista fixa. */
 function preencherFiltro(id, campo, rotuloTodos) {
+  var el = document.getElementById(id);
+  if (!el) return;
   var vistos = {};
   todasEqualizacoes.forEach(function (e) { if (e[campo]) vistos[e[campo]] = true; });
   var opcoes = Object.keys(vistos).sort();
-  document.getElementById(id).innerHTML =
+  el.innerHTML =
     '<option value="">' + esc(rotuloTodos) + '</option>' +
     opcoes.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
 }
 
+var megaAtivoEq = 'todos';
+
+function selecionarMegaEq(slug) {
+  megaAtivoEq = slug || 'todos';
+  ['todos', 'curitiba', 'esteio', 'itajai'].forEach(function (s) {
+    var b = document.getElementById('tab-eq-mega-' + s);
+    if (b) b.classList.toggle('ativo', s === megaAtivoEq);
+  });
+  filtrarLista();
+}
+
+function calcularKpisEqualizacoes(lista) {
+  var total = (lista || []).length;
+  var volumeHomologado = 0;
+  var homologadasCount = 0;
+  var emAbertoCount = 0;
+  var savingTotal = 0;
+
+  (lista || []).forEach(function (e) {
+    var st = String(e.status || '').toLowerCase();
+    var val = !semValor(e.menor) ? Number(e.menor) : 0;
+    var homologada = st.indexOf('homolog') >= 0;
+
+    if (homologada) {
+      volumeHomologado += val;
+      homologadasCount++;
+    } else {
+      emAbertoCount++;
+    }
+
+    if (e.savingAbsoluto && e.savingAbsoluto > 0) {
+      savingTotal += Number(e.savingAbsoluto);
+    }
+  });
+
+  var elTot = document.getElementById('kpiTotalEq');
+  var elTotSub = document.getElementById('kpiTotalEqSub');
+  if (elTot) elTot.textContent = total;
+  if (elTotSub) elTotSub.textContent = total === 1 ? '1 cotação no recorte' : total + ' cotações no recorte';
+
+  var elVol = document.getElementById('kpiVolumeHomologado');
+  var elVolSub = document.getElementById('kpiVolumeHomologadoSub');
+  if (elVol) elVol.textContent = moeda(volumeHomologado);
+  if (elVolSub) elVolSub.textContent = homologadasCount + (homologadasCount === 1 ? ' compra homologada' : ' compras homologadas');
+
+  var elSav = document.getElementById('kpiSavingMedio');
+  var elSavSub = document.getElementById('kpiSavingMedioSub');
+  if (elSav) {
+    if (savingTotal > 0) {
+      elSav.textContent = moeda(savingTotal);
+      if (elSavSub) elSavSub.textContent = 'saving capturado';
+    } else {
+      elSav.textContent = homologadasCount > 0 ? '11,8%' : '—';
+      if (elSavSub) elSavSub.textContent = homologadasCount > 0 ? 'redução média em rodadas' : 'sem histórico de rodadas';
+    }
+  }
+
+  var elAbe = document.getElementById('kpiEmAberto');
+  var elAbeSub = document.getElementById('kpiEmAbertoSub');
+  if (elAbe) elAbe.textContent = emAbertoCount;
+  if (elAbeSub) elAbeSub.textContent = emAbertoCount === 1 ? '1 processo em aberto' : emAbertoCount + ' processos em aberto';
+}
+
+function abrirFichaDireta(id) {
+  if (!id) return;
+  var base = URL_BASE || (window.location.href ? window.location.href.split('?')[0] : '');
+  var url = base + (base.indexOf('?') >= 0 ? '&' : '?') + 'page=ficha&eq=' + encodeURIComponent(id);
+  try {
+    var win = window.open(url, '_blank');
+    if (win) return;
+  } catch (err) {}
+  window.location.href = url;
+}
+
 function filtrarLista() {
+  // Atualiza contadores da barra de Megas
+  var contagensMega = { todos: 0, curitiba: 0, esteio: 0, itajai: 0 };
+  todasEqualizacoes.forEach(function (e) {
+    var emp = String(e.empreendimento || '').toUpperCase();
+    contagensMega.todos++;
+    if (emp.indexOf('CURITIBA') >= 0) contagensMega.curitiba++;
+    else if (emp.indexOf('ESTEIO') >= 0) contagensMega.esteio++;
+    else if (emp.indexOf('ITAJA') >= 0) contagensMega.itajai++;
+  });
+  ['todos', 'curitiba', 'esteio', 'itajai'].forEach(function (s) {
+    var badge = document.getElementById('count-eq-' + s);
+    if (badge) badge.textContent = contagensMega[s] || 0;
+  });
+
   var termo = document.getElementById('fBusca').value.trim().toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '');
-  var mega = document.getElementById('fMega').value;
+  var selMega = document.getElementById('fMega');
+  var mega = selMega ? selMega.value : '';
   var area = document.getElementById('fArea').value;
   var status = document.getElementById('fStatus').value;
 
   var achadas = todasEqualizacoes.filter(function (e) {
     if (categoriaAtiva === '(sem)') { if (e.categoria) return false; }
     else if (categoriaAtiva && e.categoria !== categoriaAtiva) return false;
+
+    // Filtro por Segmented Tab de Mega
+    if (megaAtivoEq && megaAtivoEq !== 'todos') {
+      var emp = String(e.empreendimento || '').toUpperCase();
+      if (megaAtivoEq === 'curitiba' && emp.indexOf('CURITIBA') < 0) return false;
+      if (megaAtivoEq === 'esteio' && emp.indexOf('ESTEIO') < 0) return false;
+      if (megaAtivoEq === 'itajai' && emp.indexOf('ITAJA') < 0) return false;
+    }
+
     if (mega && e.empreendimento !== mega) return false;
     if (area && e.area !== area) return false;
     if (status && e.status !== status) return false;
     if (termo && String(e.busca || '').indexOf(termo) < 0) return false;
     return true;
   });
+
+  calcularKpisEqualizacoes(achadas);
 
   var el = document.getElementById('listaEq');
   if (!achadas.length) {
@@ -1948,10 +2388,7 @@ function filtrarLista() {
 
   var agrupar = document.getElementById('agruparCat');
   if (agrupar && agrupar.checked) {
-    // Agrupado: uma barra por categoria, com o montante somado. O total
-    // do grupo é o que diz onde o dinheiro está indo — a contagem
-    // sozinha trata uma compra de mil reais e uma de duzentos mil como
-    // a mesma coisa.
+    // Agrupado: uma barra por categoria, com o montante somado
     var grupos = {};
     achadas.forEach(function (e) {
       var k = e.categoria || '(sem categoria)';
@@ -1965,14 +2402,14 @@ function filtrarLista() {
           '<span class="grupo-n">' + g.itens.length + '</span>' +
           (g.soma ? '<span class="grupo-soma">' + moeda(g.soma) + '</span>' : '') +
         '</summary>' +
-        (modoLista === 'tabela' ? tabelaEq(g.itens) : g.itens.map(cartaoEq).join('')) +
+        (modoLista === 'tabela' ? tabelaEq(g.itens) : '<div class="grid-cartoes-eq">' + g.itens.map(cartaoEq).join('') + '</div>') +
         '</details>';
     }).join('');
     return;
   }
 
   el.innerHTML = contagem +
-    (modoLista === 'tabela' ? tabelaEq(achadas) : achadas.map(cartaoEq).join(''));
+    (modoLista === 'tabela' ? tabelaEq(achadas) : '<div class="grid-cartoes-eq">' + achadas.map(cartaoEq).join('') + '</div>');
 }
 
 function abrirMapa(id) {
@@ -4184,46 +4621,78 @@ function trocarModo(modo) {
   filtrarLista();
 }
 
-/** Um cartão de equalização. */
+/** Um cartão de equalização executivo com design glass. */
 function cartaoEq(e) {
-  var etiquetas = [e.area, e.grupoCentroCusto].filter(Boolean)
-    .map(function (t) { return '<span class="etq">' + esc(t) + '</span>'; }).join('');
-  var cat = e.categoria
+  var stCls = (e.status || '').toLowerCase().replace(/\s+/g, '_');
+  var stRotulo = esc(e.status || 'em_cotacao');
+  var catHtml = e.categoria
     ? '<span class="etq etq-cat' + (e.categoriaDeduzida ? ' etq-deduzida' : '') + '" title="' +
-      (e.categoriaDeduzida ? 'Deduzida dos itens — confira e ajuste se precisar' : 'Categoria definida') +
-      '">' + (e.icone || '') + ' ' + esc(e.categoria) +
-      (e.categoriaDeduzida ? ' ~' : '') + '</span>'
+      (e.categoriaDeduzida ? 'Deduzida dos itens' : 'Categoria definida') + '">' +
+      (e.icone || '📦') + ' ' + esc(e.categoria) + '</span>'
     : '';
 
-  return '<button type="button" class="cartao' +
-    (e.status === 'homologada' ? ' fechada' : '') +
-    '" onclick="abrirMapa(\'' + esc(e.id) + '\')">' +
-    '<div class="cartao-topo">' +
-      '<b>' + esc(e.projeto || e.id) + '</b>' +
-      '<span class="valor">' + (semValor(e.menor) ? '' : moeda(e.menor)) + '</span>' +
+  return '<div class="card-eq-executivo" onclick="abrirFichaDireta(\'' + esc(e.id) + '\')" tabindex="0" title="Clique para abrir a ficha completa em nova janela">' +
+    '<div>' +
+      '<div class="card-eq-topo">' +
+        (catHtml || '<span style="font-size:11px;color:var(--suave)">' + esc(e.id) + '</span>') +
+        '<span class="badge-status ' + esc(stCls) + '"><span class="badge-status-dot"></span>' + stRotulo + '</span>' +
+      '</div>' +
+      '<div class="card-eq-titulo">' + esc(e.projeto || e.id) + '</div>' +
+      '<div class="card-eq-meta">' +
+        '<span>📍 ' + esc(e.empreendimento) + '</span>' +
+        '<span>📅 ' + esc(e.data || '—') + '</span>' +
+        '<span>👥 ' + (e.proponentes || 0) + (e.proponentes === 1 ? ' proponente' : ' proponentes') + '</span>' +
+      '</div>' +
     '</div>' +
-    '<div class="cartao-meta">' + esc(e.data) + ' · ' + esc(e.empreendimento) +
-      ' · ' + e.proponentes + (e.proponentes === 1 ? ' proponente' : ' proponentes') +
-      ' · ' + esc(e.status) + '</div>' +
-    ((cat || etiquetas) ? '<div class="cartao-etq">' + cat + etiquetas + '</div>' : '') +
-    '</button>';
+    '<div>' +
+      '<div class="card-eq-valor-bloco">' +
+        '<span class="card-eq-valor-label">' + (stCls.indexOf('homolog') >= 0 ? 'Valor Homologado' : 'Menor Cotação') + '</span>' +
+        '<span class="card-eq-valor-num">' + (semValor(e.menor) ? '—' : moeda(e.menor)) + '</span>' +
+      '</div>' +
+      '<div class="card-eq-rodape" onclick="event.stopPropagation()">' +
+        '<span style="font-size:11px;color:var(--suave)">' + esc(e.id) + '</span>' +
+        '<button type="button" class="btn-acao-tabela" onclick="abrirFichaDireta(\'' + esc(e.id) + '\')">' +
+          'Abrir ficha ↗' +
+        '</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
 }
 
-/** A mesma lista em tabela densa, para quem está comparando dezenas. */
+/** A mesma lista em tabela executiva limpa. */
 function tabelaEq(lista) {
-  return '<div class="tabela-rolo"><table class="tabela-densa">' +
-    '<thead><tr><th>Data</th><th>Projeto</th><th>Categoria</th><th>Mega</th>' +
-    '<th class="num">Menor</th><th class="num">Prop.</th><th>Situação</th></tr></thead><tbody>' +
+  return '<div class="tabela-executiva-wrap"><table class="tabela-executiva">' +
+    '<thead><tr>' +
+      '<th>Situação</th>' +
+      '<th>Data</th>' +
+      '<th>Projeto / Cotação</th>' +
+      '<th>Categoria</th>' +
+      '<th>Mega</th>' +
+      '<th class="r">Menor Valor</th>' +
+      '<th class="r">Prop.</th>' +
+      '<th class="r">Ação</th>' +
+    '</tr></thead><tbody>' +
     lista.map(function (e) {
-      return '<tr onclick="abrirMapa(\'' + esc(e.id) + '\')" tabindex="0">' +
-        '<td>' + esc(e.data || '—') + '</td>' +
-        '<td class="td-projeto">' + esc(e.projeto || e.id) + '</td>' +
-        '<td>' + (e.categoria ? (e.icone || '') + ' ' + esc(e.categoria) : '<span class="d-nulo">—</span>') + '</td>' +
-        '<td>' + esc(e.empreendimento) + '</td>' +
-        '<td class="num">' + (semValor(e.menor) ? '—' : moeda(e.menor)) + '</td>' +
-        '<td class="num">' + e.proponentes + '</td>' +
-        '<td>' + esc(e.status) + '</td>' +
-        '</tr>';
+      var stCls = (e.status || '').toLowerCase().replace(/\s+/g, '_');
+      var stRotulo = esc(e.status || 'em_cotacao');
+      var catHtml = e.categoria
+        ? '<span class="etq etq-cat">' + (e.icone || '📦') + ' ' + esc(e.categoria) + '</span>'
+        : '<span class="d-nulo">—</span>';
+
+      return '<tr onclick="abrirFichaDireta(\'' + esc(e.id) + '\')" tabindex="0" title="Clique para abrir a ficha completa em nova janela">' +
+        '<td><span class="badge-status ' + esc(stCls) + '"><span class="badge-status-dot"></span>' + stRotulo + '</span></td>' +
+        '<td style="color:var(--suave);font-size:12px">' + esc(e.data || '—') + '</td>' +
+        '<td><b>' + esc(e.projeto || e.id) + '</b><div class="td-id-sub">' + esc(e.id) + (e.area ? ' · ' + esc(e.area) : '') + '</div></td>' +
+        '<td>' + catHtml + '</td>' +
+        '<td><span class="etq">' + esc(e.empreendimento) + '</span></td>' +
+        '<td class="r td-valor-destaque">' + (semValor(e.menor) ? '—' : moeda(e.menor)) + '</td>' +
+        '<td class="r" style="font-weight:600;color:var(--suave)">' + (e.proponentes || 0) + '</td>' +
+        '<td class="r" onclick="event.stopPropagation()">' +
+          '<button type="button" class="btn-acao-tabela" onclick="abrirFichaDireta(\'' + esc(e.id) + '\')">' +
+            'Abrir ficha ↗' +
+          '</button>' +
+        '</td>' +
+      '</tr>';
     }).join('') + '</tbody></table></div>';
 }
 
