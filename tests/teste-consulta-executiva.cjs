@@ -239,3 +239,4 @@ console.log('Validando Consulta de Preço Executiva & Filtro por Megas...\n');
 }
 
 console.log('\nTodos os 4 testes de inteligência executiva de preço passaram com 100% de sucesso!');
+

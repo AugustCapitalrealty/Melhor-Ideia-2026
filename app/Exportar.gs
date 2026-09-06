@@ -418,7 +418,7 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
     aba.setColumnWidth(colDe(i) + 1, 125);
   }
 
-  if (lLinhaEmpresa && ehDemercado) {
+  if (lLinhaEmpresa) {
     try {
       if (aba && typeof aba.setRowHeight === 'function') aba.setRowHeight(lLinhaEmpresa, 46);
       if (aba && typeof aba.getRange === 'function') {
@@ -428,7 +428,7 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
             .setVerticalAlignment('middle');
         } catch (eAlign) {}
       }
-      const colocou = cfInserirLogoDemercado_(aba, COL_VALOR, lLinhaEmpresa, 330, 46);
+      const colocou = cfInserirLogoEmpresa_(aba, COL_VALOR, lLinhaEmpresa, 330, 46, ehDemercado);
       if (colocou) {
         try { aba.getRange(lLinhaEmpresa, COL_VALOR).setValue(''); } catch (eLimpa) {}
       }
@@ -609,12 +609,14 @@ function cfDataHoraTexto_(d) {
 }
 
 /**
- * Insere a imagem da logo da Demercado diretamente na planilha de forma centralizada.
+ * Insere a imagem da logo da Demercado ou da Capital Realty diretamente na planilha de forma centralizada.
  * O blob incorporado na planilha garante que a imagem saia impressa no PDF sem depender de carregamento externo.
  */
-function cfInserirLogoDemercado_(aba, col, lin, larguraCol, alturaLin) {
+function cfInserirLogoEmpresa_(aba, col, lin, larguraCol, alturaLin, ehDemercado) {
   try {
-    const idLogo = '168kVyD9dXiZctYNl27f_-Ic9S1W3wm-T';
+    const idLogo = ehDemercado
+      ? '168kVyD9dXiZctYNl27f_-Ic9S1W3wm-T'  // Demercado Investimentos
+      : '1XqFtIobiEq7VC2H41sKnFNUuOluw_J4V'; // Capital Realty
     let blob = null;
     try {
       blob = DriveApp.getFileById(idLogo).getBlob();
@@ -651,9 +653,14 @@ function cfInserirLogoDemercado_(aba, col, lin, larguraCol, alturaLin) {
       return true;
     }
   } catch (erro) {
-    Logger.log('Aviso: falha ao inserir logo Demercado via insertImage: ' + erro);
+    Logger.log('Aviso: falha ao inserir logo da empresa via insertImage: ' + erro);
   }
   return false;
+}
+
+/** Compatibilidade retroativa para chamadas diretas de logo Demercado */
+function cfInserirLogoDemercado_(aba, col, lin, larguraCol, alturaLin) {
+  return cfInserirLogoEmpresa_(aba, col, lin, larguraCol, alturaLin, true);
 }
 
 

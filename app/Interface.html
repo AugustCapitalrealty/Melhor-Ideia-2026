@@ -598,11 +598,12 @@ tr.eh-grupo .cod-auto{color:var(--noturno)}
   min-height:43px;display:flex;align-items:center;
 }
 .emp-marca{display:flex;align-items:center;gap:8px;width:100%}
-.emp-marca img.logo-demercado{
+.emp-marca img.logo-demercado,
+.emp-marca img.logo-cr{
   height:32px;max-width:185px;object-fit:contain;
 }
 .emp-marca.emp-cr{
-  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;line-height:1.15;
+  display:flex;align-items:center;justify-content:flex-start;line-height:1.15;
 }
 .cr-badge{font-size:13.5px;font-weight:800;letter-spacing:.03em;color:var(--noturno)}
 .cr-sub{font-size:9.5px;font-weight:600;color:var(--acao);text-transform:uppercase;letter-spacing:.08em}
@@ -1132,17 +1133,35 @@ table.ficha-tab a:hover{text-decoration:underline}
     <div class="bloco vidro">
       <h2>A compra</h2>
       <div class="grade-compra">
-        <div class="campo col-3">
+        <div class="campo col-2">
+          <label for="nCategoria">Categoria da compra</label>
+          <select id="nCategoria" onchange="selecionouCategoria(this.value)">
+            <option value="">selecione a categoria…</option>
+            <optgroup label="Compras recorrentes (mensais)">
+              <option value="Material de Consumo">☕ Material de Consumo</option>
+              <option value="Material de Construção">🧱 Material de Construção</option>
+            </optgroup>
+            <optgroup label="Demais categorias">
+              <option value="Obras &amp; Reformas">🏗️ Obras &amp; Reformas</option>
+              <option value="Serviços &amp; Facilities">🧹 Serviços &amp; Facilities</option>
+              <option value="Manutenção Predial &amp; Engenharia">⚡ Manutenção Predial &amp; Engenharia</option>
+              <option value="Equipamentos &amp; Locação">🚜 Equipamentos &amp; Locação</option>
+              <option value="Tecnologia &amp; Segurança">💻 Tecnologia &amp; Segurança</option>
+              <option value="Outra">Outra…</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="campo col-2">
           <label for="nEmp">Empreendimento</label>
           <select id="nEmp"><option value="">selecione o Mega…</option></select>
         </div>
-        <div class="campo col-3">
+        <div class="campo col-2">
           <label>Empresa contratante</label>
           <div class="derivado" id="nEmpresa"><span class="emp-vazio">escolha o Mega primeiro</span></div>
         </div>
         <div class="campo col-6">
-          <label for="nProjeto">Projeto</label>
-          <input id="nProjeto" placeholder="META UTILITIES — PLANEJAMENTO E GESTÃO" autocomplete="off">
+          <label for="nProjeto">Projeto <small style="font-weight:normal;color:var(--suave);margin-left:4px">(sugerido pela categoria, editável)</small></label>
+          <input id="nProjeto" placeholder="Material de Consumo — Curitiba — Setembro/2026" autocomplete="off" oninput="marcouProjetoManual()">
         </div>
         <div class="campo col-2">
           <label for="nArea">Área</label>
@@ -1159,7 +1178,7 @@ table.ficha-tab a:hover{text-decoration:underline}
         </div>
         <div class="campo col-2">
           <label for="nGrupoCC">Grupo Centro de Custo</label>
-          <input id="nGrupoCC" placeholder="Limpeza e conservação, Utilities…" autocomplete="off">
+          <input id="nGrupoCC" placeholder="Material de Consumo, Limpeza…" autocomplete="off">
         </div>
         <div class="campo col-2">
           <label for="nData">Data da equalização</label>
@@ -2375,11 +2394,15 @@ function dataISO(diasAFrente) {
 function preencherExemplo() {
   limparFormulario();
 
+  var selCat = document.getElementById('nCategoria');
+  if (selCat) selCat.value = 'Material de Consumo';
+
   document.getElementById('nEmp').value = sorteio(EXEMPLOS.megas);
   mostrarEmpresa();
-  document.getElementById('nProjeto').value = MARCA_TESTE + ' ' + sorteio(EXEMPLOS.projetos);
-  document.getElementById('nArea').value = sorteio(EXEMPLOS.areas);
-  document.getElementById('nGrupoCC').value = sorteio(EXEMPLOS.centros);
+  selecionouCategoria('Material de Consumo');
+
+  document.getElementById('nProjeto').value = MARCA_TESTE + ' ' + (document.getElementById('nProjeto').value || sorteio(EXEMPLOS.projetos));
+  projetoAutoGerado = false;
   document.getElementById('nDetalhamento').value =
     'Equalização gerada para teste do sistema. Não corresponde a uma compra real.';
   document.getElementById('nPremissas').value = 'Entrega única, frete incluso.';
@@ -2458,7 +2481,7 @@ function limparFormulario() {
   document.getElementById('tituloTela').textContent = TITULOS['nova'][0];
   document.getElementById('subTela').textContent = TITULOS['nova'][1];
 
-  ['nProjeto', 'nArea', 'nGrupoCC', 'nDetalhamento', 'nPremissas', 'nNotasCr'].forEach(function (id) {
+  ['nCategoria', 'nProjeto', 'nArea', 'nGrupoCC', 'nDetalhamento', 'nPremissas', 'nNotasCr'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -2466,6 +2489,7 @@ function limparFormulario() {
   if (emp) emp.value = '';
   var data = document.getElementById('nData');
   if (data) data.value = hojeISO();
+  projetoAutoGerado = true;
   mostrarEmpresa();
 
   addProponente(); addProponente(); addProponente();
@@ -2486,7 +2510,7 @@ function carregarOpcoes() {
         return '<option value="' + esc(e.nome) + '" data-empresa="' + esc(e.empresa) + '">' +
                esc(e.nome) + '</option>';
       }).join('');
-    document.getElementById('nEmp').onchange = mostrarEmpresa;
+    document.getElementById('nEmp').onchange = selecionouEmpreendimento;
     if (megaPendenteEdicao) {
       document.getElementById('nEmp').value = megaPendenteEdicao;
       mostrarEmpresa();
@@ -2495,6 +2519,7 @@ function carregarOpcoes() {
   }).apiOpcoes();
 
   document.getElementById('nData').value = hojeISO();
+  document.getElementById('nData').onchange = selecionouData;
 
   // Rascunho tem prioridade sobre o estado inicial: se havia trabalho em
   // andamento, começar do zero por cima dele seria perdê-lo de novo.
@@ -2503,8 +2528,9 @@ function carregarOpcoes() {
     addItem('grupo'); addItem('item');
   }
 
-  ['nEmp', 'nProjeto', 'nArea', 'nGrupoCC', 'nData'].forEach(function (id) {
-    document.getElementById(id).addEventListener('input', salvarRascunho);
+  ['nCategoria', 'nEmp', 'nProjeto', 'nArea', 'nGrupoCC', 'nData'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', salvarRascunho);
   });
 }
 
@@ -2536,9 +2562,106 @@ function mostrarEmpresa() {
   } else {
     box.innerHTML =
       '<div class="emp-marca emp-cr" title="' + esc(nome) + '">' +
-        '<span class="cr-badge">CAPITAL REALTY</span>' +
-        '<small class="cr-sub">Infraestrutura Logística</small>' +
+        '<img src="https://lh3.googleusercontent.com/d/1XqFtIobiEq7VC2H41sKnFNUuOluw_J4V" ' +
+             'alt="Capital Realty" class="logo-cr" ' +
+             'onerror="this.onerror=null;this.innerHTML=\'<span class=\\\'cr-badge\\\'>CAPITAL REALTY</span><small class=\\\'cr-sub\\\'>Infraestrutura Logística</small>\'">' +
       '</div>';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Autogeração de nome de projeto pela categoria da compra
+// ─────────────────────────────────────────────────────────────
+
+var projetoAutoGerado = true;
+var MESES_PT = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+function marcouProjetoManual() {
+  projetoAutoGerado = false;
+  salvarRascunho();
+}
+
+function simplificarMega(emp) {
+  if (!emp) return '';
+  var s = String(emp).trim();
+  if (/CURITIBA/i.test(s)) return 'Curitiba';
+  if (/ESTEIO/i.test(s)) return 'Esteio';
+  if (/ITAJA[ÍI]/i.test(s)) return 'Itajaí';
+  return s.replace(/^MEGA\s+CENTRO\s+LOG[ÍI]STICO\s+/i, '').replace(/^MEGA\s+/i, '');
+}
+
+function mesAnoPorExtenso(dataIso) {
+  var d = dataIso ? new Date(dataIso + 'T00:00:00') : new Date();
+  if (isNaN(d.getTime())) d = new Date();
+  var mes = MESES_PT[d.getMonth()];
+  var ano = d.getFullYear();
+  return mes + '/' + ano;
+}
+
+function gerarNomeProjetoSugerido(cat, emp, dataIso) {
+  if (!cat) return '';
+  var partes = [cat];
+  var m = simplificarMega(emp);
+  if (m) partes.push(m);
+  partes.push(mesAnoPorExtenso(dataIso));
+  return partes.join(' — ');
+}
+
+function selecionouCategoria(cat) {
+  var emp = document.getElementById('nEmp') ? document.getElementById('nEmp').value : '';
+  var dataIso = document.getElementById('nData') ? document.getElementById('nData').value : '';
+  var campoProj = document.getElementById('nProjeto');
+
+  if (campoProj && (projetoAutoGerado || !campoProj.value.trim())) {
+    campoProj.value = gerarNomeProjetoSugerido(cat, emp, dataIso);
+    projetoAutoGerado = true;
+  }
+
+  // Sugestões ergonômicas de Área e Grupo Centro de Custo para compras recorrentes
+  var campoArea = document.getElementById('nArea');
+  var campoCC = document.getElementById('nGrupoCC');
+
+  if (cat === 'Material de Consumo') {
+    if (campoArea && !campoArea.value) campoArea.value = 'Facilities';
+    if (campoCC && !campoCC.value) campoCC.value = 'Material de Consumo';
+  } else if (cat === 'Material de Construção') {
+    if (campoArea && !campoArea.value) campoArea.value = 'Engenharia';
+    if (campoCC && !campoCC.value) campoCC.value = 'Material de Construção';
+  } else if (cat === 'Obras & Reformas') {
+    if (campoArea && !campoArea.value) campoArea.value = 'Engenharia';
+    if (campoCC && !campoCC.value) campoCC.value = 'Obras & Reformas';
+  } else if (cat === 'Serviços & Facilities') {
+    if (campoArea && !campoArea.value) campoArea.value = 'Facilities';
+    if (campoCC && !campoCC.value) campoCC.value = 'Serviços & Facilities';
+  } else if (cat === 'Manutenção Predial & Engenharia') {
+    if (campoArea && !campoArea.value) campoArea.value = 'Engenharia';
+    if (campoCC && !campoCC.value) campoCC.value = 'Manutenção Predial';
+  }
+
+  salvarRascunho();
+}
+
+function selecionouEmpreendimento() {
+  mostrarEmpresa();
+  atualizarProjetoSeAuto();
+  salvarRascunho();
+}
+
+function selecionouData() {
+  atualizarProjetoSeAuto();
+  salvarRascunho();
+}
+
+function atualizarProjetoSeAuto() {
+  var cat = document.getElementById('nCategoria') ? document.getElementById('nCategoria').value : '';
+  if (!cat) return;
+  var campoProj = document.getElementById('nProjeto');
+  if (campoProj && (projetoAutoGerado || !campoProj.value.trim())) {
+    var emp = document.getElementById('nEmp') ? document.getElementById('nEmp').value : '';
+    var dataIso = document.getElementById('nData') ? document.getElementById('nData').value : '';
+    campoProj.value = gerarNomeProjetoSugerido(cat, emp, dataIso);
+    projetoAutoGerado = true;
   }
 }
 
@@ -2678,7 +2801,6 @@ function detalhesProposta(p, i) {
       campoProp(i, 'prazoExecucao', 'Prazo de execução (dias)', 'number') +
       campoProp(i, 'dataPrevInicio', 'Data prevista para início', 'date') +
       campoProp(i, 'dataPrevTermino', 'Data prevista para término', 'date') +
-      campoProp(i, 'centroCusto', 'Nome do centro de custo', 'text', 'Material de consumo') +
       campoProp(i, 'totalDeclarado', 'VALOR TOTAL declarado no documento', 'text', 'R$') +
       campoProp(i, 'contatoNome', 'Contato', 'text', 'nome de quem cotou') +
       campoProp(i, 'telefone', 'Telefone', 'text', '(41) 3330-8000') +
@@ -3499,6 +3621,8 @@ function chaveRascunho() {
 function estadoAtual() {
   return {
     quando: new Date().toISOString(),
+    categoria: document.getElementById('nCategoria') ? document.getElementById('nCategoria').value : '',
+    projetoAutoGerado: !!projetoAutoGerado,
     emp: document.getElementById('nEmp').value,
     projeto: document.getElementById('nProjeto').value,
     area: document.getElementById('nArea').value,
@@ -3510,14 +3634,14 @@ function estadoAtual() {
     // formulário com só esse texto nem disparava o alerta de saída.
     detalhamento: document.getElementById('nDetalhamento').value,
     premissas: document.getElementById('nPremissas').value,
-    notasCr: document.getElementById('nNotasCr').value,
+    notasCr: document.getElementById('nNotasCr') ? document.getElementById('nNotasCr').value : '',
     proponentes: proponentes,
     itens: itens
   };
 }
 
 function temConteudo(e) {
-  return !!(e.emp || e.projeto || e.area || e.grupoCC || e.detalhamento || e.premissas || e.notasCr ||
+  return !!(e.categoria || e.emp || e.projeto || e.area || e.grupoCC || e.detalhamento || e.premissas || e.notasCr ||
     (e.proponentes || []).some(function (p) { return p.nome || p.cnpj; }) ||
     (e.itens || []).some(function (i) { return i.descricao || i.precos.some(Boolean); }));
 }
@@ -3549,6 +3673,28 @@ function restaurarRascunho() {
   var e;
   try { e = JSON.parse(bruto); } catch (err) { return false; }
   if (!temConteudo(e)) return false;
+
+  var selCat = document.getElementById('nCategoria');
+  if (selCat) {
+    if (e.categoria) {
+      var achouCat = false;
+      for (var c = 0; c < selCat.options.length; c++) {
+        if (selCat.options[c].value === e.categoria) { achouCat = true; break; }
+      }
+      if (!achouCat) {
+        var optCat = document.createElement('option');
+        optCat.value = e.categoria;
+        optCat.textContent = e.categoria;
+        selCat.appendChild(optCat);
+      }
+      selCat.value = e.categoria;
+    } else {
+      selCat.value = '';
+    }
+  }
+  if (e.projetoAutoGerado !== undefined) {
+    projetoAutoGerado = e.projetoAutoGerado;
+  }
 
   document.getElementById('nEmp').value = e.emp || '';
   document.getElementById('nProjeto').value = e.projeto || '';
@@ -3726,6 +3872,27 @@ function carregarDadosParaEdicao(m) {
   }
 
   document.getElementById('nProjeto').value = m.equalizacao.projeto || '';
+  projetoAutoGerado = false;
+
+  var catVal = m.equalizacao.categoria || '';
+  var selCat = document.getElementById('nCategoria');
+  if (selCat) {
+    if (catVal) {
+      var achouCat = false;
+      for (var c = 0; c < selCat.options.length; c++) {
+        if (selCat.options[c].value === catVal) { achouCat = true; break; }
+      }
+      if (!achouCat) {
+        var optCat = document.createElement('option');
+        optCat.value = catVal;
+        optCat.textContent = catVal;
+        selCat.appendChild(optCat);
+      }
+      selCat.value = catVal;
+    } else {
+      selCat.value = '';
+    }
+  }
 
   var selArea = document.getElementById('nArea');
   if (selArea) {
@@ -3909,6 +4076,7 @@ function salvarEqualizacao() {
     .apiCriarEqualizacao({
       id: idEmEdicao || undefined,
       segundosPreenchimento: segundosDecorridos(),
+      categoria: document.getElementById('nCategoria') ? document.getElementById('nCategoria').value : '',
       empreendimento: document.getElementById('nEmp').value,
       projeto: document.getElementById('nProjeto').value,
       area: document.getElementById('nArea').value,
@@ -3920,6 +4088,7 @@ function salvarEqualizacao() {
       notasCr: document.getElementById('nNotasCr') ? document.getElementById('nNotasCr').value : '',
       proponentes: proponentes.map(function (p) {
         var c = Object.assign({}, p);
+        c.centroCusto = c.centroCusto || document.getElementById('nGrupoCC').value;
         if (!c.faturamentoDireto) c.valorFaturamentoDireto = '';
         var teveNeg = c.teveNegociacao !== undefined ? !!c.teveNegociacao : !!(c.propostaInicial || c.r01 || c.r02);
         if (!teveNeg) {
