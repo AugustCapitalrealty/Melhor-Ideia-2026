@@ -139,6 +139,259 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-s
 .fonte-link:hover { opacity: 1; }
 .filtrado { display: block; margin-top: 8px; font-size: 12px; color: var(--suave); }
 
+/* ── CONSULTA DE PREÇO: COCKPIT EXECUTIVO & FILTRO POR MEGA ── */
+.mega-selector-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 24px;
+  padding: 4px;
+  background: var(--superficie2);
+  border: 1px solid var(--linha);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+.mega-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  border: 0;
+  background: transparent;
+  color: var(--suave);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: all .18s ease;
+}
+.mega-tab:hover {
+  color: var(--noturno);
+  background: rgba(255, 255, 255, .6);
+}
+.mega-tab.ativo {
+  background: var(--superficie);
+  color: var(--noturno);
+  box-shadow: 0 1px 3px rgba(21, 30, 73, .08), 0 4px 12px -2px rgba(21, 30, 73, .06);
+}
+.mega-tab .badge-count {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--linha);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto);
+}
+.mega-tab.ativo .badge-count {
+  background: var(--noturno);
+  color: #fff;
+}
+
+/* Card Mestre de Produto Executivo */
+.produto-executivo {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--sombra);
+  transition: border-color .15s ease;
+}
+.produto-executivo:hover {
+  border-color: rgba(6, 92, 169, .3);
+}
+.produto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--linha);
+  flex-wrap: wrap;
+}
+.produto-titulo {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--noturno);
+  letter-spacing: -.01em;
+}
+.produto-aliases {
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: var(--suave);
+}
+.produto-aliases b {
+  color: var(--noturno);
+}
+
+/* Grid de 4 KPIs Executivos */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: var(--fundo);
+  border: 1px solid rgba(214, 222, 236, .8);
+  border-radius: 10px;
+  padding: 12px 14px;
+  position: relative;
+}
+.kpi-card.destaque-menor {
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+}
+.kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--suave);
+  margin-bottom: 5px;
+}
+.kpi-card.destaque-menor .kpi-label {
+  color: #166534;
+}
+.kpi-valor {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--noturno);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+.kpi-card.destaque-menor .kpi-valor {
+  color: var(--ok);
+}
+.kpi-sub {
+  font-size: 11.5px;
+  color: var(--suave);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Matriz Regional Comparativa (Todos os 3 Megas) */
+.matriz-regional {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 12px 0 16px;
+  border: 1px solid var(--linha);
+  border-radius: 9px;
+  overflow: hidden;
+}
+.matriz-regional th {
+  background: var(--superficie2);
+  color: var(--noturno);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--linha);
+}
+.matriz-regional td {
+  padding: 10px 12px;
+  font-size: 13.5px;
+  border-bottom: 1px solid var(--superficie2);
+  background: var(--superficie);
+  vertical-align: middle;
+}
+.matriz-regional tr:last-child td {
+  border-bottom: 0;
+}
+.matriz-regional .col-mega {
+  font-weight: 600;
+  color: var(--noturno);
+}
+.badge-benchmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.badge-benchmark.melhor { background: #DCFCE7; color: #15803D; }
+.badge-benchmark.alerta { background: #FEF3C7; color: #B45309; }
+.badge-benchmark.neutro { background: #F1F5F9; color: #475569; }
+
+/* Tabela Limpa */
+.tabela-limpa {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 10px 0;
+}
+.tabela-limpa th {
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--suave);
+  border-bottom: 1px solid var(--linha);
+  text-align: left;
+}
+.tabela-limpa td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--superficie2);
+  vertical-align: middle;
+}
+.tabela-limpa tr:hover td {
+  background: #F8FAFC;
+}
+.tabela-limpa td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* Insight Corporativo */
+.insight-corporativo {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: #1E40AF;
+  margin: 12px 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Gaveta Colapsável de Auditoria */
+.historico-gaveta {
+  margin-top: 16px;
+  border-top: 1px dashed var(--linha);
+  padding-top: 12px;
+}
+.historico-toggle {
+  background: transparent;
+  border: 0;
+  color: var(--acao);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-family: inherit;
+}
+.historico-toggle:hover {
+  text-decoration: underline;
+}
+
 /* ── navegação entre as duas telas ── */
 .abas{
   display:inline-flex;gap:2px;padding:2px;margin:22px 0 4px;
@@ -807,6 +1060,22 @@ table.ficha-tab a:hover{text-decoration:underline}
     </div>
     <div class="chips" id="chips"></div>
 
+    <!-- Segmented Pill Tabs para Megas -->
+    <div class="mega-selector-bar" id="filtroMegas" style="display:none;">
+      <button type="button" class="mega-tab ativo" id="tab-mega-todos" onclick="selecionarMega('todos')">
+        🏢 Todos os 3 Megas <span class="badge-count" id="count-todos">0</span>
+      </button>
+      <button type="button" class="mega-tab" id="tab-mega-curitiba" onclick="selecionarMega('curitiba')">
+        📍 Mega Curitiba <span class="badge-count" id="count-curitiba">0</span>
+      </button>
+      <button type="button" class="mega-tab" id="tab-mega-esteio" onclick="selecionarMega('esteio')">
+        📍 Mega Esteio <span class="badge-count" id="count-esteio">0</span>
+      </button>
+      <button type="button" class="mega-tab" id="tab-mega-itajai" onclick="selecionarMega('itajai')">
+        📍 Mega Itajaí <span class="badge-count" id="count-itajai">0</span>
+      </button>
+    </div>
+
     <div id="painel"></div>
     <div id="saida"></div>
   </section>
@@ -1059,7 +1328,13 @@ google.script.run.withSuccessHandler(function (p) {
 
 function stat(n, r){ return '<div class="stat"><b>' + n + '</b><span>' + r + '</span></div>'; }
 
-// ── busca ──
+// ── estado da consulta de preços ──
+var estadoConsulta = {
+  dadosBrutos: [],
+  termo: '',
+  megaAtivo: 'todos'
+};
+
 function buscar(termo) {
   var q = document.getElementById('q');
   if (termo) q.value = termo;
@@ -1067,7 +1342,7 @@ function buscar(termo) {
   if (!t) { q.focus(); return; }
 
   document.getElementById('btn').disabled = true;
-  document.getElementById('saida').innerHTML = '<div class="carregando">consultando o histórico…</div>';
+  document.getElementById('saida').innerHTML = '<div class="carregando">cruzando inteligência de preços…</div>';
 
   google.script.run
     .withSuccessHandler(desenhar)
@@ -1082,87 +1357,432 @@ document.getElementById('q').addEventListener('keydown', function (e) {
   if (e.key === 'Enter') buscar();
 });
 
+function selecionarMega(mega) {
+  estadoConsulta.megaAtivo = mega;
+  ['todos', 'curitiba', 'esteio', 'itajai'].forEach(function (m) {
+    var btn = document.getElementById('tab-mega-' + m);
+    if (btn) btn.classList.toggle('ativo', m === mega);
+  });
+  renderizarResultados();
+}
+
 function desenhar(r) {
   document.getElementById('btn').disabled = false;
   var el = document.getElementById('saida');
 
-  if (!r.ok) { el.innerHTML = '<div class="aviso erro">' + esc(r.erro) + '</div>'; return; }
-  if (!r.pontos) {
+  if (!r.ok) {
+    el.innerHTML = '<div class="aviso erro">' + esc(r.erro) + '</div>';
+    return;
+  }
+  if (!r.pontos && (!r.dadosBrutos || !r.dadosBrutos.length)) {
+    var bar = document.getElementById('filtroMegas');
+    if (bar) bar.style.display = 'none';
     el.innerHTML = '<div class="aviso">Nada encontrado para <b>' + esc(r.termo) + '</b>.' +
       ' A busca casa por palavra — tente um termo mais curto.</div>';
     return;
   }
 
-  var html = '';
-
-  r.grupos.forEach(function (g) {
-    var linhas = g.precos.map(function (p, i) {
-      var cls = g.precos.length > 1 && i === 0 ? 'menor'
-              : (g.precos.length > 1 && i === g.precos.length - 1 ? 'maior' : '');
-      var qtdUn = (p.quantidade !== null && p.quantidade !== undefined && p.quantidade !== '')
-        ? esc(p.quantidade) + (p.unidade ? ' ' + esc(p.unidade) : '')
-        : (p.unidade ? esc(p.unidade) : '—');
-      return '<tr class="' + cls + '"><td>' + esc(p.fornecedor) +
-             (p.fonte ? ' <a href="https://drive.google.com/file/d/' + esc(p.fonte) + '/view" target="_blank" class="fonte-link" title="Abrir fonte no Google Drive">📄</a>' : '') +
-             (p.empresa ? '<span class="tag emp">' + esc(p.empresa) + '</span>' : '') +
-             (p.situacao ? '<span class="tag ok">' + esc(p.situacao) + '</span>' : '') +
-             (p.semCadastro ? '<span class="tag av">sem cadastro</span>' : '') +
-             '</td><td class="un">' + qtdUn + '</td>' +
-             '<td class="v">' + moeda(p.valor) + '</td></tr>';
-    }).join('');
-
-    var cabecalho = '<thead><tr>' +
-      '<th>Fornecedor</th>' +
-      '<th class="c" style="width:130px">Qtd / Unidade</th>' +
-      '<th class="r" style="width:120px">Preço Cotado</th>' +
-      '</tr></thead>';
-
-    var meta = [g.empreendimento, g.area, g.data].filter(Boolean).map(esc).join(' · ');
-
-    html += '<div class="item">' +
-      '<h3><span class="cod">' + esc(g.codigo) + '</span>' + esc(g.descricao) + '</h3>' +
-      '<div class="meta">' + meta + '</div>' +
-      '<table>' + cabecalho + '<tbody>' + linhas + '</tbody></table>' +
-      (g.precos.length > 1
-        ? '<div class="faixa"><span>' + moeda(g.minimo) + ' a ' + moeda(g.maximo) + '</span>' +
-          (g.variacao !== null && g.variacao !== undefined
-            ? '<span class="var ' + classeVariacao(g.variacao) + '">' +
-              Math.round(g.variacao) + '% entre o menor e o maior</span>' : '') +
-          '</div>' +
-          (g.minimo === null ? '<small class="filtrado">Sem preços comparáveis neste grupo</small>' : '')
-        : '') +
-      '</div>';
-  });
-
-  if (r.series && r.series.length) {
-    r.series.forEach(function (s) {
-      var linhas = s.ocorrencias.map(function (o) {
-        return '<tr><td>' + esc(o.data) + ' · ' + esc(o.empreendimento) +
-               '</td><td class="v">' + moeda(o.minimo) + '</td>' +
-               '<td class="v">' + delta(o.vsAnterior) + '</td>' +
-               '<td class="v">' + delta(o.vsPrimeira) + '</td></tr>';
-      }).join('');
-
-      var variantes = s.variantes
-        ? '<div class="variantes">Agrupado como o mesmo item: ' +
-          s.variantes.map(esc).join(' · ') + '</div>'
-        : '';
-
-      html += '<div class="serie"><h2>O mesmo item ao longo do tempo</h2>' +
-              '<h3>' + esc(s.descricao) + '</h3>' + variantes + '<table>' +
-              '<thead><tr><th>Período · Empreendimento</th>' +
-              '<th class="r" style="width:110px">Menor Preço</th>' +
-              '<th class="r" style="width:130px">vs. anterior</th>' +
-              '<th class="r" style="width:130px">vs. primeira</th></tr></thead>' +
-              '<tbody>' + linhas + '</tbody></table></div>';
+  var brutos = r.dadosBrutos;
+  if (!brutos || !brutos.length) {
+    brutos = [];
+    (r.grupos || []).forEach(function (g) {
+      (g.precos || []).forEach(function (p) {
+        brutos.push({
+          descricao: g.descricao,
+          chaveItem: cfChaveItemLocal_(g.descricao),
+          codigo: g.codigo,
+          empreendimento: g.empreendimento,
+          megaSlug: g.megaSlug || cfMegaSlugLocal_(g.empreendimento),
+          data: g.data,
+          timestamp: 0,
+          valor: p.valor,
+          unidade: p.unidade || '',
+          quantidade: p.quantidade,
+          fornecedor: p.fornecedor,
+          vencedora: !!p.vencedora,
+          semCadastro: !!p.semCadastro,
+          fonte: p.fonte || '',
+          empresa: p.empresa || ''
+        });
+      });
     });
-  } else if (r.grupos.length > 1) {
-    html += '<div class="aviso">Estes são itens diferentes — não existe faixa única que faça' +
-            ' sentido entre eles. A série de preço aparece quando o <b>mesmo</b> item voltar' +
-            ' em outra equalização.</div>';
   }
 
+  estadoConsulta.dadosBrutos = brutos;
+  estadoConsulta.termo = r.termo;
+
+  // Ocultar panorama geral durante a consulta para foco executivo
+  var painel = document.getElementById('painel');
+  if (painel) painel.style.display = 'none';
+
+  // Mostrar e atualizar contadores das abas de Megas
+  var bar = document.getElementById('filtroMegas');
+  if (bar) bar.style.display = 'flex';
+
+  var nTodos = brutos.length;
+  var nCwb = brutos.filter(function (x) { return x.megaSlug === 'curitiba'; }).length;
+  var nEst = brutos.filter(function (x) { return x.megaSlug === 'esteio'; }).length;
+  var nItj = brutos.filter(function (x) { return x.megaSlug === 'itajai'; }).length;
+
+  var elTodos = document.getElementById('count-todos'); if (elTodos) elTodos.textContent = nTodos;
+  var elCwb = document.getElementById('count-curitiba'); if (elCwb) elCwb.textContent = nCwb;
+  var elEst = document.getElementById('count-esteio'); if (elEst) elEst.textContent = nEst;
+  var elItj = document.getElementById('count-itajai'); if (elItj) elItj.textContent = nItj;
+
+  renderizarResultados();
+}
+
+function renderizarResultados() {
+  var el = document.getElementById('saida');
+  var filtrados = estadoConsulta.dadosBrutos;
+
+  if (estadoConsulta.megaAtivo !== 'todos') {
+    filtrados = filtrados.filter(function (r) {
+      return r.megaSlug === estadoConsulta.megaAtivo;
+    });
+  }
+
+  if (!filtrados.length) {
+    var nomesMegas = { curitiba: 'Mega Curitiba', esteio: 'Mega Esteio', itajai: 'Mega Itajaí', todos: 'todos os 3 Megas' };
+    el.innerHTML = '<div class="aviso">Nenhuma cotação encontrada para <b>' +
+      esc(estadoConsulta.termo) + '</b> no <b>' + esc(nomesMegas[estadoConsulta.megaAtivo] || estadoConsulta.megaAtivo) + '</b>.</div>';
+    return;
+  }
+
+  // Agrupar por produto conceitual e unidade canônica
+  var produtos = {};
+  filtrados.forEach(function (r) {
+    var un = r.unidade ? String(r.unidade).trim().toLowerCase() : '';
+    var k = (r.chaveItem || cfChaveItemLocal_(r.descricao)) + (un ? ' § ' + un : '');
+    if (!produtos[k]) {
+      produtos[k] = {
+        descricao: r.descricao,
+        codigo: r.codigo,
+        unidade: r.unidade,
+        cotacoes: []
+      };
+    }
+    produtos[k].cotacoes.push(r);
+  });
+
+  var html = '';
+
+  Object.keys(produtos).forEach(function (k, idx) {
+    var prod = produtos[k];
+    var cots = prod.cotacoes;
+
+    // Ordenar cotações por data decrescente (mais recente primeiro)
+    cots.sort(function (a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+
+    var precosValidos = cots.map(function (c) { return c.valor; })
+      .filter(function (v) { return v !== null && v !== undefined && v > 0; });
+    var menor = precosValidos.length ? Math.min.apply(null, precosValidos) : null;
+    var maior = precosValidos.length ? Math.max.apply(null, precosValidos) : null;
+    var media = precosValidos.length ? precosValidos.reduce(function (a, b) { return a + b; }, 0) / precosValidos.length : null;
+    var cotMenor = cots.filter(function (c) { return c.valor === menor; })[0];
+    var dispersao = (menor && maior && menor > 0) ? Math.round(((maior - menor) / menor) * 100) : 0;
+
+    var fornecedoresMap = {};
+    cots.forEach(function (c) { if (c.fornecedor) fornecedoresMap[c.fornecedor] = true; });
+    var qtdFornecedores = Object.keys(fornecedoresMap).length;
+
+    html += '<div class="produto-executivo">';
+
+    // Header do Produto
+    html += '<div class="produto-header">' +
+      '<div>' +
+        '<h2 class="produto-titulo">' +
+          (prod.codigo ? '<span style="color:var(--acao);font-family:monospace;margin-right:8px">[' + esc(prod.codigo) + ']</span>' : '') +
+          esc(prod.descricao) +
+        '</h2>' +
+        '<div class="produto-aliases">' + cots.length + ' cotação(ões) analisada(s) · Unidade de referência: <b>' + esc(prod.unidade || 'UN') + '</b></div>' +
+      '</div>' +
+    '</div>';
+
+    // Grid de 4 KPIs Executivos
+    html += '<div class="kpi-grid">' +
+      '<div class="kpi-card destaque-menor">' +
+        '<div class="kpi-label">Menor Preço Vigente</div>' +
+        '<div class="kpi-valor">R$ ' + moeda(menor) + '</div>' +
+        '<div class="kpi-sub">' + (cotMenor ? esc(cotMenor.fornecedor) + ' (' + (cotMenor.data || '—') + ')' : '—') + '</div>' +
+      '</div>' +
+      '<div class="kpi-card">' +
+        '<div class="kpi-label">Preço Médio Referência</div>' +
+        '<div class="kpi-valor">R$ ' + moeda(media) + '</div>' +
+        '<div class="kpi-sub">' + (menor !== null ? 'Faixa: R$ ' + moeda(menor) + ' a R$ ' + moeda(maior) : '—') + '</div>' +
+      '</div>' +
+      '<div class="kpi-card">' +
+        '<div class="kpi-label">Dispersão da Oferta</div>' +
+        '<div class="kpi-valor">' + dispersao + '%</div>' +
+        '<div class="kpi-sub">Spread entre concorrência</div>' +
+      '</div>' +
+      '<div class="kpi-card">' +
+        '<div class="kpi-label">Fornecedores Cotados</div>' +
+        '<div class="kpi-valor">' + qtdFornecedores + '</div>' +
+        '<div class="kpi-sub">' + (qtdFornecedores === 1 ? '1 empresa cotada' : qtdFornecedores + ' empresas cotadas') + '</div>' +
+      '</div>' +
+    '</div>';
+
+    // MODO CORPORATIVO: Matriz Regional Comparativa Lado a Lado
+    if (estadoConsulta.megaAtivo === 'todos') {
+      html += renderizarMatrizRegional(cots, menor);
+    } else {
+      // MODO UNIDADE: Série Temporal Exclusiva da Praça Selecionada
+      html += renderizarSerieTemporalLocal(cots);
+    }
+
+    // Leaderboard de Fornecedores
+    html += '<h4 style="margin:20px 0 8px;font-size:12.5px;color:var(--noturno);text-transform:uppercase;letter-spacing:.05em;">Fornecedores que Praticam o Melhor Preço</h4>';
+    html += renderizarRankingFornecedores(cots);
+
+    // Gaveta Colapsável de Auditoria
+    html += '<div class="historico-gaveta">' +
+      '<button type="button" class="historico-toggle" onclick="toggleAuditoria(\'auditoria-' + idx + '\', this)">' +
+        '▶ Ver todas as ' + cots.length + ' cotações detalhadas deste item' +
+      '</button>' +
+      '<div id="auditoria-' + idx + '" style="display:none;margin-top:12px;">' +
+        renderizarTabelaDetalhada(cots) +
+      '</div>' +
+    '</div>';
+
+    html += '</div>';
+  });
+
   el.innerHTML = html;
+}
+
+function renderizarMatrizRegional(cots, menorGlobal) {
+  var megas = [
+    { slug: 'curitiba', nome: 'Mega Curitiba (PR)' },
+    { slug: 'esteio',   nome: 'Mega Esteio (RS)' },
+    { slug: 'itajai',   nome: 'Mega Itajaí (SC)' }
+  ];
+
+  var achadosPorMega = {};
+  var menorPrecoPorMega = {};
+
+  var linhas = megas.map(function (m) {
+    var cotsMega = cots.filter(function (c) { return c.megaSlug === m.slug; });
+    if (!cotsMega.length) {
+      return '<tr><td class="col-mega">' + m.nome + '</td><td colspan="3" style="color:var(--suave);font-style:italic">Sem cotações registradas nesta praça</td></tr>';
+    }
+    achadosPorMega[m.slug] = true;
+    var precos = cotsMega.map(function (c) { return c.valor; }).filter(function (v) { return v !== null && v > 0; });
+    var menorMega = precos.length ? Math.min.apply(null, precos) : null;
+    menorPrecoPorMega[m.slug] = menorMega;
+
+    var cotLider = cotsMega.filter(function (c) { return c.valor === menorMega; })[0];
+    var deltaPct = (menorGlobal && menorMega && menorGlobal > 0) ? ((menorMega - menorGlobal) / menorGlobal) * 100 : 0;
+
+    var badge = (menorMega === menorGlobal)
+      ? '<span class="badge-benchmark melhor">★ Benchmark Menor Custo</span>'
+      : '<span class="badge-benchmark alerta">+' + Math.round(deltaPct) + '% vs. Menor Praça</span>';
+
+    return '<tr>' +
+      '<td class="col-mega">' + m.nome + '</td>' +
+      '<td class="num" style="font-weight:700;color:var(--noturno)">R$ ' + moeda(menorMega) + '</td>' +
+      '<td>' + (cotLider ? esc(cotLider.fornecedor) + ' <small style="color:var(--suave)">(' + (cotLider.data || '—') + ')</small>' : '—') + '</td>' +
+      '<td>' + badge + '</td>' +
+    '</tr>';
+  }).join('');
+
+  var megasComCotacao = Object.keys(achadosPorMega).length;
+  var alertaAsimetria = '';
+  if (megasComCotacao > 1 && menorGlobal > 0) {
+    var maiores = Object.keys(menorPrecoPorMega).map(function(s){ return menorPrecoPorMega[s]; }).filter(Boolean);
+    var maxPreco = Math.max.apply(null, maiores);
+    var diffPct = Math.round(((maxPreco - menorGlobal) / menorGlobal) * 100);
+    if (diffPct >= 15) {
+      alertaAsimetria = '<div class="insight-corporativo">' +
+        '<span>💡</span>' +
+        '<div><b>Oportunidade Corporativa Inter-Megas:</b> Há uma assimetria de <b>' + diffPct + '%</b> entre a praça mais barata e a mais cara. Avalie contrato corporativo unificado ou extensão da tabela regional.</div>' +
+      '</div>';
+    }
+  }
+
+  return '<div style="margin:16px 0">' +
+    '<h4 style="margin:0 0 6px;font-size:12.5px;color:var(--noturno);text-transform:uppercase;letter-spacing:.05em;">Matriz Comparativa entre Praças (Lado a Lado)</h4>' +
+    '<table class="matriz-regional">' +
+      '<thead><tr><th>Empreendimento</th><th style="text-align:right">Menor Preço</th><th>Fornecedor Líder</th><th>Benchmark Regional</th></tr></thead>' +
+      '<tbody>' + linhas + '</tbody>' +
+    '</table>' +
+    alertaAsimetria +
+  '</div>';
+}
+
+function renderizarSerieTemporalLocal(cots) {
+  var porData = {};
+  cots.forEach(function (c) {
+    var dt = c.data || 'Sem data';
+    if (!porData[dt]) {
+      porData[dt] = {
+        data: dt,
+        timestamp: c.timestamp || 0,
+        precos: []
+      };
+    }
+    porData[dt].precos.push(c);
+  });
+
+  var ocorrencias = Object.keys(porData).map(function (k) { return porData[k]; })
+    .sort(function (a, b) { return a.timestamp - b.timestamp; });
+
+  if (ocorrencias.length <= 1) {
+    return '';
+  }
+
+  var primeira = null;
+  var anterior = null;
+
+  var linhas = ocorrencias.map(function (o) {
+    var vals = o.precos.map(function (c) { return c.valor; }).filter(function (v) { return v !== null && v > 0; });
+    var minVal = vals.length ? Math.min.apply(null, vals) : null;
+    var lider = o.precos.filter(function (c) { return c.valor === minVal; })[0];
+
+    var vsAnt = deltaObj(minVal, anterior ? anterior.minVal : null);
+    var vsPrim = deltaObj(minVal, primeira ? primeira.minVal : null);
+
+    if (minVal !== null && !primeira) primeira = { minVal: minVal };
+    if (minVal !== null) anterior = { minVal: minVal };
+
+    return '<tr>' +
+      '<td>' + esc(o.data) + '</td>' +
+      '<td class="num" style="color:var(--noturno)">R$ ' + moeda(minVal) + '</td>' +
+      '<td class="num">' + formatarDelta(vsAnt) + '</td>' +
+      '<td class="num">' + formatarDelta(vsPrim) + '</td>' +
+      '<td>' + (lider ? esc(lider.fornecedor) : '—') + '</td>' +
+    '</tr>';
+  }).join('');
+
+  return '<div style="margin:16px 0">' +
+    '<h4 style="margin:0 0 6px;font-size:12.5px;color:var(--noturno);text-transform:uppercase;letter-spacing:.05em;">Evolução Histórica na Praça Selecionada</h4>' +
+    '<table class="tabela-limpa">' +
+      '<thead><tr><th>Data Cotação</th><th style="text-align:right">Menor Preço</th><th style="text-align:right">vs. Anterior</th><th style="text-align:right">vs. Primeira</th><th>Fornecedor Líder</th></tr></thead>' +
+      '<tbody>' + linhas + '</tbody>' +
+    '</table>' +
+  '</div>';
+}
+
+function deltaObj(atual, base) {
+  if (atual === null || atual === undefined || base === null || base === undefined) return null;
+  var dif = atual - base;
+  return {
+    sinal: dif > 0 ? '+' : (dif < 0 ? '−' : '='),
+    absoluto: dif,
+    percentual: base > 0 ? (dif / base) * 100 : null
+  };
+}
+
+function formatarDelta(d) {
+  if (!d) return '<span style="color:var(--suave)">—</span>';
+  if (d.sinal === '=') return '<span style="color:var(--suave)">= manteve</span>';
+  var cls = d.sinal === '+' ? 'd-sobe' : 'd-desce';
+  var pct = d.percentual === null || d.percentual === undefined
+    ? '' : ' <small>(' + d.sinal + Math.abs(d.percentual).toFixed(1).replace('.', ',') + '%)</small>';
+  return '<span class="' + cls + '">' + d.sinal + ' R$ ' +
+         moeda(Math.abs(d.absoluto)) + pct + '</span>';
+}
+
+function renderizarRankingFornecedores(cots) {
+  var unicos = {};
+  cots.forEach(function (c) {
+    if (c.valor === null || c.valor === undefined || c.valor <= 0) return;
+    if (!unicos[c.fornecedor] || c.valor < unicos[c.fornecedor].valor) {
+      unicos[c.fornecedor] = c;
+    }
+  });
+
+  var lista = Object.keys(unicos).map(function (k) { return unicos[k]; })
+    .sort(function (a, b) { return a.valor - b.valor; })
+    .slice(0, 5);
+
+  if (!lista.length) {
+    return '<p style="color:var(--suave);font-size:13px;">Nenhum preço cotado válido.</p>';
+  }
+
+  var menorPreco = lista[0].valor;
+
+  var linhas = lista.map(function (c, i) {
+    var medalha = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : (i + 1) + 'º'));
+    var tags = '';
+    if (c.vencedora) tags += ' <span class="tag ok">homologado</span>';
+    if (c.semCadastro) tags += ' <span class="tag av">sem cadastro</span>';
+
+    return '<tr>' +
+      '<td><b>' + medalha + '</b> ' + esc(c.fornecedor) + tags + '</td>' +
+      '<td>' + esc(c.empreendimento) + '</td>' +
+      '<td style="color:var(--suave)">' + esc(c.data || '—') + '</td>' +
+      '<td class="num" style="color:' + (c.valor === menorPreco ? 'var(--ok)' : 'var(--texto)') + '">R$ ' + moeda(c.valor) + '</td>' +
+    '</tr>';
+  }).join('');
+
+  return '<table class="tabela-limpa">' +
+    '<thead><tr><th>Fornecedor</th><th>Praça</th><th>Data</th><th style="text-align:right">Melhor Preço</th></tr></thead>' +
+    '<tbody>' + linhas + '</tbody>' +
+  '</table>';
+}
+
+function renderizarTabelaDetalhada(cots) {
+  var linhas = cots.map(function (c) {
+    var linkDoc = c.fonte
+      ? '<a href="https://drive.google.com/file/d/' + esc(c.fonte) + '/view" target="_blank" class="fonte-link" title="Abrir proposta no Drive">📄 Proposta</a>'
+      : '<span style="color:var(--suave)">—</span>';
+    var qtd = (c.quantidade !== null && c.quantidade !== undefined && c.quantidade !== '')
+      ? esc(c.quantidade) + (c.unidade ? ' ' + esc(c.unidade) : '')
+      : (c.unidade ? esc(c.unidade) : '—');
+
+    return '<tr>' +
+      '<td>' + esc(c.fornecedor) + (c.vencedora ? ' <span class="tag ok">vencedor</span>' : '') + '</td>' +
+      '<td>' + esc(c.empreendimento) + '</td>' +
+      '<td style="color:var(--suave)">' + esc(c.data || '—') + '</td>' +
+      '<td class="un">' + qtd + '</td>' +
+      '<td class="num">R$ ' + moeda(c.valor) + '</td>' +
+      '<td style="text-align:center">' + linkDoc + '</td>' +
+    '</tr>';
+  }).join('');
+
+  return '<table class="tabela-limpa" style="font-size:12px;background:var(--superficie2);border-radius:8px;padding:6px;">' +
+    '<thead><tr><th>Fornecedor</th><th>Praça</th><th>Data</th><th class="c">Qtd / Un</th><th style="text-align:right">Preço Cotado</th><th class="c">Doc</th></tr></thead>' +
+    '<tbody>' + linhas + '</tbody>' +
+  '</table>';
+}
+
+function toggleAuditoria(id, btn) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var aberto = el.style.display !== 'none';
+  el.style.display = aberto ? 'none' : 'block';
+  if (btn) {
+    btn.textContent = aberto
+      ? btn.textContent.replace('▼', '▶')
+      : btn.textContent.replace('▶', '▼');
+  }
+}
+
+function cfChaveItemLocal_(texto) {
+  if (!texto) return '';
+  var mapa = {
+    gr: 'g', grs: 'g', grama: 'g', gramas: 'g',
+    lt: 'l', lts: 'l', litro: 'l', litros: 'l',
+    und: 'un', unid: 'un', unidade: 'un', unidades: 'un',
+    pct: 'pc', pcte: 'pc', pacote: 'pc', pacotes: 'pc'
+  };
+  return String(texto).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/(\d)\s*(kg|mg|ml|gramas|grama|grs|gr|g|litros|litro|lts|lt|l|unidades|unidade|unid|und|un|pacotes|pacote|pcte|pct|pc)\b/g,
+      function (m, n, u) { return n + ' ' + (mapa[u] || u); })
+    .replace(/([a-z])\1+/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cfMegaSlugLocal_(emp) {
+  var t = String(emp || '').toLowerCase();
+  if (t.indexOf('curitiba') >= 0 || t.indexOf('cwb') >= 0) return 'curitiba';
+  if (t.indexOf('esteio') >= 0) return 'esteio';
+  if (t.indexOf('itajai') >= 0) return 'itajai';
+  return 'outro';
 }
 
 // ─────────────────────────────────────────────────────────────

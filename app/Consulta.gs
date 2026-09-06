@@ -157,7 +157,7 @@ function cfAgruparPorItem_(achados, termo) {
       };
     });
 
-  return { termo: termo, pontos: achados.length, grupos: grupos, series: series };
+  return { termo: termo, pontos: achados.length, grupos: grupos, series: series, achados: achados };
 }
 
 // ─────────────────────────────────────────────────────────────

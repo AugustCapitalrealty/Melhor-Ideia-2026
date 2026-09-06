@@ -37,18 +37,47 @@ function doGet(e) {
 //  google.script.run de forma confiável, então vira texto no servidor.
 // ─────────────────────────────────────────────────────────────
 
-function apiConsultar(termo) {
+function apiConsultar(termo, megaFiltro) {
   try {
     const r = consultarPreco(termo);
+    const achadosOriginais = r.achados || [];
+    const dadosBrutos = achadosOriginais.map(function (p) {
+      return {
+        id: p.idEqualizacao || p.idProposta,
+        descricao: p.descricao,
+        chaveItem: cfChaveItem_(p.descricao),
+        codigo: p.codigo,
+        empreendimento: p.empreendimento,
+        megaSlug: cfMegaSlug_(p.empreendimento),
+        data: cfDataTexto_(p.data),
+        timestamp: p.data ? p.data.getTime() : 0,
+        valor: p.valor,
+        unidade: p.unidade || '',
+        quantidade: (p.quantidade !== null && p.quantidade !== undefined && p.quantidade !== '') ? p.quantidade : null,
+        fornecedor: p.fornecedor,
+        vencedora: !!p.vencedora,
+        semCadastro: !!p.semCadastro,
+        fonte: p.fonte || '',
+        revisao: p.revisao || '',
+        cnpjEmpresa: p.cnpjEmpresa || '',
+        empresa: (p.cnpjEmpresa && (p.cnpjEmpresa.indexOf('08.601.964') >= 0 || p.cnpjEmpresa.indexOf('08601964') >= 0)) ? 'Demercado'
+               : ((p.cnpjEmpresa && (p.cnpjEmpresa.indexOf('03.015.145') >= 0 || p.cnpjEmpresa.indexOf('03015145') >= 0)) ? 'Capital Realty'
+               : (p.empreendimento && String(p.empreendimento).toUpperCase().indexOf('CURITIBA') >= 0 ? 'Demercado' : (p.empreendimento ? 'Capital Realty' : ''))),
+        situacao: p.vencedora ? 'selecionado na equalização' : (p.origem === 'import_pdf' ? 'cotado (avulso)' : 'cotado')
+      };
+    });
+
     return {
       ok: true,
       termo: r.termo,
       pontos: r.pontos,
+      dadosBrutos: dadosBrutos,
       grupos: r.grupos.map(function (g) {
         return {
           codigo: g.codigo,
           descricao: g.descricao,
           empreendimento: g.empreendimento,
+          megaSlug: cfMegaSlug_(g.empreendimento),
           area: g.area,
           data: cfDataTexto_(g.data),
           minimo: g.minimo,
@@ -67,8 +96,9 @@ function apiConsultar(termo) {
                 fonte: p.fonte || '',
                 revisao: p.revisao || '',
                 cnpjEmpresa: p.cnpjEmpresa || '',
-                empresa: (p.cnpjEmpresa && p.cnpjEmpresa.indexOf('08.601.964') >= 0) ? 'Demercado'
-                       : ((p.cnpjEmpresa && p.cnpjEmpresa.indexOf('03.015.145') >= 0) ? 'Capital Realty' : ''),
+                empresa: (p.cnpjEmpresa && (p.cnpjEmpresa.indexOf('08.601.964') >= 0 || p.cnpjEmpresa.indexOf('08601964') >= 0)) ? 'Demercado'
+                       : ((p.cnpjEmpresa && (p.cnpjEmpresa.indexOf('03.015.145') >= 0 || p.cnpjEmpresa.indexOf('03015145') >= 0)) ? 'Capital Realty'
+                       : (g.empreendimento && String(g.empreendimento).toUpperCase().indexOf('CURITIBA') >= 0 ? 'Demercado' : (g.empreendimento ? 'Capital Realty' : ''))),
                 situacao: p.vencedora ? 'selecionado na equalização' : (p.origem === 'import_pdf' ? 'cotado (avulso)' : 'cotado')
               };
             })
@@ -90,6 +120,7 @@ function apiConsultar(termo) {
             const linha = {
               data: cfDataTexto_(o.data),
               empreendimento: o.empreendimento,
+              megaSlug: cfMegaSlug_(o.empreendimento),
               minimo: o.minimo,
               vsAnterior: cfDelta_(o.minimo, anterior ? anterior.minimo : null),
               vsPrimeira: cfDelta_(o.minimo, primeira && primeira !== o ? primeira.minimo : null)

@@ -238,3 +238,12 @@ function cfLog_(acao, entidade, idAlvo, detalhe) {
     Logger.log('CF: não consegui gravar no Log — ' + erro);
   }
 }
+
+/** Retorna o slug canônico do Mega ('curitiba', 'esteio', 'itajai' ou 'outro') */
+function cfMegaSlug_(emp) {
+  const t = cfNormalizar_(emp);
+  if (t.indexOf('curitiba') >= 0 || t.indexOf('cwb') >= 0) return 'curitiba';
+  if (t.indexOf('esteio') >= 0) return 'esteio';
+  if (t.indexOf('itajai') >= 0) return 'itajai';
+  return 'outro';
+}
