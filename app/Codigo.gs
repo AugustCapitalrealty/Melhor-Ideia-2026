@@ -215,6 +215,19 @@ function apiCriarEqualizacao(dados) {
 }
 
 /**
+ * Gera a planilha-retrato e o PDF da equalização, salvos no Drive.
+ * Cria arquivo, então exige autorização.
+ */
+function apiExportar(idEqualizacao) {
+  try {
+    cfExigeAutorizacao_();
+    return { ok: true, resultado: cfExportarEqualizacao_(idEqualizacao) };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/**
  * Registra a proposta vencedora e o parecer.
  * Escrita, portanto passa por cfExigeAutorizacao_.
  */

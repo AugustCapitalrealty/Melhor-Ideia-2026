@@ -162,6 +162,27 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-s
 }
 .eq-cab h2{margin:0 0 4px;font-size:18px;color:var(--noturno);font-weight:600}
 .eq-cab .meta{font-size:13px;color:var(--suave)}
+.eq-topo{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.eq-acoes{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.eq-texto{margin-top:10px;font-size:13.5px;color:var(--texto);line-height:1.5}
+.eq-texto b{color:var(--royal)}
+.eq-texto:empty{display:none}
+.dados-prop{
+  margin:0 0 16px;border:1px solid var(--linha);border-radius:10px;background:var(--superficie);
+}
+.dados-prop summary{
+  padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--royal);list-style:none;
+}
+.dados-prop summary::-webkit-details-marker{display:none}
+.dados-prop summary::before{content:'▸ '}
+.dados-prop[open] summary::before{content:'▾ '}
+.dados-prop table.mapa th[scope="row"]{
+  text-align:left;font-size:13px;font-weight:600;color:var(--suave);
+  text-transform:none;letter-spacing:0;background:var(--superficie);
+  position:sticky;left:0;min-width:220px;
+}
+.dados-prop table.mapa td{text-align:right;font-size:13.5px}
 
 /* A matriz rola sozinha: a página nunca rola de lado. */
 /* max-height é obrigatório aqui. Com só overflow-x:auto o eixo Y também
@@ -396,7 +417,7 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
       <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
       <button id="ab-mapa"     role="tab" aria-selected="false" onclick="aba('mapa')">Equalizações</button>
     </div>
-    <button id="ab-nova" class="bt primario" onclick="aba('nova')">+ Nova cotação</button>
+    <button id="ab-nova" class="bt primario" onclick="novaCotacao()">+ Nova cotação</button>
   </div>
 </div>
 
@@ -814,8 +835,21 @@ function desenharMapa(m) {
     : '';
 
   el.innerHTML =
-    '<div class="eq-cab"><h2>' + esc(eq.projeto || eq.id) + '</h2>' +
-    '<div class="meta">' + meta + '</div></div>' +
+    '<div class="eq-cab">' +
+      '<div class="eq-topo">' +
+        '<div><h2>' + esc(eq.projeto || eq.id) + '</h2>' +
+        '<div class="meta">' + meta + '</div></div>' +
+        '<div class="eq-acoes">' +
+          '<button class="bt" onclick="alternarCompleto()" id="btCompleto">Ver completo</button>' +
+          '<button class="bt" onclick="exportar()" id="btExportar">Exportar planilha e PDF</button>' +
+        '</div>' +
+      '</div>' +
+      (eq.detalhamento ? '<div class="eq-texto"><b>Serviço a aprovar:</b> ' + esc(eq.detalhamento) + '</div>' : '') +
+      (eq.premissas ? '<div class="eq-texto"><b>Premissas:</b> ' + esc(eq.premissas) + '</div>' : '') +
+      (eq.parecer ? '<div class="eq-texto"><b>Parecer:</b> ' + esc(eq.parecer) + '</div>' : '') +
+      '<div id="exportMsg" class="eq-texto"></div>' +
+    '</div>' +
+    dadosDasPropostas(m) +
     avisos +
     '<div class="mapa-rolo"><table class="mapa">' +
       '<thead>' + cabecalho + '</thead>' +
@@ -825,6 +859,89 @@ function desenharMapa(m) {
     '<div class="legenda"><span><b>✓ verde</b> = menor preço da linha, entre quem cotou</span>' +
     '<span>· = fornecedor não recebeu esta linha</span></div>' +
     blocoDecisao(m);
+}
+
+/**
+ * O rodapé da EQU, agora do lado da leitura.
+ *
+ * De nada adianta capturar prazo, validade e condição de pagamento se o
+ * comparativo só mostra preço: quem decide precisa ver o pacote inteiro.
+ * Fica recolhido porque a comparação de preço é o que se olha primeiro.
+ */
+function dadosDasPropostas(m) {
+  var linhas = [
+    ['Nº da proposta',  function (p) { return p.numero; }],
+    ['Revisão',         function (p) { return p.revisao; }],
+    ['Data da proposta', function (p) { return p.data; }],
+    ['Validade até',    function (p) { return p.validadeAte; }],
+    ['Condições de pagamento', function (p) { return p.condicoes; }],
+    ['Lead time',       function (p) { return p.leadTime !== null ? p.leadTime + ' dias' : ''; }],
+    ['Prazo de execução', function (p) { return p.prazoExecucao !== null ? p.prazoExecucao + ' dias' : ''; }],
+    ['Início previsto', function (p) { return p.dataPrevInicio; }],
+    ['Término previsto', function (p) { return p.dataPrevTermino; }],
+    ['Centro de custo', function (p) { return p.centroCusto; }],
+    ['Faturamento direto', function (p) {
+      return p.faturamentoDireto ? ('sim' + (p.valorFaturamentoDireto !== null ? ' · ' + moeda(p.valorFaturamentoDireto) : '')) : '';
+    }],
+    ['Proposta inicial', function (p) { return p.propostaInicial !== null ? moeda(p.propostaInicial) : ''; }],
+    ['Redução negociada', function (p) { return p.reducao !== null ? moeda(p.reducao) : ''; }],
+    ['Rodada',          function (p) { return p.rodada; }]
+  ];
+
+  // Linha sem nenhum valor em nenhum proponente não vira ruído na tela.
+  var uteis = linhas.filter(function (l) {
+    return m.proponentes.some(function (p) {
+      var v = l[1](p);
+      return v !== '' && v !== null && v !== undefined;
+    });
+  });
+  if (!uteis.length) return '';
+
+  var corpo = uteis.map(function (l) {
+    return '<tr><th scope="row">' + esc(l[0]) + '</th>' +
+      m.proponentes.map(function (p) {
+        var v = l[1](p);
+        return '<td>' + (v === '' || v === null || v === undefined ? '<span class="d-nulo">—</span>' : esc(v)) + '</td>';
+      }).join('') + '</tr>';
+  }).join('');
+
+  return '<details class="dados-prop" id="dadosProp">' +
+    '<summary>Dados das propostas</summary>' +
+    '<div class="mapa-rolo" style="max-height:none;border:0">' +
+    '<table class="mapa"><thead><tr><th class="desc"></th>' +
+    m.proponentes.map(function (p) { return '<th scope="col">' + esc(p.nome) + '</th>'; }).join('') +
+    '</tr></thead><tbody>' + corpo + '</tbody></table></div></details>';
+}
+
+/** Abre tudo de uma vez — é o "ver completo". */
+function alternarCompleto() {
+  var d = document.getElementById('dadosProp');
+  var bt = document.getElementById('btCompleto');
+  if (!d) return;
+  d.open = !d.open;
+  bt.textContent = d.open ? 'Ver resumido' : 'Ver completo';
+  if (d.open) d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function exportar() {
+  var bt = document.getElementById('btExportar');
+  var msg = document.getElementById('exportMsg');
+  bt.disabled = true;
+  msg.innerHTML = 'gerando planilha e PDF… isso leva alguns segundos.';
+
+  google.script.run
+    .withSuccessHandler(function (r) {
+      bt.disabled = false;
+      if (!r.ok) { msg.innerHTML = '<span style="color:var(--critico)">' + esc(r.erro) + '</span>'; return; }
+      msg.innerHTML = '<b>Pronto:</b> ' +
+        '<a href="' + esc(r.resultado.planilha) + '" target="_blank" rel="noopener">abrir planilha</a> · ' +
+        '<a href="' + esc(r.resultado.pdf) + '" target="_blank" rel="noopener">abrir PDF</a>';
+    })
+    .withFailureHandler(function (e) {
+      bt.disabled = false;
+      msg.innerHTML = '<span style="color:var(--critico)">' + esc(e.message) + '</span>';
+    })
+    .apiExportar(mapaAberto.equalizacao.id);
 }
 
 /**
@@ -915,6 +1032,45 @@ function rotuloStatus(s) {
 var opcoesCarregadas = false;
 var proponentes = [];
 var itens = [];
+var jaGravada = false;     // a cotação da tela já foi salva?
+
+/**
+ * "+ Nova cotação" precisa saber a diferença entre voltar ao trabalho e
+ * começar outro.
+ *
+ * Depois de gravar, o formulário continuava preenchido com a equalização
+ * anterior: o rascunho era descartado mas o estado em memória ficava. Quem
+ * clicava em "Nova cotação" via a cotação antiga e podia gravá-la de novo.
+ */
+function novaCotacao() {
+  if (jaGravada) limparFormulario();
+  aba('nova');
+}
+
+function limparFormulario() {
+  proponentes = [];
+  itens = [];
+  jaGravada = false;
+  descartarRascunho();
+
+  ['nProjeto', 'nArea', 'nDetalhamento', 'nPremissas', 'nNotasCr'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  var emp = document.getElementById('nEmp');
+  if (emp) emp.value = '';
+  var data = document.getElementById('nData');
+  if (data) data.valueAsDate = new Date();
+  mostrarEmpresa();
+
+  addProponente(); addProponente(); addProponente();
+  addItem('grupo'); addItem('item', true);
+
+  var msg = document.getElementById('salvoMsg');
+  if (msg) msg.innerHTML = '';
+  var bt = document.getElementById('btSalvar');
+  if (bt) bt.disabled = false;
+}
 
 function carregarOpcoes() {
   google.script.run.withSuccessHandler(function (r) {
@@ -1560,10 +1716,11 @@ function salvarEqualizacao() {
       // intacto fazia dois cliques criarem duas equalizações idênticas —
       // não há chave de idempotência no servidor que segure isso.
       descartarRascunho();   // gravado: o rascunho perdeu a razão de existir
+      jaGravada = true;      // o próximo "+ Nova cotação" começa limpo
       msg.innerHTML = '<span style="color:var(--ok)">Gravada ' + esc(r.resultado.id) + ' · ' +
         r.resultado.nos + ' nós · ' + r.resultado.precos + ' preços.</span> ' +
         '<button class="bt" onclick="verMapaDe(\'' + esc(r.resultado.id) + '\')">Abrir o mapa</button> ' +
-        '<button class="bt" onclick="location.reload()">Nova equalização</button>';
+        '<button class="bt" onclick="limparFormulario()">Começar outra</button>';
       equalizacoesCarregadas = false;   // o seletor do mapa precisa recarregar
     })
     .withFailureHandler(function (e) {

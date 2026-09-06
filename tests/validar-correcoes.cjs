@@ -879,3 +879,83 @@ try {
   console.log(`✗ FALHA na Correção 20: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 21 — a exportação é retrato, não fonte
+//
+//  Se a planilha exportada sair com fórmula, ela vira uma segunda fonte
+//  editável — e o problema da fórmula quebrada, que motivou o projeto
+//  inteiro, volta pela porta dos fundos.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxX = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  let escrito = null;
+  const abaFalsa = {
+    setName: () => {}, setColumnWidth: () => {}, setFrozenColumns: () => {},
+    getSheetId: () => 0,
+    getRange: () => ({
+      setValues: (m) => { escrito = m; return abaFalsa.getRange(); },
+      setFontWeight: function () { return this; }, setFontSize: function () { return this; },
+      setHorizontalAlignment: function () { return this; }
+    })
+  };
+  ctxX.SpreadsheetApp = {
+    create: () => ({ getSheets: () => [abaFalsa], getId: () => 'SS1', getUrl: () => 'url-planilha' })
+  };
+  ctxX.DriveApp = {
+    getFileById: () => ({ moveTo: () => {} }),
+    getFolderById: () => ({ createFile: () => ({ getId: () => 'PDF1', getUrl: () => 'url-pdf' }) }),
+    createFile: () => ({ getId: () => 'PDF1', getUrl: () => 'url-pdf' })
+  };
+  ctxX.ScriptApp = { getOAuthToken: () => 't' };
+  ctxX.UrlFetchApp = {
+    fetch: () => ({ getResponseCode: () => 200, getBlob: () => ({ setName: function () { return this; } }) })
+  };
+  ctxX.Utilities = { formatDate: () => '06/09/2026 10:00', getUuid: () => 'x' };
+
+  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxX, { filename: f });
+  });
+
+  ctxX.cfLerTudo_ = (n) => ({
+    Equalizacoes: [{ ID: 'EQ1', ID_EMPREENDIMENTO: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+                     PROJETO: 'Limpeza', STATUS: 'homologada', PARECER_FAVORAVEL: 'Menor prazo' }],
+    Propostas: [{ ID: 'P1', ID_EQUALIZACAO: 'EQ1', CNPJ: '11222333000181', ORDEM: 1,
+                  RAZAO_SOCIAL_INFORMADA: 'Alfa', VALOR_TOTAL_CALCULADO: 100,
+                  NUMERO_PROPOSTA: '123', CONDICOES_PAGAMENTO: '28 dias' }],
+    EAP: [{ ID: 'N1', ID_EQUALIZACAO: 'EQ1', ID_PAI: '', ORDEM: 1, TIPO: 'item', DESCRICAO: 'Soda' }],
+    Precos: [{ ID_EAP: 'N1', ID_PROPOSTA: 'P1', ID_EQUALIZACAO: 'EQ1',
+               PRECO_UNITARIO: 100, STATUS_PRECO: 'cotado' }],
+    Fornecedores: [], Pendencias: []
+  })[n] || [];
+  ctxX.cfDataTexto_ = () => '06/09/2026';
+  ctxX.cfUsuario_ = () => 'guilherme.marques@capitalrealty.com.br';
+  ctxX.cfLog_ = () => {};
+
+  const r = ctxX.cfExportarEqualizacao_('EQ1');
+  assert.equal(r.planilha, 'url-planilha');
+  assert.equal(r.pdf, 'url-pdf');
+  assert.ok(escrito && escrito.length, 'nada foi escrito na planilha');
+
+  // Nenhuma célula pode começar com "=".
+  const comFormula = [];
+  escrito.forEach(function (linha, l) {
+    linha.forEach(function (c, k) {
+      if (typeof c === 'string' && c.trim().charAt(0) === '=') comFormula.push(l + ',' + k);
+    });
+  });
+  assert.equal(comFormula.length, 0,
+    'a exportação escreveu fórmula nas células ' + comFormula.join(' ') + ' — ela tem que ser retrato');
+
+  // O conteúdo essencial precisa estar lá.
+  const texto = escrito.map(l => l.join('|')).join('\n');
+  ['EQU', 'Alfa', 'Soda', 'TOTAL DOS ITENS', 'DADOS DA PROPOSTA', 'Menor prazo'].forEach(function (t) {
+    assert.ok(texto.indexOf(t) >= 0, 'a exportação não trouxe "' + t + '"');
+  });
+
+  console.log('✓ CORREÇÃO VERIFICADA: exportação sai como valor estático, com o conteúdo completo');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 21: ${e.message}`);
+  process.exitCode = 1;
+}

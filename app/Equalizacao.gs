@@ -65,7 +65,23 @@ function cfMapaEqualizacao_(idEq) {
         rodada: p.RODADA || '',
         total: cfNumero_(p.VALOR_TOTAL_DECLARADO),
         calculado: cfNumero_(p.VALOR_TOTAL_CALCULADO),
-        vencedora: p.VENCEDORA === true
+        vencedora: p.VENCEDORA === true,
+        // O rodapé da EQU: sem isto o mapa mostra preço e esconde tudo que
+        // decide uma compra — prazo, validade, condição de pagamento.
+        numero: p.NUMERO_PROPOSTA || '',
+        revisao: p.REVISAO_FORNECEDOR || '',
+        data: cfDataTexto_(p.DATA_PROPOSTA),
+        validadeAte: cfDataTexto_(p.VALIDADE_ATE),
+        condicoes: p.CONDICOES_PAGAMENTO || '',
+        leadTime: cfNumero_(p.LEAD_TIME_DIAS),
+        prazoExecucao: cfNumero_(p.PRAZO_EXECUCAO_DIAS),
+        dataPrevInicio: cfDataTexto_(p.DATA_PREV_INICIO),
+        dataPrevTermino: cfDataTexto_(p.DATA_PREV_TERMINO),
+        centroCusto: p.OBSERVACAO || '',
+        faturamentoDireto: p.FATURAMENTO_DIRETO === true,
+        valorFaturamentoDireto: cfNumero_(p.VALOR_FATURAMENTO_DIRETO),
+        propostaInicial: cfNumero_(p.VALOR_PROPOSTA_INICIAL),
+        reducao: cfNumero_(p.REDUCAO_NEGOCIADA)
       };
     });
 
