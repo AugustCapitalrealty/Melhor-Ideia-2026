@@ -1476,3 +1476,61 @@ try {
   process.exitCode = 1;
 }
 
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 29 — a contratante das equalizações já gravadas
+//
+//  As 4 equalizações da base estão sem CNPJ_EMPRESA. Como a regra é
+//  fechada (Curitiba é Demercado; Esteio e Itajaí são Capital Realty),
+//  a correção deriva do Mega em vez de perguntar. O que este teste
+//  protege é a parte perigosa: derivar errado assinaria o contrato com a
+//  empresa errada, e não deixar rastro é pior que deixar vazio.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxM = vm.createContext({ Logger: { log: () => {} }, console: console });
+  ['Util.gs', 'Config.gs', 'Equalizacao.gs', 'Manutencao.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxM, { filename: f });
+  });
+
+  // Toda grafia que aparece no acervo tem que cair no mesmo Mega.
+  assert.equal(ctxM.cfMegaCanonico_('MEGA CENTRO LOGÍSTICO CURITIBA'), 'MEGA CENTRO LOGÍSTICO CURITIBA');
+  assert.equal(ctxM.cfMegaCanonico_('Mega Curitiba'), 'MEGA CENTRO LOGÍSTICO CURITIBA');
+  assert.equal(ctxM.cfMegaCanonico_('mega centro logistico esteio'), 'MEGA CENTRO LOGÍSTICO ESTEIO');
+  assert.equal(ctxM.cfMegaCanonico_('Itajaí'), 'MEGA CENTRO LOGÍSTICO ITAJAÍ');
+  assert.equal(ctxM.cfMegaCanonico_('Mega Sorocaba'), '',
+    'Mega desconhecido não pode ser adivinhado');
+  assert.equal(ctxM.cfMegaCanonico_(''), '');
+
+  const gravadas = [];
+  ctxM.cfLerTudo_ = () => ([
+    { _linha: 2, ID: 'EQU-1', ID_EMPREENDIMENTO: 'MEGA CENTRO LOGÍSTICO CURITIBA', CNPJ_EMPRESA: '' },
+    { _linha: 3, ID: 'EQU-2', ID_EMPREENDIMENTO: 'Mega Esteio',                    CNPJ_EMPRESA: '' },
+    { _linha: 4, ID: 'EQU-3', ID_EMPREENDIMENTO: 'MEGA CENTRO LOGÍSTICO ITAJAÍ',   CNPJ_EMPRESA: '03015145000154' },
+    { _linha: 5, ID: 'EQU-4', ID_EMPREENDIMENTO: 'Depósito Provisório',            CNPJ_EMPRESA: '' }
+  ]);
+  ctxM.cfAtualizarLinha_ = (aba, linha, campos) => gravadas.push({ aba, linha, campos });
+  ctxM.cfLog_ = () => {};
+
+  // Simular não pode tocar em nada.
+  const simulado = ctxM.simularCorrecaoEmpresaDasEqualizacoes();
+  assert.equal(gravadas.length, 0, 'a simulação gravou na planilha');
+  assert.equal(simulado.corrigidas, 2);
+  assert.equal(simulado.aplicado, false);
+
+  const aplicado = ctxM.corrigirEmpresaDasEqualizacoes();
+  assert.equal(aplicado.corrigidas, 2);
+  assert.equal(gravadas.length, 2);
+
+  const porLinha = {};
+  gravadas.forEach(g => { porLinha[g.linha] = g.campos.CNPJ_EMPRESA; });
+  assert.equal(porLinha[2], '08601964000105', 'Curitiba tem que ser Demercado');
+  assert.equal(porLinha[3], '03015145000154', 'Esteio tem que ser Capital Realty');
+  assert.equal(porLinha[4], undefined, 'equalização já correta não pode ser reescrita');
+  assert.equal(porLinha[5], undefined, 'Mega não reconhecido não pode receber contratante chutada');
+  assert.equal(aplicado.puladas, 1);
+
+  console.log('✓ CORREÇÃO VERIFICADA: contratante das equalizações antigas deriva do Mega, e o desconhecido fica vazio');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 29: ${e.message}`);
+  process.exitCode = 1;
+}
