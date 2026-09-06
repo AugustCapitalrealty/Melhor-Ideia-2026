@@ -478,7 +478,7 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
       <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
       <button id="ab-mapa"     role="tab" aria-selected="false" onclick="aba('mapa')">Equalizações</button>
     </div>
-    <button id="ab-nova" class="bt primario" onclick="novaCotacao()">+ Nova cotação</button>
+    <button id="ab-nova" class="bt primario" onclick="novaCotacao()" title="Abrir nova cotação em nova janela">+ Nova cotação</button>
   </div>
 </div>
 
@@ -1242,14 +1242,20 @@ var itens = [];
 var jaGravada = false;     // a cotação da tela já foi salva?
 
 /**
- * "+ Nova cotação" precisa saber a diferença entre voltar ao trabalho e
- * começar outro.
+ * "+ Nova cotação" abre uma nova janela/aba com a tela de cotação limpa,
+ * permitindo ao usuário manter a consulta ou a lista de equalizações
+ * aberta em paralelo na janela original.
  *
- * Depois de gravar, o formulário continuava preenchido com a equalização
- * anterior: o rascunho era descartado mas o estado em memória ficava. Quem
- * clicava em "Nova cotação" via a cotação antiga e podia gravá-la de novo.
+ * Caso a URL base não esteja disponível ou ocorra bloqueio de popup,
+ * alterna na própria tela preservando o comportamento tradicional.
  */
 function novaCotacao() {
+  if (URL_BASE) {
+    try {
+      var win = window.open(URL_BASE + '?page=nova', '_blank');
+      if (win) return;
+    } catch (erro) {}
+  }
   if (jaGravada) limparFormulario();
   aba('nova');
 }
@@ -2137,6 +2143,15 @@ function salvarEqualizacao() {
       proponentes: proponentes,
       itens: itens
     });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Inicialização direta por ?page=
+// ─────────────────────────────────────────────────────────────
+if (PAGINA === 'nova') {
+  aba('nova');
+} else if (PAGINA === 'mapa') {
+  aba('mapa');
 }
 </script>
 </body>
