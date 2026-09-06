@@ -77,6 +77,7 @@ Isso é dito aqui porque muda o desenho: a consulta externa é o **último** rec
 
 | Documento | Descrição |
 | :--- | :--- |
+| [Balanço de Execução](docs/BALANCO_EXECUCAO.md) | Objetivo, estado atual, tempo gasto, o que falta e o cronograma do regulamento. Com a nota de método de cada número. |
 | [Plano Diretor de Ecossistema e Aprovação de Diretoria](docs/PLANO_ECOSSISTEMA_E_APROVACAO_DIRETORIA_2026.md) | Roadmap em 4 fases, todas construídas. A nota de abertura registra o que mudou em relação ao texto original e por quê. |
 | [Plano Estratégico do Projeto](docs/PLANO_ESTRATEGICO_PROJETO.md) | Marcos, entregáveis e matriz de KPIs. |
 | [Arquitetura Técnica e Fluxos de Dados](docs/ARQUITETURA_TECNICA_E_FLUXO.md) | Backend (Apps Script), frontend, modelo relacional do Google Sheets e integrações. |
