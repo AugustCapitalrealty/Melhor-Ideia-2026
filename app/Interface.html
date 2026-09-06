@@ -305,7 +305,27 @@ table.grade input,table.grade select{
 table.grade input:focus,table.grade select:focus{
   outline:none;border-color:var(--acao);background:#fff;box-shadow:0 0 0 3px rgba(6,92,169,.12);
 }
-table.grade input.preco{text-align:right;font-variant-numeric:tabular-nums}
+table.grade input.preco{text-align:right;font-variant-numeric:tabular-nums;padding-left:34px}
+/* Cifrão dentro do campo, à esquerda, sem entrar no valor digitado. */
+.moeda-campo{position:relative;display:block}
+.moeda-campo i{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  font-style:normal;font-size:13px;font-weight:600;color:var(--suave);pointer-events:none;
+}
+table.grade thead th small{
+  display:block;font-weight:400;font-size:10px;text-transform:none;
+  letter-spacing:0;color:var(--suave);margin-top:2px;
+}
+/* Controle de hierarquia: recuar é o gesto, não escolher um número. */
+.cel-desc{display:flex;align-items:center;gap:8px}
+.degraus{display:inline-flex;gap:2px;flex:0 0 auto}
+.degrau{
+  width:22px;height:28px;padding:0;border:1px solid rgba(21,30,73,.12);
+  border-radius:6px;background:#fff;color:var(--royal);cursor:pointer;
+  font-size:15px;line-height:1;font-family:inherit;
+}
+.degrau:hover:not(:disabled){background:var(--superficie2);border-color:var(--acao)}
+.degrau:disabled{opacity:.3;cursor:default}
 tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,241,248,.85)}
 .grade-rolo{overflow-x:auto}
 .totais{
@@ -399,9 +419,11 @@ tr.eh-grupo input.desc{font-weight:700;color:var(--noturno);background:rgba(237,
 
     <div class="bloco vidro">
       <h2>Itens e preços</h2>
-      <p class="dica">Só itens recebem preço — grupo agrega. Na coluna de preços,
-        <b>Enter</b> desce para o próximo item, e dá para <b>colar uma coluna inteira</b>
-        do Excel de uma vez.</p>
+      <p class="dica">Só itens recebem preço — grupo agrega e fica sem valor.
+        Use <b>›</b> para empurrar um item para dentro do grupo acima e <b>‹</b> para tirar.
+        Na coluna de preços, <b>Enter</b> desce para o próximo item e dá para
+        <b>colar uma coluna inteira</b> do Excel de uma vez. O preço é <b>unitário</b>:
+        o total sai de preço × quantidade.</p>
       <div class="grade-rolo"><table class="grade" id="grade"></table></div>
       <div class="acoes">
         <button class="bt" onclick="addItem('item')">+ Item</button>
@@ -942,7 +964,7 @@ function atualizarNomes() {
 function addItem(tipo, semFoco) {
   itens.push({
     tipo: tipo, nivel: tipo === 'grupo' ? 0 : 1, descricao: '',
-    quantidade: '', unidade: '',
+    quantidade: '', unidade: 'un',
     precos: proponentes.map(function () { return ''; })
   });
   desenharGrade();
@@ -958,11 +980,39 @@ function addItem(tipo, semFoco) {
 
 function removerItem(i) { itens.splice(i, 1); desenharGrade(); salvarRascunho(); }
 
+/**
+ * Unidades correntes nas cotações do acervo.
+ *
+ * Virou lista fechada porque o campo livre já produziu "un", "UN", "und" e
+ * "unid" para a mesma coisa — e unidade diferente impede comparar preço,
+ * que é a razão de existir do sistema.
+ */
+var UNIDADES = ['un', 'cx', 'pct', 'fardo', 'kg', 'g', 'l', 'ml',
+                'm', 'm²', 'm³', 'h', 'mês', 'diária', 'visita', 'serviço', 'verba'];
+
+function seletorUnidade(i, atual) {
+  var v = atual || 'un';
+  var opcoes = UNIDADES.map(function (u) {
+    return '<option value="' + u + '"' + (u === v ? ' selected' : '') + '>' + u + '</option>';
+  }).join('');
+  return '<select aria-label="Unidade do item ' + (i + 1) + '"' +
+         ' onchange="itens[' + i + '].unidade=this.value;salvarRascunho()">' + opcoes + '</select>';
+}
+
+/** Recua ou avança a linha na hierarquia, sem pular degrau. */
+function mudarNivel(i, passo) {
+  var novo = Math.max(0, Math.min(3, (Number(itens[i].nivel) || 0) + passo));
+  itens[i].nivel = novo;
+  desenharGrade();
+  salvarRascunho();
+}
+
 function desenharGrade() {
-  var cab = '<thead><tr><th style="width:44px">Nív.</th><th>Descrição</th>' +
-    '<th style="width:90px">Qtd</th><th style="width:90px">Un.</th>' +
+  var cab = '<thead><tr><th>Descrição</th>' +
+    '<th style="width:80px">Qtd</th><th style="width:104px">Unidade</th>' +
     proponentes.map(function (p, i) {
-      return '<th style="width:130px">' + esc(p.nome || ('Proponente ' + (i + 1))) + '</th>';
+      return '<th style="width:150px">' + esc(p.nome || ('Proponente ' + (i + 1))) +
+             '<small>R$ unitário</small></th>';
     }).join('') + '<th style="width:40px"></th></tr></thead>';
 
   var corpo = itens.map(function (it, i) {
@@ -970,29 +1020,40 @@ function desenharGrade() {
       // Grupo agrega e não recebe preço: gravar aqui contaria duas vezes.
       ? proponentes.map(function () { return '<td></td>'; }).join('')
       : proponentes.map(function (p, j) {
-          return '<td><input class="preco" inputmode="decimal" value="' + esc(it.precos[j]) + '"' +
+          // Cifrão fixo à esquerda: deixa claro que o campo é dinheiro e
+          // que o valor é UNITÁRIO, não o total da linha.
+          return '<td><span class="moeda-campo">' +
+                 '<i>R$</i>' +
+                 '<input class="preco" inputmode="decimal" value="' + esc(it.precos[j]) + '"' +
                  ' placeholder="—" data-l="' + i + '" data-c="' + j + '"' +
                  ' aria-label="Preço unitário — ' + esc(it.descricao || ('item ' + (i + 1))) +
                  ' — ' + esc(p.nome || ('proponente ' + (j + 1))) + '"' +
                  ' oninput="itens[' + i + '].precos[' + j + ']=this.value;calcular();salvarRascunho()"' +
                  ' onblur="normalizarCampo(this,' + i + ',' + j + ')"' +
                  ' onkeydown="navegarGrade(event,this)"' +
-                 ' onpaste="colarColuna(event,this)"></td>';
+                 ' onpaste="colarColuna(event,this)">' +
+                 '</span></td>';
         }).join('');
 
-    var niveis = [0, 1, 2, 3].map(function (n) {
-      return '<option value="' + n + '"' + (it.nivel === n ? ' selected' : '') + '>' + n + '</option>';
-    }).join('');
+    // A hierarquia se controla recuando a linha, não escolhendo um número.
+    // "Nív. 2" não diz nada; uma seta que empurra o item para dentro do
+    // grupo acima, sim.
+    var recuo = 'padding-left:' + (it.nivel * 22) + 'px';
+    var controles =
+      '<button class="degrau" onclick="mudarNivel(' + i + ',-1)" title="Trazer para fora"' +
+      (it.nivel === 0 ? ' disabled' : '') + ' aria-label="Diminuir o recuo">‹</button>' +
+      '<button class="degrau" onclick="mudarNivel(' + i + ',1)" title="Empurrar para dentro do grupo acima"' +
+      (it.nivel >= 3 ? ' disabled' : '') + ' aria-label="Aumentar o recuo">›</button>';
 
     return '<tr class="' + (it.tipo === 'grupo' ? 'eh-grupo' : '') + '">' +
-      '<td><select onchange="itens[' + i + '].nivel=Number(this.value)">' + niveis + '</select></td>' +
-      '<td><input class="desc" value="' + esc(it.descricao) + '" placeholder="' +
+      '<td class="cel-desc" style="' + recuo + '">' +
+        '<span class="degraus">' + controles + '</span>' +
+        '<input class="desc" value="' + esc(it.descricao) + '" placeholder="' +
         (it.tipo === 'grupo' ? 'NOME DO GRUPO' : 'descrição do item') +
         '" oninput="itens[' + i + '].descricao=this.value;salvarRascunho()"></td>' +
-      '<td><input value="' + esc(it.quantidade) + '" inputmode="decimal"' +
+      '<td><input value="' + esc(it.quantidade) + '" inputmode="decimal" placeholder="1"' +
         ' oninput="itens[' + i + '].quantidade=this.value;calcular();salvarRascunho()"></td>' +
-      '<td><input value="' + esc(it.unidade) + '" placeholder="un"' +
-        ' oninput="itens[' + i + '].unidade=this.value;salvarRascunho()"></td>' +
+      '<td>' + seletorUnidade(i, it.unidade) + '</td>' +
       precos +
       '<td><button class="bt some" style="padding:6px 9px" onclick="removerItem(' + i + ')">×</button></td>' +
       '</tr>';
