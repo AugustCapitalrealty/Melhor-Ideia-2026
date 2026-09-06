@@ -627,6 +627,12 @@ table.grade thead th{
 .pill.ativa{background:var(--noturno);border-color:var(--noturno);color:#fff}
 .pill.ativa em{background:rgba(255,255,255,.18);color:#fff}
 .pill-vazia{border-style:dashed;color:var(--suave)}
+/* O segundo nível vem menor e recuado: é refinamento do que já foi
+   escolhido acima, não uma escolha concorrente. */
+.pills-sub{padding-top:0;padding-left:14px;margin-top:-6px}
+.pill-sub{padding:5px 11px;font-size:12px;font-weight:600}
+.pill-sub.ativa{background:var(--acao);border-color:var(--acao)}
+.forn-cnae{margin-top:8px;font-size:11px;color:var(--suave);line-height:1.4}
 
 /* ── Alternador de exibição ─────────────────────────────────── */
 .modo-exibicao{display:inline-flex;border:1px solid var(--linha);border-radius:9px;overflow:hidden}
@@ -827,6 +833,7 @@ table.ficha-tab a:hover{text-decoration:underline}
 
   <section id="v-fornecedores" hidden>
     <div class="pills" id="pillsForn"></div>
+    <div class="pills pills-sub" id="subPillsForn" hidden></div>
     <div class="filtros">
       <input id="fBuscaForn" type="search" placeholder="Buscar por razão social, CNPJ ou cidade…"
         autocomplete="off" oninput="filtrarFornecedores()">
@@ -3436,7 +3443,9 @@ function tabelaEq(lista) {
 
 var fornecedoresCarregados = false;
 var todosFornecedores = [];
+var categoriasDeFornecedores = null;
 var categoriaForn = '';
+var subcategoriaForn = '';
 
 function carregarFornecedores() {
   document.getElementById('listaForn').innerHTML = '<div class="carregando">carregando…</div>';
@@ -3465,7 +3474,8 @@ function carregarFornecedores() {
           return '<option value="' + esc(m) + '">' + esc(m) + '</option>';
         }).join('');
 
-      if (infoCategorias) desenharPills('pillsForn', categoriaForn, escolherCategoriaForn);
+      categoriasDeFornecedores = r.categorias || null;
+      desenharPillsForn();
       filtrarFornecedores();
     })
     .withFailureHandler(function (e) {
@@ -3474,9 +3484,90 @@ function carregarFornecedores() {
     .apiFornecedores('');
 }
 
+/**
+ * As pílulas da tela de fornecedores contam FORNECEDORES, não
+ * equalizações. É outra pergunta: aqui interessa quantos me atendem em
+ * elétrica, não quantas compras de elétrica já fiz.
+ *
+ * Um fornecedor que atende três categorias conta nas três, então a soma
+ * das pílulas passa do total — e é por isso que o botão "Todas" mostra
+ * o total de verdade, e não a soma.
+ */
+function desenharPillsForn() {
+  var el = document.getElementById('pillsForn');
+  if (!el || !categoriasDeFornecedores) return;
+
+  var info = categoriasDeFornecedores;
+  var comUso = info.categorias.filter(function (c) { return c.n > 0; });
+  if (!comUso.length) { el.innerHTML = ''; return; }
+
+  var html = '<button type="button" class="pill' + (categoriaForn ? '' : ' ativa') +
+    '" data-cat="">Todos <em>' + info.total + '</em></button>';
+
+  html += comUso.map(function (c) {
+    return '<button type="button" class="pill' + (categoriaForn === c.nome ? ' ativa' : '') +
+      '" data-cat="' + esc(c.nome) + '">' + c.icone + ' ' + esc(c.nome) +
+      ' <em>' + c.n + '</em></button>';
+  }).join('');
+
+  if (info.semCategoria) {
+    html += '<button type="button" class="pill pill-vazia' +
+      (categoriaForn === '(sem)' ? ' ativa' : '') +
+      '" data-cat="(sem)" title="Sem itens cotados suficientes nem CNAE reconhecido">' +
+      'sem categoria <em>' + info.semCategoria + '</em></button>';
+  }
+
+  el.innerHTML = html;
+  Array.prototype.forEach.call(el.querySelectorAll('.pill'), function (b) {
+    b.addEventListener('click', function () { escolherCategoriaForn(b.getAttribute('data-cat') || ''); });
+  });
+}
+
+/**
+ * O segundo nível só aparece com uma categoria escolhida.
+ *
+ * Mostrar as trinta subcategorias de uma vez seria devolver ao
+ * comprador o mesmo problema que o hub veio resolver. E as opções saem
+ * do que os fornecedores FILTRADOS têm — subcategoria sem ninguém não
+ * vira botão.
+ */
+function desenharSubPills(daCategoria) {
+  var el = document.getElementById('subPillsForn');
+  if (!el) return;
+
+  if (!categoriaForn || categoriaForn === '(sem)') {
+    el.hidden = true; el.innerHTML = ''; subcategoriaForn = ''; return;
+  }
+
+  var conta = {};
+  daCategoria.forEach(function (f) {
+    if (f.subcategoria) conta[f.subcategoria] = (conta[f.subcategoria] || 0) + 1;
+  });
+  var nomes = Object.keys(conta).sort();
+  if (nomes.length < 2) {   // uma opção só não é escolha
+    el.hidden = true; el.innerHTML = ''; subcategoriaForn = ''; return;
+  }
+
+  el.hidden = false;
+  el.innerHTML = '<button type="button" class="pill pill-sub' + (subcategoriaForn ? '' : ' ativa') +
+    '" data-sub="">Tudo em ' + esc(categoriaForn) + '</button>' +
+    nomes.map(function (n) {
+      return '<button type="button" class="pill pill-sub' + (subcategoriaForn === n ? ' ativa' : '') +
+        '" data-sub="' + esc(n) + '">' + esc(n) + ' <em>' + conta[n] + '</em></button>';
+    }).join('');
+
+  Array.prototype.forEach.call(el.querySelectorAll('.pill-sub'), function (b) {
+    b.addEventListener('click', function () {
+      subcategoriaForn = b.getAttribute('data-sub') || '';
+      filtrarFornecedores();
+    });
+  });
+}
+
 function escolherCategoriaForn(nome) {
   categoriaForn = nome;
-  desenharPills('pillsForn', categoriaForn, escolherCategoriaForn);
+  subcategoriaForn = '';       // trocar de categoria zera o segundo nível
+  desenharPillsForn();
   filtrarFornecedores();
 }
 
@@ -3493,12 +3584,22 @@ function filtrarFornecedores() {
     }
     if (mega && (f.megas || []).indexOf(mega) < 0) return false;
     if (termo) {
-      var alvo = (f.nome + ' ' + f.nomeFantasia + ' ' + f.cnpj + ' ' + f.cidade)
+      // O CNAE entra na busca: quem procura "instalação elétrica" muitas
+      // vezes está lendo o CNAE, não a razão social.
+      var alvo = (f.nome + ' ' + f.nomeFantasia + ' ' + f.cnpj + ' ' + f.cidade + ' ' +
+                  (f.cnae || '') + ' ' + (f.categorias || []).join(' ') + ' ' + (f.subcategoria || ''))
         .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
       if (alvo.indexOf(termo) < 0) return false;
     }
     return true;
   });
+
+  // O segundo nível se desenha a partir do que sobrou da categoria, e
+  // filtra depois: assim as contagens das sub-pílulas batem com a lista.
+  desenharSubPills(achados);
+  if (subcategoriaForn) {
+    achados = achados.filter(function (f) { return f.subcategoria === subcategoriaForn; });
+  }
 
   var el = document.getElementById('listaForn');
   if (!achados.length) {
@@ -3546,10 +3647,20 @@ function cartaoForn(f) {
       (f.itensDistintos === 1 ? ' item cotado' : ' itens cotados') +
       (f.ultimaProposta ? ' · última em ' + esc(f.ultimaProposta) : '') + '</div>' +
     ((f.categorias || []).length
-      ? '<div class="cartao-etq">' + f.categorias.slice(0, 2).map(function (c) {
-          return '<span class="etq etq-cat">' + esc(c) + '</span>';
+      ? '<div class="cartao-etq">' +
+        (f.subcategoria
+          ? '<span class="etq etq-cat" title="' + esc(f.categoriaPrincipal) + '">' +
+            esc(f.subcategoria) + '</span>'
+          : '') +
+        f.categorias.slice(0, 2).map(function (c) {
+          // Categoria vinda só do CNAE aparece tracejada: é o que a
+          // empresa declarou na abertura, não o que ela cotou aqui.
+          return '<span class="etq etq-cat' + (f.origemCategoria === 'cnae' ? ' etq-deduzida' : '') +
+            '" title="' + (f.origemCategoria === 'cnae' ? 'Deduzida do CNAE — ainda não cotou itens suficientes' : 'Pelo que já cotou') +
+            '">' + esc(c) + '</span>';
         }).join('') + '</div>'
       : '') +
+    (f.cnae ? '<div class="forn-cnae">' + esc(f.cnae) + '</div>' : '') +
     '</button>';
 }
 
