@@ -395,6 +395,10 @@ tr.eh-grupo .cod-auto{color:var(--noturno)}
 .btn-conferir:hover{background:var(--claro);border-color:var(--acao)}
 .link-proposta{color:var(--acao);font-weight:600;text-decoration:none}
 .link-proposta:hover{text-decoration:underline}
+/* A opção destacada pelo teclado usa o mesmo realce do hover: são o
+   mesmo estado — "é esta que vai ser escolhida" — e dois realces
+   diferentes para o mesmo estado fazem parecer que há duas seleções. */
+.sug.ativa{background:var(--claro);outline:2px solid var(--acao);outline-offset:-2px}
 .campo input,.campo select,.campo textarea{
   width:100%;padding:10px 12px;font-size:14.5px;font-family:inherit;
   border:1.5px solid rgba(21,30,73,.14);border-radius:9px;
@@ -911,7 +915,7 @@ table.ficha-tab a:hover{text-decoration:underline}
       <p class="dica">Só itens recebem preço — grupo agrega e fica sem valor.
         Use <b>›</b> para empurrar um item para dentro do grupo acima e <b>‹</b> para tirar.
         Na coluna de preços, <b>Enter</b> desce para o próximo item e dá para
-        <b>colar uma coluna inteira</b> do Excel de uma vez. O preço é <b>unitário</b>:
+        <b>colar uma coluna inteira</b> — ou o bloco com vários proponentes — do Excel de uma vez. O preço é <b>unitário</b>:
         o total sai de preço × quantidade.</p>
       <div class="grade-rolo"><table class="grade" id="grade"></table></div>
       <div class="acoes">
@@ -1930,8 +1934,11 @@ function desenharProponentes() {
         '<label for="pf' + i + '">Proponente ' + (i + 1) + '</label>' +
         '<input id="pf' + i + '" value="' + esc(p.busca !== undefined ? p.busca : p.nome) + '"' +
           ' placeholder="CNPJ ou nome do fornecedor" autocomplete="off"' +
-          ' oninput="digitouFornecedor(' + i + ', this.value)">' +
-        '<div class="sugestoes" id="sug' + i + '" hidden></div>' +
+          ' oninput="digitouFornecedor(' + i + ', this.value)"' +
+          ' onkeydown="navegarSugestoes(event, ' + i + ')"' +
+          ' role="combobox" aria-expanded="false" aria-autocomplete="list"' +
+          ' aria-controls="sug' + i + '">' +
+        '<div class="sugestoes" id="sug' + i + '" hidden role="listbox"></div>' +
         '<div class="resolvido" id="res' + i + '">' + selo(p) + '</div>' +
       '</div>' +
       '<button class="bt some" onclick="removerProponente(' + i + ')" ' +
@@ -2232,26 +2239,123 @@ function mostrarSugestoes(i, r) {
 
   // CNPJ tem resposta única: preenche direto, sem obrigar a escolher.
   if (r.tipo === 'cnpj' && r.achados.length === 1) {
-    caixa.hidden = true;
+    fecharSugestoes(i);
     aplicarFornecedor(i, r.achados[0]);
     return;
   }
 
   sugestoesAbertas[i] = r.achados;
+  // Nenhuma pré-selecionada: com a primeira já marcada, um Enter dado
+  // para confirmar o que se digitou escolheria outro fornecedor.
+  sugestaoAtiva[i] = -1;
   caixa.innerHTML = r.achados.map(function (a, k) {
-    return '<button type="button" class="sug" onclick="escolherFornecedor(' + i + ',' + k + ')">' +
+    return '<button type="button" class="sug" role="option" aria-selected="false"' +
+           ' data-k="' + k + '" onclick="escolherFornecedor(' + i + ',' + k + ')">' +
            '<b>' + esc(a.razaoSocial) + '</b>' +
            '<small>' + esc([cnpjBonito(a.cnpj), a.cidade, a.uf].filter(Boolean).join(' · ')) + '</small>' +
            '</button>';
   }).join('');
+  marcarAriaExpandido(i, true);
 }
+
+var sugestaoAtiva = {};
+
+function marcarAriaExpandido(i, aberto) {
+  var campo = document.getElementById('pf' + i);
+  if (campo) campo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+}
+
+function fecharSugestoes(i) {
+  var caixa = document.getElementById('sug' + i);
+  if (caixa) caixa.hidden = true;
+  sugestaoAtiva[i] = -1;
+  marcarAriaExpandido(i, false);
+}
+
+/**
+ * Teclado na lista de sugestões.
+ *
+ * Quem transcreve uma proposta está com as duas mãos no teclado e o
+ * documento ao lado. Obrigar a pegar o mouse para escolher o fornecedor
+ * — e só o fornecedor, porque todo o resto da tela já anda por teclado —
+ * é a interrupção mais cara do formulário.
+ *
+ * Enter sem nada destacado NÃO escolhe: o comprador pode estar só
+ * confirmando o nome que digitou, e escolher por ele trocaria o
+ * fornecedor sem que ele tivesse pedido.
+ */
+function navegarSugestoes(ev, i) {
+  var caixa = document.getElementById('sug' + i);
+  if (!caixa || caixa.hidden) return;
+
+  var opcoes = caixa.querySelectorAll('.sug');
+  if (!opcoes.length) {
+    if (ev.key === 'Escape') { ev.preventDefault(); fecharSugestoes(i); }
+    return;
+  }
+
+  var atual = sugestaoAtiva[i] === undefined ? -1 : sugestaoAtiva[i];
+
+  if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+    ev.preventDefault();
+    if (ev.key === 'ArrowDown') {
+      atual = atual + 1 >= opcoes.length ? 0 : atual + 1;
+    } else {
+      atual = atual <= 0 ? opcoes.length - 1 : atual - 1;
+    }
+    sugestaoAtiva[i] = atual;
+    Array.prototype.forEach.call(opcoes, function (o, k) {
+      o.classList.toggle('ativa', k === atual);
+      o.setAttribute('aria-selected', k === atual ? 'true' : 'false');
+    });
+    // Rola só o necessário: scrollIntoView completo puxaria a página
+    // inteira e tiraria a grade de vista.
+    if (opcoes[atual].scrollIntoView) {
+      opcoes[atual].scrollIntoView({ block: 'nearest' });
+    }
+    return;
+  }
+
+  if (ev.key === 'Enter') {
+    if (atual < 0) return;      // nada destacado: Enter é do formulário
+    ev.preventDefault();
+    escolherFornecedor(i, atual);
+    return;
+  }
+
+  if (ev.key === 'Escape') {
+    ev.preventDefault();
+    fecharSugestoes(i);
+  }
+}
+
+/**
+ * Clicar fora fecha a lista.
+ *
+ * Sem isto a caixa fica aberta por cima do formulário depois que o
+ * comprador desiste e vai clicar em outro campo — e ela cobre justamente
+ * os dados da proposta, que ficam logo abaixo.
+ *
+ * No capture, e não no bubble: a sugestão é um <button>, e um clique
+ * nela dispararia este ouvinte antes do onclick dela se o alvo não fosse
+ * checado — por isso a checagem por .closest.
+ */
+document.addEventListener('click', function (ev) {
+  var dentro = ev.target && ev.target.closest && ev.target.closest('.busca-forn');
+  Object.keys(sugestoesAbertas).forEach(function (i) {
+    var caixa = document.getElementById('sug' + i);
+    if (!caixa || caixa.hidden) return;
+    if (dentro && dentro.contains(caixa)) return;   // clicou nesta mesma busca
+    fecharSugestoes(i);
+  });
+});
 
 var sugestoesAbertas = {};
 
 function escolherFornecedor(i, k) {
   var a = (sugestoesAbertas[i] || [])[k];
   if (!a) return;
-  document.getElementById('sug' + i).hidden = true;
+  fecharSugestoes(i);
   aplicarFornecedor(i, a);
 }
 
@@ -2636,39 +2740,83 @@ function navegarGrade(ev, el) {
 }
 
 /**
- * Colar uma coluna inteira do Excel ou do PDF.
+ * Colar do Excel — uma coluna ou um bloco inteiro.
  *
  * É o maior ganho de tempo do app: em vez de digitar 40 números, o
- * comprador copia a coluna do fornecedor e cola de uma vez. Cria as linhas
- * que faltarem — a lista de itens costuma vir da própria proposta.
+ * comprador copia da proposta e cola de uma vez. Cria as linhas que
+ * faltarem, porque a lista de itens costuma vir da própria proposta.
+ *
+ * Aceita as duas formas porque as duas acontecem: quem tem a planilha
+ * do fornecedor copia a coluna de preço; quem tem a planilha da
+ * concorrência inteira copia o bloco com todos os proponentes de uma
+ * vez. O Excel separa coluna por tabulação e linha por quebra, então a
+ * diferença entre os dois casos é só a presença de \t.
+ *
+ * O bloco não passa da última coluna de proponente: colar cinco colunas
+ * numa cotação de três criaria proponentes sem nome, e um proponente
+ * anônimo com preços é pior que um preço faltando.
  */
 function colarColuna(ev, el) {
   var texto = (ev.clipboardData || window.clipboardData).getData('text') || '';
-  var valores = texto.split(/\r?\n/).map(function (v) { return v.trim(); });
-  while (valores.length && valores[valores.length - 1] === '') valores.pop();
-  if (valores.length < 2) return;          // uma célula só: comportamento normal
+
+  var matriz = texto.split(/\r?\n/).map(function (linha) {
+    return linha.split('\t').map(function (v) { return v.trim(); });
+  });
+  // Linha final vazia é o que o Excel sempre acrescenta na cópia.
+  while (matriz.length && matriz[matriz.length - 1].join('') === '') matriz.pop();
+  if (!matriz.length) return;
+
+  var colunas = matriz.reduce(function (m, l) { return Math.max(m, l.length); }, 0);
+  // Uma célula só: deixa o navegador colar normalmente.
+  if (matriz.length < 2 && colunas < 2) return;
 
   ev.preventDefault();
-  var c = Number(el.dataset.c);
+  var c0 = Number(el.dataset.c);
   var linhas = linhasComPreco();
   var pos = linhas.indexOf(Number(el.dataset.l));
 
-  valores.forEach(function (v, k) {
+  var cabem = Math.min(colunas, proponentes.length - c0);
+  var ignoradas = colunas - cabem;
+  var gravados = 0;
+
+  matriz.forEach(function (linha, k) {
     var alvo = linhas[pos + k];
     if (alvo === undefined) {
-      addItem('item', true);      // em lote: não roubar o foco a cada linha
+      // Em lote, sem redesenhar: 30 linhas coladas eram 30 redesenhos da
+      // grade inteira, e a tela travava no meio da colagem.
+      addItem('item', true);
       alvo = itens.length - 1;
       linhas = linhasComPreco();
     }
-    var n = num(v);
-    itens[alvo].precos[c] = n === null ? ''
-      : n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    for (var j = 0; j < cabem; j++) {
+      var v = linha[j];
+      if (v === undefined) continue;
+      var n = num(v);
+      itens[alvo].precos[c0 + j] = n === null ? ''
+        : n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (n !== null) gravados++;
+    }
   });
 
   desenharGrade();
   salvarRascunho();
-  var msg = valores.length + ' valores colados na coluna.';
-  document.getElementById('salvoMsg').innerHTML = '<span style="color:var(--ok)">' + msg + '</span>';
+
+  var msg = gravados + (gravados === 1 ? ' valor colado' : ' valores colados') +
+    ' em ' + matriz.length + (matriz.length === 1 ? ' linha' : ' linhas') +
+    (cabem > 1 ? ' e ' + cabem + ' colunas' : '') + '.';
+  var cor = 'var(--ok)';
+  if (ignoradas > 0) {
+    // Avisar em vez de criar proponente: quem cola cinco colunas numa
+    // cotação de três ou errou a célula de partida, ou precisa incluir os
+    // proponentes antes — e as duas coisas são dele para decidir.
+    msg += ' ' + ignoradas + (ignoradas === 1 ? ' coluna ficou' : ' colunas ficaram') +
+      ' de fora: a cotação tem ' + proponentes.length +
+      (proponentes.length === 1 ? ' proponente' : ' proponentes') +
+      '. Inclua os que faltam e cole de novo.';
+    cor = 'var(--alerta)';
+  }
+  document.getElementById('salvoMsg').innerHTML =
+    '<span style="color:' + cor + '">' + msg + '</span>';
 }
 
 // ─────────────────────────────────────────────────────────────
