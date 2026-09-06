@@ -43,7 +43,14 @@ try {
   assert(typeof context.cfAgruparPorItem_ === 'function', 'cfAgruparPorItem_ existe');
   // const no node:vm não expõe ao context — ler do fonte
   const configSrc = fs.readFileSync(path.join(root, 'app', 'Config.gs'), 'utf8');
-  assert(/CF_SCHEMA_VERSAO\s*=\s*3/.test(configSrc), 'CF_SCHEMA_VERSAO é 3');
+  assert(/CF_SCHEMA_VERSAO\s*=\s*4/.test(configSrc), 'CF_SCHEMA_VERSAO é 4');
+  // Cada migração carimba a versão QUE ELA instala, em literal. Derivando
+  // da constante, subir o schema faria a migração antiga anunciar uma
+  // versão que ela não instalou — e o log registraria uma migração que
+  // não aconteceu.
+  const migSrc = fs.readFileSync(path.join(root, 'app', 'Migracao.gs'), 'utf8');
+  assert(!/setProperty\(\s*CF_PROP\.schemaVersao,\s*String\(CF_SCHEMA_VERSAO\)/.test(migSrc),
+    'migração carimba a versão em literal, não derivada da constante');
 } catch (e) {
   console.log(`✗ [Estrutura do código]: ${e.message}`);
 }

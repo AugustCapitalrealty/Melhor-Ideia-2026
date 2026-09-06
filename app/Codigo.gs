@@ -252,6 +252,37 @@ function apiHomologar(idEqualizacao, idProposta, parecer) {
   }
 }
 
+/** As categorias com a contagem real — o hub da tela de equalizações. */
+function apiCategorias() {
+  try {
+    const r = cfCategoriasComContagem_();
+    r.ok = true;
+    return r;
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/** Os fornecedores que já cotaram, opcionalmente de uma categoria só. */
+function apiFornecedores(categoria) {
+  try {
+    return { ok: true, fornecedores: cfFornecedores_(categoria) };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/** A ficha completa de um fornecedor: cadastro, disputas e preços. */
+function apiFichaFornecedor(cnpj) {
+  try {
+    const f = cfFichaFornecedor_(cnpj);
+    f.ok = true;
+    return f;
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
 /**
  * O comparativo de uma equalização.
  * cfMapaEqualizacao_ já devolve tudo serializável — datas viram texto lá,
