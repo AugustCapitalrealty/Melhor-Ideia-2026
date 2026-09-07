@@ -93,6 +93,7 @@ const notasBoas = { prazo: 5, qualidade: 4, conformidade: 4, atendimento: 5, doc
   const a = montar({});
   a.ctx.cfSalvarAvaliacao_(Object.assign({
     cnpj: '11222333000181',
+    recontrataria: true,
     AVALIADOR: 'outra.pessoa@exemplo.com',
     avaliador: 'outra.pessoa@exemplo.com'
   }, notasBoas));
@@ -104,9 +105,36 @@ const notasBoas = { prazo: 5, qualidade: 4, conformidade: 4, atendimento: 5, doc
 // ── 3. Papel desconhecido não entra como se fosse válido
 {
   const a = montar({});
-  a.ctx.cfSalvarAvaliacao_(Object.assign({ cnpj: '11222333000181', papel: 'diretor_supremo' }, notasBoas));
+  a.ctx.cfSalvarAvaliacao_(Object.assign({ cnpj: '11222333000181', recontrataria: false,
+                                           papel: 'diretor_supremo' }, notasBoas));
   assert.equal(a.gravado[0].linha.PAPEL_AVALIADOR, 'outro',
     'papel fora do enum precisa cair em "outro", não entrar cru na planilha');
+}
+
+// ── 3b. "Contrataria de novo" não tem padrão
+//
+//     Antes, qualquer coisa que não fosse `true` virava `false`: quem não
+//     respondeu ficava gravado como quem disse NÃO. É a pergunta que mais
+//     pesa na próxima compra, e silêncio não é reprovação — é um registro
+//     falso sobre um fornecedor real.
+{
+  const a = montar({});
+
+  [undefined, null, ''].forEach(function (vazio) {
+    assert.throws(
+      function () {
+        a.ctx.cfSalvarAvaliacao_(Object.assign({ cnpj: '11222333000181', recontrataria: vazio }, notasBoas));
+      },
+      /contrataria/i,
+      'sem resposta sobre recontratar (' + JSON.stringify(vazio) + '), a avaliação não pode ser gravada'
+    );
+  });
+  assert.equal(a.gravado.length, 0, 'nada pode ter sido gravado sem a resposta');
+
+  // O "não" explícito, esse sim, é gravado como não.
+  a.ctx.cfSalvarAvaliacao_(Object.assign({ cnpj: '11222333000181', recontrataria: false }, notasBoas));
+  assert.equal(a.gravado[0].linha.RECONTRATARIA, false,
+    'quem respondeu "não" precisa ficar gravado como não');
 }
 
 // ── 4. Nota fora da escala é recusada

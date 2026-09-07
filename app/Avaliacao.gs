@@ -77,6 +77,18 @@ function cfSalvarAvaliacao_(d) {
   const soma = CF_CRITERIOS_AVALIACAO.reduce(function (s, c) { return s + notas[c.campo]; }, 0);
   const media = Math.round((soma / CF_CRITERIOS_AVALIACAO.length) * 100) / 100;
 
+  // "Contrataria de novo" não tem padrão.
+  //
+  // Antes, qualquer coisa que não fosse `true` virava `false` — então
+  // quem não respondeu ficava gravado como quem disse NÃO. É a pergunta
+  // que mais pesa na próxima compra, e silêncio não é reprovação.
+  const recontrataria = (d.recontrataria === true || d.recontrataria === 'sim') ? true
+    : (d.recontrataria === false || d.recontrataria === 'nao' || d.recontrataria === 'não') ? false
+    : null;
+  if (recontrataria === null) {
+    throw new Error('Falta responder se contrataria este fornecedor de novo.');
+  }
+
   const papel = CF_ENUM.papelAvaliador.indexOf(d.papel) >= 0 ? d.papel : 'outro';
   const agora = new Date();
   const id = cfNovoId_('AVA');
@@ -91,7 +103,7 @@ function cfSalvarAvaliacao_(d) {
     AVALIADOR: cfUsuario_(),
     PAPEL_AVALIADOR: papel,
     NOTA: media,
-    RECONTRATARIA: d.recontrataria === true || d.recontrataria === 'sim',
+    RECONTRATARIA: recontrataria,
     COMENTARIO: String(d.comentario || '').trim(),
     CRIADO_EM: agora
   };

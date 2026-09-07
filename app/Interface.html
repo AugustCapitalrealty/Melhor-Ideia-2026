@@ -1322,14 +1322,28 @@ table.tabela-executiva tbody tr:hover td {
 
 /* ── Gaveta lateral (ficha 360°) ────────────────────────────── */
 .gaveta-fundo{position:fixed;inset:0;background:rgba(21,30,73,.34);z-index:80;backdrop-filter:blur(2px)}
+/* A ficha era uma faixa de 560px encostada na direita: o conteúdo
+   ficava espremido em coluna única e o resto da tela, borrado e
+   inútil. Centralizada e larga, cabe o cadastro ao lado do histórico
+   — que é como se lê um fornecedor: quem é, à esquerda; o que fez,
+   à direita. */
 .gaveta{
-  position:fixed;top:0;right:0;bottom:0;width:min(560px,94vw);z-index:81;
-  background:var(--superficie);border-left:1px solid var(--linha);
-  box-shadow:-14px 0 40px rgba(21,30,73,.16);
-  display:flex;flex-direction:column;
-  transform:translateX(100%);transition:transform .2s ease-out;
+  position:fixed;inset:0;margin:auto;z-index:81;
+  width:min(1100px,94vw);height:max-content;max-height:88vh;
+  background:var(--superficie);border:1px solid var(--linha);border-radius:16px;
+  box-shadow:0 24px 60px -12px rgba(15,23,42,.35);
+  display:flex;flex-direction:column;overflow:hidden;
+  opacity:0;transform:scale(.975);transition:opacity .18s ease,transform .18s ease;
 }
-.gaveta.aberta{transform:translateX(0)}
+.gaveta.aberta{opacity:1;transform:scale(1)}
+
+/* Duas colunas quando há largura; uma só quando não há. O ponto de
+   corte é o da própria coluna da esquerda, não o do dispositivo. */
+.ficha-colunas{display:grid;grid-template-columns:340px 1fr;gap:0 34px;align-items:start}
+.ficha-col-dir{min-width:0}
+@media (max-width:880px){
+  .ficha-colunas{grid-template-columns:1fr;gap:0}
+}
 .gaveta-topo{
   display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
   padding:20px 22px 14px;border-bottom:1px solid var(--linha);
@@ -1348,6 +1362,14 @@ table.tabela-executiva tbody tr:hover td {
   color:var(--suave);font-weight:700;
 }
 .gaveta-corpo h3:first-child{margin-top:0}
+.ficha-comentarios{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.ficha-comentarios blockquote{
+  margin:0;padding:8px 12px;background:var(--superficie2);border-left:3px solid #F59E0B;
+  border-radius:0 8px 8px 0;font-size:12.5px;color:var(--texto);
+}
+.ficha-comentarios cite{
+  display:block;margin-top:4px;font-style:normal;font-size:11.5px;color:var(--suave);font-weight:600;
+}
 .ficha-dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:13px}
 .ficha-dl dt{color:var(--suave);font-weight:600}
 .ficha-dl dd{margin:0;color:var(--texto)}
@@ -1382,7 +1404,7 @@ table.ficha-tab a:hover{text-decoration:underline}
 .delta.caiu{color:var(--ok);font-weight:700}
 
 @media(max-width:640px){
-  .gaveta{width:100vw}
+  .gaveta{width:96vw;max-height:92vh}
   .ficha-dl{grid-template-columns:1fr;gap:2px 0}
   .ficha-dl dd{margin-bottom:8px}
 }
@@ -2186,17 +2208,45 @@ table.ficha-tab a:hover{text-decoration:underline}
   justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
 }
 
-.criterio{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 0}
+.criterio{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0}
 .criterio + .criterio{border-top:1px solid var(--linha)}
+.criterio.pendente{opacity:.72}
 .criterio-rot{font-size:13.5px;font-weight:600;color:var(--noturno)}
 .criterio-ajuda{font-size:12px;color:var(--suave);font-weight:400;display:block;margin-top:1px}
-.estrelas{display:flex;gap:2px;flex-shrink:0}
+.criterio-dir{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0}
+.estrelas{display:flex;gap:3px}
 .estrela{
-  background:none;border:none;cursor:pointer;font-size:21px;line-height:1;padding:2px;
+  background:none;border:none;cursor:pointer;font-size:26px;line-height:1;padding:1px 2px;
   color:#D7DBE6;transition:color .12s ease,transform .12s ease;
 }
-.estrela:hover{transform:scale(1.15)}
+.estrela:hover{transform:scale(1.18)}
 .estrela.on{color:#F59E0B}
+/* Prévia no hover: mostra o que aquele clique vai valer antes de
+   clicar. Sem isso a pessoa clica, vê, e clica de novo para corrigir. */
+.estrelas:hover .estrela{color:#D7DBE6}
+.estrelas:hover .estrela.previa{color:#FCD34D}
+
+/* O número sozinho não significa nada: cinco pessoas calibram "3" de
+   cinco jeitos, e a média vira ruído. A palavra ancora a escala. */
+.criterio-valor{font-size:11.5px;font-weight:600;color:var(--suave);height:14px}
+.criterio-valor.dado{color:#B45309}
+
+.aval-progresso{
+  display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--suave);
+  padding:2px 0 10px;border-bottom:1px solid var(--linha);margin-bottom:4px;
+}
+.aval-progresso .barra{
+  flex:1;height:5px;background:var(--superficie2);border-radius:999px;overflow:hidden;
+}
+.aval-progresso .barra i{
+  display:block;height:100%;width:0;background:#F59E0B;border-radius:999px;
+  transition:width .2s ease;
+}
+.aval-progresso.completo{color:var(--ok)}
+.aval-progresso.completo .barra i{background:var(--ok)}
+
+.bt:disabled{opacity:.45;cursor:not-allowed}
+.exigido{color:var(--critico);font-weight:700;margin-left:2px}
 
 .aval-campo{margin-top:14px}
 .aval-campo label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:var(--noturno)}
@@ -2576,10 +2626,17 @@ table.ficha-tab a:hover{text-decoration:underline}
       <p id="avalSub"></p>
     </div>
     <div class="modal-aval-corpo">
+      <div class="aval-progresso" id="avalProgresso">
+        <span id="avalProgressoTxt">0 de 6 respondidas</span>
+        <span class="barra"><i id="avalProgressoBarra"></i></span>
+      </div>
       <div id="avalCriterios"></div>
 
       <div class="aval-campo">
-        <label>Contrataria de novo?</label>
+        <label>Contrataria de novo?<span class="exigido" title="Obrigatória">*</span>
+          <small style="display:block;font-weight:400;color:var(--suave);margin-top:1px">
+            É a pergunta que mais pesa na próxima compra — não tem resposta padrão.</small>
+        </label>
         <div class="aval-sim-nao" id="avalRecontrataria">
           <button type="button" data-v="sim" onclick="marcarRecontrataria(true)">Sim</button>
           <button type="button" data-v="nao" onclick="marcarRecontrataria(false)">Não</button>
@@ -7569,6 +7626,15 @@ var avalNotas = {};
 var avalRecontrataria = null;
 
 /**
+ * O que cada nota quer dizer.
+ *
+ * Estrela sem âncora é número sem escala: cinco pessoas calibram o
+ * "3" de cinco jeitos e a média vira ruído. Com a palavra ao lado,
+ * todo mundo está respondendo à mesma pergunta.
+ */
+var ESCALA_AVAL = ['', 'péssimo', 'ruim', 'regular', 'bom', 'ótimo'];
+
+/**
  * O selo de IQF.
  *
  * "Sem avaliação" não é nota baixa, e o selo tem de deixar isso
@@ -7605,7 +7671,8 @@ function carregarFilaAvaliacao() {
         '<div class="fila-itens">' + r.pendentes.map(function (p) {
           return '<button type="button" class="fila-item" onclick="abrirAvaliacao(' +
             "'" + esc(p.cnpj) + "','" + esc(p.fornecedor) + "','" + esc(p.idEqualizacao) +
-            "','" + esc(p.empreendimento) + "','" + esc(p.numeroOc || '') + "'" + ')">' +
+            "','" + esc(p.empreendimento) + "','" + esc(p.numeroOc || '') +
+            "','" + esc(p.projeto || '') + "'" + ')">' +
             '<b>' + esc(p.fornecedor) + '</b>' +
             '<span>' + esc(p.projeto || p.idEqualizacao) +
             (p.empreendimento ? ' · ' + esc(simplificarMega(p.empreendimento)) : '') + '</span>' +
@@ -7622,15 +7689,22 @@ function carregarFilaAvaliacao() {
     .apiAvaliacoesPendentes();
 }
 
-function abrirAvaliacao(cnpj, nome, idEq, empreendimento, numeroOc) {
+function abrirAvaliacao(cnpj, nome, idEq, empreendimento, numeroOc, projeto) {
   avalAtual = { cnpj: cnpj, nome: nome, idEqualizacao: idEq || '',
                 empreendimento: empreendimento || '', numeroOc: numeroOc || '' };
   avalNotas = {};
   avalRecontrataria = null;
 
   document.getElementById('avalTitulo').textContent = 'Avaliar ' + nome;
+
+  // QUAL compra, e não só qual Mega: um fornecedor com três compras no
+  // mesmo Mega deixava a pessoa avaliando sem saber qual delas.
+  var contexto = [];
+  if (projeto) contexto.push(projeto);
+  if (empreendimento) contexto.push(simplificarMega(empreendimento));
+  if (numeroOc) contexto.push('OC ' + numeroOc);
   document.getElementById('avalSub').textContent =
-    (empreendimento ? simplificarMega(empreendimento) + ' · ' : '') +
+    contexto.join(' · ') + (contexto.length ? ' — ' : '') +
     'leva um minuto, e é o que a próxima cotação vai saber';
 
   var msg = document.getElementById('avalMsg');
@@ -7642,7 +7716,14 @@ function abrirAvaliacao(cnpj, nome, idEq, empreendimento, numeroOc) {
   document.getElementById('avalComentario').value = '';
 
   desenharCriteriosAval();
+  atualizarProgressoAval();
   document.getElementById('modalAvalFundo').hidden = false;
+
+  document.addEventListener('keydown', escFechaAvaliacao);
+}
+
+function escFechaAvaliacao(e) {
+  if (e.key === 'Escape') fecharAvaliacao();
 }
 
 function desenharCriteriosAval() {
@@ -7663,15 +7744,31 @@ function desenharCriteriosAval() {
     var estrelas = '';
     for (var n = 1; n <= 5; n++) {
       estrelas += '<button type="button" class="estrela" data-c="' + esc(c.chave) + '"' +
-        ' data-n="' + n + '" aria-label="' + n + ' de 5 em ' + esc(c.rotulo) + '"' +
+        ' data-n="' + n + '" aria-label="' + n + ' de 5, ' + ESCALA_AVAL[n] + ', em ' + esc(c.rotulo) + '"' +
+        ' onmouseover="preverNota(\'' + esc(c.chave) + '\',' + n + ')"' +
         ' onclick="darNota(\'' + esc(c.chave) + '\',' + n + ')">★</button>';
     }
-    return '<div class="criterio">' +
+    return '<div class="criterio pendente" data-crit="' + esc(c.chave) + '">' +
       '<span class="criterio-rot">' + esc(c.rotulo) +
       '<small class="criterio-ajuda">' + esc(c.ajuda) + '</small></span>' +
-      '<span class="estrelas">' + estrelas + '</span>' +
+      '<span class="criterio-dir">' +
+        '<span class="estrelas" onmouseout="limparPrevia(\'' + esc(c.chave) + '\')">' + estrelas + '</span>' +
+        '<span class="criterio-valor" id="valor-' + esc(c.chave) + '">toque para dar a nota</span>' +
+      '</span>' +
       '</div>';
   }).join('');
+}
+
+function preverNota(chave, n) {
+  document.querySelectorAll('.estrela[data-c="' + chave + '"]').forEach(function (b) {
+    b.classList.toggle('previa', Number(b.getAttribute('data-n')) <= n);
+  });
+}
+
+function limparPrevia(chave) {
+  document.querySelectorAll('.estrela[data-c="' + chave + '"]').forEach(function (b) {
+    b.classList.remove('previa');
+  });
 }
 
 function darNota(chave, n) {
@@ -7679,6 +7776,50 @@ function darNota(chave, n) {
   document.querySelectorAll('.estrela[data-c="' + chave + '"]').forEach(function (b) {
     b.classList.toggle('on', Number(b.getAttribute('data-n')) <= n);
   });
+
+  var rot = document.getElementById('valor-' + chave);
+  if (rot) {
+    rot.textContent = n + ' · ' + ESCALA_AVAL[n];
+    rot.classList.add('dado');
+  }
+  var linha = document.querySelector('.criterio[data-crit="' + chave + '"]');
+  if (linha) linha.classList.remove('pendente');
+
+  atualizarProgressoAval();
+}
+
+/**
+ * Quanto falta, e o botão só libera no fim.
+ *
+ * Antes o botão ficava aceso desde o começo e só reclamava depois do
+ * clique. Dizer antes o que falta é mais barato que dizer depois o que
+ * deu errado.
+ */
+function atualizarProgressoAval() {
+  var chaves = chavesCriteriosAval();
+  var respondidas = chaves.filter(function (c) { return !!avalNotas[c]; }).length +
+                    (avalRecontrataria === null ? 0 : 1);
+  var total = chaves.length + 1;
+  var completo = respondidas === total;
+
+  var box = document.getElementById('avalProgresso');
+  var txt = document.getElementById('avalProgressoTxt');
+  var barra = document.getElementById('avalProgressoBarra');
+  if (txt) {
+    txt.textContent = completo ? 'tudo respondido'
+                               : respondidas + ' de ' + total + ' respondidas';
+  }
+  if (barra) barra.style.width = Math.round((respondidas / total) * 100) + '%';
+  if (box) box.classList.toggle('completo', completo);
+
+  var bt = document.getElementById('btSalvarAval');
+  if (bt) bt.disabled = !completo;
+}
+
+function chavesCriteriosAval() {
+  return CRITERIOS_AVAL.length
+    ? CRITERIOS_AVAL.map(function (c) { return c.chave; })
+    : ['prazo', 'qualidade', 'conformidade', 'atendimento', 'documentacao'];
 }
 
 function marcarRecontrataria(v) {
@@ -7686,25 +7827,28 @@ function marcarRecontrataria(v) {
   document.querySelectorAll('#avalRecontrataria button').forEach(function (b) {
     b.classList.toggle('on', (b.getAttribute('data-v') === 'sim') === v);
   });
+  atualizarProgressoAval();
 }
 
 function fecharAvaliacao(e) {
   if (e && e.target && e.target.id !== 'modalAvalFundo') return;
   document.getElementById('modalAvalFundo').hidden = true;
+  document.removeEventListener('keydown', escFechaAvaliacao);
 }
 
 function salvarAvaliacao() {
   if (!avalAtual) return;
   var msg = document.getElementById('avalMsg');
 
-  var criterios = CRITERIOS_AVAL.length ? CRITERIOS_AVAL.map(function (c) { return c.chave; })
-                                        : ['prazo','qualidade','conformidade','atendimento','documentacao'];
+  var criterios = chavesCriteriosAval();
   var faltando = criterios.filter(function (c) { return !avalNotas[c]; });
-  if (faltando.length) {
-    // Dizer QUANTOS faltam, e não "preencha tudo": o formulário tem
-    // cinco linhas e a pessoa não sabe qual esqueceu.
-    msg.textContent = 'Faltam ' + faltando.length +
-      (faltando.length === 1 ? ' critério sem nota.' : ' critérios sem nota.');
+
+  // O botão já fica travado até tudo estar respondido; isto aqui é a
+  // rede embaixo, para o caso de alguém chamar a função direto.
+  if (faltando.length || avalRecontrataria === null) {
+    msg.textContent = faltando.length
+      ? 'Faltam ' + faltando.length + (faltando.length === 1 ? ' critério sem nota.' : ' critérios sem nota.')
+      : 'Falta responder se contrataria de novo.';
     msg.hidden = false;
     return;
   }
@@ -7719,7 +7863,7 @@ function salvarAvaliacao() {
     empreendimento: avalAtual.empreendimento,
     numeroOc: avalAtual.numeroOc,
     papel: document.getElementById('avalPapel').value,
-    recontrataria: avalRecontrataria === true,
+    recontrataria: avalRecontrataria,
     comentario: document.getElementById('avalComentario').value
   };
   criterios.forEach(function (c) { dados[c] = avalNotas[c]; });
@@ -7889,17 +8033,19 @@ function desenharFichaFornecedor(f) {
     ['E-mail', f.email]
   ].filter(function (l) { return l[1]; });
 
-  var html = '';
+  // Esquerda: quem é o fornecedor. Direita: o que ele fez.
+  var esq = '';
+  var dir = '';
 
   if (cadastro.length) {
-    html += '<h3>Cadastro</h3><dl class="ficha-dl">' +
+    esq += '<h3>Cadastro</h3><dl class="ficha-dl">' +
       cadastro.map(function (l) {
         return '<dt>' + esc(l[0]) + '</dt><dd>' + esc(l[1]) + '</dd>';
       }).join('') + '</dl>';
   }
 
   if (contatos.length) {
-    html += '<h3>Contato comercial</h3><dl class="ficha-dl">' +
+    esq += '<h3>Contato comercial</h3><dl class="ficha-dl">' +
       contatos.map(function (l) {
         var v = esc(l[1]);
         if (l[0] === 'E-mail') v = '<a href="mailto:' + v + '">' + v + '</a>';
@@ -7914,31 +8060,69 @@ function desenharFichaFornecedor(f) {
   }
 
   // ── Desempenho, com o denominador sempre à vista
-  html += '<h3>Desempenho</h3>';
+  esq += '<h3>Desempenho</h3>';
   if (!f.disputas) {
-    html += '<p class="ficha-nota">Este fornecedor aparece com ' + f.avulsos +
+    esq += '<p class="ficha-nota">Este fornecedor aparece com ' + f.avulsos +
       (f.avulsos === 1 ? ' orçamento avulso' : ' orçamentos avulsos') +
       ' e nenhuma disputa. Orçamento avulso não tem concorrente — não é vitória nem derrota.</p>';
   } else {
-    html += '<div class="ficha-numeros">' +
+    esq += '<div class="ficha-numeros">' +
       '<div><b>' + f.disputas + '</b><span>disputas</span></div>' +
       '<div><b>' + f.vitorias + '</b><span>vitórias</span></div>' +
       (f.volumeHomologado ? '<div><b>' + moeda(f.volumeHomologado) + '</b><span>contratado</span></div>' : '') +
       '</div>';
     if (f.taxaVitoria !== null && f.taxaVitoria !== undefined) {
-      html += '<p class="ficha-nota">Aproveitamento de <b>' + Math.round(f.taxaVitoria * 100) +
+      esq += '<p class="ficha-nota">Aproveitamento de <b>' + Math.round(f.taxaVitoria * 100) +
         '%</b> em ' + f.disputasDecididas + ' disputas decididas.</p>';
     } else {
-      html += '<p class="ficha-nota">Só <b>' + f.disputasDecididas +
+      esq += '<p class="ficha-nota">Só <b>' + f.disputasDecididas +
         '</b> ' + (f.disputasDecididas === 1 ? 'disputa decidida' : 'disputas decididas') +
         ' até aqui — poucas para um percentual dizer alguma coisa. ' +
         'O aproveitamento aparece a partir de cinco.</p>';
     }
   }
 
+  // ── A nota do pós-serviço, e as avaliações que a formaram
+  //
+  //    Fica na coluna de quem é o fornecedor, e não na do que ele fez:
+  //    a nota é uma característica dele, não um evento.
+  esq += '<h3>Avaliação pós-serviço</h3>';
+  esq += '<div style="margin-bottom:8px">' + seloIqf(f.iqf) + '</div>';
+
+  if (!f.iqf) {
+    esq += '<p class="ficha-nota">Ninguém avaliou este fornecedor ainda. ' +
+      'Sem isso, a próxima cotação só vai saber o preço dele.</p>';
+  } else {
+    esq += '<p class="ficha-nota"><b>' + f.iqf.recontratariam + '</b> de <b>' +
+      f.iqf.avaliacoes + '</b> ' +
+      (f.iqf.recontratariam === 1 ? 'avaliação diria' : 'avaliações dizem') +
+      ' que contrataria de novo' +
+      (f.iqf.ultima ? ' · última em ' + esc(f.iqf.ultima) : '') + '.</p>';
+
+    var porCriterio = f.iqf.criterios || {};
+    var linhas = Object.keys(porCriterio).map(function (k) {
+      return '<dt>' + esc(k.charAt(0).toUpperCase() + k.slice(1)) + '</dt>' +
+             '<dd>' + porCriterio[k].toFixed(1).replace('.', ',') + '</dd>';
+    }).join('');
+    if (linhas) esq += '<dl class="ficha-dl">' + linhas + '</dl>';
+  }
+
+  if ((f.avaliacoes || []).length) {
+    // Só os comentários: a nota já está acima, e o que a próxima
+    // pessoa precisa ler é o que aconteceu.
+    var comentados = f.avaliacoes.filter(function (a) { return a.comentario; }).slice(0, 4);
+    if (comentados.length) {
+      esq += '<div class="ficha-comentarios">' + comentados.map(function (a) {
+        return '<blockquote>' + esc(a.comentario) +
+          '<cite>★ ' + a.nota.toFixed(1).replace('.', ',') +
+          (a.data ? ' · ' + esc(a.data) : '') + '</cite></blockquote>';
+      }).join('') + '</div>';
+    }
+  }
+
   // ── Histórico de disputas
   if (f.historico.length) {
-    html += '<h3>Equalizações que disputou</h3><table class="ficha-tab"><tbody>' +
+    dir += '<h3>Equalizações que disputou</h3><table class="ficha-tab"><tbody>' +
       f.historico.map(function (h) {
         var res = h.venceu ? '<span class="res venceu">venceu</span>'
                 : (h.decidida ? '<span class="res perdeu">perdeu</span>'
@@ -7954,7 +8138,7 @@ function desenharFichaFornecedor(f) {
 
   // ── Histórico de preço por item — o que a planilha nunca teve
   if (f.itens.length) {
-    html += '<h3>Preços que praticou</h3>' +
+    dir += '<h3>Preços que praticou</h3>' +
       '<p class="ficha-nota">Cada arquivo EQU era um retrato isolado. Aqui o mesmo item ' +
       'aparece ao longo do tempo.</p>' +
       '<table class="ficha-tab"><thead><tr><th>Item</th><th class="num">Último</th>' +
@@ -7976,7 +8160,12 @@ function desenharFichaFornecedor(f) {
       }).join('') + '</tbody></table>';
   }
 
-  corpo.innerHTML = html;
+  // Sem nada à direita, a coluna da esquerda ocupa tudo em vez de
+  // deixar metade da ficha em branco.
+  corpo.innerHTML = dir
+    ? '<div class="ficha-colunas"><div>' + esq + '</div>' +
+      '<div class="ficha-col-dir">' + dir + '</div></div>'
+    : esq;
 }
 
 document.addEventListener('keydown', function (ev) {
