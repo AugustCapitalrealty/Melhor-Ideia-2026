@@ -1731,10 +1731,20 @@ try {
   assert.ok(formatos.indexOf('+0.0%;-0.0%;0.0%') >= 0,
     'a variação precisa de formato de percentual, senão sai 0,3 em vez de +30,0%');
 
-  // ── Alçadas
-  ['HOMOLOGAÇÃO', 'Elaborado por (Suprimentos):', 'Parecer técnico (Gestor da área):',
-   'Homologação (Diretoria Executiva):', '(   ) Aprovado'].forEach(function (t) {
-    assert.ok(texto.indexOf(t) >= 0, 'faltou o quadro de alçadas: "' + t + '"');
+  // ── Responsáveis
+  //
+  //    Duas assinaturas, e só duas. O quadro tinha decisão da diretoria,
+  //    parecer técnico e homologação da Diretoria Executiva — três campos
+  //    para um fluxo que na prática tem dois passos, e que por isso saíam
+  //    em branco. Quem revisa é quem aprova.
+  ['RESPONSÁVEIS', 'Elaborado por (Suprimentos):', 'Revisado por:'].forEach(function (t) {
+    assert.ok(texto.indexOf(t) >= 0, 'faltou o quadro de responsáveis: "' + t + '"');
+  });
+
+  ['HOMOLOGAÇÃO', 'Decisão da Diretoria:', 'Homologação (Diretoria Executiva):',
+   'Parecer técnico', '(   ) Aprovado'].forEach(function (t) {
+    assert.ok(texto.indexOf(t) < 0,
+      'o campo de diretoria/homologação voltou ao documento: "' + t + '"');
   });
 
   // ── O link: aplicado, correto, e DEPOIS do setValues

@@ -1351,32 +1351,26 @@ function cfValorTexto_(v) {
 /**
  * Quem assina o quê.
  *
- * A equalização circula entre três pessoas com responsabilidades
- * diferentes: quem cotou, quem valida o escopo e quem autoriza o gasto.
- * Sem o quadro, as três assinam no mesmo espaço em branco e depois não se
- * sabe quem validou o quê — que é exatamente a pergunta que uma auditoria
- * faz primeiro.
+ * Duas responsabilidades, e só duas: quem montou a equalização e quem a
+ * revisou. Quem revisou é quem aprovou — não há um terceiro passo de
+ * homologação, e fingir que há criava um campo que ninguém preenchia.
+ *
+ * O quadro existe para as duas assinaturas não caírem no mesmo espaço em
+ * branco: depois, ninguém sabe quem conferiu o quê, que é a primeira
+ * pergunta de qualquer auditoria.
  */
 function cfBlocoAlcadas_(linha, vazia, merges, faixas, largura, COL_ROTULO, COL_VALOR) {
   const largo = largura - COL_VALOR + 1;
   linha(vazia());
 
   let li = vazia();
-  li[COL_ROTULO - 1] = 'HOMOLOGAÇÃO';
+  li[COL_ROTULO - 1] = 'RESPONSÁVEIS';
   const lTit = linha(li);
   merges.push({ l: lTit, c: COL_ROTULO, nl: 1, nc: largura - 1 });
   faixas.secao.push(lTit);
 
-  li = vazia();
-  li[COL_ROTULO - 1] = 'Decisão da Diretoria:';
-  li[COL_VALOR - 1] = '(   ) Aprovado          (   ) Aprovado com ressalvas          (   ) Rejeitado';
-  const lDec = linha(li);
-  merges.push({ l: lDec, c: COL_VALOR, nl: 1, nc: largo });
-  faixas.cabecalho.push(lDec);
-
   [['Elaborado por (Suprimentos):', 'nome, data e assinatura'],
-   ['Parecer técnico (Gestor da área):', 'escopo validado — nome, data e assinatura'],
-   ['Homologação (Diretoria Executiva):', 'nome, data e assinatura']].forEach(function (c) {
+   ['Revisado por:', 'escopo e valores conferidos — nome, data e assinatura']].forEach(function (c) {
     const li = vazia();
     li[COL_ROTULO - 1] = c[0];
     li[COL_VALOR - 1] = c[1];
