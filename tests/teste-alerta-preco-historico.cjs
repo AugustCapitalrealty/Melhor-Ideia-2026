@@ -158,3 +158,4 @@ function criarContexto() {
 })();
 
 console.log('🎉 Todos os testes de Inteligência de Preço Histórico (Fase 4) passaram com 100% de sucesso!\n');
+

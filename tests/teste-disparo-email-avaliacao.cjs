@@ -183,3 +183,4 @@ function montarAmbienteEmail(tabelasIniciais, usuarioLogado) {
 })();
 
 console.log('🎉 Todos os testes de Disparo de E-mail de Avaliação passaram com 100% de sucesso!\n');
+
