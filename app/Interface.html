@@ -511,7 +511,13 @@ table.mapa .desc{
 table.mapa thead .desc{z-index:3;background:var(--noturno)}
 table.mapa tr.grupo td{background:var(--superficie2);font-weight:600;color:var(--noturno)}
 table.mapa tr.grupo .desc{background:var(--superficie2)}
-table.mapa td.preco{text-align:right;font-variant-numeric:tabular-nums}
+/* Centralizado, e não à direita.
+   O nome do fornecedor no cabeçalho já é centralizado, e o selo da marca
+   também — só o preço ficava encostado à direita, então os três nunca se
+   encontravam na mesma coluna. Alinhar dinheiro à direita serve para
+   comparar valores UM EMBAIXO DO OUTRO; aqui a coluna é um fornecedor só
+   e a comparação é horizontal, entre colunas. */
+table.mapa td.preco{text-align:center;font-variant-numeric:tabular-nums}
 table.mapa td.preco.menor{color:var(--ok);font-weight:700}
 table.mapa td.preco.vazio{color:var(--linha)}
 table.mapa td.preco.nao{color:var(--suave);font-size:12.5px;font-style:italic}
