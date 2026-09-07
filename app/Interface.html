@@ -517,7 +517,9 @@ table.mapa tr.grupo .desc{background:var(--superficie2)}
    encontravam na mesma coluna. Alinhar dinheiro à direita serve para
    comparar valores UM EMBAIXO DO OUTRO; aqui a coluna é um fornecedor só
    e a comparação é horizontal, entre colunas. */
-table.mapa td.preco{text-align:center;font-variant-numeric:tabular-nums}
+table.mapa td.preco{text-align:center;vertical-align:middle;font-variant-numeric:tabular-nums}
+table.mapa td.preco .preco-valor{display:block;text-align:center;margin:0 auto}
+table.mapa td.preco .marca-mapa{display:inline-flex;margin:4px auto 0;text-align:center}
 table.mapa td.preco.menor{color:var(--ok);font-weight:700}
 table.mapa td.preco.vazio{color:var(--linha)}
 table.mapa td.preco.nao{color:var(--suave);font-size:12.5px;font-style:italic}
@@ -912,9 +914,11 @@ table.grade thead th{
    perdia o alinhamento justamente onde havia mais o que comparar.
    Em bloco ele desce para a própria linha, centralizado sob o preço. */
 .marca-mapa{
-  font-size:11px;margin:3px auto 0;padding:2px 6px;border-radius:4px;display:block;
+  font-size:11px;margin:4px auto 0;padding:2px 8px;border-radius:4px;
+  display:inline-flex;align-items:center;justify-content:center;
   width:fit-content;max-width:130px;
   font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  text-align:center;line-height:1.3;
 }
 .tag-marca-neutra{background:rgba(21,30,73,.05);color:var(--suave)}
 .tag-marca-alerta{background:#FEF3C7;color:#92400E;font-weight:600;border:1px solid #FDE68A}
@@ -5187,7 +5191,7 @@ function desenharMapa(m) {
       }
       return '<td class="preco' + (eMenor ? ' menor' : '') + '"' +
              (eMenor ? ' aria-label="menor preço da linha: ' + moeda(c.valor) + '"' : '') +
-             '>' + (eMenor ? '✓ ' : '') + moeda(c.valor) + tagMarca + tagDelta + '</td>';
+             '><span class="preco-valor">' + (eMenor ? '✓ ' : '') + moeda(c.valor) + '</span>' + tagMarca + tagDelta + '</td>';
     }).join('');
 
     var refMarcaHtml = l.marcaReferencia
