@@ -2820,3 +2820,127 @@ try {
   console.log(`✗ FALHA na Correção 39: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 40 — a logo deixa de depender de um ID escrito no código
+//
+//  A logo da Demercado funcionava e a da Capital Realty não, com o mesmo
+//  código e a mesma conta: a diferença era o arquivo. Um identificador
+//  de arquivo escrito no código só funciona enquanto ninguém mover,
+//  trocar ou recriar o arquivo — e quando para, consertar exige editar
+//  código e republicar, o que ninguém da operação faz.
+//
+//  Agora são quatro fontes, da mais fácil de consertar para a mais
+//  difícil. O que este teste protege é a ORDEM: se o ID do código
+//  vencesse a pasta do projeto, soltar a imagem certa na pasta não
+//  resolveria nada.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxL = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  ctxL.SpreadsheetApp = { BorderStyle: {} };
+  ctxL.UrlFetchApp = { fetch: () => ({ getResponseCode: () => 404 }) };
+  ctxL.Utilities = { formatDate: () => '', getUuid: () => 'x' };
+  ctxL.ScriptApp = { getOAuthToken: () => 't' };
+  ctxL.DriveApp = {};
+
+  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxL, { filename: f });
+  });
+
+  const imagem = function (nome) {
+    return { getBlob: () => ({ tag: nome }), getMimeType: () => 'image/png',
+             getName: () => nome, getSize: () => 4200 };
+  };
+
+  const montar = function (opcoes) {
+    ctxL.cfLerTudo_ = (n) => (n === 'Config' ? (opcoes.config || []) : []);
+    ctxL.DriveApp = {
+      getFileById: function (id) {
+        if (opcoes.porId && opcoes.porId[id]) return imagem(opcoes.porId[id]);
+        throw new Error('File not found: ' + id);
+      },
+      getFolderById: function () {
+        const lista = (opcoes.pasta || []).slice();
+        let i = 0;
+        return { getFiles: function () {
+          return { hasNext: () => i < lista.length, next: () => imagem(lista[i++]) };
+        } };
+      }
+    };
+  };
+
+  const idCodigo = vm.runInContext('CF_LOGO_DRIVE', ctxL).capitalRealty;
+
+  // ── 1. Config vence tudo: é o ponto que a operação controla sem código.
+  montar({
+    config: [{ CHAVE: 'LOGO_CAPITAL_REALTY', VALOR: 'ID-DA-CONFIG' }],
+    pasta: ['logo-capital-realty.png'],
+    porId: { 'ID-DA-CONFIG': 'daConfig.png', [idCodigo]: 'doCodigo.png' }
+  });
+  let r = ctxL.cfLogoBlob_('capitalRealty');
+  assert.ok(r, 'não achou a logo com todas as fontes disponíveis');
+  assert.ok(r.origem.indexOf('Config') >= 0, 'a aba Config tem que vencer, e veio de: ' + r.origem);
+
+  // A Config aceita a URL inteira do Drive, não só o ID: é o que a pessoa
+  // tem na mão depois de clicar em "copiar link".
+  montar({
+    config: [{ CHAVE: 'LOGO_CAPITAL_REALTY',
+               VALOR: 'https://drive.google.com/file/d/ID-DA-URL/view?usp=sharing' }],
+    porId: { 'ID-DA-URL': 'daUrl.png' }
+  });
+  r = ctxL.cfLogoBlob_('capitalRealty');
+  assert.ok(r && r.origem.indexOf('Config') >= 0,
+    'a Config tem que aceitar a URL de compartilhamento, não só o ID');
+
+  // ── 2. Sem Config, a pasta do projeto — e ela vence o ID do código,
+  //      senão soltar a imagem lá não resolveria nada.
+  montar({
+    pasta: ['outro-arquivo.png', 'logo-capital-realty.png'],
+    porId: { [idCodigo]: 'doCodigo.png' }
+  });
+  r = ctxL.cfLogoBlob_('capitalRealty');
+  assert.ok(r.origem.indexOf('pasta') >= 0,
+    'a pasta do projeto tem que vencer o ID do código, e veio de: ' + r.origem);
+
+  // Arquivo de outra empresa na mesma pasta não pode ser confundido.
+  montar({ pasta: ['logo-demercado.png'] });
+  r = ctxL.cfLogoBlob_('capitalRealty');
+  assert.equal(r, null, 'pegou a logo da outra empresa que estava na mesma pasta');
+
+  // ── 3. Sem Config e sem pasta, o ID do código ainda funciona.
+  montar({ porId: { [idCodigo]: 'doCodigo.png' } });
+  r = ctxL.cfLogoBlob_('capitalRealty');
+  assert.ok(r && r.origem.indexOf('código') >= 0, 'o ID do código deixou de funcionar');
+
+  // ── 4. Nada em lugar nenhum: null, e não um blob quebrado.
+  montar({});
+  assert.equal(ctxL.cfLogoBlob_('capitalRealty'), null,
+    'sem nenhuma fonte, a busca tem que devolver null');
+
+  // ── Arquivo que não é imagem não serve, venha de onde vier.
+  //
+  //  insertImage precisa de PNG ou JPG. Um Slides ou PDF chamado
+  //  "logo-capital-realty" passaria pelo nome e falharia na inserção,
+  //  onde o erro fica muito mais longe da causa.
+  ctxL.cfLerTudo_ = () => [];
+  ctxL.DriveApp = {
+    getFileById: () => ({ getMimeType: () => 'application/pdf',
+                          getName: () => 'logo.pdf', getSize: () => 900,
+                          getBlob: () => ({}) }),
+    getFolderById: () => ({ getFiles: () => ({ hasNext: () => false }) })
+  };
+  assert.equal(ctxL.cfLogoBlob_('capitalRealty'), null,
+    'um PDF chamado de logo foi aceito como imagem');
+
+  // ── As duas empresas continuam com arquivos distintos em cada fonte.
+  const arquivos = vm.runInContext('CF_LOGO_ARQUIVO', ctxL);
+  const chaves = vm.runInContext('CF_LOGO_CONFIG', ctxL);
+  assert.notEqual(arquivos.demercado, arquivos.capitalRealty);
+  assert.notEqual(chaves.demercado, chaves.capitalRealty);
+
+  console.log('✓ CORREÇÃO VERIFICADA: logo vem de Config, pasta, código ou URL — nessa ordem');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 40: ${e.message}`);
+  process.exitCode = 1;
+}

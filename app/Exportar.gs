@@ -655,11 +655,116 @@ function cfDataHoraTexto_(d) {
   return Utilities.formatDate(d, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
 }
 
-/** Qual arquivo do Drive é a logo de cada empresa. */
+/**
+ * Onde procurar a logo de cada empresa.
+ *
+ * O ID abaixo é o último recurso, não o primeiro. Um identificador de
+ * arquivo escrito no código só funciona enquanto ninguém mover, trocar
+ * ou recriar o arquivo — e quando ele para de funcionar, corrigir exige
+ * editar código e republicar, o que ninguém da operação faz.
+ *
+ * Por isso a busca tem quatro etapas, da mais fácil de consertar para a
+ * mais difícil: a aba Config, um arquivo com nome conhecido na pasta do
+ * projeto, o ID daqui, e por fim a URL pública.
+ */
 const CF_LOGO_DRIVE = {
   demercado:     '168kVyD9dXiZctYNl27f_-Ic9S1W3wm-T',
   capitalRealty: '1XqFtIobiEq7VC2H41sKnFNUuOluw_J4V'
 };
+
+/** Nome do arquivo procurado na pasta do projeto, por empresa. */
+const CF_LOGO_ARQUIVO = {
+  demercado:     'logo-demercado',
+  capitalRealty: 'logo-capital-realty'
+};
+
+/** Chave na aba Config, por empresa. */
+const CF_LOGO_CONFIG = {
+  demercado:     'LOGO_DEMERCADO',
+  capitalRealty: 'LOGO_CAPITAL_REALTY'
+};
+
+/**
+ * A imagem da logo, de onde quer que ela venha.
+ *
+ * Devolve { blob, origem } ou null. A origem interessa: quando a logo
+ * some, saber de qual das quatro fontes ela vinha é metade do conserto.
+ */
+function cfLogoBlob_(chave) {
+  const tentativas = [];
+
+  const doId = function (id, origem) {
+    if (!id) return null;
+    try {
+      const arq = DriveApp.getFileById(String(id).trim());
+      const tipo = arq.getMimeType();
+      if (tipo.indexOf('image/') !== 0) {
+        tentativas.push(origem + ': o arquivo é ' + tipo + ', não uma imagem');
+        return null;
+      }
+      return { blob: arq.getBlob(), origem: origem + ' (' + arq.getName() + ')' };
+    } catch (e) {
+      tentativas.push(origem + ': ' + e);
+      return null;
+    }
+  };
+
+  // 1. Aba Config — o jeito de corrigir sem tocar em código.
+  try {
+    const alvo = CF_LOGO_CONFIG[chave];
+    const linha = cfLerTudo_('Config').filter(function (c) {
+      return String(c.CHAVE || '').trim().toUpperCase() === alvo;
+    })[0];
+    if (linha && linha.VALOR) {
+      // Aceita a URL inteira do Drive ou só o ID.
+      const bruto = String(linha.VALOR).trim();
+      const m = bruto.match(/\/d\/([A-Za-z0-9_-]+)/);
+      const r = doId(m ? m[1] : bruto, 'aba Config');
+      if (r) return r;
+    }
+  } catch (e) {
+    tentativas.push('aba Config: ' + e);
+  }
+
+  // 2. Arquivo com nome conhecido na pasta do projeto — basta soltar a
+  //    imagem lá, sem ID nenhum para copiar.
+  try {
+    const pasta = DriveApp.getFolderById(CF_PASTA_ID);
+    const prefixo = cfNormalizar_(CF_LOGO_ARQUIVO[chave]);
+    const arquivos = pasta.getFiles();
+    while (arquivos.hasNext()) {
+      const arq = arquivos.next();
+      if (cfNormalizar_(arq.getName()).indexOf(prefixo) !== 0) continue;
+      if (arq.getMimeType().indexOf('image/') !== 0) continue;
+      return { blob: arq.getBlob(), origem: 'pasta do projeto (' + arq.getName() + ')' };
+    }
+    tentativas.push('pasta do projeto: nenhum arquivo de imagem começando com "' +
+                    CF_LOGO_ARQUIVO[chave] + '"');
+  } catch (e) {
+    tentativas.push('pasta do projeto: ' + e);
+  }
+
+  // 3. O ID escrito no código.
+  const doCodigo = doId(CF_LOGO_DRIVE[chave], 'ID no código');
+  if (doCodigo) return doCodigo;
+
+  // 4. A URL pública, para o caso de o arquivo estar compartilhado mas
+  //    fora do alcance do DriveApp desta conta.
+  try {
+    const resp = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + CF_LOGO_DRIVE[chave],
+                                   { muteHttpExceptions: true });
+    if (resp.getResponseCode() === 200) {
+      return { blob: resp.getBlob(), origem: 'URL pública' };
+    }
+    tentativas.push('URL pública: HTTP ' + resp.getResponseCode());
+  } catch (e) {
+    tentativas.push('URL pública: ' + e);
+  }
+
+  Logger.log('Logo "' + chave + '" não encontrada. Tentativas:');
+  tentativas.forEach(function (t) { Logger.log('   · ' + t); });
+  return null;
+}
 
 /**
  * Insere a logo da empresa contratante na planilha, centralizada.
@@ -675,25 +780,15 @@ const CF_LOGO_DRIVE = {
  */
 function cfInserirLogoEmpresa_(aba, col, lin, larguraCol, alturaLin, ehDemercado) {
   const empresa = ehDemercado ? 'Demercado' : 'Capital Realty';
+  const chave = ehDemercado ? 'demercado' : 'capitalRealty';
   try {
-    const idLogo = ehDemercado ? CF_LOGO_DRIVE.demercado : CF_LOGO_DRIVE.capitalRealty;
-    let blob = null;
-    try {
-      blob = DriveApp.getFileById(idLogo).getBlob();
-    } catch (eDrive) {
-      Logger.log('Logo ' + empresa + ': Drive recusou o arquivo ' + idLogo + ' — ' + eDrive);
-      try {
-        const resp = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + idLogo,
-                                       { muteHttpExceptions: true });
-        if (resp.getResponseCode() === 200) blob = resp.getBlob();
-        else Logger.log('Logo ' + empresa + ': a URL pública devolveu HTTP ' + resp.getResponseCode());
-      } catch (eFetch) {
-        Logger.log('Logo ' + empresa + ': a URL pública também falhou — ' + eFetch);
-      }
-    }
+    const achada = cfLogoBlob_(chave);
+    const blob = achada ? achada.blob : null;
     if (!blob) {
-      Logger.log('Logo ' + empresa + ' não inserida: nenhuma das duas vias devolveu a imagem. ' +
-                 'Rode diagnosticarLogos() para ver o motivo exato.');
+      Logger.log('Logo ' + empresa + ' não inserida — o documento sai com o nome em texto. ' +
+                 'Rode diagnosticarLogos() para ver o motivo de cada fonte.');
+    } else {
+      Logger.log('Logo ' + empresa + ': ' + achada.origem);
     }
     if (blob && aba && aba.insertImage) {
       let colW = larguraCol || 330;
@@ -728,65 +823,99 @@ function cfInserirLogoEmpresa_(aba, col, lin, larguraCol, alturaLin, ehDemercado
 }
 
 /**
- * Por que a logo não apareceu.
+ * Por que a logo não apareceu, fonte por fonte.
  *
  * A inserção é tolerante a falha de propósito — logo ausente não pode
  * derrubar uma exportação. O preço disso é que ela some sem explicação,
  * e o documento sai com o nome da empresa em texto como se fosse o
- * desenho. Esta função paga a diferença: diz qual arquivo, qual via e
- * qual erro.
+ * desenho. Esta função paga a diferença.
  *
  * Rode: diagnosticarLogos   (neste arquivo, Exportar.gs)
  */
 function diagnosticarLogos() {
   Logger.log('═══ Logos das empresas contratantes ═══');
   Logger.log('');
+  Logger.log('A busca tem quatro etapas, da mais fácil de consertar para a mais');
+  Logger.log('difícil. A primeira que devolver uma imagem vence.');
+  Logger.log('');
 
-  Object.keys(CF_LOGO_DRIVE).forEach(function (chave) {
+  [['demercado', 'Demercado'], ['capitalRealty', 'Capital Realty']].forEach(function (par) {
+    const chave = par[0], nome = par[1];
+    Logger.log('──────── ' + nome + ' ────────');
+
+    // 1. Config
+    let valorConfig = '';
+    try {
+      const linha = cfLerTudo_('Config').filter(function (c) {
+        return String(c.CHAVE || '').trim().toUpperCase() === CF_LOGO_CONFIG[chave];
+      })[0];
+      valorConfig = linha ? String(linha.VALOR || '').trim() : '';
+    } catch (e) {}
+    Logger.log('1. Aba Config, chave ' + CF_LOGO_CONFIG[chave] + ': ' +
+               (valorConfig ? valorConfig : '(vazia)'));
+
+    // 2. Pasta do projeto
+    try {
+      const pasta = DriveApp.getFolderById(CF_PASTA_ID);
+      const prefixo = cfNormalizar_(CF_LOGO_ARQUIVO[chave]);
+      let achou = '';
+      const arquivos = pasta.getFiles();
+      while (arquivos.hasNext() && !achou) {
+        const arq = arquivos.next();
+        if (cfNormalizar_(arq.getName()).indexOf(prefixo) === 0) {
+          achou = arq.getName() + ' · ' + arq.getMimeType();
+        }
+      }
+      Logger.log('2. Pasta do projeto, arquivo "' + CF_LOGO_ARQUIVO[chave] + '.*": ' +
+                 (achou || '(não encontrado)'));
+    } catch (e) {
+      Logger.log('2. Pasta do projeto: erro — ' + e);
+    }
+
+    // 3. ID no código
     const id = CF_LOGO_DRIVE[chave];
-    Logger.log('── ' + (chave === 'demercado' ? 'Demercado' : 'Capital Realty') + ' ──');
-    Logger.log('   arquivo: ' + id);
-
-    let ok = false;
     try {
       const f = DriveApp.getFileById(id);
       const tipo = f.getMimeType();
-      const tam = f.getSize();
-      Logger.log('   nome:  ' + f.getName());
-      Logger.log('   tipo:  ' + tipo);
-      Logger.log('   bytes: ' + tam);
-
+      Logger.log('3. ID no código (' + id + '): ' + f.getName() + ' · ' + tipo +
+                 ' · ' + f.getSize() + ' bytes');
       if (tipo.indexOf('image/') !== 0) {
         Logger.log('   PROBLEMA: não é imagem. insertImage precisa de PNG ou JPG —');
-        Logger.log('             Slides, Docs e PDF não servem. Exporte como PNG e troque o ID.');
-      } else if (!tam) {
-        Logger.log('   PROBLEMA: arquivo vazio.');
-      } else {
-        f.getBlob();
-        Logger.log('   OK: imagem legível pelo script.');
-        ok = true;
+        Logger.log('             Slides, Docs e PDF não servem.');
       }
     } catch (e) {
-      Logger.log('   PROBLEMA no Drive: ' + e);
-      Logger.log('   Em geral é permissão: a conta que roda o script precisa ter acesso');
-      Logger.log('   ao arquivo. Compartilhe com ela, ou mova a logo para a pasta do projeto.');
+      Logger.log('3. ID no código (' + id + '): INACESSÍVEL — ' + e);
+      Logger.log('   Em geral é o arquivo não existir, ou a conta que roda o');
+      Logger.log('   script não ter acesso a ele.');
     }
 
-    if (!ok) {
-      try {
-        const r = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + id,
-                                    { muteHttpExceptions: true });
-        Logger.log('   via URL pública: HTTP ' + r.getResponseCode() +
-                   (r.getResponseCode() === 200 ? ' — funcionaria por aqui' : ' — não é público'));
-      } catch (e2) {
-        Logger.log('   via URL pública: falhou — ' + e2);
-      }
+    // 4. URL pública
+    try {
+      const r = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + id,
+                                  { muteHttpExceptions: true });
+      Logger.log('4. URL pública: HTTP ' + r.getResponseCode() +
+                 (r.getResponseCode() === 200 ? ' — funcionaria' : ' — não é público'));
+    } catch (e) {
+      Logger.log('4. URL pública: falhou — ' + e);
     }
+
+    // Veredito
+    const achada = cfLogoBlob_(chave);
+    Logger.log('');
+    Logger.log('   ➜ ' + (achada ? 'OK, vem de: ' + achada.origem
+                                 : 'NENHUMA FONTE FUNCIONOU — o documento sai com o nome em texto.'));
     Logger.log('');
   });
 
-  Logger.log('Para trocar um arquivo: edite CF_LOGO_DRIVE no topo desta seção,');
-  Logger.log('em Exportar.gs. O ID é o trecho entre /d/ e /view na URL do Drive.');
+  Logger.log('Para resolver, o caminho mais curto:');
+  Logger.log('  Suba a imagem (PNG ou JPG) na pasta do projeto com o nome');
+  Logger.log('  "logo-capital-realty.png" ou "logo-demercado.png". Não precisa');
+  Logger.log('  de ID, nem de editar código, nem de republicar.');
+  Logger.log('');
+  Logger.log('  Pasta: https://drive.google.com/drive/folders/' + CF_PASTA_ID);
+  Logger.log('');
+  Logger.log('  Alternativa: cole o ID ou a URL do arquivo na aba Config, na');
+  Logger.log('  chave LOGO_CAPITAL_REALTY ou LOGO_DEMERCADO.');
 }
 
 /** Compatibilidade retroativa para chamadas diretas de logo Demercado */
