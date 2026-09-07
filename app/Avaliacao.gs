@@ -334,3 +334,105 @@ function cfAvaliacoesPendentes_() {
     })
     .sort(function (a, b) { return String(a.data).localeCompare(String(b.data)); });
 }
+
+/**
+ * Disparo ativo de e-mail ao homologar a contratação.
+ *
+ * É o mecanismo de adesão prometido: avisa a pessoa responsável no
+ * momento da homologação, com link direto que abre a avaliação pronta
+ * para preenchimento em celular ou desktop (<60s).
+ *
+ * @param {string} idEq          ID da equalização homologada
+ * @param {Object} escolhida     Proposta vencedora
+ * @param {Object} eq            Registro da equalização
+ * @param {string} [emailManual] Opcional: e-mail de teste ou sobrescrita
+ */
+function cfDispararNotificacaoAvaliacao_(idEq, escolhida, eq, emailManual) {
+  if (typeof MailApp === 'undefined') {
+    Logger.log('MailApp não disponível neste ambiente.');
+    return { ok: false, motivo: 'MailApp_indisponivel' };
+  }
+
+  let destinatario = emailManual;
+  if (!destinatario) {
+    try {
+      const cfg = cfLerTudo_('Config');
+      const linhaEmail = cfg.filter(function (c) {
+        const k = String(c.CHAVE || '').toUpperCase().trim();
+        return k === 'EMAIL_AVALIACOES' || k === 'EMAIL_FISCAL_FACILITIES';
+      })[0];
+      if (linhaEmail && linhaEmail.VALOR) {
+        destinatario = String(linhaEmail.VALOR).trim();
+      }
+    } catch (eCfg) {}
+  }
+
+  if (!destinatario) {
+    try {
+      if (typeof Session !== 'undefined' && Session.getActiveUser) {
+        destinatario = Session.getActiveUser().getEmail();
+      }
+    } catch (eSes) {}
+  }
+
+  if (!destinatario || destinatario.indexOf('@') < 0) {
+    Logger.log('Nenhum destinatário de e-mail encontrado para avaliação da EQU ' + idEq);
+    return { ok: false, motivo: 'sem_destinatario' };
+  }
+
+  const cnpj = cfSoDigitos_(escolhida.CNPJ || eq.CNPJ_VENCEDOR || '');
+  const fornNome = escolhida.RAZAO_SOCIAL_INFORMADA || cfFormatarCnpj_(cnpj);
+  const projeto = eq.PROJETO || idEq;
+  const empreendimento = eq.ID_EMPREENDIMENTO || '';
+  const valorTexto = cfMoedaTexto_(eq.VALOR_FINAL || escolhida.VALOR_TOTAL_DECLARADO || 0);
+
+  const urlBase = (typeof cfUrlPublicada_ === 'function') ? cfUrlPublicada_() : '';
+  const linkAval = urlBase
+    ? (urlBase + (urlBase.indexOf('?') >= 0 ? '&' : '?') + 'page=avaliacao&eq=' + encodeURIComponent(idEq) + '&cnpj=' + encodeURIComponent(cnpj))
+    : '';
+
+  const assunto = '★ Avaliação de Fornecedor: ' + fornNome + ' (' + projeto + ')';
+
+  const corpoHtml = [
+    '<div style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:24px;border:1px solid #E2E8F0;border-radius:12px;background:#FFFFFF">',
+    '  <div style="border-bottom:2px solid #065CA9;padding-bottom:12px;margin-bottom:16px">',
+    '    <h2 style="margin:0;font-size:18px;color:#0F172A">Capital Fornecedores · Avaliação Pós-Serviço</h2>',
+    '  </div>',
+    '  <p style="font-size:14px;color:#334155;line-height:1.5">',
+    '    A equalização <b>' + cfEscapeHtml_(projeto) + '</b> (' + cfEscapeHtml_(empreendimento) + ') foi homologada.',
+    '  </p>',
+    '  <div style="background:#F8FAFC;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #065CA9">',
+    '    <div style="font-size:12px;color:#64748B;font-weight:600;text-transform:uppercase">Fornecedor Vencedor</div>',
+    '    <div style="font-size:16px;font-weight:700;color:#0F172A;margin-top:2px">' + cfEscapeHtml_(fornNome) + '</div>',
+    '    <div style="font-size:13px;color:#64748B;margin-top:4px">CNPJ: ' + cfFormatarCnpj_(cnpj) + ' · Valor Homologado: ' + valorTexto + '</div>',
+    '  </div>',
+    '  <p style="font-size:13.5px;color:#334155;line-height:1.5">',
+    '    Sua avaliação alimenta o <b>IQF (Índice de Qualificação de Fornecedores)</b> e orienta a decisão nas próximas cotações de todos os Megas.',
+    '  </p>',
+    linkAval ? [
+      '  <div style="text-align:center;margin:24px 0">',
+      '    <a href="' + linkAval + '" style="display:inline-block;padding:12px 28px;background:#065CA9;color:#FFFFFF;text-decoration:none;font-weight:700;font-size:14px;border-radius:8px">',
+      '      ★ Avaliar Prestador de Serviço (1 minuto)',
+      '    </a>',
+      '  </div>',
+      '  <p style="font-size:11px;color:#94A3B8;text-align:center">Link direto: <a href="' + linkAval + '" style="color:#065CA9">' + linkAval + '</a></p>'
+    ].join('\n') : '',
+    '  <div style="margin-top:24px;padding-top:12px;border-top:1px solid #E2E8F0;font-size:11px;color:#94A3B8;text-align:center">',
+    '    Capital Realty & Demercado · Gestão de Suprimentos',
+    '  </div>',
+    '</div>'
+  ].join('\n');
+
+  try {
+    MailApp.sendEmail({
+      to: destinatario,
+      subject: assunto,
+      htmlBody: corpoHtml
+    });
+    Logger.log('E-mail de avaliação enviado para ' + destinatario + ' (EQU ' + idEq + ')');
+    return { ok: true, destinatario: destinatario, link: linkAval };
+  } catch (errEnvio) {
+    Logger.log('Erro ao enviar e-mail de avaliação: ' + errEnvio);
+    return { ok: false, erro: String(errEnvio) };
+  }
+}

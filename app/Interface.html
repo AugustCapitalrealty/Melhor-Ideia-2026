@@ -2208,6 +2208,22 @@ table.ficha-tab a:hover{text-decoration:underline}
 .iqf-col.vazio{color:rgba(255,255,255,.42);font-weight:500;font-style:italic}
 .iqf-col-prelim{margin-left:4px;font-weight:500;opacity:.75}
 
+/* ── ALERTA DE PREÇO HISTÓRICO NA DIGITAÇÃO (FASE 4) ── */
+.delta-historico{
+  display:inline-block;margin-top:3px;font-size:10.5px;font-weight:700;
+  padding:1px 6px;border-radius:4px;letter-spacing:.01em;white-space:nowrap;
+}
+.delta-historico.subiu{
+  background:#FEE2E2;color:#DC2626;border:1px solid rgba(220,38,38,.25);
+}
+.delta-historico.caiu{
+  background:#DCFCE7;color:#16A34A;border:1px solid rgba(22,163,74,.25);
+}
+.ref-historico-rotulo{
+  font-size:11px;color:var(--suave);margin-top:3px;display:block;
+}
+.ref-historico-rotulo b{color:var(--royal);font-weight:600}
+
 .modal-aval-fundo{
   position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
   padding:24px;background:rgba(15,23,42,.55);z-index:10000;overflow-y:auto;
@@ -2245,11 +2261,6 @@ table.ficha-tab a:hover{text-decoration:underline}
 
 /* O número sozinho não significa nada: cinco pessoas calibram "3" de
    cinco jeitos, e a média vira ruído. A palavra ancora a escala. */
-.criterio-peso{
-  display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;
-  color:var(--royal);background:var(--superficie2);padding:1px 6px;border-radius:999px;
-  vertical-align:middle;
-}
 .criterio-valor{font-size:11.5px;font-weight:600;color:var(--suave);height:14px}
 .criterio-valor.dado{color:#B45309}
 
@@ -2759,10 +2770,12 @@ table.ficha-tab a:hover{text-decoration:underline}
 var PAGINA = '<?= pagina ?>';
 var EQ_INICIAL = '<?= eq ?>';
 var EDITAR_INICIAL = '<?= editar ?>';
+var CNPJ_INICIAL = '<?= cnpj ?>';
 var URL_BASE = '<?= urlBase ?>';
 var EH_FICHA = PAGINA === 'ficha' && !!EQ_INICIAL;
 var idEmEdicao = null;
 var modoMarcasAtivo = false;
+var cacheRefPrecos = {};
 
 // ─────────────────────────────────────────────────────────────
 //  Predefinições de Grupos e Subgrupos (EAP Presets Engine)
@@ -3409,6 +3422,7 @@ function onInputDescItem(inputEl, i) {
     fecharAutocompleteItem();
     return;
   }
+  buscarReferenciaItem(i, termo, itens[i] ? itens[i].unidade : '');
   mostrarAutocompleteItem(inputEl, i, termo);
 }
 
@@ -3493,6 +3507,7 @@ function selecionarItemDoCatalogo(i, itemId) {
 
   desenharGrade();
   salvarRascunho();
+  buscarReferenciaItem(i, catItem.nome, catItem.unidade);
 
   setTimeout(function() {
     var linhas = document.querySelectorAll('#grade tbody tr');
@@ -3501,6 +3516,139 @@ function selecionarItemDoCatalogo(i, itemId) {
       if (qtd) { qtd.focus(); qtd.select(); }
     }
   }, 50);
+}
+
+// ── INTELIGÊNCIA DE PREÇO HISTÓRICO NA GRADE (FASE 4) ──
+
+var debounceBuscaRef = null;
+function buscarReferenciaItem(i, descricao, unidade) {
+  if (!descricao || String(descricao).trim().length < 3) return;
+  var descLimpa = String(descricao).trim();
+  var un = unidade || (itens[i] ? itens[i].unidade : '');
+
+  if (cacheRefPrecos[i] && cacheRefPrecos[i].termoBuscado === descLimpa) return;
+
+  if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+
+  clearTimeout(debounceBuscaRef);
+  debounceBuscaRef = setTimeout(function () {
+    google.script.run
+      .withSuccessHandler(function (res) {
+        if (res && res.ok && res.referencias) {
+          Object.keys(res.referencias).forEach(function (k) {
+            cacheRefPrecos[k] = res.referencias[k];
+            cacheRefPrecos[k].termoBuscado = descLimpa;
+          });
+          atualizarDicasDescricao();
+          atualizarAlertasPrecoHistorico();
+        }
+      })
+      .apiObterReferenciaPrecos([{ id: i, descricao: descLimpa, unidade: un }]);
+  }, 350);
+}
+
+function carregarReferenciasEmLote(listaItens) {
+  if (!listaItens || !listaItens.length) return;
+  var paraBuscar = [];
+  listaItens.forEach(function (it, idx) {
+    if (it.tipo === 'grupo' || !it.descricao || it.descricao.trim().length < 3) return;
+    paraBuscar.push({ id: idx, descricao: it.descricao.trim(), unidade: it.unidade || '' });
+  });
+  if (!paraBuscar.length) return;
+  if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+
+  google.script.run
+    .withSuccessHandler(function (res) {
+      if (res && res.ok && res.referencias) {
+        Object.keys(res.referencias).forEach(function (k) {
+          cacheRefPrecos[k] = res.referencias[k];
+        });
+        atualizarDicasDescricao();
+        atualizarAlertasPrecoHistorico();
+      }
+    })
+    .apiObterReferenciaPrecos(paraBuscar);
+}
+
+function atualizarDicasDescricao() {
+  itens.forEach(function (it, i) {
+    if (it.tipo === 'grupo') return;
+    var ref = cacheRefPrecos[i] || (it.descricao ? cacheRefPrecos[it.descricao] : null);
+    var elDica = document.getElementById('ref-dica-' + i);
+    if (!ref || !ref.ultimoPreco) {
+      if (elDica) elDica.remove();
+      return;
+    }
+    var txt = '★ Última: <b>' + moeda(ref.ultimoPreco) + '</b>' +
+      (ref.empreendimento ? ' <small style="opacity:.8">(' + esc(ref.empreendimento) + ')</small>' : '');
+    var dica = 'Última compra registrada: ' + moeda(ref.ultimoPreco) +
+      (ref.empreendimento ? ' (' + ref.empreendimento + ')' : '') +
+      (ref.dataUltima ? ' em ' + ref.dataUltima : '') +
+      (ref.fornecedorUltimo ? ' · Fornecedor: ' + ref.fornecedorUltimo : '');
+
+    var celula = document.querySelector('#grade tbody tr:nth-child(' + (i + 1) + ') td.col-desc');
+    if (!celula) return;
+    if (!elDica) {
+      elDica = document.createElement('div');
+      elDica.id = 'ref-dica-' + i;
+      elDica.className = 'ref-historico-rotulo';
+      elDica.title = dica;
+      elDica.innerHTML = txt;
+      celula.appendChild(elDica);
+    } else {
+      elDica.title = dica;
+      elDica.innerHTML = txt;
+    }
+  });
+}
+
+function atualizarAlertasPrecoHistorico() {
+  itens.forEach(function (it, i) {
+    if (it.tipo === 'grupo') return;
+    var ref = cacheRefPrecos[i] || (it.descricao ? cacheRefPrecos[it.descricao] : null);
+    var tdPrecos = document.querySelectorAll('#grade tbody tr:nth-child(' + (i + 1) + ') td.col-preco');
+
+    it.precos.forEach(function (p, j) {
+      var celula = tdPrecos[j];
+      if (!celula) return;
+      var elAlerta = celula.querySelector('.delta-historico');
+      var val = num(p);
+
+      if (!ref || !ref.ultimoPreco || val === null || val <= 0) {
+        if (elAlerta) elAlerta.remove();
+        return;
+      }
+
+      var delta = ((val - ref.ultimoPreco) / ref.ultimoPreco) * 100;
+      var precisaAlerta = delta >= 15 || delta <= -10;
+
+      if (!precisaAlerta) {
+        if (elAlerta) elAlerta.remove();
+        return;
+      }
+
+      var subiu = delta > 0;
+      var classe = subiu ? 'subiu' : 'caiu';
+      var sinal = subiu ? '▲ +' : '▼ ';
+      var txt = sinal + Math.abs(delta).toFixed(0) + '% vs últ. compra';
+      var dica = 'Última compra: ' + moeda(ref.ultimoPreco) +
+        (ref.empreendimento ? ' (' + ref.empreendimento + ')' : '') +
+        (ref.dataUltima ? ' em ' + ref.dataUltima : '') +
+        (ref.fornecedorUltimo ? ' · Fornecedor: ' + ref.fornecedorUltimo : '');
+
+      if (!elAlerta) {
+        elAlerta = document.createElement('div');
+        elAlerta.className = 'delta-historico ' + classe;
+        elAlerta.title = dica;
+        elAlerta.textContent = txt;
+        celula.appendChild(elAlerta);
+      } else {
+        elAlerta.className = 'delta-historico ' + classe;
+        elAlerta.title = dica;
+        elAlerta.textContent = txt;
+      }
+    });
+  });
 }
 
 function promoverItemParaCatalogo(i, nome) {
@@ -6410,6 +6558,20 @@ function desenharGrade() {
               '</div>'
             : '';
 
+          var ref = cacheRefPrecos[i] || (it.descricao ? cacheRefPrecos[it.descricao] : null);
+          var subAlerta = '';
+          if (ref && ref.ultimoPreco) {
+            var precoVal = num(it.precos[j]);
+            if (precoVal !== null && precoVal > 0) {
+              var delta = ((precoVal - ref.ultimoPreco) / ref.ultimoPreco) * 100;
+              if (delta >= 15) {
+                subAlerta = '<div class="delta-historico subiu" title="Última compra: ' + moeda(ref.ultimoPreco) + (ref.empreendimento ? ' (' + esc(ref.empreendimento) + ')' : '') + '">▲ +' + delta.toFixed(0) + '% vs últ. compra</div>';
+              } else if (delta <= -10) {
+                subAlerta = '<div class="delta-historico caiu" title="Última compra: ' + moeda(ref.ultimoPreco) + (ref.empreendimento ? ' (' + esc(ref.empreendimento) + ')' : '') + '">▼ ' + delta.toFixed(0) + '% vs últ. compra</div>';
+              }
+            }
+          }
+
           return '<td class="col-preco"><span class="moeda-campo">' +
                  '<i>R$</i>' +
                  '<input class="preco" inputmode="decimal" value="' + esc(it.precos[j]) + '"' +
@@ -6420,7 +6582,7 @@ function desenharGrade() {
                  ' onblur="normalizarCampo(this,' + i + ',' + j + ')"' +
                  ' onkeydown="navegarGrade(event,this)"' +
                  ' onpaste="colarColuna(event,this)">' +
-                 '</span>' + subMarca + '</td>';
+                 '</span>' + subMarca + subAlerta + '</td>';
         }).join('');
 
     // A hierarquia se controla recuando a linha, não escolhendo um número.
@@ -6474,14 +6636,20 @@ function desenharGrade() {
         ' onkeydown="onKeydownDescItem(event,this,' + i + ')">';
     }
 
+    var ref = cacheRefPrecos[i] || (it.descricao ? cacheRefPrecos[it.descricao] : null);
+    var subDica = (ref && ref.ultimoPreco && it.tipo !== 'grupo')
+      ? '<div id="ref-dica-' + i + '" class="ref-historico-rotulo" title="Última compra registrada: ' + moeda(ref.ultimoPreco) + (ref.empreendimento ? ' (' + esc(ref.empreendimento) + ')' : '') + (ref.dataUltima ? ' em ' + esc(ref.dataUltima) : '') + '">' +
+        '★ Última: <b>' + moeda(ref.ultimoPreco) + '</b>' + (ref.empreendimento ? ' <small style="opacity:.8">(' + esc(ref.empreendimento) + ')</small>' : '') +
+        '</div>'
+      : '';
+
     return '<tr class="' + (it.tipo === 'grupo' ? 'eh-grupo' : '') + '">' +
-      // Derivado, então mostrado e não editável: um campo que se pode
-      // digitar convida a divergir da hierarquia que o gera.
       '<td class="col-cod"><span class="cod-auto">' + esc(it.codigo || '') + '</span></td>' +
       '<td class="col-desc">' +
         '<div class="cel-desc" style="' + recuo + '">' +
           '<span class="degraus">' + controles + '</span>' +
           celulaDesc +
+          subDica +
         '</div>' +
       '</td>' +
       '<td class="col-qtd"><input value="' + esc(it.quantidade) + '" inputmode="decimal" placeholder="1"' +
@@ -6577,6 +6745,7 @@ function calcular() {
   });
 
   marcarMenoresDaLinha();
+  atualizarAlertasPrecoHistorico();
 
   document.getElementById('totais').innerHTML = proponentes.map(function (p, j) {
     // A cesta incompleta aparece junto do total: o mais barato pode ser
@@ -6941,6 +7110,7 @@ function restaurarRascunho() {
   // O relógio do rascunho vale mais que um novo: o trabalho começou lá.
   if (e.inicioPreenchimento) inicioPreenchimento = e.inicioPreenchimento;
   mostrarEmpresa(); desenharProponentes(); desenharGrade();
+  carregarReferenciasEmLote(itens);
 
   var b = document.getElementById('barraRascunho');
   if (b) {
@@ -7247,6 +7417,7 @@ function carregarDadosParaEdicao(m) {
 
   desenharProponentes();
   desenharGrade();
+  carregarReferenciasEmLote(itens);
 
   // O rascunho desta equalização vem por cima do que o servidor mandou:
   // se existe, é alteração posterior à última gravação.
@@ -7677,30 +7848,23 @@ function seloIqfColuna(iqf) {
   if (!iqf || !iqf.avaliacoes) {
     return '<small class="iqf-col vazio" title="Nenhuma avaliação pós-serviço registrada">sem nota</small>';
   }
-  var faixa = iqf.classe === 'A' ? ' bom' : (iqf.classe === 'B' ? ' medio' : ' ruim');
-  return '<small class="iqf-col' + faixa + '" title="IQF ' + iqf.nota + ' de 100 · Classe ' +
-    iqf.classe + ' (' + iqf.classeRotulo + ') · ' + iqf.avaliacoes +
+  var faixa = (iqf.classe === 'A' || iqf.nota >= 80) ? ' bom' : ((iqf.classe === 'B' || iqf.nota >= 65) ? ' medio' : ' ruim');
+  var rotuloClasse = iqf.classe ? (' <span class="iqf-col-classe">Classe ' + iqf.classe + '</span>') : '';
+  return '<small class="iqf-col' + faixa + '" title="IQF: ' + (iqf.classe ? 'Classe ' + iqf.classe + (iqf.classeRotulo ? ' (' + iqf.classeRotulo + ')' : '') + ' · ' : '') + 'média de ' + iqf.avaliacoes +
     ' avaliação(ões) pós-serviço' + (iqf.preliminar ? ' — ainda preliminar' : '') + '">' +
-    'IQF ' + String(iqf.nota).replace('.', ',') + ' · ' + esc(iqf.classe) +
-    (iqf.preliminar ? '<span class="iqf-col-prelim">prelim.</span>' : '') + '</small>';
+    '★ ' + iqf.nota.toFixed(1).replace('.', ',') + rotuloClasse +
+    (iqf.preliminar ? ' <span class="iqf-col-prelim">prelim.</span>' : '') + '</small>';
 }
 
-/**
- * O selo de IQF, na escala 0-100 com classe.
- *
- * A classe vem antes do número de propósito: "Classe C" se discute
- * numa reunião, "72,4" não. O número fica do lado para quem quiser
- * conferir.
- */
 function seloIqf(iqf) {
   if (!iqf || !iqf.avaliacoes) {
     return '<span class="iqf-sem">sem avaliação ainda</span>';
   }
-  var faixa = iqf.classe === 'A' ? '' : (iqf.classe === 'B' ? ' medio' : ' baixo');
+  var faixa = iqf.nota >= 4 ? '' : (iqf.nota >= 3 ? ' medio' : ' baixo');
   return '<span class="iqf' + faixa + (iqf.preliminar ? ' preliminar' : '') + '"' +
-    ' title="IQF ' + iqf.nota + ' de 100 · Classe ' + iqf.classe + ' (' + iqf.classeRotulo + ')' +
+    ' title="Média das avaliações pós-serviço' +
     (iqf.preliminar ? ' — ainda preliminar, com poucas avaliações' : '') + '">' +
-    'IQF ' + String(iqf.nota).replace('.', ',') + ' · ' + esc(iqf.classe) +
+    '★ ' + iqf.nota.toFixed(1).replace('.', ',') +
     '<small>' + iqf.avaliacoes + (iqf.avaliacoes === 1 ? ' avaliação' : ' avaliações') +
     (iqf.preliminar ? ' · preliminar' : '') + '</small></span>';
 }
@@ -7784,21 +7948,12 @@ function desenharCriteriosAval() {
 
   // Se a fila não carregou, os critérios vêm daqui — o formulário não
   // pode ficar vazio por causa de uma chamada que falhou.
-  // A cópia de segurança dos critérios, para o formulário não ficar
-  // vazio se a chamada ao servidor falhar. Precisa ser a MESMA lista
-  // do Avaliacao.gs, com os mesmos pesos — divergir aqui seria gravar
-  // resposta a uma pergunta que o servidor não fez.
   var criterios = CRITERIOS_AVAL.length ? CRITERIOS_AVAL : [
-    { chave: 'qualidade', rotulo: 'Qualidade técnica e acabamento', peso: 30,
-      ajuda: 'A entrega atendeu ao escopo e ao padrão técnico do Mega?' },
-    { chave: 'prazo', rotulo: 'Pontualidade e cumprimento de SLA', peso: 25,
-      ajuda: 'Cumpriu o cronograma e os prazos acordados?' },
-    { chave: 'seguranca', rotulo: 'Segurança do trabalho e SST', peso: 20,
-      ajuda: 'Usou EPI, seguiu as normas e apresentou a documentação de segurança?' },
-    { chave: 'atendimento', rotulo: 'Atendimento, postura e comunicação', peso: 15,
-      ajuda: 'Respondeu, se relacionou bem com a equipe e resolveu pendências?' },
-    { chave: 'limpeza', rotulo: 'Limpeza e organização', peso: 10,
-      ajuda: 'Deixou a área limpa e organizada depois da execução?' }
+    { chave: 'qualidade', rotulo: 'Qualidade técnica e acabamento', ajuda: 'A entrega atendeu ao escopo e ao padrão técnico do Mega?' },
+    { chave: 'prazo', rotulo: 'Pontualidade e cumprimento de SLA', ajuda: 'Cumpriu o cronograma e os prazos acordados?' },
+    { chave: 'seguranca', rotulo: 'Segurança do trabalho e SST', ajuda: 'Usou EPI, seguiu as normas e apresentou a documentação de segurança?' },
+    { chave: 'atendimento', rotulo: 'Atendimento, postura e comunicação', ajuda: 'Respondeu, se relacionou bem com a equipe e resolveu pendências?' },
+    { chave: 'limpeza', rotulo: 'Limpeza e organização', ajuda: 'Deixou a área limpa e organizada depois da execução?' }
   ];
 
   el.innerHTML = criterios.map(function (c) {
@@ -7811,8 +7966,6 @@ function desenharCriteriosAval() {
     }
     return '<div class="criterio pendente" data-crit="' + esc(c.chave) + '">' +
       '<span class="criterio-rot">' + esc(c.rotulo) +
-      (c.peso ? '<span class="criterio-peso" title="Peso deste critério no IQF">' +
-                c.peso + '%</span>' : '') +
       '<small class="criterio-ajuda">' + esc(c.ajuda) + '</small></span>' +
       '<span class="criterio-dir">' +
         '<span class="estrelas" onmouseout="limparPrevia(\'' + esc(c.chave) + '\')">' + estrelas + '</span>' +
@@ -7882,7 +8035,7 @@ function atualizarProgressoAval() {
 function chavesCriteriosAval() {
   return CRITERIOS_AVAL.length
     ? CRITERIOS_AVAL.map(function (c) { return c.chave; })
-    : ['qualidade', 'prazo', 'seguranca', 'atendimento', 'limpeza'];
+    : ['prazo', 'qualidade', 'conformidade', 'atendimento', 'documentacao'];
 }
 
 function marcarRecontrataria(v) {
@@ -8162,17 +8315,10 @@ function desenharFichaFornecedor(f) {
       ' que contrataria de novo' +
       (f.iqf.ultima ? ' · última em ' + esc(f.iqf.ultima) : '') + '.</p>';
 
-    esq += '<p class="ficha-nota">Classe <b>' + esc(f.iqf.classe) + '</b> — ' +
-      esc(f.iqf.classeRotulo) + '.</p>';
-
-    // O rótulo do critério pelo nome que a pessoa respondeu, não pela
-    // chave interna: "Seguranca" não é como ninguém escreve.
     var porCriterio = f.iqf.criterios || {};
     var linhas = Object.keys(porCriterio).map(function (k) {
-      var def = CRITERIOS_AVAL.filter(function (c) { return c.chave === k; })[0];
-      var rot = def ? def.rotulo : (k.charAt(0).toUpperCase() + k.slice(1));
-      return '<dt>' + esc(rot) + (def && def.peso ? ' <small>' + def.peso + '%</small>' : '') + '</dt>' +
-             '<dd>' + porCriterio[k].toFixed(1).replace('.', ',') + ' <small>de 5</small></dd>';
+      return '<dt>' + esc(k.charAt(0).toUpperCase() + k.slice(1)) + '</dt>' +
+             '<dd>' + porCriterio[k].toFixed(1).replace('.', ',') + '</dd>';
     }).join('');
     if (linhas) esq += '<dl class="ficha-dl">' + linhas + '</dl>';
   }
@@ -8242,6 +8388,33 @@ document.addEventListener('keydown', function (ev) {
   if (ev.key === 'Escape' && !document.getElementById('gaveta').hidden) fecharFichaFornecedor();
 });
 
+function abrirAvaliacaoDireta(cnpj, idEq) {
+  aba('fornecedores');
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function (r) {
+        if (r && r.ok && r.pendentes && r.pendentes.length) {
+          var pend = r.pendentes.filter(function (p) {
+            return (!idEq || String(p.idEqualizacao) === String(idEq)) &&
+                   (!cnpj || String(p.cnpj) === String(cnpj));
+          })[0] || r.pendentes[0];
+
+          if (pend) {
+            abrirAvaliacao(pend.cnpj, pend.fornecedor, pend.idEqualizacao, pend.empreendimento, pend.numeroOc, pend.projeto);
+            return;
+          }
+        }
+        abrirAvaliacao(cnpj || '', 'Fornecedor ' + (cnpj ? cfFormatarCnpj_(cnpj) : ''), idEq || '', '', '', idEq || '');
+      })
+      .withFailureHandler(function () {
+        abrirAvaliacao(cnpj || '', 'Fornecedor', idEq || '', '', '', idEq || '');
+      })
+      .apiAvaliacoesPendentes();
+  } else {
+    abrirAvaliacao(cnpj || '', 'Fornecedor', idEq || '', '', '', idEq || '');
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 //  Inicialização direta por ?page=
 // ─────────────────────────────────────────────────────────────
@@ -8255,6 +8428,8 @@ if (PAGINA === 'nova') {
   if (EQ_INICIAL) {
     abrirMapa(EQ_INICIAL);
   }
+} else if (PAGINA === 'avaliacao') {
+  abrirAvaliacaoDireta(CNPJ_INICIAL, EQ_INICIAL);
 }
 </script>
 </body>

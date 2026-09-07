@@ -21,6 +21,7 @@ function doGet(e) {
   // sem navegação, pronta para ler ao lado do documento e para imprimir.
   t.eq = (e && e.parameter && e.parameter.eq) || '';
   t.editar = (e && e.parameter && e.parameter.editar) || '';
+  t.cnpj = (e && e.parameter && e.parameter.cnpj) || '';
   // A URL publicada, para a tela conseguir montar o link da ficha. O
   // servidor sabe qual é; o navegador dentro do iframe do Apps Script, não.
   t.urlBase = cfUrlPublicada_();
@@ -504,5 +505,26 @@ function cfUrlPublicada_() {
     return ScriptApp.getService().getUrl() || '';
   } catch (erro) {
     return '';
+  }
+}
+
+/**
+ * Consulta referências históricas de preço para itens da grade de cotação (Fase 4).
+ * @param {Array<{id: string|number, descricao: string, unidade?: string}>|Object} itens
+ */
+function apiObterReferenciaPrecos(itens) {
+  try {
+    if (!itens) return { ok: true, referencias: {} };
+    if (!Array.isArray(itens)) itens = [itens];
+    const referencias = {};
+    itens.forEach(function (it) {
+      if (!it || !it.descricao) return;
+      const chave = it.id !== undefined && it.id !== null ? String(it.id) : it.descricao;
+      const ref = cfBuscarReferenciaPrecoItem_(it.descricao, it.unidade);
+      if (ref) referencias[chave] = ref;
+    });
+    return { ok: true, referencias: referencias };
+  } catch (e) {
+    return { ok: false, erro: String(e && e.message ? e.message : e) };
   }
 }

@@ -1074,7 +1074,10 @@ function cfHomologar_(idEq, idProposta, parecer) {
 
     // Escolher a mais cara é decisão legítima — prazo, escopo, histórico do
     // fornecedor. Mas precisa estar escrita: é a defesa de quem comprou.
-    const comValor = propostas.filter(function (p) { return valorDe(p) !== null; });
+    const comValor = propostas.filter(function (p) {
+      const v = valorDe(p);
+      return v !== null && v > 0;
+    });
     const menor = comValor.reduce(function (a, p) {
       return (a === null || valorDe(p) < valorDe(a)) ? p : a;
     }, null);
@@ -1103,11 +1106,57 @@ function cfHomologar_(idEq, idProposta, parecer) {
       fornecedor: escolhida.RAZAO_SOCIAL_INFORMADA || cfSoDigitos_(escolhida.CNPJ),
       valor: valorDe(escolhida),
       eraMenor: eMaisBarata,
-      // Quantas cotações havia e quantas a faixa pedia. É o que responde
-      // "por que uma proposta só?" meses depois, sem depender de memória.
       cotacoes: cotacoesValidas,
       cotacoesMinimas: regraCotacao ? regraCotacao.minimo : null
     }));
+
+    // ── Frente 1: Registrar o comportamento de cotação na tabela Convites
+    try {
+      const convitesExistentes = cfLerTudo_('Convites').filter(function (c) {
+        return String(c.ID_EQUALIZACAO) === String(idEq);
+      });
+      const convitePorCnpj = {};
+      convitesExistentes.forEach(function (c) {
+        convitePorCnpj[cfSoDigitos_(c.CNPJ)] = c;
+      });
+
+      propostas.forEach(function (p) {
+        const cnpjP = cfSoDigitos_(p.CNPJ);
+        if (!cnpjP) return;
+        const v = valorDe(p);
+        const apresentou = v !== null && v > 0;
+        const jaExiste = convitePorCnpj[cnpjP];
+
+        const dadosConvite = {
+          ID_EQUALIZACAO: idEq,
+          CNPJ: cnpjP,
+          DATA_CONVITE: p.DATA_PROPOSTA || eq.DATA_EQUALIZACAO || new Date(),
+          CONFIRMOU: true,
+          VISITOU: false,
+          APRESENTOU_PROPOSTA: apresentou,
+          MOTIVO_RECUSA: apresentou ? '' : (p.OBSERVACOES || 'Não apresentou proposta cotada'),
+          OBSERVACAO: String(p.CONDICOES_PAGAMENTO || p.RODADA || '').trim()
+        };
+
+        if (jaExiste) {
+          cfAtualizarLinha_('Convites', jaExiste._linha, dadosConvite);
+        } else {
+          dadosConvite.ID = Utilities.getUuid();
+          cfInserir_('Convites', dadosConvite);
+        }
+      });
+    } catch (errConvites) {
+      Logger.log('Aviso ao registrar Convites na homologação: ' + errConvites);
+    }
+
+    // ── Disparo ativo de e-mail para avaliação pós-serviço (IQF)
+    try {
+      if (typeof cfDispararNotificacaoAvaliacao_ === 'function') {
+        cfDispararNotificacaoAvaliacao_(idEq, escolhida, eq);
+      }
+    } catch (errEmail) {
+      Logger.log('Aviso no disparo de e-mail de avaliação: ' + errEmail);
+    }
 
     return {
       id: idEq,

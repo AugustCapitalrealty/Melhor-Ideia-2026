@@ -247,3 +247,13 @@ function cfMegaSlug_(emp) {
   if (t.indexOf('itajai') >= 0) return 'itajai';
   return 'outro';
 }
+
+/** Escapa caracteres especiais para inserção segura em HTML de e-mail e relatórios. */
+function cfEscapeHtml_(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}

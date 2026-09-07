@@ -287,6 +287,75 @@ function cfPad_(texto, largura) {
                              : t + new Array(largura - t.length + 1).join('.');
 }
 
+/**
+ * Busca a referência histórica de preço de um item para o alerta em tempo real.
+ *
+ * Devolve:
+ *  - ultimoPreco: preço mais recente praticado (priorizando vencedor)
+ *  - dataUltima: data da última compra
+ *  - empreendimento: Mega da última compra
+ *  - megaSlug: slug ('curitiba', 'esteio', 'itajai')
+ *  - menorHistorico: menor preço registrado
+ *  - mediaHistorico: média histórica de preços
+ *  - unidade: unidade de medida da referência
+ *  - totalOcorrencias: quantas cotações já registraram o item
+ */
+function cfBuscarReferenciaPrecoItem_(descricao, unidade) {
+  if (!descricao || !String(descricao).trim()) return null;
+
+  const alvo = cfNormalizar_(descricao);
+  if (alvo.length < 3) return null;
+  const palavras = alvo.split(' ').filter(function (p) { return p.length > 2; });
+
+  const precos = cfCarregarPrecos_();
+  let achados = precos.filter(function (r) {
+    if (!r.chave) return false;
+    if (r.chave === alvo || r.chave.indexOf(alvo) >= 0) return true;
+    return palavras.length > 0 && palavras.every(function (p) { return r.chave.indexOf(p) >= 0; });
+  });
+
+  if (unidade && String(unidade).trim()) {
+    const unNorm = String(unidade).trim().toLowerCase();
+    const comMesmaUn = achados.filter(function (r) {
+      return String(r.unidade || '').trim().toLowerCase() === unNorm;
+    });
+    if (comMesmaUn.length > 0) achados = comMesmaUn;
+  }
+
+  if (achados.length === 0) return null;
+
+  const ordenados = achados.slice().sort(function (a, b) {
+    const da = a.data ? a.data.getTime() : 0;
+    const db = b.data ? b.data.getTime() : 0;
+    return db - da;
+  });
+
+  const vencedoras = ordenados.filter(function (r) { return r.vencedora === true; });
+  const refMaisRecente = vencedoras.length > 0 ? vencedoras[0] : ordenados[0];
+
+  const valores = achados.map(function (r) { return r.valor; }).filter(function (v) { return v !== null && v > 0; });
+  if (valores.length === 0) return null;
+
+  const menor = Math.min.apply(null, valores);
+  const soma = valores.reduce(function (acc, v) { return acc + v; }, 0);
+  const media = soma / valores.length;
+
+  return {
+    encontrado: true,
+    descricao: refMaisRecente.descricao,
+    ultimoPreco: refMaisRecente.valor,
+    dataUltima: cfDataTexto_(refMaisRecente.data),
+    empreendimento: refMaisRecente.empreendimento,
+    megaSlug: cfMegaSlug_(refMaisRecente.empreendimento),
+    fornecedorUltimo: refMaisRecente.fornecedor,
+    foiVencedora: !!refMaisRecente.vencedora,
+    menorHistorico: menor,
+    mediaHistorico: Number(media.toFixed(2)),
+    unidade: refMaisRecente.unidade || unidade || '',
+    totalOcorrencias: achados.length
+  };
+}
+
 // ─────────────────────────────────────────────────────────────
 //  Atalhos para o menu Executar
 // ─────────────────────────────────────────────────────────────
