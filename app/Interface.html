@@ -1362,6 +1362,433 @@ table.ficha-tab a:hover{text-decoration:underline}
   .gaveta{width:100vw}
   .ficha-dl{grid-template-columns:1fr;gap:2px 0}
   .ficha-dl dd{margin-bottom:8px}
+/* ── PREDEFINIÇÕES DE GRUPOS E SUBGRUPOS (EAP PRESETS) ── */
+.grade-acoes-barra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bt-preset {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1.5px solid #F59E0B;
+  color: #92400E;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .2s ease;
+  box-shadow: 0 1px 3px rgba(245, 158, 11, .15);
+}
+
+.bt-preset:hover {
+  background: #FDE68A;
+  border-color: #D97706;
+  color: #78350F;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, .28);
+  transform: translateY(-1px);
+}
+
+.modal-presets-fundo {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, .5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  animation: fadeInModal .2s ease;
+}
+
+.modal-presets-janela {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 92vw;
+  max-width: 980px;
+  height: 82vh;
+  max-height: 720px;
+  background: rgba(255, 255, 255, .97);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, .8);
+  box-shadow: 0 24px 60px -12px rgba(15, 23, 42, .3), 0 0 0 1px rgba(21, 30, 73, .08);
+  border-radius: 18px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: scaleUpModal .25s cubic-bezier(.16, 1, .3, 1);
+}
+
+@keyframes scaleUpModal {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-presets-topo {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--linha);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: linear-gradient(180deg, rgba(247, 249, 253, .95) 0%, rgba(255, 255, 255, .8) 100%);
+}
+
+.modal-presets-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--acao);
+  margin-bottom: 2px;
+}
+
+.modal-presets-topo h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--noturno);
+}
+
+.modal-presets-sub {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--suave);
+  line-height: 1.4;
+}
+
+.modal-presets-fechar {
+  background: none;
+  border: 0;
+  font-size: 26px;
+  color: var(--suave);
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 8px;
+  border-radius: 8px;
+  transition: all .15s;
+}
+
+.modal-presets-fechar:hover {
+  background: var(--superficie2);
+  color: var(--noturno);
+}
+
+.modal-presets-corpo {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 330px 1fr;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .modal-presets-corpo {
+    grid-template-columns: 1fr;
+  }
+  .presets-col-lista {
+    max-height: 220px;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--linha);
+  }
+}
+
+.presets-col-lista {
+  border-right: 1px solid var(--linha);
+  background: var(--superficie2);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.presets-filtros-cat {
+  padding: 12px 14px 6px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.pill-cat-preset {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid var(--linha);
+  background: #fff;
+  color: var(--suave);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+}
+
+.pill-cat-preset:hover {
+  border-color: var(--acao);
+  color: var(--acao);
+}
+
+.pill-cat-preset.ativo {
+  background: var(--noturno);
+  color: #fff;
+  border-color: var(--noturno);
+}
+
+.presets-lista-cards {
+  padding: 8px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.preset-card-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1.5px solid transparent;
+  box-shadow: 0 1px 2px rgba(21, 30, 73, .04);
+  cursor: pointer;
+  transition: all .15s ease;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+}
+
+.preset-card-item:hover {
+  border-color: rgba(6, 92, 169, .3);
+  background: #F8FAFC;
+}
+
+.preset-card-item.selecionado {
+  border-color: var(--acao);
+  background: #EFF6FF;
+  box-shadow: 0 2px 6px rgba(6, 92, 169, .12);
+}
+
+.preset-card-titulo {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--noturno);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.preset-card-desc {
+  font-size: 11.5px;
+  color: var(--suave);
+  line-height: 1.35;
+}
+
+.preset-card-meta {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge-preset-cat {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(21, 30, 73, .06);
+  color: var(--royal);
+}
+
+.badge-preset-itens {
+  font-size: 10.5px;
+  color: var(--suave);
+  font-weight: 500;
+}
+
+.presets-col-preview {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+}
+
+.preview-cabecalho {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--linha);
+  background: #FCFDFE;
+}
+
+.preview-cabecalho h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--noturno);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-cabecalho p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--suave);
+  line-height: 1.4;
+}
+
+.preview-barra-selecao {
+  padding: 9px 20px;
+  border-bottom: 1px solid var(--linha);
+  background: #F8FAFC;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.check-todos-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--noturno);
+  font-weight: 600;
+}
+
+.check-todos-label input {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.preview-contador {
+  font-weight: 700;
+  color: var(--acao);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.preview-arvore {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item-preview-linha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: background .1s ease;
+  user-select: none;
+}
+
+.item-preview-linha:hover {
+  background: #F1F5F9;
+}
+
+.item-preview-linha.eh-grupo {
+  background: rgba(237, 241, 248, .7);
+  color: var(--noturno);
+  border: 1px solid rgba(214, 222, 236, .8);
+  margin-top: 6px;
+}
+
+.item-preview-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.item-preview-desc {
+  flex: 1;
+  font-size: 13px;
+  color: var(--texto);
+  line-height: 1.35;
+}
+
+.item-preview-linha.eh-grupo .item-preview-desc {
+  color: var(--noturno);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  font-size: 12px;
+}
+
+.badge-un-preview {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #E2E8F0;
+  color: #334155;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.badge-ref-preview {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.modal-presets-rodape {
+  padding: 14px 24px;
+  border-top: 1px solid var(--linha);
+  background: var(--superficie2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.presets-modo-insercao {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--suave);
+}
+
+.presets-modo-insercao label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--texto);
+}
+
+.presets-acoes-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Realce suave nas linhas recém-inseridas na grade */
+.linha-recem-inserida {
+  animation: highlightFade 2.5s ease-out;
+}
+
+@keyframes highlightFade {
+  0% { background-color: rgba(254, 243, 199, .8); }
+  100% { background-color: transparent; }
 }
 
 </style>
@@ -1588,9 +2015,12 @@ table.ficha-tab a:hover{text-decoration:underline}
         <b>colar uma coluna inteira</b> — ou o bloco com vários proponentes — do Excel de uma vez. O preço é <b>unitário</b>:
         o total sai de preço × quantidade.</p>
       <div class="grade-rolo"><table class="grade" id="grade"></table></div>
-      <div class="acoes">
-        <button class="bt" onclick="addItem('item')">+ Item</button>
-        <button class="bt" onclick="addItem('grupo')">+ Grupo</button>
+      <div class="acoes grade-acoes-barra">
+        <button type="button" class="bt" onclick="addItem('item')">+ Item</button>
+        <button type="button" class="bt" onclick="addItem('grupo')">+ Grupo</button>
+        <button type="button" class="bt bt-preset" onclick="abrirModalPresets()" title="Carregar modelos prontos de grupos e itens com seleção personalizável">
+          <span style="font-size:15px;line-height:1">⚡</span> Inserir predefinição…
+        </button>
       </div>
       <div class="totais" id="totais"></div>
     </div>
@@ -1631,6 +2061,49 @@ table.ficha-tab a:hover{text-decoration:underline}
   </section>
 
   <footer id="rodape">carregando…</footer>
+<div class="modal-presets-fundo" id="modalPresetsFundo" hidden onclick="fecharModalPresets()"></div>
+<div class="modal-presets-janela" id="modalPresetsJanela" hidden role="dialog" aria-modal="true" aria-labelledby="modalPresetsTitulo">
+  <div class="modal-presets-topo">
+    <div>
+      <div class="modal-presets-badge">EAP Templates · Capital Realty</div>
+      <h2 id="modalPresetsTitulo">⚡ Predefinições de Grupos e Subgrupos</h2>
+      <p class="modal-presets-sub">Selecione uma estrutura pronta para sua cotação. Você pode marcar apenas as linhas que precisa e preencher ou ajustar tudo livremente na grade.</p>
+    </div>
+    <button type="button" class="modal-presets-fechar" onclick="fecharModalPresets()" aria-label="Fechar modal">×</button>
+  </div>
+  
+  <div class="modal-presets-corpo">
+    <!-- Coluna esquerda: Lista de modelos / categorias -->
+    <div class="presets-col-lista">
+      <div class="presets-filtros-cat" id="presetsFiltrosCat"></div>
+      <div class="presets-lista-cards" id="presetsListaCards"></div>
+    </div>
+    
+    <!-- Coluna direita: Preview com checkboxes e seleção modular -->
+    <div class="presets-col-preview">
+      <div class="preview-cabecalho" id="previewCabecalho"></div>
+      <div class="preview-barra-selecao">
+        <label class="check-todos-label">
+          <input type="checkbox" id="chkTodosPreset" onchange="toggleCheckTodosPreset(this.checked)">
+          <span>Selecionar todos os itens deste modelo</span>
+        </label>
+        <span class="preview-contador" id="previewContador">0 itens selecionados</span>
+      </div>
+      <div class="preview-arvore" id="previewArvore"></div>
+    </div>
+  </div>
+
+  <div class="modal-presets-rodape">
+    <div class="presets-modo-insercao">
+      <span>Modo de inserção:</span>
+      <label><input type="radio" name="modoInsercaoPreset" value="anexar" checked> Adicionar à grade atual (modular)</label>
+      <label><input type="radio" name="modoInsercaoPreset" value="substituir"> Substituir grade atual</label>
+    </div>
+    <div class="presets-acoes-btn">
+      <button type="button" class="bt" onclick="fecharModalPresets()">Cancelar</button>
+      <button type="button" class="bt primario" id="btConfirmarPreset" onclick="inserirPresetNaGrade()">Inserir itens selecionados</button>
+    </div>
+  </div>
 </div>
 
 <div class="gaveta-fundo" id="gavetaFundo" hidden onclick="fecharFichaFornecedor()"></div>
@@ -1654,6 +2127,377 @@ var URL_BASE = '<?= urlBase ?>';
 var EH_FICHA = PAGINA === 'ficha' && !!EQ_INICIAL;
 var idEmEdicao = null;
 var modoMarcasAtivo = false;
+
+// ─────────────────────────────────────────────────────────────
+//  Predefinições de Grupos e Subgrupos (EAP Presets Engine)
+// ─────────────────────────────────────────────────────────────
+
+var CF_PRESETS_EAP = [
+  {
+    id: 'mao_de_obra',
+    nome: 'Mão de Obra & Serviços Operacionais',
+    categoria: 'Engenharia & Obras',
+    icone: '👷',
+    descricao: 'Estrutura completa para contratação de equipe de canteiro, terraplenagem, oficiais, benefícios e logística.',
+    itens: [
+      { tipo: 'grupo', nivel: 0, descricao: 'MÃO DE OBRA & PRELIMINARES', unidade: 'un', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Terraplenagem mecanizada e regularização de terreno', unidade: 'm²', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Alimentação de equipe (café da manhã e almoço)', unidade: 'diária', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Transporte e vale-transporte de pessoal', unidade: 'mês', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'EPIs completos e uniformes padrão CR', unidade: 'un', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Mobilização e desmobilização de canteiro e equipe', unidade: 'verba', quantidade: '1' },
+      { tipo: 'item',  nivel: 1, descricao: 'Encarregado geral / Mestre de obras', unidade: 'mês', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Oficial civil / Pedreiro', unidade: 'mês', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Ajudante geral / Servente de obras', unidade: 'mês', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Operador de máquinas pesadas', unidade: 'mês', quantidade: '' }
+    ]
+  },
+  {
+    id: 'terraplenagem_drenagem',
+    nome: 'Terraplenagem, Pavimentação & Drenagem',
+    categoria: 'Engenharia & Obras',
+    icone: '🏗️',
+    descricao: 'Infraestrutura pesada para pátios de carretas, vias internas, drenagem pluvial e blocos intertravados.',
+    itens: [
+      { tipo: 'grupo', nivel: 0, descricao: 'INFRAESTRUTURA & PAVIMENTAÇÃO', unidade: 'un', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Locação topográfica e acompanhamento geométrico', unidade: 'verba', quantidade: '1' },
+      { tipo: 'item',  nivel: 1, descricao: 'Limpeza, roçada e descapote vegetal (e=20cm)', unidade: 'm²', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Escavação, carga e transporte de corte (1ª cat.)', unidade: 'm³', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Aterro compactado c/ solo selecionado (≥98% PN)', unidade: 'm³', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Base de brita graduada simples (BGS compactada)', unidade: 'm³', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Pavimentação em blocos intertravados (Paver 8cm fck≥35MPa)', unidade: 'm²', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Drenagem: Tubos de concreto armado PA-2 DN 600mm', unidade: 'm', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Bocas de lobo c/ grelha articulada classe D400', unidade: 'un', quantidade: '' }
+    ]
+  },
+  {
+    id: 'material_consumo_recorrente',
+    nome: 'Material de Consumo & Limpeza Recorrente',
+    categoria: 'Facilities & Consumo',
+    icone: '☕',
+    descricao: 'Cotação recorrente padrão dos Megas com insumos de copa, higiene institucional e descartáveis.',
+    itens: [
+      { tipo: 'grupo', nivel: 0, descricao: 'COPA & ALIMENTÍCIOS', unidade: 'un', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Café tradicional torrado e moído 500g', unidade: 'pct', quantidade: '', marcaReferencia: 'Melitta / Pilão' },
+      { tipo: 'item',  nivel: 1, descricao: 'Açúcar refinado especial 1kg', unidade: 'pct', quantidade: '', marcaReferencia: 'União / Caravelas' },
+      { tipo: 'item',  nivel: 1, descricao: 'Filtro de papel 103 cx c/ 30 un', unidade: 'cx', quantidade: '', marcaReferencia: 'Melitta' },
+      { tipo: 'item',  nivel: 1, descricao: 'Copo plástico descartável 180ml (cx c/ 2.500)', unidade: 'cx', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Copo plástico descartável 50ml (cx c/ 3.000)', unidade: 'cx', quantidade: '' },
+      { tipo: 'grupo', nivel: 0, descricao: 'HIGIENE & DESCARTÁVEIS', unidade: 'un', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Papel toalha interfolhado 2 dobras 100% celulose', unidade: 'fardo', quantidade: '', marcaReferencia: 'Santher / Premisse' },
+      { tipo: 'item',  nivel: 1, descricao: 'Papel higiênico rolão folha dupla 300m (fardo c/ 8)', unidade: 'fardo', quantidade: '', marcaReferencia: 'Santher / Elite' },
+      { tipo: 'item',  nivel: 1, descricao: 'Sabonete líquido neutro perolado bombona 5L', unidade: 'l', quantidade: '', marcaReferencia: 'Premisse / Canaveral' },
+      { tipo: 'item',  nivel: 1, descricao: 'Álcool gel 70% antisséptico bombona 5L', unidade: 'l', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Saco de lixo 100L reforçado 0,08 micras (pct c/ 100)', unidade: 'pct', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Desinfetante hospitalar bactericida 5L (diluição 1:50)', unidade: 'l', quantidade: '' }
+    ]
+  },
+  {
+    id: 'eletrica_iluminacao',
+    nome: 'Manutenção Elétrica & Iluminação de Galpão',
+    categoria: 'Manutenção & Engenharia',
+    icone: '⚡',
+    descricao: 'Iluminação industrial de galpão (h=12m), cabos normatizados, proteção e pontos de força para empilhadeiras.',
+    itens: [
+      { tipo: 'grupo', nivel: 0, descricao: 'ELÉTRICA & ILUMINAÇÃO DE GALPÃO', unidade: 'un', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Luminária industrial LED High-Bay 150W IP65 5000K', unidade: 'un', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Refletor LED para pátio de carretas 400W IP66', unidade: 'un', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Cabo de cobre flexível 0,6/1kV 2,5mm² (rolo 100m)', unidade: 'm', quantidade: '', marcaReferencia: 'Prysmian / Sil' },
+      { tipo: 'item',  nivel: 1, descricao: 'Cabo de cobre flexível 0,6/1kV 6,0mm²', unidade: 'm', quantidade: '', marcaReferencia: 'Prysmian / Sil' },
+      { tipo: 'item',  nivel: 1, descricao: 'Tomada industrial sobrepor 3P+T 32A 380V empilhadeira', unidade: 'un', quantidade: '', marcaReferencia: 'Steck / Scame' },
+      { tipo: 'item',  nivel: 1, descricao: 'Disjuntor termomagnético tripolar DIN 32A/50A', unidade: 'un', quantidade: '', marcaReferencia: 'Schneider / Siemens' },
+      { tipo: 'item',  nivel: 1, descricao: 'Eletrocalha perfurada galvanizada a fogo 3000x100x50mm', unidade: 'm', quantidade: '' }
+    ]
+  },
+  {
+    id: 'docas_niveladoras',
+    nome: 'Manutenção Predial, Docas & Niveladoras',
+    categoria: 'Manutenção & Engenharia',
+    icone: '🚪',
+    descricao: 'Manutenção preventiva e corretiva de niveladoras eletro-hidráulicas de doca, portas seccionadas e juntas de piso.',
+    itens: [
+      { tipo: 'grupo', nivel: 0, descricao: 'DOCAS, NIVELADORAS & PISOS', unidade: 'un', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Óleo hidráulico ISO VG 68 para niveladora de doca', unidade: 'l', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Batente borrachão amortecedor de doca 250x450x100mm', unidade: 'un', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Mola de torção calibrada para porta seccionada', unidade: 'par', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Tratamento e recuperação de juntas de dilatação de piso', unidade: 'm', quantidade: '' },
+      { tipo: 'item',  nivel: 1, descricao: 'Selamento de juntas com poliuretano flexível (PU 40/50)', unidade: 'm', quantidade: '', marcaReferencia: 'Sikaflex / similar' },
+      { tipo: 'item',  nivel: 1, descricao: 'Pintura epóxi / demarcação viária de tráfego de empilhadeiras', unidade: 'm', quantidade: '' }
+    ]
+  }
+];
+
+var presetAtivoId = 'mao_de_obra';
+var presetCategoriaFiltro = 'Todos';
+var presetSelecaoAtual = {};
+
+function abrirModalPresets() {
+  var fundo = document.getElementById('modalPresetsFundo');
+  var janela = document.getElementById('modalPresetsJanela');
+  if (!fundo || !janela) return;
+
+  var catCotacao = document.getElementById('nCategoria') ? document.getElementById('nCategoria').value : '';
+  if (catCotacao === 'Material de Consumo') {
+    presetAtivoId = 'material_consumo_recorrente';
+    presetCategoriaFiltro = 'Facilities & Consumo';
+  } else if (catCotacao === 'Material de Construção' || catCotacao === 'Obras & Reformas') {
+    presetAtivoId = 'mao_de_obra';
+    presetCategoriaFiltro = 'Engenharia & Obras';
+  }
+
+  renderizarFiltrosCategoriasPreset();
+  renderizarListaPresets();
+  selecionarPresetModal(presetAtivoId);
+
+  fundo.hidden = false;
+  janela.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharModalPresets() {
+  var fundo = document.getElementById('modalPresetsFundo');
+  var janela = document.getElementById('modalPresetsJanela');
+  if (fundo) fundo.hidden = true;
+  if (janela) janela.hidden = true;
+  document.body.style.overflow = '';
+}
+
+function renderizarFiltrosCategoriasPreset() {
+  var container = document.getElementById('presetsFiltrosCat');
+  if (!container) return;
+
+  var categorias = ['Todos'];
+  CF_PRESETS_EAP.forEach(function(p) {
+    if (!categorias.includes(p.categoria)) categorias.push(p.categoria);
+  });
+
+  container.innerHTML = categorias.map(function(cat) {
+    var ativo = (cat === presetCategoriaFiltro) ? ' ativo' : '';
+    return '<button type="button" class="pill-cat-preset' + ativo + '" onclick="filtrarCategoriaPreset(\'' + esc(cat) + '\')">' + esc(cat) + '</button>';
+  }).join('');
+}
+
+function filtrarCategoriaPreset(cat) {
+  presetCategoriaFiltro = cat;
+  renderizarFiltrosCategoriasPreset();
+  renderizarListaPresets();
+  var visiveis = CF_PRESETS_EAP.filter(function(p) {
+    return presetCategoriaFiltro === 'Todos' || p.categoria === presetCategoriaFiltro;
+  });
+  if (visiveis.length && !visiveis.some(function(p) { return p.id === presetAtivoId; })) {
+    selecionarPresetModal(visiveis[0].id);
+  }
+}
+
+function renderizarListaPresets() {
+  var container = document.getElementById('presetsListaCards');
+  if (!container) return;
+
+  var lista = CF_PRESETS_EAP.filter(function(p) {
+    return presetCategoriaFiltro === 'Todos' || p.categoria === presetCategoriaFiltro;
+  });
+
+  container.innerHTML = lista.map(function(p) {
+    var sel = (p.id === presetAtivoId) ? ' selecionado' : '';
+    var qtdItens = p.itens.filter(function(it) { return it.tipo !== 'grupo'; }).length;
+    var qtdGrupos = p.itens.filter(function(it) { return it.tipo === 'grupo'; }).length;
+    return '<button type="button" class="preset-card-item' + sel + '" onclick="selecionarPresetModal(\'' + esc(p.id) + '\')">' +
+      '<div class="preset-card-titulo">' +
+        '<span>' + p.icone + ' ' + esc(p.nome) + '</span>' +
+      '</div>' +
+      '<div class="preset-card-desc">' + esc(p.descricao) + '</div>' +
+      '<div class="preset-card-meta">' +
+        '<span class="badge-preset-cat">' + esc(p.categoria) + '</span>' +
+        '<span class="badge-preset-itens">' + qtdItens + ' itens' + (qtdGrupos > 1 ? ' · ' + qtdGrupos + ' grupos' : '') + '</span>' +
+      '</div>' +
+    '</button>';
+  }).join('');
+}
+
+function selecionarPresetModal(id) {
+  presetAtivoId = id;
+  renderizarListaPresets();
+
+  var preset = CF_PRESETS_EAP.find(function(p) { return p.id === id; });
+  if (!preset) return;
+
+  presetSelecaoAtual = {};
+  preset.itens.forEach(function(it, idx) {
+    presetSelecaoAtual[idx] = true;
+  });
+
+  var cab = document.getElementById('previewCabecalho');
+  if (cab) {
+    cab.innerHTML = '<h3>' + preset.icone + ' ' + esc(preset.nome) + '</h3>' +
+      '<p>' + esc(preset.descricao) + '</p>';
+  }
+
+  renderizarPreviewArvorePreset();
+}
+
+function renderizarPreviewArvorePreset() {
+  var container = document.getElementById('previewArvore');
+  if (!container) return;
+
+  var preset = CF_PRESETS_EAP.find(function(p) { return p.id === presetAtivoId; });
+  if (!preset) return;
+
+  var totalMarcados = 0;
+  var totalItens = preset.itens.length;
+
+  var html = preset.itens.map(function(it, idx) {
+    var marcado = !!presetSelecaoAtual[idx];
+    if (marcado) totalMarcados++;
+
+    var ehGrupo = it.tipo === 'grupo';
+    var recuoPx = (it.nivel || 0) * 16;
+    var badgeUn = !ehGrupo && it.unidade ? '<span class="badge-un-preview">' + esc(it.unidade) + '</span>' : '';
+    var badgeRef = it.marcaReferencia ? '<span class="badge-ref-preview">Ref: ' + esc(it.marcaReferencia) + '</span>' : '';
+
+    return '<label class="item-preview-linha' + (ehGrupo ? ' eh-grupo' : '') + '" style="margin-left:' + recuoPx + 'px">' +
+      '<input type="checkbox" class="item-preview-checkbox" ' + (marcado ? 'checked' : '') + ' onchange="toggleCheckItemPreset(' + idx + ', this.checked)">' +
+      '<span class="item-preview-desc">' + (ehGrupo ? '📁 ' : '• ') + esc(it.descricao) + '</span>' +
+      badgeRef +
+      badgeUn +
+    '</label>';
+  }).join('');
+
+  container.innerHTML = html;
+
+  var contador = document.getElementById('previewContador');
+  if (contador) {
+    contador.textContent = totalMarcados + ' de ' + totalItens + ' selecionados';
+  }
+
+  var chkTodos = document.getElementById('chkTodosPreset');
+  if (chkTodos) {
+    chkTodos.checked = (totalMarcados === totalItens);
+    chkTodos.indeterminate = (totalMarcados > 0 && totalMarcados < totalItens);
+  }
+
+  var btConfirmar = document.getElementById('btConfirmarPreset');
+  if (btConfirmar) {
+    btConfirmar.disabled = (totalMarcados === 0);
+    btConfirmar.textContent = totalMarcados > 0
+      ? 'Inserir ' + totalMarcados + (totalMarcados === 1 ? ' item selecionado' : ' itens selecionados')
+      : 'Selecione ao menos 1 item';
+  }
+}
+
+function toggleCheckItemPreset(idx, marcado) {
+  var preset = CF_PRESETS_EAP.find(function(p) { return p.id === presetAtivoId; });
+  if (!preset) return;
+
+  presetSelecaoAtual[idx] = !!marcado;
+
+  if (preset.itens[idx] && preset.itens[idx].tipo === 'grupo') {
+    var nivelGrupo = preset.itens[idx].nivel || 0;
+    for (var k = idx + 1; k < preset.itens.length; k++) {
+      var itemSeguinte = preset.itens[k];
+      if ((itemSeguinte.nivel || 0) <= nivelGrupo) break;
+      presetSelecaoAtual[k] = !!marcado;
+    }
+  }
+
+  renderizarPreviewArvorePreset();
+}
+
+function toggleCheckTodosPreset(marcar) {
+  var preset = CF_PRESETS_EAP.find(function(p) { return p.id === presetAtivoId; });
+  if (!preset) return;
+
+  preset.itens.forEach(function(it, idx) {
+    presetSelecaoAtual[idx] = !!marcar;
+  });
+
+  renderizarPreviewArvorePreset();
+}
+
+function inserirPresetNaGrade() {
+  var preset = CF_PRESETS_EAP.find(function(p) { return p.id === presetAtivoId; });
+  if (!preset) return;
+
+  var novosItens = [];
+  var temAlgumaMarcaRef = false;
+
+  preset.itens.forEach(function(it, idx) {
+    if (!presetSelecaoAtual[idx]) return;
+
+    if (it.marcaReferencia) temAlgumaMarcaRef = true;
+
+    novosItens.push({
+      tipo: it.tipo || 'item',
+      nivel: Number(it.nivel) || 0,
+      descricao: it.descricao || '',
+      marcaReferencia: it.marcaReferencia || '',
+      quantidade: it.quantidade !== undefined && it.quantidade !== null ? String(it.quantidade) : '',
+      unidade: it.unidade || 'un',
+      precos: proponentes.map(function() { return ''; }),
+      marcas: proponentes.map(function() { return ''; }),
+      _recemInserido: true
+    });
+  });
+
+  if (novosItens.length === 0) return;
+
+  var rbSubstituir = document.querySelector('input[name="modoInsercaoPreset"][value="substituir"]');
+  var modoSubstituir = rbSubstituir && rbSubstituir.checked;
+
+  if (modoSubstituir && itens.length > 0) {
+    var temPreenchido = itens.some(function(i) { return i.descricao || (i.precos || []).some(Boolean); });
+    if (temPreenchido && !confirm('A grade atual já contém itens digitados. Deseja realmente substituí-los por este modelo?')) {
+      return;
+    }
+  }
+
+  var gradeEstavaVazia = itens.length === 0 ||
+    (itens.length === 1 && !itens[0].descricao && !(itens[0].precos || []).some(Boolean));
+
+  if (modoSubstituir || gradeEstavaVazia) {
+    itens = novosItens;
+  } else {
+    itens = itens.concat(novosItens);
+  }
+
+  if (temAlgumaMarcaRef && !modoMarcasAtivo) {
+    alternarModoMarcas(true);
+  }
+
+  desenharGrade();
+  salvarRascunho();
+  fecharModalPresets();
+
+  setTimeout(function() {
+    var linhas = document.querySelectorAll('#grade tbody tr');
+    if (linhas.length) {
+      var primeiraNova = linhas[Math.max(0, linhas.length - novosItens.length)];
+      if (primeiraNova) {
+        primeiraNova.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+    novosItens.forEach(function(it, idx) {
+      var indiceLinha = modoSubstituir || gradeEstavaVazia ? idx : (itens.length - novosItens.length + idx);
+      if (linhas[indiceLinha]) {
+        linhas[indiceLinha].classList.add('linha-recem-inserida');
+      }
+    });
+  }, 100);
+
+  var msg = document.getElementById('salvoMsg');
+  if (msg) {
+    msg.innerHTML = '<span style="color:var(--ok)">' + novosItens.length +
+      ' itens do modelo <b>' + esc(preset.nome) + '</b> inseridos na grade. Você pode editar qualquer linha.</span>';
+  }
+}
+
+window.addEventListener('keydown', function(ev) {
+  if (ev.key === 'Escape') {
+    var fundo = document.getElementById('modalPresetsFundo');
+    if (fundo && !fundo.hidden) {
+      fecharModalPresets();
+    }
+  }
+});
 
 function alternarModoMarcas(ativo) {
   modoMarcasAtivo = !!ativo;
