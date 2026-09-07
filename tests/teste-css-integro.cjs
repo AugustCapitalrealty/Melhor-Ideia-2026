@@ -114,4 +114,46 @@ function dentroDeMedia_texto(n) {
   return n ? n.texto : '@media';
 }
 
-console.log('OK: a folha fecha o que abre, e nenhuma regra de desktop está presa em @media.');
+// ── 3. O atributo hidden tem de vencer qualquer display forçado
+//
+//    `hidden` esconde por uma regra do navegador, a mais fraca que
+//    existe. Um `display: flex !important` numa classe a derruba — e foi
+//    assim que o modal de predefinições virou uma camada fixa, inset:0 e
+//    z-index 10000, que nunca fechava e engolia todo clique do app. A
+//    tela parecia travada, e nenhum botão respondia porque todos
+//    estavam embaixo dela.
+const guarda = /\[hidden\][^{]*\{[^}]*display\s*:\s*none[^}]*!important/i.exec(css);
+assert.ok(
+  guarda,
+  'falta a guarda [hidden] { display: none !important } — sem ela, qualquer ' +
+  'display !important deixa um elemento hidden visível para sempre'
+);
+
+// Entre dois !important de mesma especificidade quem vence é o último.
+// Por isso a guarda precisa vir depois de todo display forçado.
+const displaysForcados = [];
+const reDisplay = /display\s*:\s*[^;}]+!important/gi;
+let d;
+while ((d = reDisplay.exec(css)) !== null) {
+  if (d.index !== guarda.index) displaysForcados.push(d.index);
+}
+
+const ultimo = displaysForcados.length ? Math.max.apply(null, displaysForcados) : -1;
+assert.ok(
+  guarda.index > ultimo,
+  'a guarda [hidden] está ANTES do último "display: ... !important" da folha ' +
+  '(posição ' + guarda.index + ' contra ' + ultimo + '). Mesma especificidade, ' +
+  'os dois !important: vence quem vem por último, então a guarda perde e o ' +
+  'elemento hidden continua visível.'
+);
+
+// A guarda não é decorativa: a tela realmente esconde coisas assim.
+const marcacao = html.slice(f);
+assert.ok(
+  (marcacao.match(/\shidden\b/g) || []).length >= 3,
+  'a tela usa o atributo hidden em vários elementos — se parou de usar, ' +
+  'esta guarda e este teste precisam ser revistos, não removidos em silêncio'
+);
+
+console.log('OK: a folha fecha o que abre, nenhuma regra de desktop está presa em @media, ' +
+            'e o atributo hidden vence qualquer display forçado.');

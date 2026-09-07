@@ -2138,6 +2138,21 @@ table.ficha-tab a:hover{text-decoration:underline}
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+/* ── O atributo hidden tem a última palavra ──────────────────────────
+   `hidden` esconde por uma regra do NAVEGADOR, que é a mais fraca de
+   todas: qualquer `display` escrito aqui a sobrepõe, e com !important
+   fica imbatível. Foi o que aconteceu com o modal de predefinições —
+   `display: flex !important` no fundo e na janela — e o resultado não
+   era um modal feio: era um modal que nunca fechava, `inset: 0` e
+   `z-index: 10000` por cima do app inteiro, engolindo todo clique.
+   Parecia a tela travada.
+
+   Esta regra fica no FIM da folha de propósito. `[hidden]` e uma classe
+   têm a mesma especificidade, então, entre dois !important, quem vence
+   é quem vem por último. Nova regra de display vai abaixo daqui só se
+   quiser mesmo brigar com o hidden. */
+[hidden] { display: none !important; }
+
 </style>
 </head>
 <body>
