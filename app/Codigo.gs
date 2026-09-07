@@ -414,25 +414,58 @@ function apiSalvarConfiguracaoCatalogo(dados) {
 }
 
 /**
- * Registra marca informada on-the-fly pelo comprador no catálogo de itens.
+ * Registra no catálogo uma marca que o comprador digitou na hora.
+ *
+ * Esta função gravava em lugar nenhum e dizia que tinha gravado.
+ *
+ * Ela chamava cfLerPor_ e cfAtualizar_, que não existem em parte alguma
+ * do projeto, contra a tabela `Catalogo`, que nunca recebeu uma linha —
+ * o catálogo real vive em ScriptProperties, ao lado, gravado por
+ * apiSalvarConfiguracaoCatalogo. Um try/catch interno engolia o
+ * ReferenceError e a função devolvia { ok: true } assim mesmo. A tela
+ * confirmava para o comprador uma gravação que nunca aconteceu, e a
+ * marca sumia na próxima cotação sem nunca ter dado erro.
+ *
+ * Agora escreve onde o catálogo de fato mora, e um erro volta como
+ * erro.
  */
 function apiSincronizarMarcaOnTheFly(idCatalogo, nomeMarca) {
   try {
     const marca = String(nomeMarca || '').trim();
     if (!marca) return { ok: false, erro: 'Nome de marca vazio.' };
-    
-    // Tenta atualizar o registro na tabela Catalogo se existir
-    try {
-      if (idCatalogo) {
-        const item = cfLerPor_('Catalogo', 'ID', idCatalogo);
-        if (item) {
-          const marcas = (item.MARCA ? [item.MARCA] : []).concat(marca);
-          cfAtualizar_('Catalogo', 'ID', idCatalogo, { MARCA: marcas.join(' | ') });
-        }
-      }
-    } catch (e) { /* fallback caso tabela ainda não esteja populada */ }
 
-    return { ok: true, marca: marca };
+    const props = PropertiesService.getScriptProperties();
+    const salvo = props.getProperty('CF_CATALOGO_CONFIG');
+    const cfg = salvo ? JSON.parse(salvo) : { grupos: [], itens: [], marcas: [], pendentes: [] };
+
+    cfg.marcas = cfg.marcas || [];
+    cfg.itens = cfg.itens || [];
+
+    // A marca entra na lista geral, sem duplicar por diferença de caixa
+    // ou acento — "Melitta" e "melita" são a mesma marca digitada duas
+    // vezes, e duas entradas quebrariam a conferência de conformidade.
+    const jaExiste = cfg.marcas.some(function (m) {
+      return cfNormalizar_(String(m && m.nome ? m.nome : m)) === cfNormalizar_(marca);
+    });
+    if (!jaExiste) cfg.marcas.push({ nome: marca, origem: 'digitada na cotação' });
+
+    // E fica vinculada ao item, quando veio de um item conhecido.
+    if (idCatalogo) {
+      const item = cfg.itens.filter(function (i) { return String(i.id) === String(idCatalogo); })[0];
+      if (item) {
+        item.marcas = item.marcas || [];
+        const tem = item.marcas.some(function (m) {
+          return cfNormalizar_(String(m)) === cfNormalizar_(marca);
+        });
+        if (!tem) item.marcas.push(marca);
+      }
+    }
+
+    cfg.atualizadoEm = new Date().toISOString();
+    cfg.atualizadoPor = cfUsuario_();
+    props.setProperty('CF_CATALOGO_CONFIG', JSON.stringify(cfg));
+
+    return { ok: true, marca: marca, novaNoCatalogo: !jaExiste };
   } catch (erro) {
     return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
   }

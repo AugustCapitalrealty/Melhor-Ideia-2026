@@ -2197,6 +2197,17 @@ table.ficha-tab a:hover{text-decoration:underline}
 .iqf small{font-weight:500;opacity:.8}
 .iqf-sem{font-size:12px;color:var(--suave)}
 
+/* No cabeçalho escuro da tabela: legível sem competir com o nome do
+   fornecedor, que continua sendo a informação principal da coluna. */
+.iqf-col{
+  display:block;margin-top:3px;font-size:11px;font-weight:700;letter-spacing:.02em;
+}
+.iqf-col.bom{color:#6EE7B7}
+.iqf-col.medio{color:#FCD34D}
+.iqf-col.ruim{color:#FCA5A5}
+.iqf-col.vazio{color:rgba(255,255,255,.42);font-weight:500;font-style:italic}
+.iqf-col-prelim{margin-left:4px;font-weight:500;opacity:.75}
+
 .modal-aval-fundo{
   position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
   padding:24px;background:rgba(15,23,42,.55);z-index:10000;overflow-y:auto;
@@ -4918,8 +4929,12 @@ function desenharMapa(m) {
 
   var cabecalho = '<tr><th class="desc">Item</th>' + props.map(function (p) {
     var nomeCurto = nomeCurtoProponente(p.nome) || p.nome;
+    // A nota aqui, e não só na tela de fornecedores: é aqui que se
+    // decide. Quem avaliou colhe o benefício na cotação seguinte, que
+    // é a única coisa que sustenta a adesão à avaliação.
     return '<th title="' + esc(p.nome) + '"><span class="th-nome-prop">' + esc(nomeCurto) + '</span>' +
-           (p.rodada ? '<small>' + esc(p.rodada) + '</small>' : '') + '</th>';
+           (p.rodada ? '<small>' + esc(p.rodada) + '</small>' : '') +
+           seloIqfColuna(p.iqf) + '</th>';
   }).join('') + '</tr>';
 
   var corpo = m.linhas.map(function (l) {
@@ -7646,6 +7661,24 @@ var ESCALA_AVAL = ['', 'péssimo', 'ruim', 'regular', 'bom', 'ótimo'];
  * "Sem avaliação" não é nota baixa, e o selo tem de deixar isso
  * óbvio: um fornecedor novo não pode parecer ruim por ser novo.
  */
+/**
+ * O IQF no cabeçalho da coluna do proponente.
+ *
+ * Versão compacta e clara sobre fundo escuro. "Sem nota" aparece
+ * também, e de propósito: a ausência é informação — significa que
+ * ninguém trabalhou com este fornecedor ainda, ou que ninguém avaliou.
+ */
+function seloIqfColuna(iqf) {
+  if (!iqf || !iqf.avaliacoes) {
+    return '<small class="iqf-col vazio" title="Nenhuma avaliação pós-serviço registrada">sem nota</small>';
+  }
+  var faixa = iqf.nota >= 4 ? ' bom' : (iqf.nota >= 3 ? ' medio' : ' ruim');
+  return '<small class="iqf-col' + faixa + '" title="IQF: média de ' + iqf.avaliacoes +
+    ' avaliação(ões) pós-serviço' + (iqf.preliminar ? ' — ainda preliminar' : '') + '">' +
+    '★ ' + iqf.nota.toFixed(1).replace('.', ',') +
+    (iqf.preliminar ? '<span class="iqf-col-prelim">prelim.</span>' : '') + '</small>';
+}
+
 function seloIqf(iqf) {
   if (!iqf || !iqf.avaliacoes) {
     return '<span class="iqf-sem">sem avaliação ainda</span>';

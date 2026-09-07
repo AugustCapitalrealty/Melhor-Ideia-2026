@@ -95,7 +95,7 @@ function montar() {
   };
   ctx.Utilities = { formatDate: function () { return '07/09/2026 10:00'; }, getUuid: function () { return 'x'; } };
 
-  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(function (f) {
+  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Avaliacao.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(function (f) {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctx, { filename: f });
   });
 

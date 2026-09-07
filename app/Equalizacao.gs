@@ -98,6 +98,10 @@ function cfMapaEqualizacao_(idEq) {
     return f ? (f[campo] || '') : '';
   };
 
+  // Uma leitura só das avaliações, antes do laço: por proponente
+  // seriam N leituras da mesma faixa.
+  const iqfs = cfIqfPorCnpj_();
+
   const proponentes = cfLerTudo_('Propostas')
     .filter(function (p) { return String(p.ID_EQUALIZACAO) === String(idEq); })
     .sort(function (a, b) { return (cfNumero_(a.ORDEM) || 0) - (cfNumero_(b.ORDEM) || 0); })
@@ -116,6 +120,13 @@ function cfMapaEqualizacao_(idEq) {
         cidade: doCadastro(cnpj, 'CIDADE'),
         uf: doCadastro(cnpj, 'UF'),
         rodada: p.RODADA || '',
+        // A nota do pós-serviço na tela de quem decide.
+        //
+        // É o que fecha o laço: sem isto, avaliar é um favor que não
+        // volta para quem fez, e a avaliação morre como morreu no
+        // formulário anterior. A reputação tem de estar à vista no
+        // momento da escolha, não numa tela que se visita depois.
+        iqf: iqfs[cnpj] || null,
         total: cfNumero_(p.VALOR_TOTAL_DECLARADO),
         calculado: cfNumero_(p.VALOR_TOTAL_CALCULADO),
         vencedora: p.VENCEDORA === true,

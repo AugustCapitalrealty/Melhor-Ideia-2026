@@ -534,7 +534,7 @@ try {
   ctxEq.cfLerTudo_ = (nome) => tabelas[nome] || [];
   ctxEq.cfDataTexto_ = (d) => (d ? '01/06/2026' : null);
 
-  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Avaliacao.gs', 'Equalizacao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxEq, { filename: f });
   });
 
@@ -606,7 +606,7 @@ try {
   const gravado = {};
   let seq = 0;
 
-  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Avaliacao.gs', 'Equalizacao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxNovo, { filename: f });
   });
 
@@ -719,7 +719,7 @@ try {
   const gravadoE = {};
   let seqE = 0;
 
-  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Avaliacao.gs', 'Equalizacao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxE, { filename: f });
   });
   ctxE.cfLerTudo_ = () => [];
@@ -913,7 +913,7 @@ try {
   const gravadoR = {};
   let seqR = 0;
 
-  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Avaliacao.gs', 'Equalizacao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxR, { filename: f });
   });
   ctxR.cfLerTudo_ = () => [];
@@ -986,7 +986,7 @@ try {
   const ctxH = vm.createContext({ Logger: { log: () => {} }, console: console });
   const atualizado = [];
 
-  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Avaliacao.gs', 'Equalizacao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxH, { filename: f });
   });
 
@@ -1075,7 +1075,7 @@ try {
   };
   ctxX.Utilities = { formatDate: () => '06/09/2026 10:00', getUuid: () => 'x' };
 
-  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Avaliacao.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxX, { filename: f });
   });
 
@@ -1182,7 +1182,7 @@ try {
   const gravadoZ = {};
   let seqZ = 0;
 
-  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Avaliacao.gs', 'Equalizacao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxZ, { filename: f });
   });
   ctxZ.cfLerTudo_ = () => [];
@@ -1221,7 +1221,7 @@ try {
   let gravadoB = {};
   let seqB = 0;
 
-  ['Util.gs', 'Config.gs', 'Equalizacao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Avaliacao.gs', 'Equalizacao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxB, { filename: f });
   });
   ctxB.cfLerTudo_ = () => [];
@@ -1422,7 +1422,7 @@ try {
 // ─────────────────────────────────────────────────────────────
 try {
   const ctxEd = vm.createContext({ Logger: { log: () => {} }, console: console });
-  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Equalizacao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Avaliacao.gs', 'Equalizacao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxEd, { filename: f });
   });
 
@@ -1527,7 +1527,7 @@ try {
 // ─────────────────────────────────────────────────────────────
 try {
   const ctxM = vm.createContext({ Logger: { log: () => {} }, console: console });
-  ['Util.gs', 'Config.gs', 'Equalizacao.gs', 'Manutencao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Avaliacao.gs', 'Equalizacao.gs', 'Manutencao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxM, { filename: f });
   });
 
@@ -1638,7 +1638,7 @@ try {
   };
   ctxL.Utilities = { formatDate: () => '06/09/2026 10:00', getUuid: () => 'x' };
 
-  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Avaliacao.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxL, { filename: f });
   });
 
@@ -1907,7 +1907,7 @@ try {
 // ─────────────────────────────────────────────────────────────
 try {
   const ctxT = vm.createContext({ Logger: { log: () => {} }, console: console });
-  ['Util.gs', 'Config.gs', 'Equalizacao.gs', 'Manutencao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Avaliacao.gs', 'Equalizacao.gs', 'Manutencao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxT, { filename: f });
   });
 
@@ -2325,7 +2325,7 @@ try {
 // ─────────────────────────────────────────────────────────────
 try {
   const ctx35 = vm.createContext({ Logger: { log: () => {} }, console: console });
-  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Equalizacao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Avaliacao.gs', 'Equalizacao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctx35, { filename: f });
   });
 
@@ -2417,7 +2417,7 @@ try {
 // ─────────────────────────────────────────────────────────────
 try {
   const ctx36 = vm.createContext({ Logger: { log: () => {} }, console: console });
-  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Equalizacao.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Avaliacao.gs', 'Equalizacao.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctx36, { filename: f });
   });
 
@@ -2484,7 +2484,7 @@ try {
 // ─────────────────────────────────────────────────────────────
 try {
   const ctx37 = vm.createContext({ Logger: { log: () => {} }, console: console });
-  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs', 'Cnpj.gs', 'Avaliacao.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctx37, { filename: f });
   });
   ctx37.cfDataTexto_ = () => '06/09/2026';
@@ -2574,7 +2574,7 @@ try {
       }
     }
   });
-  ['Util.gs', 'Config.gs', 'Codigo.gs', 'Equalizacao.gs', 'Exportar.gs', 'Consulta.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Codigo.gs', 'Avaliacao.gs', 'Equalizacao.gs', 'Exportar.gs', 'Consulta.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctx38, { filename: f });
   });
 
@@ -2733,7 +2733,7 @@ try {
   };
   ctxE.Utilities = { formatDate: () => '06/09/2026 10:00', getUuid: () => 'x' };
 
-  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Avaliacao.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxE, { filename: f });
   });
 
@@ -2866,7 +2866,7 @@ try {
   ctxL.ScriptApp = { getOAuthToken: () => 't' };
   ctxL.DriveApp = {};
 
-  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Avaliacao.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxL, { filename: f });
   });
 
