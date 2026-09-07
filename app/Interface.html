@@ -1871,7 +1871,7 @@ table.ficha-tab a:hover{text-decoration:underline}
 
 /* ── POPOVER DE SELEÇÃO DE GRUPOS ── */
 .popover-grupos {
-  position: absolute;
+  position: fixed;
   z-index: 1050;
   width: 340px;
   background: rgba(255, 255, 255, .98);
@@ -1915,7 +1915,7 @@ table.ficha-tab a:hover{text-decoration:underline}
 
 /* ── AUTOCOMPLETE INTELIGENTE DE ITENS DO CATÁLOGO ── */
 .autocomplete-item-popover {
-  position: absolute;
+  position: fixed;
   z-index: 1100;
   width: 440px;
   max-height: 290px;
@@ -1982,7 +1982,7 @@ table.ficha-tab a:hover{text-decoration:underline}
 
 /* ── COMBOBOX DE MARCAS COM ADIÇÃO DINÂMICA INLINE ── */
 .dropdown-marcas-menu {
-  position: absolute;
+  position: fixed;
   min-width: 210px;
   max-height: 240px;
   overflow-y: auto;
@@ -3077,8 +3077,9 @@ function abrirMenuNovoGrupo(event, btn) {
   pop.style.display = 'block';
 
   var rect = btn.getBoundingClientRect();
-  pop.style.top = (rect.bottom + (window.scrollY || window.pageYOffset || 0) + 4) + 'px';
-  pop.style.left = Math.max(10, Math.min(window.innerWidth - 350, rect.left + (window.scrollX || window.pageXOffset || 0))) + 'px';
+  // position:fixed → coordenadas de viewport diretas, sem adicionar scroll
+  pop.style.top  = (rect.bottom + 4) + 'px';
+  pop.style.left = Math.max(10, Math.min(window.innerWidth - 350, rect.left)) + 'px';
 }
 
 function inserirGrupoPadrao(nome, categoria, id) {
@@ -3138,8 +3139,9 @@ function abrirMenuGruposLinha(event, btn, index) {
   pop.style.display = 'block';
 
   var rect = btn.getBoundingClientRect();
-  pop.style.top = (rect.bottom + (window.scrollY || window.pageYOffset || 0) + 4) + 'px';
-  pop.style.left = Math.max(10, Math.min(window.innerWidth - 350, rect.left + (window.scrollX || window.pageXOffset || 0))) + 'px';
+  // position:fixed → sem somar scroll
+  pop.style.top  = (rect.bottom + 4) + 'px';
+  pop.style.left = Math.max(10, Math.min(window.innerWidth - 350, rect.left)) + 'px';
 }
 
 function aplicarGrupoPadraoLinha(index, nome, id, categoria) {
@@ -3248,8 +3250,9 @@ function mostrarAutocompleteItem(inputEl, i, termo) {
   pop.style.display = 'block';
 
   var rect = inputEl.getBoundingClientRect();
-  pop.style.top = (rect.bottom + (window.scrollY || window.pageYOffset || 0) + 4) + 'px';
-  pop.style.left = Math.max(10, Math.min(window.innerWidth - 450, rect.left + (window.scrollX || window.pageXOffset || 0))) + 'px';
+  // position:fixed → sem somar scroll (iframe Apps Script não tem scrollY próprio)
+  pop.style.top  = (rect.bottom + 4) + 'px';
+  pop.style.left = Math.max(10, Math.min(window.innerWidth - 450, rect.left)) + 'px';
 }
 
 function selecionarItemDoCatalogo(i, itemId) {
@@ -3378,8 +3381,9 @@ function abrirDropdownMarcas(anchorEl, linhaIdx, propIdx) {
   drop.style.display = 'block';
 
   var rect = anchorEl.getBoundingClientRect();
-  drop.style.top = (rect.bottom + (window.scrollY || window.pageYOffset || 0) + 2) + 'px';
-  drop.style.left = Math.max(10, Math.min(window.innerWidth - 240, rect.left + (window.scrollX || window.pageXOffset || 0))) + 'px';
+  // position:fixed → sem somar scroll
+  drop.style.top  = (rect.bottom + 2) + 'px';
+  drop.style.left = Math.max(10, Math.min(window.innerWidth - 240, rect.left)) + 'px';
 }
 
 function selecionarMarcaCotada(linhaIdx, propIdx, marca) {
