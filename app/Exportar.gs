@@ -92,7 +92,7 @@ function cfExportarEqualizacao_(idEq) {
     ['Data da equalização:', eq.data, 'Email:', function (p) { return p.email || ''; }],
     // Observação, e não "Nº da proposta": esse já aparece no rodapé, e
     // repetir campo num documento de conferência convida a divergência.
-    ['Situação:', eq.status, 'Observação:', function () { return ''; }]
+    ['Situação:', cfStatusTexto_(eq.status), 'Observação:', function () { return ''; }]
   ];
 
   let lLinhaEmpresa = null;
@@ -146,7 +146,11 @@ function cfExportarEqualizacao_(idEq) {
       li[COL_UN - 1] = item.unidade || '';
       props.forEach(function (p, i) {
         const c = item.precos[p.id];
-        if (!c) return;
+        // Sem linha de preço nenhuma, a célula ficava vazia — e vazia,
+        // numa tabela comparativa, não lê como "não cotou": lê como
+        // coluna que ninguém terminou de preencher. É a mesma dúvida
+        // que o traço da linha de marca criava.
+        if (!c) { li[colDe(i) - 1] = 'não cotou'; return; }
         if (c.status === 'incluso_em_outro_item') { li[colDe(i) - 1] = 'incluso'; return; }
         if (c.status === 'excluido') { li[colDe(i) - 1] = 'excluído'; return; }
         if (c.status === 'nao_aplicavel') { li[colDe(i) - 1] = 'não aplicável'; return; }
@@ -175,16 +179,28 @@ function cfExportarEqualizacao_(idEq) {
       // porque é assim que se lê: o preço e a marca daquele fornecedor
       // um embaixo do outro. Numa lista à parte, o comprador teria que
       // reconstruir de cabeça quem cotou o quê.
+      // Três situações, e o traço confundia as três: quem não cotou o
+      // item, quem cotou e disse a marca, e quem cotou e não disse.
+      // A última é a que interessa numa equalização de marca — é o
+      // fornecedor barato que ninguém sabe o que está oferecendo.
+      //
+      // E a linha passa a sair também quando NINGUÉM informou marca,
+      // desde que o item tenha referência: antes ela sumia, e sumir é
+      // indistinguível de "marca não se aplica aqui".
       const temMarca = props.some(function (p) {
         const c = item.precos[p.id];
         return !!(c && c.marcaCotada);
       });
-      if (temMarca) {
+      if (temMarca || item.marcaReferencia) {
         const lm = vazia();
         lm[COL_VALOR - 1] = 'Marca cotada';
         props.forEach(function (p, i) {
           const c = item.precos[p.id];
-          lm[colDe(i) - 1] = (c && c.marcaCotada) ? c.marcaCotada : '—';
+          const cotou = !!(c && c.status === 'cotado' && c.valor !== null);
+          if (!cotou) { lm[colDe(i) - 1] = ''; return; }
+          if (!c.marcaCotada) { lm[colDe(i) - 1] = 'marca não informada'; return; }
+          lm[colDe(i) - 1] = c.marcaCotada +
+            (cfMarcaDivergente_(c.marcaCotada, item.marcaReferencia) ? ' (≠ referência)' : '');
         });
         const numM = linha(lm);
         props.forEach(function (p, i) {
@@ -198,9 +214,10 @@ function cfExportarEqualizacao_(idEq) {
   // ── totais
   li = vazia();
   li[COL_ROTULO - 1] = 'VALOR TOTAL';
-  props.forEach(function (p, i) { li[colDe(i)] = p.calculado === null ? '' : p.calculado; });
+  props.forEach(function (p, i) { li[colDe(i) - 1] = p.calculado === null ? '' : p.calculado; });
   const lTotal = linha(li);
   merges.push({ l: lTotal, c: COL_ROTULO, nl: 1, nc: 4 });
+  props.forEach(function (p, i) { merges.push({ l: lTotal, c: colDe(i), nl: 1, nc: 2 }); });
   faixas.total.push(lTotal);
   props.forEach(function (p, i) { moeda.push({ l: lTotal, c: colDe(i), n: 2 }); });
 
@@ -209,9 +226,10 @@ function cfExportarEqualizacao_(idEq) {
   if (temDeclarado) {
     li = vazia();
     li[COL_ROTULO - 1] = 'VALOR TOTAL declarado no documento';
-    props.forEach(function (p, i) { li[colDe(i)] = p.total === null ? '' : p.total; });
+    props.forEach(function (p, i) { li[colDe(i) - 1] = p.total === null ? '' : p.total; });
     lDecl = linha(li);
     merges.push({ l: lDecl, c: COL_ROTULO, nl: 1, nc: 4 });
+    props.forEach(function (p, i) { merges.push({ l: lDecl, c: colDe(i), nl: 1, nc: 2 }); });
     faixas.total.push(lDecl);
     props.forEach(function (p, i) { moeda.push({ l: lDecl, c: colDe(i), n: 2 }); });
   }
@@ -238,11 +256,12 @@ function cfExportarEqualizacao_(idEq) {
     li[COL_ROTULO - 1] = 'Variação sobre o menor';
     props.forEach(function (p, i) {
       const vc = valorComercialDe(p);
-      if (vc === null || vc <= 0) { li[colDe(i)] = '—'; return; }
-      li[colDe(i)] = (vc - base) / base;
+      if (vc === null || vc <= 0) { li[colDe(i) - 1] = '—'; return; }
+      li[colDe(i) - 1] = (vc - base) / base;
     });
     const lSpread = linha(li);
     merges.push({ l: lSpread, c: COL_ROTULO, nl: 1, nc: 4 });
+    props.forEach(function (p, i) { merges.push({ l: lSpread, c: colDe(i), nl: 1, nc: 2 }); });
     faixas.total.push(lSpread);
     props.forEach(function (p, i) {
       const vc = valorComercialDe(p);
@@ -289,9 +308,19 @@ function cfExportarEqualizacao_(idEq) {
   ];
 
   rodape.forEach(function (c) {
+    const valores = props.map(function (p) { return c[1](p); });
+
+    // Uma linha vazia para TODOS os proponentes não informa nada — e
+    // num documento formal ela não lê como "não se aplica", lê como
+    // campo que alguém esqueceu de preencher.
+    const temAlgo = valores.some(function (v) {
+      return v !== '' && v !== null && v !== undefined;
+    });
+    if (!temAlgo) return;
+
     const li = vazia();
     li[COL_ROTULO - 1] = c[0];
-    props.forEach(function (p, i) { li[colDe(i) - 1] = c[1](p); });
+    props.forEach(function (p, i) { li[colDe(i) - 1] = valores[i]; });
     const num = linha(li);
     merges.push({ l: num, c: COL_ROTULO, nl: 1, nc: 4 });
     props.forEach(function (p, i) { merges.push({ l: num, c: colDe(i), nl: 1, nc: 2 }); });
@@ -1324,6 +1353,38 @@ function cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas
   }
 
   linha(vazia());
+}
+
+/** O estado da compra em português, não em nome de coluna. */
+const CF_STATUS_TEXTO = {
+  rascunho: 'Rascunho',
+  em_cotacao: 'Em cotação',
+  em_negociacao: 'Em negociação',
+  homologada: 'Homologada',
+  cancelada: 'Cancelada'
+};
+
+function cfStatusTexto_(status) {
+  const s = String(status || '').trim();
+  if (!s) return '';
+  // Um status novo no banco não pode sair como "em_analise" no
+  // documento: na falta de tradução, ao menos tira o underline.
+  return CF_STATUS_TEXTO[s] || (s.charAt(0).toUpperCase() + s.slice(1)).replace(/_/g, ' ');
+}
+
+/**
+ * A marca cotada difere da referência pedida?
+ *
+ * Comparação por conteúdo, não por igualdade: "Melitta" e "Filtro
+ * Melitta" são a mesma marca escrita de dois jeitos, e acusar
+ * divergência aí seria alarme falso — que treina a pessoa a ignorar
+ * o alarme verdadeiro.
+ */
+function cfMarcaDivergente_(cotada, referencia) {
+  const a = cfNormalizar_(cotada || '');
+  const b = cfNormalizar_(referencia || '');
+  if (!a || !b) return false;
+  return a.indexOf(b) < 0 && b.indexOf(a) < 0;
 }
 
 /** Percentual com uma casa, no formato que se lê em português. */

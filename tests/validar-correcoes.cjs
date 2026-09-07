@@ -2776,12 +2776,24 @@ try {
 
   const lMarca = escrito.filter(l => l.indexOf('Marca cotada') >= 0)[0];
   assert.ok(lMarca, 'faltou a linha de marca cotada');
-  assert.ok(lMarca.indexOf('Coala') >= 0 && lMarca.indexOf('Pato') >= 0,
+
+  // Por conteúdo, e não por igualdade: a célula passou a dizer também
+  // quando a marca ofertada não é a pedida, e "Pato (≠ referência)"
+  // continua sendo a marca do Pato.
+  const iCoala = lMarca.findIndex(c => String(c).indexOf('Coala') >= 0);
+  const iPato = lMarca.findIndex(c => String(c).indexOf('Pato') >= 0);
+  assert.ok(iCoala >= 0 && iPato >= 0,
     'as duas marcas têm que estar na mesma linha, cada uma na coluna do seu proponente');
 
   // Cada marca embaixo do preço do seu proponente — não numa lista solta.
-  const iCoala = lMarca.indexOf('Coala'), iPato = lMarca.indexOf('Pato');
   assert.ok(iCoala < iPato, 'a marca saiu fora da ordem das colunas de proponente');
+
+  // O item pedia Coala. Quem ofereceu Pato ofereceu outra coisa, e é
+  // isso que decide se os dois preços são comparáveis.
+  assert.ok(String(lMarca[iPato]).indexOf('≠') >= 0,
+    'marca diferente da referência precisa sair marcada, senão os dois preços parecem equivalentes');
+  assert.ok(String(lMarca[iCoala]).indexOf('≠') < 0,
+    'quem cotou a marca pedida não pode sair marcado como divergente');
 
   // ── Item sem marca não ganha linha vazia
   //

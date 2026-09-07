@@ -259,21 +259,83 @@ function cfMapaEqualizacao_(idEq) {
       const pends = cfPendenciasDaEqualizacao_(idEq);
       const itensParaCotar = linhas.filter(function (l) { return l.tipo !== 'grupo'; });
       const totalItens = itensParaCotar.length;
-      if (totalItens > 0) {
-        proponentes.forEach(function (p) {
-          if (p.itensCotados !== undefined && p.itensCotados < totalItens && p.itensCotados > 0) {
-            const jaExiste = pends.some(function (pend) {
-              return (pend.descricao || '').indexOf(p.nome) >= 0;
-            });
-            if (!jaExiste) {
-              pends.push({
-                tipo: 'cesta_incompleta',
-                descricao: 'Fornecedor ' + p.nome + ' deixou itens sem cotar.'
-              });
+      if (totalItens === 0) return pends;
+
+      // Nomear os itens é o que faz a ressalva servir para alguma
+      // coisa. "Deixou itens sem cotar" manda o comprador varrer a
+      // tabela coluna por coluna para descobrir quais; dizer quais
+      // entrega a conferência pronta — e é exatamente essa lista que
+      // ele vai copiar para cobrar o fornecedor.
+      const rotulo = function (it) {
+        return (it.codigo ? it.codigo + ' ' : '') + String(it.descricao || '').trim();
+      };
+      // Teto de itens listados: uma ressalva de trinta linhas não é
+      // lida, e o número total já vai dito antes da lista.
+      const lista = function (itens, teto) {
+        const nomes = itens.slice(0, teto).map(rotulo);
+        const resto = itens.length - nomes.length;
+        return nomes.join('; ') + (resto > 0 ? '; e mais ' + resto : '');
+      };
+
+      proponentes.forEach(function (p) {
+        const semCotar = [];
+        const semMarca = [];
+        const outraMarca = [];
+
+        itensParaCotar.forEach(function (it) {
+          const pr = it.precos[p.id];
+          const cotou = pr && (pr.status === 'cotado' || pr.status === 'incluso_em_outro_item') &&
+                        (pr.valor !== null || pr.status === 'incluso_em_outro_item');
+
+          if (!cotou) {
+            // "Excluído" e "não aplicável" são decisão declarada, não
+            // omissão: cobrar o fornecedor por eles seria cobrar o que
+            // já foi respondido.
+            if (!pr || (pr.status !== 'excluido' && pr.status !== 'nao_aplicavel')) {
+              semCotar.push(it);
             }
+            return;
           }
+
+          // Marca só é pendência onde foi pedida.
+          if (!it.marcaReferencia) return;
+          if (!pr.marcaCotada) { semMarca.push(it); return; }
+          if (cfMarcaDivergente_(pr.marcaCotada, it.marcaReferencia)) outraMarca.push(it);
         });
-      }
+
+        if (semCotar.length && p.itensCotados > 0) {
+          const jaExiste = pends.some(function (pend) {
+            return (pend.descricao || '').indexOf(p.nome) >= 0;
+          });
+          if (!jaExiste) {
+            pends.push({
+              tipo: 'cesta_incompleta',
+              descricao: p.nome + ' não cotou ' + semCotar.length + ' de ' + totalItens +
+                         ' itens: ' + lista(semCotar, 6) + '.'
+            });
+          }
+        }
+
+        if (semMarca.length) {
+          pends.push({
+            tipo: 'marca_nao_informada',
+            descricao: p.nome + ' cotou sem informar a marca: ' + lista(semMarca, 6) + '.'
+          });
+        }
+
+        if (outraMarca.length) {
+          pends.push({
+            tipo: 'marca_divergente',
+            descricao: p.nome + ' cotou marca diferente da referência: ' +
+                       outraMarca.slice(0, 4).map(function (it) {
+                         return rotulo(it) + ' (' + it.precos[p.id].marcaCotada +
+                                ', pedido ' + it.marcaReferencia + ')';
+                       }).join('; ') +
+                       (outraMarca.length > 4 ? '; e mais ' + (outraMarca.length - 4) : '') + '.'
+          });
+        }
+      });
+
       return pends;
     })()
   };

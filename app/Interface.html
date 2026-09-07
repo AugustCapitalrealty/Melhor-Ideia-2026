@@ -901,9 +901,14 @@ table.grade thead th{
   font-size:11px;font-weight:600;color:var(--royal);background:var(--superficie2);
   padding:2px 7px;border-radius:4px;margin-left:6px;display:inline-block;vertical-align:middle;
 }
+/* O selo era inline-block e caía AO LADO do preço, empurrando o
+   número para a esquerda só nas linhas que tinham marca — a coluna
+   perdia o alinhamento justamente onde havia mais o que comparar.
+   Em bloco ele desce para a própria linha, centralizado sob o preço. */
 .marca-mapa{
-  font-size:11px;margin-top:3px;padding:2px 6px;border-radius:4px;display:inline-block;
-  font-weight:500;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:11px;margin:3px auto 0;padding:2px 6px;border-radius:4px;display:block;
+  width:fit-content;max-width:130px;
+  font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .tag-marca-neutra{background:rgba(21,30,73,.05);color:var(--suave)}
 .tag-marca-alerta{background:#FEF3C7;color:#92400E;font-weight:600;border:1px solid #FDE68A}
