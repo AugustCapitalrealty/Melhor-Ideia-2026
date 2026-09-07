@@ -688,11 +688,13 @@ tr.eh-grupo .cod-auto{color:var(--noturno)}
   background:#fff;cursor:pointer;font-family:inherit;
 }
 .sug:hover{background:var(--superficie2)}
+.sug-topo{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sug-topo b{margin:0}
 .sug b{display:block;font-size:14px;color:var(--noturno);font-weight:600}
 .sug small{display:block;font-size:12px;color:var(--suave);margin-top:2px}
 .sug-msg{padding:10px 13px;font-size:13px;color:var(--suave)}
 .sug-msg.erro-msg{color:var(--critico)}
-.resolvido{min-height:20px;margin-top:6px}
+.resolvido{min-height:20px;margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .selo{
   display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;
   background:var(--superficie2);color:var(--royal);font-variant-numeric:tabular-nums;
@@ -2360,6 +2362,38 @@ table.tabela-executiva tbody tr:hover td {
 .iqf-col.ruim{color:#FCA5A5}
 .iqf-col.vazio{color:rgba(255,255,255,.42);font-weight:500;font-style:italic}
 .iqf-col-prelim{margin-left:4px;font-weight:500;opacity:.75}
+
+/* IQF em superfícies claras (cabeçalho da grade de digitação, autocomplete e selo) */
+table.grade th .iqf-col,
+.sug .iqf-col,
+.resolvido .iqf-col {
+  display:inline-flex;align-items:center;gap:3px;
+  margin-top:0;font-size:10.5px;font-weight:700;
+  padding:2px 7px;border-radius:6px;letter-spacing:.01em;
+  vertical-align:middle;line-height:1.2;
+}
+table.grade th .iqf-col.bom,
+.sug .iqf-col.bom,
+.resolvido .iqf-col.bom {
+  background:#E4F2EA;color:#15803D;border:1px solid rgba(21,128,61,.22);
+}
+table.grade th .iqf-col.medio,
+.sug .iqf-col.medio,
+.resolvido .iqf-col.medio {
+  background:#FEF3C7;color:#B45309;border:1px solid rgba(180,83,9,.25);
+}
+table.grade th .iqf-col.ruim,
+.sug .iqf-col.ruim,
+.resolvido .iqf-col.ruim {
+  background:#FEE2E2;color:#B91C1C;border:1px solid rgba(185,28,28,.22);
+}
+table.grade th .iqf-col.vazio,
+.sug .iqf-col.vazio,
+.resolvido .iqf-col.vazio {
+  background:var(--superficie2);color:var(--suave);
+  border:1px solid rgba(93,104,131,.18);font-style:italic;font-weight:500;
+}
+.grade-iqf-wrap{margin-top:4px}
 
 /* ── ALERTA DE PREÇO HISTÓRICO NA DIGITAÇÃO (FASE 4) ── */
 .delta-historico{
@@ -6130,7 +6164,7 @@ function atualizarProjetoSeAuto() {
 }
 
 function addProponente() {
-  proponentes.push({ nome: '', cnpj: '' });
+  proponentes.push({ nome: '', cnpj: '', iqf: null });
   itens.forEach(function (i) {
     i.precos.push('');
     if (!i.marcas) i.marcas = [];
@@ -6398,16 +6432,36 @@ function textoReducao(p) {
          ' (' + (dif / inicial * 100).toFixed(1).replace('.', ',') + '%)</span>';
 }
 
+/** Busca o IQF do proponente a partir do objeto ou do cache global de fornecedores. */
+function obterIqfProponente(p) {
+  if (!p) return null;
+  if (p.iqf) return p.iqf;
+  if (!p.cnpj) return null;
+  var d = String(p.cnpj).replace(/\D/g, '');
+  if (!d) return null;
+  if (typeof todosFornecedores !== 'undefined' && Array.isArray(todosFornecedores)) {
+    var achado = todosFornecedores.find(function (f) {
+      return String(f.cnpj || '').replace(/\D/g, '') === d;
+    });
+    if (achado && achado.iqf) {
+      p.iqf = achado.iqf;
+      return p.iqf;
+    }
+  }
+  return null;
+}
+
 /** O que já se sabe sobre o proponente, abaixo do campo. */
 function selo(p) {
   if (!p.cnpj) return '';
   var partes = [cnpjBonito(p.cnpj)];
   if (p.cidade || p.uf) partes.push([p.cidade, p.uf].filter(Boolean).join('/'));
   if (p.situacao) partes.push(p.situacao);
+  var iqf = obterIqfProponente(p);
   return '<span class="selo' + (p.fonte === 'consulta_publica' ? ' selo-consulta' : '') + '">' +
          esc(partes.join(' · ')) +
          (p.fonte ? ' <em>' + (p.fonte === 'consulta_publica' ? 'consulta pública' : 'já cadastrado') + '</em>' : '') +
-         '</span>';
+         '</span> ' + seloIqfColuna(iqf);
 }
 
 function cnpjBonito(v) {
@@ -6469,9 +6523,13 @@ function mostrarSugestoes(i, r) {
   // para confirmar o que se digitou escolheria outro fornecedor.
   sugestaoAtiva[i] = -1;
   caixa.innerHTML = r.achados.map(function (a, k) {
+    var seloHtml = seloIqfColuna(a.iqf);
     return '<button type="button" class="sug" role="option" aria-selected="false"' +
            ' data-k="' + k + '" onclick="escolherFornecedor(' + i + ',' + k + ')">' +
+           '<div class="sug-topo">' +
            '<b>' + esc(a.razaoSocial) + '</b>' +
+           seloHtml +
+           '</div>' +
            '<small>' + esc([cnpjBonito(a.cnpj), a.cidade, a.uf].filter(Boolean).join(' · ')) + '</small>' +
            '</button>';
   }).join('');
@@ -6591,6 +6649,7 @@ function aplicarFornecedor(i, a) {
   p.telefone = a.telefone || '';
   p.email = a.email || '';
   p.fonte = a.fonte;
+  p.iqf = a.iqf || null;
 
   var campo = document.getElementById('pf' + i);
   if (campo) campo.value = p.busca;
@@ -6617,9 +6676,11 @@ function atualizarNomes() {
     var th = document.querySelector('#grade thead th[data-prop="' + j + '"]');
     if (!th) return;
     var nomeCurto = nomeCurtoProponente(p.nome) || ('Proponente ' + (j + 1));
+    var iqf = p.iqf || obterIqfProponente(p);
+    var seloHtml = p.cnpj ? ('<div class="grade-iqf-wrap">' + seloIqfColuna(iqf) + '</div>') : '';
     th.title = p.nome || ('Proponente ' + (j + 1));
     // innerHTML, não textContent: textContent apagava o rótulo da unidade.
-    th.innerHTML = '<span class="th-nome-prop">' + esc(nomeCurto) + '</span><small>' + rotulo + '</small>';
+    th.innerHTML = '<span class="th-nome-prop">' + esc(nomeCurto) + '</span><small>' + rotulo + '</small>' + seloHtml;
   });
   calcular();
 }
@@ -6752,9 +6813,12 @@ function desenharGrade() {
       // contar colunas fixas com um número mágico já mandou o nome de um
       // proponente para a coluna do seguinte quando a grade mudou.
       var nomeCurto = nomeCurtoProponente(p.nome) || ('Proponente ' + (i + 1));
+      var iqf = p.iqf || obterIqfProponente(p);
+      var seloHtml = p.cnpj ? ('<div class="grade-iqf-wrap">' + seloIqfColuna(iqf) + '</div>') : '';
       return '<th class="col-preco" data-prop="' + i + '" title="' + esc(p.nome || ('Proponente ' + (i + 1))) + '">' +
              '<span class="th-nome-prop">' + esc(nomeCurto) + '</span>' +
-             '<small>' + rotuloBase + '</small></th>';
+             '<small>' + rotuloBase + '</small>' +
+             seloHtml + '</th>';
     }).join('') + '<th class="col-del"></th></tr></thead>';
 
   var corpo = itens.map(function (it, i) {
@@ -7543,6 +7607,7 @@ function carregarDadosParaEdicao(m) {
       nome: p.nome || '',
       busca: p.nome || '',
       cnpj: p.cnpj || '',
+      iqf: p.iqf || null,
       numero: p.numero || '',
       revisao: p.revisao || '',
       data: paraISO(p.data),

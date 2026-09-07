@@ -144,6 +144,64 @@ const root = path.resolve(__dirname, '..');
   // E o cabeçalho da tabela precisa realmente chamar a função.
   assert.ok(/seloIqfColuna\(p\.iqf\)/.test(script),
     'a função existe mas o cabeçalho da tabela não a usa — o selo nunca apareceria');
+
+  // Ponta 3: Autocomplete de fornecedores e cabeçalho da grade de digitação
+  assert.ok(/seloIqfColuna\(a\.iqf\)/.test(script),
+    'o dropdown de autocomplete de fornecedores precisa exibir o selo de IQF');
+  assert.ok(/seloIqfColuna\(iqf\)/.test(script),
+    'o cabeçalho da grade de digitação e o cartão do fornecedor selecionado precisam exibir o selo de IQF');
+  assert.ok(typeof ctx.obterIqfProponente === 'function',
+    'faltou a função auxiliar obterIqfProponente');
+
+  // Testando obterIqfProponente
+  const pComIqf = { cnpj: '11.222.333/0001-81', iqf: { nota: 85, classe: 'A', avaliacoes: 4 } };
+  assert.strictEqual(ctx.obterIqfProponente(pComIqf).classe, 'A');
+
+  const pSemIqf = { cnpj: '' };
+  assert.strictEqual(ctx.obterIqfProponente(pSemIqf), null);
 }
 
-console.log('OK: a nota do fornecedor chega à tela onde a compra é decidida.');
+// ── Ponta 4: cfBuscarFornecedor_ traz o IQF junto da busca do fornecedor ──────────
+{
+  const ctxB = vm.createContext({ Logger: { log: function () {} }, console: console, JSON: JSON });
+  ctxB.SpreadsheetApp = { getActiveSpreadsheet: function () { return null; } };
+  ctxB.CacheService = { getScriptCache: function () { return { get: function () { return null; }, put: function () {} }; } };
+  ctxB.UrlFetchApp = { fetch: function () { return { getResponseCode: function () { return 404; } }; } };
+
+  ['Util.gs', 'Config.gs', 'Avaliacao.gs', 'Cnpj.gs'].forEach(function (f) {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxB, { filename: f });
+  });
+
+  ctxB.cfDataTexto_ = function (d) { return d ? String(d) : ''; };
+
+  const cnpjForn = '11222333000181';
+  ctxB.cfLerTudo_ = function (aba) {
+    if (aba === 'Fornecedores') {
+      return [{ CNPJ: cnpjForn, RAZAO_SOCIAL: 'Alfa Materiais', CIDADE: 'Curitiba', UF: 'PR' }];
+    }
+    if (aba === 'Avaliacoes') {
+      return [
+        { CNPJ: cnpjForn, NOTA: 90, VERSAO_CRITERIOS: 2, RECONTRATARIA: true, DATA_AVALIACAO: '2026-08-01' },
+        { CNPJ: cnpjForn, NOTA: 80, VERSAO_CRITERIOS: 2, RECONTRATARIA: true, DATA_AVALIACAO: '2026-08-15' },
+        { CNPJ: cnpjForn, NOTA: 85, VERSAO_CRITERIOS: 2, RECONTRATARIA: true, DATA_AVALIACAO: '2026-09-01' }
+      ];
+    }
+    return [];
+  };
+
+  const resNome = ctxB.cfBuscarFornecedor_('Alfa');
+  assert.equal(resNome.tipo, 'nome');
+  assert.ok(resNome.achados.length > 0, 'não encontrou o fornecedor Alfa por nome');
+  assert.ok(resNome.achados[0].iqf, 'cfBuscarFornecedor_ precisa incluir o iqf no resultado da busca');
+  assert.equal(resNome.achados[0].iqf.nota, 85, 'a nota calculada do Alfa deve ser 85');
+  assert.equal(resNome.achados[0].iqf.classe, 'A', 'Alfa com 85 deve ser Classe A');
+  assert.equal(resNome.achados[0].iqf.avaliacoes, 3);
+
+  const resCnpj = ctxB.cfBuscarFornecedor_('11.222.333/0001-81');
+  assert.equal(resCnpj.tipo, 'cnpj');
+  assert.ok(resCnpj.achados.length > 0, 'não encontrou o fornecedor por CNPJ');
+  assert.ok(resCnpj.achados[0].iqf, 'cfConsultarCnpj_ precisa incluir o iqf para fornecedor do cadastro');
+  assert.equal(resCnpj.achados[0].iqf.classe, 'A');
+}
+
+console.log('OK: o IQF chega ao autocomplete de fornecedores e à grade de digitação da cotação.');

@@ -51,6 +51,8 @@ function cfConsultarCnpj_(valor) {
     return { achou: false, fonte: 'invalido', erro: 'CNPJ inválido — confira os dígitos.' };
   }
 
+  const iqfs = typeof cfIqfPorCnpj_ === 'function' ? cfIqfPorCnpj_() : {};
+
   // 1. cadastro interno
   const local = cfLerTudo_('Fornecedores').filter(function (f) {
     return cfSoDigitos_(f.CNPJ) === d;
@@ -62,7 +64,8 @@ function cfConsultarCnpj_(valor) {
       nomeFantasia: local.NOME_FANTASIA || '',
       cidade: local.CIDADE || '', uf: local.UF || '',
       situacao: local.SITUACAO_CNPJ || '', cnae: local.CNAE_PRINCIPAL || '',
-      telefone: local.CONTATO_TEL || '', email: local.CONTATO_EMAIL || ''
+      telefone: local.CONTATO_TEL || '', email: local.CONTATO_EMAIL || '',
+      iqf: (iqfs && iqfs[d]) ? iqfs[d] : null
     };
   }
 
@@ -73,6 +76,7 @@ function cfConsultarCnpj_(valor) {
     try {
       const o = JSON.parse(guardado);
       o.fonte = 'cache';
+      if (!o.iqf && iqfs && iqfs[d]) o.iqf = iqfs[d];
       return o;
     } catch (erro) { /* cache corrompido: segue para a rede */ }
   }
@@ -113,7 +117,8 @@ function cfConsultarCnpj_(valor) {
     situacao: dados.descricao_situacao_cadastral || '',
     cnae: dados.cnae_fiscal ? (dados.cnae_fiscal + ' — ' + (dados.cnae_fiscal_descricao || '')) : '',
     telefone: dados.ddd_telefone_1 || '',
-    email: dados.email || ''
+    email: dados.email || '',
+    iqf: (iqfs && iqfs[d]) ? iqfs[d] : null
   };
 
   try { cache.put('cnpj_' + d, JSON.stringify(saida), CF_CNPJ_CACHE_SEG); } catch (erro) {}
@@ -143,18 +148,21 @@ function cfBuscarFornecedor_(termo) {
   }
 
   const alvo = cfNormalizar_(bruto);
+  const iqfs = typeof cfIqfPorCnpj_ === 'function' ? cfIqfPorCnpj_() : {};
   const achados = cfLerTudo_('Fornecedores').filter(function (f) {
     const nome = cfNormalizar_(f.RAZAO_SOCIAL || '');
     const fantasia = cfNormalizar_(f.NOME_FANTASIA || '');
     return nome.indexOf(alvo) >= 0 || fantasia.indexOf(alvo) >= 0;
   }).slice(0, 8).map(function (f) {
+    const cnpj = cfSoDigitos_(f.CNPJ);
     return {
-      achou: true, fonte: 'cadastro', cnpj: cfSoDigitos_(f.CNPJ),
+      achou: true, fonte: 'cadastro', cnpj: cnpj,
       razaoSocial: f.RAZAO_SOCIAL || '',
       nomeFantasia: f.NOME_FANTASIA || '',
       cidade: f.CIDADE || '', uf: f.UF || '',
       situacao: f.SITUACAO_CNPJ || '', cnae: f.CNAE_PRINCIPAL || '',
-      telefone: f.CONTATO_TEL || '', email: f.CONTATO_EMAIL || ''
+      telefone: f.CONTATO_TEL || '', email: f.CONTATO_EMAIL || '',
+      iqf: (iqfs && iqfs[cnpj]) ? iqfs[cnpj] : null
     };
   });
 
