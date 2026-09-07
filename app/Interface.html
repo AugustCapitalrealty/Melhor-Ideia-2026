@@ -1409,39 +1409,47 @@ table.ficha-tab a:hover{text-decoration:underline}
 }
 
 .modal-presets-fundo {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(15, 23, 42, .5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 1000;
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
+  background: rgba(15, 23, 42, .55) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  z-index: 10000 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
   animation: fadeInModal .2s ease;
 }
 
 .modal-presets-janela {
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 92vw;
-  max-width: 980px;
-  height: 82vh;
-  max-height: 720px;
-  background: rgba(255, 255, 255, .97);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, .8);
-  box-shadow: 0 24px 60px -12px rgba(15, 23, 42, .3), 0 0 0 1px rgba(21, 30, 73, .08);
-  border-radius: 18px;
-  z-index: 1001;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: scaleUpModal .25s cubic-bezier(.16, 1, .3, 1);
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin: auto !important;
+  width: 92vw !important;
+  max-width: 980px !important;
+  height: 82vh !important;
+  max-height: 720px !important;
+  background: rgba(255, 255, 255, .98) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, .8) !important;
+  box-shadow: 0 24px 60px -12px rgba(15, 23, 42, .35), 0 0 0 1px rgba(21, 30, 73, .08) !important;
+  border-radius: 18px !important;
+  z-index: 10001 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  animation: scaleUpModal .2s ease-out;
 }
 
 @keyframes scaleUpModal {
-  from { opacity: 0; transform: translate(-50%, -46%) scale(.96); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from { opacity: 0; transform: scale(.96); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes fadeInModal {
@@ -1809,6 +1817,319 @@ table.ficha-tab a:hover{text-decoration:underline}
   100% { background-color: transparent; }
 }
 
+/* ── GRUPOS PADRONIZADOS COM NOME FIXO ── */
+.grupo-linha-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.grupo-padrao-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #003D7B;
+  background: rgba(0, 61, 123, .08);
+  border: 1px solid rgba(0, 61, 123, .16);
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.grupo-fixo-nome {
+  flex: 1;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  color: var(--noturno);
+  padding: 7px 11px;
+  background: rgba(237, 241, 248, .9);
+  border-radius: 8px;
+  border: 1px solid rgba(21, 30, 73, .12);
+  user-select: none;
+}
+.grupo-trocar-btn {
+  background: #fff;
+  border: 1px solid rgba(21, 30, 73, .14);
+  color: var(--suave);
+  cursor: pointer;
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  transition: all .15s ease;
+  white-space: nowrap;
+}
+.grupo-trocar-btn:hover {
+  background: var(--superficie2);
+  color: var(--royal);
+  border-color: var(--acao);
+}
+
+/* ── POPOVER DE SELEÇÃO DE GRUPOS ── */
+.popover-grupos {
+  position: absolute;
+  z-index: 1050;
+  width: 340px;
+  background: rgba(255, 255, 255, .98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(21, 30, 73, .14);
+  border-radius: 14px;
+  box-shadow: 0 16px 36px -10px rgba(15, 23, 42, .24), 0 0 0 1px rgba(255, 255, 255, .8) inset;
+  padding: 8px 0;
+  animation: scaleUpMenu .16s ease-out;
+}
+.popover-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--suave);
+  padding: 6px 14px;
+  border-bottom: 1px solid rgba(21, 30, 73, .06);
+}
+.popover-item-grupo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto);
+  cursor: pointer;
+  transition: background .12s ease;
+}
+.popover-item-grupo:hover {
+  background: rgba(6, 92, 169, .08);
+  color: var(--royal);
+}
+.popover-divisor {
+  height: 1px;
+  background: rgba(21, 30, 73, .08);
+  margin: 6px 0;
+}
+
+/* ── AUTOCOMPLETE INTELIGENTE DE ITENS DO CATÁLOGO ── */
+.autocomplete-item-popover {
+  position: absolute;
+  z-index: 1100;
+  width: 440px;
+  max-height: 290px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, .98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(21, 30, 73, .15);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px -10px rgba(15, 23, 42, .22);
+}
+.autocomplete-sugestao {
+  padding: 9px 13px;
+  border-bottom: 1px solid rgba(21, 30, 73, .05);
+  cursor: pointer;
+  transition: background .12s ease;
+}
+.autocomplete-sugestao:hover,
+.autocomplete-sugestao.selecionada {
+  background: rgba(6, 92, 169, .08);
+}
+.autocomplete-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--noturno);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.autocomplete-unidade {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #EBF3FB;
+  color: #065CA9;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.autocomplete-marcas {
+  margin-top: 4px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.pill-marca-sugestao {
+  font-size: 11px;
+  color: var(--suave);
+  background: rgba(21, 30, 73, .05);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+.autocomplete-rodape-novo {
+  padding: 8px 13px;
+  background: #F8FAFC;
+  font-size: 12px;
+  color: #065CA9;
+  font-weight: 600;
+  cursor: pointer;
+  border-top: 1px solid rgba(21, 30, 73, .08);
+}
+.autocomplete-rodape-novo:hover {
+  background: #EBF3FB;
+}
+
+/* ── COMBOBOX DE MARCAS COM ADIÇÃO DINÂMICA INLINE ── */
+.dropdown-marcas-menu {
+  position: absolute;
+  min-width: 210px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, .98);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(21, 30, 73, .15);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px -6px rgba(15, 23, 42, .2);
+  z-index: 1200;
+  padding: 6px 0;
+}
+.opcao-marca {
+  padding: 7px 12px;
+  font-size: 12.5px;
+  color: var(--texto);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.opcao-marca:hover {
+  background: rgba(6, 92, 169, .08);
+  color: var(--royal);
+}
+.opcao-nova-marca {
+  border-top: 1px solid rgba(21, 30, 73, .08);
+  margin-top: 4px;
+  padding-top: 8px;
+  color: #065CA9;
+  font-weight: 600;
+}
+.opcao-nova-marca:hover {
+  background: #EBF3FB;
+  color: #003D7B;
+}
+
+.bt-marca-drop {
+  border: none;
+  background: transparent;
+  color: var(--suave);
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 1;
+  opacity: .6;
+  transition: opacity .15s;
+}
+.bt-marca-drop:hover {
+  opacity: 1;
+  color: var(--royal);
+}
+
+/* ── NOVA TELA DE CONFIGURAÇÕES APPLE GLASS ── */
+.config-painel {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.config-segmented-bar {
+  display: inline-flex;
+  background: rgba(21, 30, 73, .06);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.config-segmento-btn {
+  border: none;
+  background: transparent;
+  padding: 8px 18px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--suave);
+  cursor: pointer;
+  transition: all .16s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.config-segmento-btn.ativo {
+  background: #FFFFFF;
+  color: var(--noturno);
+  box-shadow: 0 2px 8px rgba(21, 30, 73, .12);
+}
+.config-card-secao {
+  background: rgba(255, 255, 255, .9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(21, 30, 73, .1);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: var(--sombra);
+  margin-bottom: 24px;
+}
+.config-header-secao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.config-header-secao h3 {
+  margin: 0;
+  font-size: 17px;
+  color: var(--noturno);
+  font-weight: 700;
+}
+.config-tabela-densa {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.config-tabela-densa th {
+  text-align: left;
+  padding: 9px 12px;
+  background: var(--superficie2);
+  border-bottom: 1px solid var(--linha);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+.config-tabela-densa td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--linha);
+  vertical-align: middle;
+}
+.config-tabela-densa tr:hover td {
+  background: #F8FAFC;
+}
+.badge-status-gov {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+.badge-status-gov.homologada { background: #E8F5E9; color: #2E7D32; }
+.badge-status-gov.pendente { background: #FFF8E1; color: #F57F17; }
+.badge-status-gov.mesclada { background: #EDE7F6; color: #512DA8; }
+
+@keyframes scaleUpMenu {
+  from { opacity: 0; transform: scale(.95) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 </style>
 </head>
 <body>
@@ -1823,6 +2144,7 @@ table.ficha-tab a:hover{text-decoration:underline}
       <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
       <button id="ab-mapa"     role="tab" aria-selected="false" onclick="aba('mapa')">Equalizações</button>
       <button id="ab-fornecedores" role="tab" aria-selected="false" onclick="aba('fornecedores')">Fornecedores</button>
+      <button id="ab-config"   role="tab" aria-selected="false" onclick="aba('config')">Configurações</button>
     </div>
     <button id="ab-nova" class="bt primario" onclick="novaCotacao()" title="Abrir nova cotação em nova janela">+ Nova cotação</button>
   </div>
@@ -2035,7 +2357,7 @@ table.ficha-tab a:hover{text-decoration:underline}
       <div class="grade-rolo"><table class="grade" id="grade"></table></div>
       <div class="acoes grade-acoes-barra">
         <button type="button" class="bt" onclick="addItem('item')">+ Item</button>
-        <button type="button" class="bt" onclick="addItem('grupo')">+ Grupo</button>
+        <button type="button" class="bt" id="btnNovoGrupo" onclick="abrirMenuNovoGrupo(event, this)" title="Adicionar grupo padronizado da EAP ou grupo avulso">+ Grupo ▾</button>
         <button type="button" class="bt bt-preset" onclick="abrirModalPresets()" title="Carregar modelos prontos de grupos e itens com seleção personalizável">
           <span style="font-size:15px;line-height:1">⚡</span> Inserir predefinição…
         </button>
@@ -2075,6 +2397,75 @@ table.ficha-tab a:hover{text-decoration:underline}
         title="Limpa todos os dados digitados e recomeça o formulário">
         ↺ Descartar e começar do zero
       </button>
+    </div>
+  </section>
+
+  <section id="v-config" hidden>
+    <div class="config-painel">
+      <div class="config-segmented-bar" role="tablist">
+        <button type="button" class="config-segmento-btn ativo" id="btn-cfg-grupos" onclick="trocarAbaConfig('grupos')">
+          🏢 Grupos Padronizados (<span id="cfg-count-grupos">0</span>)
+        </button>
+        <button type="button" class="config-segmento-btn" id="btn-cfg-itens" onclick="trocarAbaConfig('itens')">
+          📦 Catálogo de Itens (<span id="cfg-count-itens">0</span>)
+        </button>
+        <button type="button" class="config-segmento-btn" id="btn-cfg-marcas" onclick="trocarAbaConfig('marcas')">
+          🏷️ Marcas Registradas (<span id="cfg-count-marcas">0</span>)
+        </button>
+        <button type="button" class="config-segmento-btn" id="btn-cfg-homologacao" onclick="trocarAbaConfig('homologacao')">
+          📥 Fila de Homologação (<span id="cfg-count-pendentes">0</span>)
+        </button>
+      </div>
+
+      <!-- Painel 1: Grupos Padronizados -->
+      <div class="config-card-secao" id="painel-cfg-grupos">
+        <div class="config-header-secao">
+          <div>
+            <h3>🏢 Grupos Padronizados da EAP</h3>
+            <p style="font-size:12.5px;color:var(--suave);margin:3px 0 0">Grupos oficiais de nível 0 com nomes fixos/canônicos para garantir consistência entre orçamentos e relatórios.</p>
+          </div>
+          <button type="button" class="bt primario" onclick="abrirModalNovoGrupoPadrao()">+ Novo grupo padrão</button>
+        </div>
+        <div id="tabelaGruposPadraoContainer"></div>
+      </div>
+
+      <!-- Painel 2: Catálogo de Itens & Unidades -->
+      <div class="config-card-secao" id="painel-cfg-itens" style="display:none">
+        <div class="config-header-secao">
+          <div>
+            <h3>📦 Catálogo Canônico de Itens & Marcas</h3>
+            <p style="font-size:12.5px;color:var(--suave);margin:3px 0 0">Itens sugeridos com preenchimento automático de unidade e marcas associadas.</p>
+          </div>
+          <button type="button" class="bt primario" onclick="abrirModalNovoItemCatalogo()">+ Novo item canônico</button>
+        </div>
+        <div style="margin-bottom:14px">
+          <input id="filtroItensConfig" type="search" placeholder="Filtrar item por nome, grupo ou marca…" oninput="filtrarItensConfig(this.value)" style="max-width:380px">
+        </div>
+        <div id="tabelaItensCatalogoContainer"></div>
+      </div>
+
+      <!-- Painel 3: Dicionário de Marcas -->
+      <div class="config-card-secao" id="painel-cfg-marcas" style="display:none">
+        <div class="config-header-secao">
+          <div>
+            <h3>🏷️ Dicionário Global de Fabricantes & Marcas</h3>
+            <p style="font-size:12.5px;color:var(--suave);margin:3px 0 0">Marcas conhecidas e homologadas para compras e obras em todos os Megas.</p>
+          </div>
+          <button type="button" class="bt primario" onclick="abrirModalNovaMarcaGlobal()">+ Cadastrar marca</button>
+        </div>
+        <div id="tabelaMarcasGlobalContainer"></div>
+      </div>
+
+      <!-- Painel 4: Fila de Homologação On-the-Fly -->
+      <div class="config-card-secao" id="painel-cfg-homologacao" style="display:none">
+        <div class="config-header-secao">
+          <div>
+            <h3>📥 Inbox de Governança — Itens e Marcas On-the-Fly</h3>
+            <p style="font-size:12.5px;color:var(--suave);margin:3px 0 0">Marcas e itens digitados espontaneamente pelos compradores aguardando homologação ou consolidação.</p>
+          </div>
+        </div>
+        <div id="tabelaHomologacaoContainer"></div>
+      </div>
     </div>
   </section>
 
@@ -2135,6 +2526,12 @@ table.ficha-tab a:hover{text-decoration:underline}
   </div>
   <div class="gaveta-corpo" id="gavetaCorpo"></div>
 </aside>
+
+<!-- Popovers flutuantes de Catálogo, Grupos Padronizados e Marcas On-the-Fly -->
+<div id="cfPopoverGrupos" class="popover-grupos" style="display:none" role="menu"></div>
+<div id="cfPopoverItemAutocomplete" class="autocomplete-item-popover" style="display:none" role="listbox"></div>
+<div id="cfDropdownMarcas" class="dropdown-marcas-menu" style="display:none" role="menu"></div>
+
 <script>
 // Vindos do doGet. A ficha é uma janela própria: sem navegação, tudo
 // aberto, pronta para imprimir e para mandar o link a alguém.
@@ -2269,7 +2666,9 @@ function abrirModalPresets() {
 
   fundo.hidden = false;
   janela.hidden = false;
-  document.body.style.overflow = 'hidden';
+  if (janela.scrollIntoView) {
+    try { janela.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e){}
+  }
 }
 
 function fecharModalPresets() {
@@ -2277,7 +2676,6 @@ function fecharModalPresets() {
   var janela = document.getElementById('modalPresetsJanela');
   if (fundo) fundo.hidden = true;
   if (janela) janela.hidden = true;
-  document.body.style.overflow = '';
 }
 
 function renderizarFiltrosCategoriasPreset() {
@@ -2534,6 +2932,915 @@ function replicarMarcaRef(i) {
   });
   desenharGrade();
   salvarRascunho();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  CATÁLOGO CORPORATIVO, GRUPOS EAP, AUTOCOMPLETE & MARCAS
+// ─────────────────────────────────────────────────────────────
+
+var CF_GRUPOS_PADRAO = [
+  { id: 'grp-mao-obra', nome: 'Mão de Obra Operacional', categoria: 'Engenharia & Obras', icone: '👷', ehFixo: true },
+  { id: 'grp-beneficios', nome: 'Alimentação, Benefícios & Custos Indiretos', categoria: 'Engenharia & Obras', icone: '🍽️', ehFixo: true },
+  { id: 'grp-terraplenagem', nome: 'Terraplenagem, Pavimentação & Drenagem', categoria: 'Engenharia & Obras', icone: '🚜', ehFixo: true },
+  { id: 'grp-consumo', nome: 'Material de Consumo e Limpeza', categoria: 'Material de Consumo', icone: '🧻', ehFixo: true },
+  { id: 'grp-eletrica', nome: 'Manutenção Elétrica & Iluminação', categoria: 'Manutenção Predial', icone: '⚡', ehFixo: true },
+  { id: 'grp-predial', nome: 'Manutenção Predial & Docas', categoria: 'Manutenção Predial', icone: '🏢', ehFixo: true },
+  { id: 'grp-seguranca', nome: 'Segurança Patrimonial & Facilities', categoria: 'Facilities & Serviços', icone: '🔒', ehFixo: true },
+  { id: 'grp-logistica', nome: 'Logística, Fretes & Equipamentos', categoria: 'Serviços Operacionais', icone: '📦', ehFixo: true }
+];
+
+var CF_CATALOGO_ITENS = [
+  { id: 'cat-cafe', nome: 'Café Torrado e Moído 500g', grupoId: 'grp-consumo', grupoNome: 'Material de Consumo e Limpeza', unidade: 'pct', marcas: ['Melitta', 'Três Corações', 'Pilão', 'Caboclo', 'Damatta'] },
+  { id: 'cat-acucar', nome: 'Açúcar Refinado 1kg', grupoId: 'grp-consumo', grupoNome: 'Material de Consumo e Limpeza', unidade: 'pct', marcas: ['União', 'Caravelas', 'Da Barra'] },
+  { id: 'cat-papel-toalha', nome: 'Papel Toalha Interfolhado 100% Celulose (2 fardos c/ 1000 fls)', grupoId: 'grp-consumo', grupoNome: 'Material de Consumo e Limpeza', unidade: 'fardo', marcas: ['Santher', 'Melhoramentos', 'Elite', 'Scott', 'Ripz'] },
+  { id: 'cat-papel-higienico', nome: 'Papel Higiênico Rolão 8x300m Folha Dupla', grupoId: 'grp-consumo', grupoNome: 'Material de Consumo e Limpeza', unidade: 'fardo', marcas: ['Santher', 'Melhoramentos', 'Elite', 'Scott'] },
+  { id: 'cat-copo-agua', nome: 'Copo Plástico Descartável 200ml (cx c/ 2500 un)', grupoId: 'grp-consumo', grupoNome: 'Material de Consumo e Limpeza', unidade: 'cx', marcas: ['Copobras', 'Altacoppo', 'Totalplast'] },
+  { id: 'cat-sab-liq', nome: 'Sabonete Líquido Neutro com Refil 5L', grupoId: 'grp-consumo', grupoNome: 'Material de Consumo e Limpeza', unidade: 'gl', marcas: ['Premisse', 'Spartan', 'Ollin', 'Start'] },
+  { id: 'cat-desinfetante', nome: 'Desinfetante Hospitalar/Industrial Concentrado 5L', grupoId: 'grp-consumo', grupoNome: 'Material de Consumo e Limpeza', unidade: 'gl', marcas: ['Spartan', 'Diversey', 'Start', 'Renko'] },
+  { id: 'cat-saco-lixo-100', nome: 'Saco de Lixo Reforçado Preto 100L (pct c/ 100 un)', grupoId: 'grp-consumo', grupoNome: 'Material de Consumo e Limpeza', unidade: 'pct', marcas: ['Plastibras', 'Embalixo', 'Carroflex'] },
+  { id: 'cat-operador', nome: 'Operador de Máquinas / Equipamentos Pesados', grupoId: 'grp-mao-obra', grupoNome: 'Mão de Obra Operacional', unidade: 'h', marcas: [] },
+  { id: 'cat-encarregado', nome: 'Encarregado Geral de Obras / Pavimentação', grupoId: 'grp-mao-obra', grupoNome: 'Mão de Obra Operacional', unidade: 'mês', marcas: [] },
+  { id: 'cat-ajudante', nome: 'Ajudante Geral / Servente de Obras', grupoId: 'grp-mao-obra', grupoNome: 'Mão de Obra Operacional', unidade: 'mês', marcas: [] },
+  { id: 'cat-alimentacao', nome: 'Alimentação da Equipe (Refeição Completa + Café)', grupoId: 'grp-beneficios', grupoNome: 'Alimentação, Benefícios & Custos Indiretos', unidade: 'un', marcas: [] },
+  { id: 'cat-transporte', nome: 'Transporte da Equipe / Vale Transporte', grupoId: 'grp-beneficios', grupoNome: 'Alimentação, Benefícios & Custos Indiretos', unidade: 'mês', marcas: [] },
+  { id: 'cat-epis', nome: 'Kit EPIs Completo (Botinas, Coletes, Capacetes, Óculos)', grupoId: 'grp-beneficios', grupoNome: 'Alimentação, Benefícios & Custos Indiretos', unidade: 'conj', marcas: ['3M', 'Danny', 'Marluvas', 'Bracol', 'Delta Plus'] },
+  { id: 'cat-corte-aterro', nome: 'Escavação, Carga e Transporte de Material (Corte/Aterro)', grupoId: 'grp-terraplenagem', grupoNome: 'Terraplenagem, Pavimentação & Drenagem', unidade: 'm³', marcas: [] },
+  { id: 'cat-brita-graduada', nome: 'Fornecimento e Compactação de Brita Graduada Simples (BGS)', grupoId: 'grp-terraplenagem', grupoNome: 'Terraplenagem, Pavimentação & Drenagem', unidade: 'm³', marcas: [] },
+  { id: 'cat-pavimento-cbuq', nome: 'Pavimentação Asfáltica com Concreto Betuminoso (CBUQ)', grupoId: 'grp-terraplenagem', grupoNome: 'Terraplenagem, Pavimentação & Drenagem', unidade: 'm²', marcas: [] },
+  { id: 'cat-luminaria-led', nome: 'Luminária Industrial LED High-Bay 150W/200W IP65', grupoId: 'grp-eletrica', grupoNome: 'Manutenção Elétrica & Iluminação', unidade: 'un', marcas: ['Philips', 'Osram', 'Ledvance', 'Intelli', 'Avant'] },
+  { id: 'cat-cabo-cobre', nome: 'Cabo de Cobre Flexível 750V 2,5mm²', grupoId: 'grp-eletrica', grupoNome: 'Manutenção Elétrica & Iluminação', unidade: 'm', marcas: ['Prysmian', 'Sil', 'Cobrecom', 'Corfio'] },
+  { id: 'cat-disjuntor', nome: 'Disjuntor Bipolar Termomagnético DIN 32A', grupoId: 'grp-eletrica', grupoNome: 'Manutenção Elétrica & Iluminação', unidade: 'un', marcas: ['Schneider', 'Siemens', 'ABB', 'WEG', 'Steck'] },
+  { id: 'cat-tinta-demarcacao', nome: 'Tinta Acrílica para Demarcação Viária e Pisos (galão 18L)', grupoId: 'grp-predial', grupoNome: 'Manutenção Predial & Docas', unidade: 'gl', marcas: ['Sherwin-Williams', 'Suvinil', 'Tintas Renner', 'Indutil'] },
+  { id: 'cat-oleo-hidraulico', nome: 'Óleo Hidráulico ISO VG 68 para Niveladoras de Doca (balde 20L)', grupoId: 'grp-predial', grupoNome: 'Manutenção Predial & Docas', unidade: 'balde', marcas: ['Mobil', 'Shell', 'Lubrax', 'Ipiranga', 'Texaco'] }
+];
+
+var CF_MARCAS_ACERVO = [
+  { nome: 'Melitta', categoria: 'Material de Consumo' },
+  { nome: 'Três Corações', categoria: 'Material de Consumo' },
+  { nome: 'Pilão', categoria: 'Material de Consumo' },
+  { nome: 'Caboclo', categoria: 'Material de Consumo' },
+  { nome: 'Damatta', categoria: 'Material de Consumo' },
+  { nome: 'União', categoria: 'Material de Consumo' },
+  { nome: 'Santher', categoria: 'Material de Consumo' },
+  { nome: 'Melhoramentos', categoria: 'Material de Consumo' },
+  { nome: 'Elite', categoria: 'Material de Consumo' },
+  { nome: 'Scott', categoria: 'Material de Consumo' },
+  { nome: 'Premisse', categoria: 'Material de Consumo' },
+  { nome: 'Spartan', categoria: 'Material de Consumo' },
+  { nome: '3M', categoria: 'Segurança & EPIs' },
+  { nome: 'Prysmian', categoria: 'Elétrica & Cabos' },
+  { nome: 'Sil', categoria: 'Elétrica & Cabos' },
+  { nome: 'Schneider', categoria: 'Elétrica & Automação' },
+  { nome: 'Siemens', categoria: 'Elétrica & Automação' },
+  { nome: 'WEG', categoria: 'Elétrica & Motores' },
+  { nome: 'Suvinil', categoria: 'Tintas & Obras' },
+  { nome: 'Sherwin-Williams', categoria: 'Tintas & Obras' },
+  { nome: 'Coral', categoria: 'Tintas & Obras' },
+  { nome: 'Tigre', categoria: 'Hidráulica & Obras' },
+  { nome: 'Amanco', categoria: 'Hidráulica & Obras' },
+  { nome: 'Mobil', categoria: 'Lubrificantes' },
+  { nome: 'Shell', categoria: 'Lubrificantes' }
+];
+
+var CF_MARCAS_PENDENTES = [];
+
+function carregarConfiguracoesCatalogo() {
+  try {
+    var salvo = localStorage.getItem('CF_CATALOGO_CONFIG');
+    if (salvo) {
+      var dados = JSON.parse(salvo);
+      if (dados.grupos && dados.grupos.length) CF_GRUPOS_PADRAO = dados.grupos;
+      if (dados.itens && dados.itens.length) CF_CATALOGO_ITENS = dados.itens;
+      if (dados.marcas && dados.marcas.length) CF_MARCAS_ACERVO = dados.marcas;
+      if (dados.pendentes) CF_MARCAS_PENDENTES = dados.pendentes;
+    }
+  } catch(e) {}
+
+  if (typeof google !== 'undefined' && google.script && google.script.run && google.script.run.apiObterConfiguracoesCatalogo) {
+    google.script.run
+      .withSuccessHandler(function(resp) {
+        if (resp && resp.ok) {
+          if (resp.grupos && resp.grupos.length) CF_GRUPOS_PADRAO = resp.grupos;
+          if (resp.itens && resp.itens.length) CF_CATALOGO_ITENS = resp.itens;
+          if (resp.marcas && resp.marcas.length) CF_MARCAS_ACERVO = resp.marcas;
+          if (resp.pendentes) CF_MARCAS_PENDENTES = resp.pendentes;
+        }
+      })
+      .apiObterConfiguracoesCatalogo();
+  }
+}
+
+function salvarConfiguracoesCatalogo() {
+  var dados = {
+    grupos: CF_GRUPOS_PADRAO,
+    itens: CF_CATALOGO_ITENS,
+    marcas: CF_MARCAS_ACERVO,
+    pendentes: CF_MARCAS_PENDENTES
+  };
+  try {
+    localStorage.setItem('CF_CATALOGO_CONFIG', JSON.stringify(dados));
+  } catch(e) {}
+
+  if (typeof google !== 'undefined' && google.script && google.script.run && google.script.run.apiSalvarConfiguracaoCatalogo) {
+    google.script.run.apiSalvarConfiguracaoCatalogo(dados);
+  }
+}
+
+// Carregar catálogo ao inicializar
+carregarConfiguracoesCatalogo();
+
+// ── GRUPOS PADRONIZADOS NA GRADE ──
+
+function abrirMenuNovoGrupo(event, btn) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+  fecharPopovers();
+
+  var pop = document.getElementById('cfPopoverGrupos');
+  if (!pop) return;
+
+  var html = '<div class="popover-header">🏢 Grupos Padronizados (EAP Oficial)</div>';
+  CF_GRUPOS_PADRAO.forEach(function(g) {
+    html += '<div class="popover-item-grupo" onclick="inserirGrupoPadrao(\'' + esc(g.nome) + '\',\'' + esc(g.categoria) + '\',\'' + esc(g.id) + '\')">' +
+      '<span style="font-size:16px">' + (g.icone || '🏢') + '</span>' +
+      '<div><div style="font-weight:700">' + esc(g.nome) + '</div>' +
+      '<small style="color:var(--suave);font-size:11px">' + esc(g.categoria) + '</small></div>' +
+      '</div>';
+  });
+
+  html += '<div class="popover-divisor"></div>' +
+    '<div class="popover-item-grupo" onclick="inserirGrupoAvulso()">' +
+    '<span style="font-size:16px">➕</span>' +
+    '<div><div style="font-weight:700">Grupo Personalizado…</div>' +
+    '<small style="color:var(--suave);font-size:11px">Nome livre (fora do padrão EAP)</small></div>' +
+    '</div>';
+
+  pop.innerHTML = html;
+  pop.style.display = 'block';
+
+  var rect = btn.getBoundingClientRect();
+  pop.style.top = (rect.bottom + (window.scrollY || window.pageYOffset || 0) + 4) + 'px';
+  pop.style.left = Math.max(10, Math.min(window.innerWidth - 350, rect.left + (window.scrollX || window.pageXOffset || 0))) + 'px';
+}
+
+function inserirGrupoPadrao(nome, categoria, id) {
+  fecharPopovers();
+  itens.push({
+    tipo: 'grupo',
+    nivel: 0,
+    descricao: nome,
+    grupoPadraoId: id || '',
+    categoria: categoria || '',
+    ehFixo: true,
+    marcaReferencia: '',
+    quantidade: '',
+    unidade: 'un',
+    precos: proponentes.map(function () { return ''; }),
+    marcas: proponentes.map(function () { return ''; })
+  });
+  desenharGrade();
+  salvarRascunho();
+
+  setTimeout(function() {
+    var linhas = document.querySelectorAll('#grade tbody tr');
+    var ultima = linhas[linhas.length - 1];
+    if (ultima && ultima.scrollIntoView) ultima.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
+function inserirGrupoAvulso() {
+  fecharPopovers();
+  addItem('grupo');
+}
+
+function abrirMenuGruposLinha(event, btn, index) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+  fecharPopovers();
+
+  var pop = document.getElementById('cfPopoverGrupos');
+  if (!pop) return;
+
+  var html = '<div class="popover-header">🏢 Vincular a Grupo Padronizado</div>';
+  CF_GRUPOS_PADRAO.forEach(function(g) {
+    html += '<div class="popover-item-grupo" onclick="aplicarGrupoPadraoLinha(' + index + ',\'' + esc(g.nome) + '\',\'' + esc(g.id) + '\',\'' + esc(g.categoria) + '\')">' +
+      '<span style="font-size:16px">' + (g.icone || '🏢') + '</span>' +
+      '<div><div style="font-weight:700">' + esc(g.nome) + '</div>' +
+      '<small style="color:var(--suave);font-size:11px">' + esc(g.categoria) + '</small></div>' +
+      '</div>';
+  });
+
+  html += '<div class="popover-divisor"></div>' +
+    '<div class="popover-item-grupo" onclick="desbloquearGrupoLinha(' + index + ')">' +
+    '<span style="font-size:16px">✏️</span>' +
+    '<div><div style="font-weight:700">Desbloquear para Nome Livre</div>' +
+    '<small style="color:var(--suave);font-size:11px">Permite digitar qualquer nome avulso</small></div>' +
+    '</div>';
+
+  pop.innerHTML = html;
+  pop.style.display = 'block';
+
+  var rect = btn.getBoundingClientRect();
+  pop.style.top = (rect.bottom + (window.scrollY || window.pageYOffset || 0) + 4) + 'px';
+  pop.style.left = Math.max(10, Math.min(window.innerWidth - 350, rect.left + (window.scrollX || window.pageXOffset || 0))) + 'px';
+}
+
+function aplicarGrupoPadraoLinha(index, nome, id, categoria) {
+  fecharPopovers();
+  if (!itens[index]) return;
+  itens[index].descricao = nome;
+  itens[index].ehFixo = true;
+  itens[index].grupoPadraoId = id || '';
+  itens[index].categoria = categoria || '';
+  desenharGrade();
+  salvarRascunho();
+}
+
+function desbloquearGrupoLinha(index) {
+  fecharPopovers();
+  if (!itens[index]) return;
+  itens[index].ehFixo = false;
+  desenharGrade();
+  salvarRascunho();
+
+  setTimeout(function() {
+    var linhas = document.querySelectorAll('#grade tbody tr');
+    if (linhas[index]) {
+      var d = linhas[index].querySelector('input.desc');
+      if (d) { d.focus(); d.select(); }
+    }
+  }, 50);
+}
+
+function fecharPopoverGrupos() {
+  var pop = document.getElementById('cfPopoverGrupos');
+  if (pop) pop.style.display = 'none';
+}
+
+// ── AUTOCOMPLETE INTELIGENTE DE ITENS DO CATÁLOGO ──
+
+var autocompleteLinhaAtiva = -1;
+
+function onInputDescItem(inputEl, i) {
+  autocompleteLinhaAtiva = i;
+  var termo = (inputEl.value || '').trim();
+  if (termo.length < 2) {
+    fecharAutocompleteItem();
+    return;
+  }
+  mostrarAutocompleteItem(inputEl, i, termo);
+}
+
+function onFocusDescItem(inputEl, i) {
+  var termo = (inputEl.value || '').trim();
+  if (termo.length >= 2) {
+    onInputDescItem(inputEl, i);
+  }
+}
+
+function onKeydownDescItem(event, inputEl, i) {
+  if (event.key === 'Escape') {
+    fecharAutocompleteItem();
+  }
+}
+
+function normalizarTextoBusca(txt) {
+  return String(txt || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function mostrarAutocompleteItem(inputEl, i, termo) {
+  var pop = document.getElementById('cfPopoverItemAutocomplete');
+  if (!pop) return;
+
+  var termoNorm = normalizarTextoBusca(termo);
+  var matches = CF_CATALOGO_ITENS.filter(function(it) {
+    var n = normalizarTextoBusca(it.nome);
+    var g = normalizarTextoBusca(it.grupoNome);
+    var m = (it.marcas || []).map(normalizarTextoBusca).join(' ');
+    return n.indexOf(termoNorm) >= 0 || g.indexOf(termoNorm) >= 0 || m.indexOf(termoNorm) >= 0;
+  }).slice(0, 6);
+
+  var html = '';
+  if (matches.length > 0) {
+    html += '<div class="popover-header">📦 Itens sugeridos do Catálogo</div>';
+    matches.forEach(function(it, idx) {
+      var marcasHtml = (it.marcas && it.marcas.length)
+        ? '<div class="autocomplete-marcas">' +
+          it.marcas.slice(0, 4).map(function(m) { return '<span class="pill-marca-sugestao">' + esc(m) + '</span>'; }).join('') +
+          (it.marcas.length > 4 ? '<span class="pill-marca-sugestao">+' + (it.marcas.length - 4) + '</span>' : '') +
+          '</div>'
+        : '';
+
+      html += '<div class="autocomplete-sugestao" data-cat-id="' + esc(it.id) + '" onclick="selecionarItemDoCatalogo(' + i + ',\'' + esc(it.id) + '\')">' +
+        '<div class="autocomplete-titulo">' +
+        '<span>' + esc(it.nome) + '</span>' +
+        '<span class="autocomplete-unidade">' + esc(it.unidade) + '</span>' +
+        '</div>' +
+        '<div style="font-size:11.5px;color:var(--suave);margin-top:2px">' + esc(it.grupoNome || '') + '</div>' +
+        marcasHtml +
+        '</div>';
+    });
+  }
+
+  html += '<div class="autocomplete-rodape-novo" onclick="promoverItemParaCatalogo(' + i + ',\'' + esc(termo) + '\')">' +
+    '➕ Manter "<b>' + esc(termo) + '</b>" e registrar no catálogo canônico' +
+    '</div>';
+
+  pop.innerHTML = html;
+  pop.style.display = 'block';
+
+  var rect = inputEl.getBoundingClientRect();
+  pop.style.top = (rect.bottom + (window.scrollY || window.pageYOffset || 0) + 4) + 'px';
+  pop.style.left = Math.max(10, Math.min(window.innerWidth - 450, rect.left + (window.scrollX || window.pageXOffset || 0))) + 'px';
+}
+
+function selecionarItemDoCatalogo(i, itemId) {
+  fecharAutocompleteItem();
+  var catItem = CF_CATALOGO_ITENS.find(function(it) { return it.id === itemId; });
+  if (!catItem || !itens[i]) return;
+
+  itens[i].descricao = catItem.nome;
+  itens[i].catalogoId = catItem.id;
+  if (!itens[i].unidade || itens[i].unidade === 'un') {
+    itens[i].unidade = catItem.unidade || 'un';
+  }
+  if (catItem.marcas && catItem.marcas.length > 0 && !itens[i].marcaReferencia) {
+    itens[i].marcaReferencia = catItem.marcas[0];
+  }
+
+  desenharGrade();
+  salvarRascunho();
+
+  setTimeout(function() {
+    var linhas = document.querySelectorAll('#grade tbody tr');
+    if (linhas[i]) {
+      var qtd = linhas[i].querySelector('td.col-qtd input');
+      if (qtd) { qtd.focus(); qtd.select(); }
+    }
+  }, 50);
+}
+
+function promoverItemParaCatalogo(i, nome) {
+  fecharAutocompleteItem();
+  if (!itens[i]) return;
+  var nomeItem = String(nome || itens[i].descricao || '').trim();
+  if (!nomeItem) return;
+
+  itens[i].descricao = nomeItem;
+  var idGerado = 'cat-user-' + Date.now();
+  itens[i].catalogoId = idGerado;
+
+  var novoCat = {
+    id: idGerado,
+    nome: nomeItem,
+    grupoId: '',
+    grupoNome: 'Itens Gerais',
+    unidade: itens[i].unidade || 'un',
+    marcas: itens[i].marcaReferencia ? [itens[i].marcaReferencia] : []
+  };
+  CF_CATALOGO_ITENS.push(novoCat);
+
+  CF_MARCAS_PENDENTES.push({
+    id: 'pend-' + Date.now(),
+    tipo: 'item',
+    nome: nomeItem,
+    itemNome: nomeItem,
+    unidade: itens[i].unidade || 'un',
+    data: new Date().toLocaleDateString('pt-BR'),
+    autor: 'Comprador (on-the-fly)'
+  });
+
+  salvarConfiguracoesCatalogo();
+  desenharGrade();
+  salvarRascunho();
+}
+
+function fecharAutocompleteItem() {
+  var pop = document.getElementById('cfPopoverItemAutocomplete');
+  if (pop) pop.style.display = 'none';
+}
+
+// ── DROPDOWN DE MARCAS E CADASTRO ON-THE-FLY ──
+
+function obterMarcasParaItem(desc, catalogoId) {
+  if (catalogoId) {
+    var cat = CF_CATALOGO_ITENS.find(function(it) { return it.id === catalogoId; });
+    if (cat && cat.marcas && cat.marcas.length) return cat.marcas;
+  }
+  if (desc) {
+    var descNorm = normalizarTextoBusca(desc);
+    var cat2 = CF_CATALOGO_ITENS.find(function(it) {
+      return normalizarTextoBusca(it.nome) === descNorm;
+    });
+    if (cat2 && cat2.marcas && cat2.marcas.length) return cat2.marcas;
+
+    // Busca por similaridade de palavra
+    var cat3 = CF_CATALOGO_ITENS.find(function(it) {
+      return descNorm.indexOf(normalizarTextoBusca(it.nome)) >= 0 ||
+             normalizarTextoBusca(it.nome).indexOf(descNorm) >= 0;
+    });
+    if (cat3 && cat3.marcas && cat3.marcas.length) return cat3.marcas;
+  }
+  return [];
+}
+
+function abrirDropdownMarcas(anchorEl, linhaIdx, propIdx) {
+  fecharPopovers();
+  var drop = document.getElementById('cfDropdownMarcas');
+  if (!drop || !itens[linhaIdx]) return;
+
+  var it = itens[linhaIdx];
+  var marcasItem = obterMarcasParaItem(it.descricao, it.catalogoId);
+
+  var html = '<div class="popover-header">🏷️ Marcas recomendadas para este item</div>';
+
+  if (marcasItem.length > 0) {
+    marcasItem.forEach(function(m) {
+      html += '<div class="opcao-marca" onclick="selecionarMarcaCotada(' + linhaIdx + ',' + propIdx + ',\'' + esc(m) + '\')">' +
+        '<span>' + esc(m) + '</span>' +
+        '<span style="font-size:10px;color:var(--suave);background:rgba(21,30,73,.05);padding:1px 5px;border-radius:3px">catálogo</span>' +
+        '</div>';
+    });
+  } else {
+    // Apresenta marcas gerais mais frequentes
+    html += '<div style="padding:6px 12px;font-size:11.5px;color:var(--suave)">Nenhuma marca padrão cadastrada para este item.</div>';
+    CF_MARCAS_ACERVO.slice(0, 5).forEach(function(m) {
+      html += '<div class="opcao-marca" onclick="selecionarMarcaCotada(' + linhaIdx + ',' + propIdx + ',\'' + esc(m.nome) + '\')">' +
+        '<span>' + esc(m.nome) + '</span>' +
+        '<small style="font-size:10px;color:var(--suave)">' + esc(m.categoria || '') + '</small>' +
+        '</div>';
+    });
+  }
+
+  html += '<div class="opcao-marca opcao-nova-marca" onclick="acionarDigitacaoNovaMarca(' + linhaIdx + ',' + propIdx + ')">' +
+    '<span>➕ Outra marca (não cadastrada)…</span>' +
+    '</div>';
+
+  drop.innerHTML = html;
+  drop.style.display = 'block';
+
+  var rect = anchorEl.getBoundingClientRect();
+  drop.style.top = (rect.bottom + (window.scrollY || window.pageYOffset || 0) + 2) + 'px';
+  drop.style.left = Math.max(10, Math.min(window.innerWidth - 240, rect.left + (window.scrollX || window.pageXOffset || 0))) + 'px';
+}
+
+function selecionarMarcaCotada(linhaIdx, propIdx, marca) {
+  fecharPopovers();
+  if (!itens[linhaIdx]) return;
+
+  if (propIdx === -1) {
+    itens[linhaIdx].marcaReferencia = marca;
+    var elRef = document.getElementById('ref-marca-' + linhaIdx);
+    if (elRef) elRef.value = marca;
+  } else {
+    if (!itens[linhaIdx].marcas) itens[linhaIdx].marcas = [];
+    itens[linhaIdx].marcas[propIdx] = marca;
+    var elProp = document.getElementById('prop-marca-' + linhaIdx + '-' + propIdx);
+    if (elProp) elProp.value = marca;
+  }
+  salvarRascunho();
+}
+
+function acionarDigitacaoNovaMarca(linhaIdx, propIdx) {
+  fecharPopovers();
+  var nova = prompt('Digite o nome da nova marca (será cadastrada automaticamente no catálogo deste item):');
+  if (nova && nova.trim()) {
+    salvarNovaMarcaOnTheFly(linhaIdx, propIdx, nova.trim());
+  }
+}
+
+function salvarNovaMarcaOnTheFly(linhaIdx, propIdx, novaMarca) {
+  var marcaNome = String(novaMarca || '').trim();
+  if (!marcaNome || !itens[linhaIdx]) return;
+
+  var it = itens[linhaIdx];
+  if (propIdx === -1) {
+    it.marcaReferencia = marcaNome;
+  } else {
+    if (!it.marcas) it.marcas = [];
+    it.marcas[propIdx] = marcaNome;
+  }
+
+  // 1. Vincula ao item no catálogo se existir
+  var cat = null;
+  if (it.catalogoId) {
+    cat = CF_CATALOGO_ITENS.find(function(c) { return c.id === it.catalogoId; });
+  }
+  if (!cat && it.descricao) {
+    var dNorm = normalizarTextoBusca(it.descricao);
+    cat = CF_CATALOGO_ITENS.find(function(c) { return normalizarTextoBusca(c.nome) === dNorm; });
+  }
+  if (cat) {
+    if (!cat.marcas) cat.marcas = [];
+    if (cat.marcas.indexOf(marcaNome) === -1) {
+      cat.marcas.push(marcaNome);
+    }
+  }
+
+  // 2. Registra no acervo global de marcas
+  var jaTemGlobal = CF_MARCAS_ACERVO.some(function(m) {
+    return normalizarTextoBusca(m.nome) === normalizarTextoBusca(marcaNome);
+  });
+  if (!jaTemGlobal) {
+    CF_MARCAS_ACERVO.push({
+      nome: marcaNome,
+      categoria: (cat && cat.grupoNome) ? cat.grupoNome : 'Itens Gerais'
+    });
+  }
+
+  // 3. Adiciona à fila de homologação
+  CF_MARCAS_PENDENTES.push({
+    id: 'pend-' + Date.now(),
+    tipo: 'marca',
+    nome: marcaNome,
+    itemNome: it.descricao || '',
+    data: new Date().toLocaleDateString('pt-BR'),
+    autor: 'Comprador (on-the-fly)'
+  });
+
+  salvarConfiguracoesCatalogo();
+
+  if (typeof google !== 'undefined' && google.script && google.script.run && google.script.run.apiSincronizarMarcaOnTheFly) {
+    google.script.run.apiSincronizarMarcaOnTheFly(it.catalogoId || '', marcaNome);
+  }
+
+  desenharGrade();
+  salvarRascunho();
+
+  var msg = document.getElementById('salvoMsg');
+  if (msg) {
+    msg.innerHTML = '<span style="color:var(--ok)">✓ Marca "<b>' + esc(marcaNome) + '</b>" registrada com sucesso e vinculada ao item.</span>';
+  }
+}
+
+function fecharDropdownMarcas() {
+  var drop = document.getElementById('cfDropdownMarcas');
+  if (drop) drop.style.display = 'none';
+}
+
+function fecharPopovers() {
+  fecharPopoverGrupos();
+  fecharAutocompleteItem();
+  fecharDropdownMarcas();
+}
+
+// Fechar popovers ao clicar fora
+document.addEventListener('click', function(e) {
+  var pG = document.getElementById('cfPopoverGrupos');
+  if (pG && pG.style.display !== 'none' && !e.target.closest('#cfPopoverGrupos') && !e.target.closest('#btnNovoGrupo') && !e.target.closest('.grupo-trocar-btn')) {
+    fecharPopoverGrupos();
+  }
+  var pA = document.getElementById('cfPopoverItemAutocomplete');
+  if (pA && pA.style.display !== 'none' && !e.target.closest('#cfPopoverItemAutocomplete') && !e.target.closest('input.desc')) {
+    fecharAutocompleteItem();
+  }
+  var pM = document.getElementById('cfDropdownMarcas');
+  if (pM && pM.style.display !== 'none' && !e.target.closest('#cfDropdownMarcas') && !e.target.closest('.input-marca-prop') && !e.target.closest('.input-ref-marca') && !e.target.closest('.bt-marca-drop')) {
+    fecharDropdownMarcas();
+  }
+});
+
+// ── TELA DE CONFIGURAÇÕES & GOVERNANÇA (v-config) ──
+
+var abaConfigAtiva = 'grupos';
+
+function trocarAbaConfig(nomeAba) {
+  abaConfigAtiva = nomeAba;
+  ['grupos', 'itens', 'marcas', 'homologacao'].forEach(function(a) {
+    var p = document.getElementById('painel-cfg-' + a);
+    var b = document.getElementById('btn-cfg-' + a);
+    if (p) p.style.display = (a === nomeAba ? 'block' : 'none');
+    if (b) b.classList.toggle('ativo', a === nomeAba);
+  });
+}
+
+function inicializarTelaConfig() {
+  atualizarContadoresConfig();
+  renderizarTabelaGruposConfig();
+  renderizarTabelaItensConfig('');
+  renderizarTabelaMarcasConfig();
+  renderizarTabelaHomologacaoConfig();
+  trocarAbaConfig(abaConfigAtiva || 'grupos');
+}
+
+function atualizarContadoresConfig() {
+  var cG = document.getElementById('cfg-count-grupos'); if (cG) cG.textContent = CF_GRUPOS_PADRAO.length;
+  var cI = document.getElementById('cfg-count-itens'); if (cI) cI.textContent = CF_CATALOGO_ITENS.length;
+  var cM = document.getElementById('cfg-count-marcas'); if (cM) cM.textContent = CF_MARCAS_ACERVO.length;
+  var cP = document.getElementById('cfg-count-pendentes'); if (cP) cP.textContent = CF_MARCAS_PENDENTES.length;
+}
+
+function renderizarTabelaGruposConfig() {
+  var container = document.getElementById('tabelaGruposPadraoContainer');
+  if (!container) return;
+
+  var html = '<table class="config-tabela-densa">' +
+    '<thead><tr>' +
+    '<th style="width:50px">Ícone</th>' +
+    '<th>Nome do Grupo Padronizado</th>' +
+    '<th>Categoria Associada</th>' +
+    '<th>Status</th>' +
+    '<th style="text-align:right">Ações</th>' +
+    '</tr></thead><tbody>';
+
+  CF_GRUPOS_PADRAO.forEach(function(g, idx) {
+    html += '<tr>' +
+      '<td style="font-size:18px;text-align:center">' + (g.icone || '🏢') + '</td>' +
+      '<td><b>' + esc(g.nome) + '</b></td>' +
+      '<td><span class="grupo-padrao-badge" style="background:#F0F4F8;color:var(--suave);border-color:var(--linha)">' + esc(g.categoria) + '</span></td>' +
+      '<td><span class="grupo-padrao-badge">🔒 FIXO / OFICIAL</span></td>' +
+      '<td style="text-align:right">' +
+      '<button type="button" class="bt some" style="padding:4px 8px;font-size:12px" onclick="editarGrupoPadrao(' + idx + ')">Renomear</button>' +
+      '</td></tr>';
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function editarGrupoPadrao(idx) {
+  var g = CF_GRUPOS_PADRAO[idx];
+  if (!g) return;
+  var novoNome = prompt('Editar nome do grupo padronizado:', g.nome);
+  if (novoNome && novoNome.trim()) {
+    g.nome = novoNome.trim();
+    salvarConfiguracoesCatalogo();
+    renderizarTabelaGruposConfig();
+  }
+}
+
+function abrirModalNovoGrupoPadrao() {
+  var nome = prompt('Nome do novo grupo padronizado (EAP Oficial):');
+  if (!nome || !nome.trim()) return;
+  var categoria = prompt('Categoria da compra (ex: Engenharia, Facilities, Material de Consumo):', 'Engenharia & Obras');
+
+  CF_GRUPOS_PADRAO.push({
+    id: 'grp-custom-' + Date.now(),
+    nome: nome.trim(),
+    categoria: categoria ? categoria.trim() : 'Geral',
+    icone: '🏢',
+    ehFixo: true
+  });
+
+  salvarConfiguracoesCatalogo();
+  atualizarContadoresConfig();
+  renderizarTabelaGruposConfig();
+}
+
+function renderizarTabelaItensConfig(filtro) {
+  var container = document.getElementById('tabelaItensCatalogoContainer');
+  if (!container) return;
+
+  var fNorm = normalizarTextoBusca(filtro);
+  var filtrados = CF_CATALOGO_ITENS.filter(function(it) {
+    if (!fNorm) return true;
+    var n = normalizarTextoBusca(it.nome);
+    var g = normalizarTextoBusca(it.grupoNome);
+    var m = (it.marcas || []).map(normalizarTextoBusca).join(' ');
+    return n.indexOf(fNorm) >= 0 || g.indexOf(fNorm) >= 0 || m.indexOf(fNorm) >= 0;
+  });
+
+  var html = '<table class="config-tabela-densa">' +
+    '<thead><tr>' +
+    '<th>Descrição Canônica</th>' +
+    '<th>Grupo EAP</th>' +
+    '<th>Unidade</th>' +
+    '<th>Marcas Homologadas</th>' +
+    '<th style="text-align:right">Ações</th>' +
+    '</tr></thead><tbody>';
+
+  filtrados.forEach(function(it, idx) {
+    var marcasChips = (it.marcas && it.marcas.length)
+      ? it.marcas.map(function(m) {
+          return '<span class="pill-marca-sugestao" style="margin-right:4px;font-size:11.5px">' + esc(m) + '</span>';
+        }).join('')
+      : '<span style="color:var(--suave);font-size:11px">Nenhuma marca vinculada</span>';
+
+    html += '<tr>' +
+      '<td><b>' + esc(it.nome) + '</b></td>' +
+      '<td><span style="font-size:12px;color:var(--suave)">' + esc(it.grupoNome || '—') + '</span></td>' +
+      '<td><span class="autocomplete-unidade">' + esc(it.unidade) + '</span></td>' +
+      '<td>' + marcasChips + '</td>' +
+      '<td style="text-align:right">' +
+      '<button type="button" class="bt some" style="padding:4px 8px;font-size:12px" onclick="adicionarMarcaAoItemConfig(\'' + esc(it.id) + '\')">+ Marca</button>' +
+      '</td></tr>';
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function filtrarItensConfig(termo) {
+  renderizarTabelaItensConfig(termo);
+}
+
+function adicionarMarcaAoItemConfig(itemId) {
+  var item = CF_CATALOGO_ITENS.find(function(it) { return it.id === itemId; });
+  if (!item) return;
+  var nova = prompt('Informe a marca para vincular ao item "' + item.nome + '":');
+  if (nova && nova.trim()) {
+    if (!item.marcas) item.marcas = [];
+    item.marcas.push(nova.trim());
+
+    var jaTemGlobal = CF_MARCAS_ACERVO.some(function(m) {
+      return normalizarTextoBusca(m.nome) === normalizarTextoBusca(nova.trim());
+    });
+    if (!jaTemGlobal) {
+      CF_MARCAS_ACERVO.push({ nome: nova.trim(), categoria: item.grupoNome || 'Itens Gerais' });
+    }
+
+    salvarConfiguracoesCatalogo();
+    atualizarContadoresConfig();
+    renderizarTabelaItensConfig(document.getElementById('filtroItensConfig') ? document.getElementById('filtroItensConfig').value : '');
+  }
+}
+
+function abrirModalNovoItemCatalogo() {
+  var nome = prompt('Descrição oficial do novo item:');
+  if (!nome || !nome.trim()) return;
+  var un = prompt('Unidade canônica recomendada (ex: pct, fardo, un, m², m³, gl, kg):', 'un');
+  var marcasStr = prompt('Marcas homologadas (separadas por vírgula, opcional):', '');
+
+  var marcas = marcasStr ? marcasStr.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+
+  CF_CATALOGO_ITENS.push({
+    id: 'cat-custom-' + Date.now(),
+    nome: nome.trim(),
+    grupoId: '',
+    grupoNome: 'Itens Oficiais',
+    unidade: un ? un.trim() : 'un',
+    marcas: marcas
+  });
+
+  marcas.forEach(function(m) {
+    if (!CF_MARCAS_ACERVO.some(function(a) { return normalizarTextoBusca(a.nome) === normalizarTextoBusca(m); })) {
+      CF_MARCAS_ACERVO.push({ nome: m, categoria: 'Itens Gerais' });
+    }
+  });
+
+  salvarConfiguracoesCatalogo();
+  atualizarContadoresConfig();
+  renderizarTabelaItensConfig('');
+}
+
+function renderizarTabelaMarcasConfig() {
+  var container = document.getElementById('tabelaMarcasGlobalContainer');
+  if (!container) return;
+
+  var html = '<table class="config-tabela-densa">' +
+    '<thead><tr>' +
+    '<th>Marca / Fabricante</th>' +
+    '<th>Segmento / Categoria</th>' +
+    '<th>Itens que Utilizam</th>' +
+    '<th style="text-align:right">Ações</th>' +
+    '</tr></thead><tbody>';
+
+  CF_MARCAS_ACERVO.forEach(function(m, idx) {
+    var contagemItens = CF_CATALOGO_ITENS.filter(function(it) {
+      return (it.marcas || []).some(function(b) {
+        return normalizarTextoBusca(b) === normalizarTextoBusca(m.nome);
+      });
+    }).length;
+
+    html += '<tr>' +
+      '<td><b>' + esc(m.nome) + '</b></td>' +
+      '<td><span style="font-size:12px;color:var(--suave)">' + esc(m.categoria || 'Geral') + '</span></td>' +
+      '<td><span class="grupo-padrao-badge" style="background:#F0F4F8;color:var(--suave)">' + contagemItens + ' item(ns)</span></td>' +
+      '<td style="text-align:right">' +
+      '<button type="button" class="bt some" style="padding:4px 8px;font-size:12px" onclick="renomearMarcaGlobal(' + idx + ')">Editar</button>' +
+      '</td></tr>';
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function renomearMarcaGlobal(idx) {
+  var m = CF_MARCAS_ACERVO[idx];
+  if (!m) return;
+  var novoNome = prompt('Editar nome da marca:', m.nome);
+  if (novoNome && novoNome.trim()) {
+    var antigo = m.nome;
+    m.nome = novoNome.trim();
+
+    CF_CATALOGO_ITENS.forEach(function(it) {
+      if (it.marcas) {
+        it.marcas = it.marcas.map(function(b) {
+          return normalizarTextoBusca(b) === normalizarTextoBusca(antigo) ? m.nome : b;
+        });
+      }
+    });
+
+    salvarConfiguracoesCatalogo();
+    renderizarTabelaMarcasConfig();
+    renderizarTabelaItensConfig('');
+  }
+}
+
+function abrirModalNovaMarcaGlobal() {
+  var nome = prompt('Nome da marca / fabricante:');
+  if (!nome || !nome.trim()) return;
+  var cat = prompt('Segmento da marca (ex: Material de Consumo, Elétrica, Obras):', 'Material de Consumo');
+
+  CF_MARCAS_ACERVO.push({
+    nome: nome.trim(),
+    categoria: cat ? cat.trim() : 'Geral'
+  });
+
+  salvarConfiguracoesCatalogo();
+  atualizarContadoresConfig();
+  renderizarTabelaMarcasConfig();
+}
+
+function renderizarTabelaHomologacaoConfig() {
+  var container = document.getElementById('tabelaHomologacaoContainer');
+  if (!container) return;
+
+  if (CF_MARCAS_PENDENTES.length === 0) {
+    container.innerHTML = '<div style="padding:32px;text-align:center;color:var(--suave);font-size:13.5px">' +
+      '🎉 Nenhuma marca ou item pendente na fila. Todas as adições on-the-fly foram homologadas ou consolidadas.' +
+      '</div>';
+    return;
+  }
+
+  var html = '<table class="config-tabela-densa">' +
+    '<thead><tr>' +
+    '<th>Tipo</th>' +
+    '<th>Nome Informado</th>' +
+    '<th>Item / Contexto</th>' +
+    '<th>Data</th>' +
+    '<th>Origem</th>' +
+    '<th style="text-align:right">Ações de Governança</th>' +
+    '</tr></thead><tbody>';
+
+  CF_MARCAS_PENDENTES.forEach(function(p) {
+    html += '<tr>' +
+      '<td><span class="grupo-padrao-badge" style="' + (p.tipo === 'marca' ? 'color:#065CA9;background:#EBF3FB' : 'color:#15803D;background:#DCFCE7') + '">' + esc(p.tipo.toUpperCase()) + '</span></td>' +
+      '<td><b>' + esc(p.nome) + '</b></td>' +
+      '<td><span style="font-size:12px;color:var(--suave)">' + esc(p.itemNome || '—') + '</span></td>' +
+      '<td>' + esc(p.data || '—') + '</td>' +
+      '<td><small style="color:var(--suave)">' + esc(p.autor || 'Comprador') + '</small></td>' +
+      '<td style="text-align:right">' +
+      '<button type="button" class="bt" style="padding:4px 8px;font-size:11.5px;margin-right:4px;background:#DCFCE7;border-color:#86EFAC;color:#15803D" onclick="homologarMarcaConfig(\'' + esc(p.id) + '\')">✓ Homologar</button>' +
+      '<button type="button" class="bt some" style="padding:4px 8px;font-size:11.5px;margin-right:4px" onclick="mesclarMarcaConfig(\'' + esc(p.id) + '\')">🔄 Mesclar</button>' +
+      '<button type="button" class="bt some" style="padding:4px 8px;font-size:11.5px;color:#DC2626" onclick="rejeitarMarcaConfig(\'' + esc(p.id) + '\')">✕ Rejeitar</button>' +
+      '</td></tr>';
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function homologarMarcaConfig(pendId) {
+  var p = CF_MARCAS_PENDENTES.find(function(item) { return item.id === pendId; });
+  if (!p) return;
+
+  if (p.tipo === 'marca') {
+    var jaTem = CF_MARCAS_ACERVO.some(function(m) {
+      return normalizarTextoBusca(m.nome) === normalizarTextoBusca(p.nome);
+    });
+    if (!jaTem) {
+      CF_MARCAS_ACERVO.push({ nome: p.nome, categoria: 'Material de Consumo' });
+    }
+  }
+
+  CF_MARCAS_PENDENTES = CF_MARCAS_PENDENTES.filter(function(item) { return item.id !== pendId; });
+  salvarConfiguracoesCatalogo();
+  atualizarContadoresConfig();
+  renderizarTabelaHomologacaoConfig();
+  renderizarTabelaMarcasConfig();
+}
+
+function mesclarMarcaConfig(pendId) {
+  var p = CF_MARCAS_PENDENTES.find(function(item) { return item.id === pendId; });
+  if (!p) return;
+
+  var destino = prompt('Mesclar "' + p.nome + '" com qual marca oficial existente? (Ex: Melitta, Santher):');
+  if (!destino || !destino.trim()) return;
+  var destinoNome = destino.trim();
+
+  // Substitui referências no catálogo
+  CF_CATALOGO_ITENS.forEach(function(it) {
+    if (it.marcas) {
+      it.marcas = it.marcas.map(function(m) {
+        return normalizarTextoBusca(m) === normalizarTextoBusca(p.nome) ? destinoNome : m;
+      });
+    }
+  });
+
+  CF_MARCAS_PENDENTES = CF_MARCAS_PENDENTES.filter(function(item) { return item.id !== pendId; });
+  salvarConfiguracoesCatalogo();
+  atualizarContadoresConfig();
+  renderizarTabelaHomologacaoConfig();
+  renderizarTabelaItensConfig('');
+  renderizarTabelaMarcasConfig();
+}
+
+function rejeitarMarcaConfig(pendId) {
+  if (!confirm('Deseja realmente rejeitar e remover este item da fila?')) return;
+  CF_MARCAS_PENDENTES = CF_MARCAS_PENDENTES.filter(function(item) { return item.id !== pendId; });
+  salvarConfiguracoesCatalogo();
+  atualizarContadoresConfig();
+  renderizarTabelaHomologacaoConfig();
 }
 
 function paraISO(dStr) {
@@ -3115,30 +4422,34 @@ var TITULOS = {
   consulta: ['Consulta de preço', 'O que já pagamos por isso?'],
   mapa:     ['Equalizações', 'O comparativo lado a lado, item a item.'],
   fornecedores: ['Fornecedores', 'Quem atende cada categoria, e a que preço.'],
+  config:   ['Configurações & Catálogo', 'Grupos Padronizados da EAP, Itens Canônicos e Governança de Marcas.'],
   nova:     ['Nova cotação', 'Uma linha por item, uma coluna por proponente.']
 };
 
 function aba(nome) {
-  ['consulta', 'mapa', 'fornecedores', 'nova'].forEach(function (n) {
-    document.getElementById('v-' + n).hidden = n !== nome;
+  ['consulta', 'mapa', 'fornecedores', 'config', 'nova'].forEach(function (n) {
+    var el = document.getElementById('v-' + n);
+    if (el) el.hidden = n !== nome;
   });
 
-  // Só as duas de leitura são abas. "Nova cotação" é um editor, e por isso
-  // é botão de ação: trocar entre leituras é reversível, sair de um
-  // formulário com dado digitado não é.
-  document.getElementById('ab-consulta').setAttribute('aria-selected', nome === 'consulta');
-  document.getElementById('ab-mapa').setAttribute('aria-selected', nome === 'mapa');
-  document.getElementById('ab-fornecedores').setAttribute('aria-selected', nome === 'fornecedores');
-  document.getElementById('ab-nova').classList.toggle('ativo', nome === 'nova');
+  var abConsulta = document.getElementById('ab-consulta'); if (abConsulta) abConsulta.setAttribute('aria-selected', nome === 'consulta');
+  var abMapa = document.getElementById('ab-mapa'); if (abMapa) abMapa.setAttribute('aria-selected', nome === 'mapa');
+  var abForn = document.getElementById('ab-fornecedores'); if (abForn) abForn.setAttribute('aria-selected', nome === 'fornecedores');
+  var abCfg = document.getElementById('ab-config'); if (abCfg) abCfg.setAttribute('aria-selected', nome === 'config');
+  var abNova = document.getElementById('ab-nova'); if (abNova) abNova.classList.toggle('ativo', nome === 'nova');
 
   // O título da página diz onde se está — a barra é compacta demais para
   // carregar isso sozinha.
   if (nome === 'nova' && idEmEdicao) {
     document.getElementById('tituloTela').textContent = 'Editar / Renegociar equalização';
     document.getElementById('subTela').textContent = idEmEdicao + ' · Ajuste de propostas, rodadas e preços negociados.';
-  } else {
+  } else if (TITULOS[nome]) {
     document.getElementById('tituloTela').textContent = TITULOS[nome][0];
     document.getElementById('subTela').textContent = TITULOS[nome][1];
+  }
+
+  if (nome === 'config') {
+    inicializarTelaConfig();
   }
 
   try {
@@ -4702,13 +6013,15 @@ function desenharGrade() {
           // Cifrão fixo à esquerda: deixa claro que o campo é dinheiro e
           // que o valor é UNITÁRIO, não o total da linha.
           var subMarca = (modoMarcasAtivo && it.tipo !== 'grupo')
-            ? '<div class="sub-marca-campo">' +
-              '<input class="input-marca-prop" placeholder="marca cotada…" ' +
+            ? '<div class="sub-marca-campo" style="position:relative;display:flex;align-items:center">' +
+              '<input class="input-marca-prop" id="prop-marca-' + i + '-' + j + '" placeholder="marca cotada…" ' +
               'value="' + esc((it.marcas || [])[j] || '') + '" ' +
               'data-l="' + i + '" data-c="' + j + '" ' +
               'aria-label="Marca cotada — ' + esc(it.descricao || ('item ' + (i + 1))) + ' — ' + esc(p.nome || ('proponente ' + (j + 1))) + '" ' +
+              'onclick="abrirDropdownMarcas(this,' + i + ',' + j + ')" ' +
               'oninput="if(!itens[' + i + '].marcas) itens[' + i + '].marcas=[]; itens[' + i + '].marcas[' + j + ']=this.value;salvarRascunho()" ' +
               'onkeydown="navegarMarca(event,this)">' +
+              '<button type="button" class="bt-marca-drop" onclick="abrirDropdownMarcas(document.getElementById(\'prop-marca-' + i + '-' + j + '\'),' + i + ',' + j + ')" title="Escolher marca cadastrada ou nova">▾</button>' +
               '</div>'
             : '';
 
@@ -4735,21 +6048,46 @@ function desenharGrade() {
       '<button class="degrau" onclick="mudarNivel(' + i + ',1)" title="Empurrar para dentro do grupo acima"' +
       (it.nivel >= 3 ? ' disabled' : '') + ' aria-label="Aumentar o recuo">›</button>';
 
-    var celulaDesc = (modoMarcasAtivo && it.tipo !== 'grupo')
-      ? '<div class="cel-desc-corpo">' +
-          '<input class="desc" value="' + esc(it.descricao) + '" placeholder="descrição do item"' +
+    var celulaDesc = '';
+    if (it.tipo === 'grupo') {
+      if (it.ehFixo) {
+        celulaDesc = '<div class="grupo-linha-container">' +
+          '<span class="grupo-padrao-badge">🔒 PADRONIZADO</span>' +
+          '<span class="grupo-fixo-nome">' + esc(it.descricao || 'GRUPO PADRONIZADO') + '</span>' +
+          '<button type="button" class="grupo-trocar-btn" onclick="abrirMenuGruposLinha(event, this, ' + i + ')" title="Alterar grupo padronizado ou desbloquear">alterar ▾</button>' +
+          '</div>';
+      } else {
+        celulaDesc = '<div class="grupo-linha-container">' +
+          '<span class="grupo-padrao-badge" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#B45309">📝 AVULSO</span>' +
+          '<input class="desc desc-grupo" value="' + esc(it.descricao) + '" placeholder="NOME DO GRUPO (AVULSO)"' +
           ' oninput="itens[' + i + '].descricao=this.value;salvarRascunho()">' +
-          '<div class="linha-ref-marca">' +
-            '<span class="badge-ref" onclick="replicarMarcaRef(' + i + ')" title="Clique para replicar esta marca para todos os proponentes">Ref:</span>' +
-            '<input class="input-ref-marca" placeholder="marca ref. / padrão (ex: Melitta, Suvinil, Tigre)…"' +
-            ' value="' + esc(it.marcaReferencia || '') + '"' +
-            ' oninput="itens[' + i + '].marcaReferencia=this.value;salvarRascunho()"' +
-            ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}">' +
-          '</div>' +
-        '</div>'
-      : '<input class="desc" value="' + esc(it.descricao) + '" placeholder="' +
-        (it.tipo === 'grupo' ? 'NOME DO GRUPO' : 'descrição do item') +
-        '" oninput="itens[' + i + '].descricao=this.value;salvarRascunho()">';
+          '<button type="button" class="grupo-trocar-btn" onclick="abrirMenuGruposLinha(event, this, ' + i + ')" title="Padronizar com grupo da EAP">padronizar ▾</button>' +
+          '</div>';
+      }
+    } else if (modoMarcasAtivo) {
+      celulaDesc = '<div class="cel-desc-corpo">' +
+        '<input class="desc" value="' + esc(it.descricao) + '" placeholder="descrição do item"' +
+        ' data-linha="' + i + '" autocomplete="off"' +
+        ' oninput="itens[' + i + '].descricao=this.value;onInputDescItem(this,' + i + ');salvarRascunho()"' +
+        ' onfocus="onFocusDescItem(this,' + i + ')"' +
+        ' onkeydown="onKeydownDescItem(event,this,' + i + ')">' +
+        '<div class="linha-ref-marca" style="position:relative;display:flex;align-items:center">' +
+          '<span class="badge-ref" onclick="replicarMarcaRef(' + i + ')" title="Clique para replicar esta marca para todos os proponentes">Ref:</span>' +
+          '<input class="input-ref-marca" id="ref-marca-' + i + '" placeholder="marca ref. / padrão (ex: Melitta, Suvinil)…"' +
+          ' value="' + esc(it.marcaReferencia || '') + '"' +
+          ' onclick="abrirDropdownMarcas(this,' + i + ',-1)"' +
+          ' oninput="itens[' + i + '].marcaReferencia=this.value;salvarRascunho()"' +
+          ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}">' +
+          '<button type="button" class="bt-marca-drop" onclick="abrirDropdownMarcas(document.getElementById(\'ref-marca-' + i + '\'),' + i + ',-1)" title="Escolher marca cadastrada ou nova">▾</button>' +
+        '</div>' +
+      '</div>';
+    } else {
+      celulaDesc = '<input class="desc" value="' + esc(it.descricao) + '" placeholder="descrição do item"' +
+        ' data-linha="' + i + '" autocomplete="off"' +
+        ' oninput="itens[' + i + '].descricao=this.value;onInputDescItem(this,' + i + ');salvarRascunho()"' +
+        ' onfocus="onFocusDescItem(this,' + i + ')"' +
+        ' onkeydown="onKeydownDescItem(event,this,' + i + ')">';
+    }
 
     return '<tr class="' + (it.tipo === 'grupo' ? 'eh-grupo' : '') + '">' +
       // Derivado, então mostrado e não editável: um campo que se pode

@@ -84,3 +84,4 @@ assert.strictEqual(fn(''), '', 'Vazio deve retornar vazio');
 assert.strictEqual(fn(null), '', 'Null deve retornar vazio');
 
 console.log('✓ Todos os testes de abreviação de proponentes passaram com 100% de sucesso!');
+

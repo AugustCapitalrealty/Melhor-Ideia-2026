@@ -334,6 +334,73 @@ function apiMapa(idEqualizacao) {
 }
 
 /**
+ * Carrega a configuração de Grupos Padronizados, Catálogo de Itens e Marcas.
+ * Lê de ScriptProperties ou Config. Se vazio, o frontend usa o catálogo semente.
+ */
+function apiObterConfiguracoesCatalogo() {
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const salvo = props.getProperty('CF_CATALOGO_CONFIG');
+    if (salvo) {
+      const dados = JSON.parse(salvo);
+      dados.ok = true;
+      return dados;
+    }
+    return { ok: true, grupos: null, itens: null, marcas: null, pendentes: [] };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/**
+ * Salva a configuração atualizada do Catálogo (Grupos, Itens, Marcas).
+ */
+function apiSalvarConfiguracaoCatalogo(dados) {
+  try {
+    if (!dados || typeof dados !== 'object') {
+      return { ok: false, erro: 'Dados inválidos fornecidos.' };
+    }
+    const props = PropertiesService.getScriptProperties();
+    props.setProperty('CF_CATALOGO_CONFIG', JSON.stringify({
+      grupos: dados.grupos || [],
+      itens: dados.itens || [],
+      marcas: dados.marcas || [],
+      pendentes: dados.pendentes || [],
+      atualizadoEm: new Date().toISOString(),
+      atualizadoPor: cfUsuario_()
+    }));
+    return { ok: true };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/**
+ * Registra marca informada on-the-fly pelo comprador no catálogo de itens.
+ */
+function apiSincronizarMarcaOnTheFly(idCatalogo, nomeMarca) {
+  try {
+    const marca = String(nomeMarca || '').trim();
+    if (!marca) return { ok: false, erro: 'Nome de marca vazio.' };
+    
+    // Tenta atualizar o registro na tabela Catalogo se existir
+    try {
+      if (idCatalogo) {
+        const item = cfLerPor_('Catalogo', 'ID', idCatalogo);
+        if (item) {
+          const marcas = (item.MARCA ? [item.MARCA] : []).concat(marca);
+          cfAtualizar_('Catalogo', 'ID', idCatalogo, { MARCA: marcas.join(' | ') });
+        }
+      }
+    } catch (e) { /* fallback caso tabela ainda não esteja populada */ }
+
+    return { ok: true, marca: marca };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/**
  * Verificação de autorização no servidor (Etapa 7).
  * Operações de gravação, migração e rollback (desfazer) não estão
  * expostas diretamente no web app (que é somente-leitura). Caso venham
