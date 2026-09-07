@@ -272,6 +272,23 @@ function cfFichaFornecedor_(cnpjBruto) {
 
   const ganhas = disputas.filter(function (d) { return d.venceu; });
   const decididas = disputas.filter(function (d) { return d.decidida; });
+  const volumeHomologado = ganhas.reduce(function (a, d) { return a + (d.valor || 0); }, 0) || null;
+  const ticketMedio = (ganhas.length > 0 && volumeHomologado) ? (volumeHomologado / ganhas.length) : null;
+
+  // ── Convites e Assiduidade (Frente 1)
+  let convitesTotal = 0;
+  let convitesRespondidos = 0;
+  let taxaRespostaConvites = null;
+  try {
+    const convites = cfLerTudo_('Convites').filter(function (c) {
+      return cfSoDigitos_(c.CNPJ) === cnpj;
+    });
+    convitesTotal = convites.length;
+    convitesRespondidos = convites.filter(function (c) {
+      return c.APRESENTOU_PROPOSTA === true || String(c.APRESENTOU_PROPOSTA).toLowerCase() === 'true';
+    }).length;
+    if (convitesTotal > 0) taxaRespostaConvites = convitesRespondidos / convitesTotal;
+  } catch (eConv) {}
 
   // Uma chamada, dois usos: a nota e as avaliações que a formaram.
   // Nota sem as avaliações por trás não dá para contestar, e nota que
@@ -280,7 +297,7 @@ function cfFichaFornecedor_(cnpjBruto) {
 
   return {
     cnpj: cnpj,
-    cnpjFormatado: cfCnpjFormatado_(cnpj),
+    cnpjFormatado: typeof cfFormatarCnpj_ === 'function' ? cfFormatarCnpj_(cnpj) : cnpj,
     nome: cad.RAZAO_SOCIAL || (minhas[0] && minhas[0].RAZAO_SOCIAL_INFORMADA) || '(sem identificação)',
     nomeFantasia: cad.NOME_FANTASIA || '',
     cidade: cad.CIDADE || '',
@@ -299,9 +316,13 @@ function cfFichaFornecedor_(cnpjBruto) {
     // em aberto não foi perdida, está em andamento.
     taxaVitoria: decididas.length >= 5 ? (ganhas.length / decididas.length) : null,
     amostraCurta: decididas.length < 5,
+    convitesTotal: convitesTotal,
+    convitesRespondidos: convitesRespondidos,
+    taxaRespostaConvites: taxaRespostaConvites,
+    ticketMedio: ticketMedio,
     iqf: iqf.resumo,
     avaliacoes: iqf.avaliacoes,
-    volumeHomologado: ganhas.reduce(function (a, d) { return a + (d.valor || 0); }, 0) || null,
+    volumeHomologado: volumeHomologado,
     categorias: dedu.lista,
     categoriaPrincipal: dedu.principal,
     subcategoria: dedu.principal ? cfSubcategoriaDerivada_(descricoes, dedu.principal) : '',

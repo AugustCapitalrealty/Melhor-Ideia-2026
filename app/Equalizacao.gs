@@ -194,6 +194,7 @@ function cfMapaEqualizacao_(idEq) {
     filhos[k].sort(function (a, b) { return (cfNumero_(a.ORDEM) || 0) - (cfNumero_(b.ORDEM) || 0); });
   });
 
+  const precosHistoricoBase = typeof cfCarregarPrecos_ === 'function' ? cfCarregarPrecos_() : [];
   const linhas = [];
   (function descer(idPai, nivel) {
     (filhos[idPai] || []).forEach(function (n) {
@@ -210,7 +211,7 @@ function cfMapaEqualizacao_(idEq) {
       let refHist = null;
       if (typeof cfBuscarReferenciaPrecoItem_ === 'function' && (n.TIPO || 'item') !== 'grupo') {
         try {
-          refHist = cfBuscarReferenciaPrecoItem_(n.DESCRICAO, n.UNIDADE_REFERENCIA);
+          refHist = cfBuscarReferenciaPrecoItem_(n.DESCRICAO, n.UNIDADE_REFERENCIA, idEq, precosHistoricoBase);
         } catch (eRef) {}
       }
 

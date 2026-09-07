@@ -300,19 +300,46 @@ function cfPad_(texto, largura) {
  *  - unidade: unidade de medida da referência
  *  - totalOcorrencias: quantas cotações já registraram o item
  */
-function cfBuscarReferenciaPrecoItem_(descricao, unidade) {
+function cfBuscarReferenciaPrecoItem_(descricao, unidade, idEqIgnorar, precosBase) {
   if (!descricao || !String(descricao).trim()) return null;
 
   const alvo = cfNormalizar_(descricao);
   if (alvo.length < 3) return null;
   const palavras = alvo.split(' ').filter(function (p) { return p.length > 2; });
 
-  const precos = cfCarregarPrecos_();
-  let achados = precos.filter(function (r) {
+  const precos = precosBase || cfCarregarPrecos_();
+  let candidatos = precos.filter(function (r) {
     if (!r.chave) return false;
-    if (r.chave === alvo || r.chave.indexOf(alvo) >= 0) return true;
-    return palavras.length > 0 && palavras.every(function (p) { return r.chave.indexOf(p) >= 0; });
+    if (idEqIgnorar && String(r.idEqualizacao) === String(idEqIgnorar)) return false;
+    return true;
   });
+
+  // Pontuação de relevância para suprimentos corporativos:
+  // 100: exato ou substring direta
+  // 80: todas as palavras-chave presentes
+  // 50+: sobreposição semântica de palavras (≥ 50% e pelo menos 2 palavras)
+  const ranqueados = [];
+  candidatos.forEach(function (r) {
+    let score = 0;
+    if (r.chave === alvo || r.chave.indexOf(alvo) >= 0 || alvo.indexOf(r.chave) >= 0) {
+      score = 100;
+    } else if (palavras.length > 0 && palavras.every(function (p) { return r.chave.indexOf(p) >= 0; })) {
+      score = 80;
+    } else if (palavras.length >= 2) {
+      const comuns = palavras.filter(function (p) { return r.chave.indexOf(p) >= 0; }).length;
+      if (comuns >= 2 && (comuns / palavras.length) >= 0.5) {
+        score = 50 + (comuns * 5);
+      }
+    }
+    if (score > 0) {
+      ranqueados.push({ item: r, score: score });
+    }
+  });
+
+  if (ranqueados.length === 0) return null;
+
+  const maxScore = Math.max.apply(null, ranqueados.map(function (x) { return x.score; }));
+  let achados = ranqueados.filter(function (x) { return x.score >= Math.max(50, maxScore - 20); }).map(function (x) { return x.item; });
 
   if (unidade && String(unidade).trim()) {
     const unNorm = String(unidade).trim().toLowerCase();

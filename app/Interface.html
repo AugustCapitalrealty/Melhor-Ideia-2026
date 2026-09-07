@@ -1330,91 +1330,240 @@ table.tabela-executiva tbody tr:hover td {
   background:#FDF3E7;color:var(--alerta);white-space:nowrap;
 }
 
-/* ── Gaveta lateral (ficha 360°) ────────────────────────────── */
-.gaveta-fundo{position:fixed;inset:0;background:rgba(21,30,73,.34);z-index:80;backdrop-filter:blur(2px)}
-/* A ficha era uma faixa de 560px encostada na direita: o conteúdo
-   ficava espremido em coluna única e o resto da tela, borrado e
-   inútil. Centralizada e larga, cabe o cadastro ao lado do histórico
-   — que é como se lê um fornecedor: quem é, à esquerda; o que fez,
-   à direita. */
+/* ── Gaveta lateral (ficha 360° Liquid Glass & Capital Realty) ── */
+.gaveta-fundo{
+  position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:80;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  opacity:0;transition:opacity .22s ease;
+}
+.gaveta-fundo.aberta{opacity:1}
+
 .gaveta{
   position:fixed;inset:0;margin:auto;z-index:81;
-  width:min(1100px,94vw);height:max-content;max-height:88vh;
-  background:var(--superficie);border:1px solid var(--linha);border-radius:16px;
-  box-shadow:0 24px 60px -12px rgba(15,23,42,.35);
+  width:min(1080px,95vw);height:88vh;max-height:88vh;
+  background:rgba(255,255,255,.98);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid rgba(21,30,73,.14);border-radius:16px;
+  box-shadow:0 24px 60px -12px rgba(15,23,42,.35),0 0 0 1px rgba(255,255,255,.6) inset;
   display:flex;flex-direction:column;overflow:hidden;
-  opacity:0;transform:scale(.975);transition:opacity .18s ease,transform .18s ease;
+  opacity:0;transform:scale(.975);transition:opacity .2s ease,transform .2s ease;
 }
 .gaveta.aberta{opacity:1;transform:scale(1)}
 
-/* Duas colunas quando há largura; uma só quando não há. O ponto de
-   corte é o da própria coluna da esquerda, não o do dispositivo. */
-.ficha-colunas{display:grid;grid-template-columns:340px 1fr;gap:0 34px;align-items:start}
-.ficha-col-dir{min-width:0}
-@media (max-width:880px){
-  .ficha-colunas{grid-template-columns:1fr;gap:0}
+/* Topo Executivo */
+.gaveta-header-glass{
+  padding:18px 24px 14px;
+  background:linear-gradient(180deg, #FFFFFF 0%, #F6F8FC 100%);
+  border-bottom:1px solid var(--linha);
+  flex-shrink:0;
 }
-.gaveta-topo{
-  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-  padding:20px 22px 14px;border-bottom:1px solid var(--linha);
-  background:var(--noturno);color:#fff;
+.gaveta-header-main{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
 }
-.gaveta-rotulo{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;opacity:.7}
-.gaveta-topo h2{margin:4px 0 0;font-size:18px;line-height:1.25;font-weight:650}
-.gaveta-fechar{
-  flex:0 0 auto;width:32px;height:32px;border:0;border-radius:8px;cursor:pointer;
-  background:rgba(255,255,255,.14);color:#fff;font-size:20px;line-height:1;font-family:inherit;
+.gaveta-header-titulos{flex:1;min-width:0}
+.gaveta-badge-row{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;
 }
-.gaveta-fechar:hover{background:rgba(255,255,255,.24)}
-.gaveta-corpo{flex:1;overflow-y:auto;padding:20px 22px 40px}
-.gaveta-corpo h3{
-  margin:22px 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
-  color:var(--suave);font-weight:700;
+.gaveta-tag-tipo{
+  font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--royal);background:#E8EDF5;padding:2px 8px;border-radius:6px;
 }
-.gaveta-corpo h3:first-child{margin-top:0}
-.ficha-comentarios{margin-top:10px;display:flex;flex-direction:column;gap:8px}
-.ficha-comentarios blockquote{
-  margin:0;padding:8px 12px;background:var(--superficie2);border-left:3px solid #F59E0B;
-  border-radius:0 8px 8px 0;font-size:12.5px;color:var(--texto);
+.gaveta-tag-status{
+  font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:6px;
 }
-.ficha-comentarios cite{
-  display:block;margin-top:4px;font-style:normal;font-size:11.5px;color:var(--suave);font-weight:600;
+.gaveta-tag-status.ativa{background:#E4F2EA;color:var(--ok)}
+.gaveta-tag-erp{font-size:11px;color:var(--suave);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+.gaveta-nome-razao{
+  margin:0 0 2px;font-size:21px;font-weight:750;letter-spacing:-.02em;
+  color:var(--noturno);line-height:1.2;word-break:break-word;
 }
+.gaveta-nome-fantasia{
+  font-size:13.5px;font-weight:500;color:var(--suave);margin-bottom:8px;
+}
+.gaveta-chips-categorias{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;
+}
+.chip-cat-exec{
+  font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;
+  background:#EDF1F8;color:var(--royal);border:1px solid rgba(0,61,123,.15);
+}
+.chip-cat-exec.destaque{
+  background:#E0EEFA;color:var(--acao);border-color:rgba(6,92,169,.25);
+}
+
+.gaveta-fechar-btn{
+  width:32px;height:32px;border:0;border-radius:50%;cursor:pointer;
+  background:rgba(21,30,73,.07);color:var(--texto);font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s ease,transform .15s ease;
+}
+.gaveta-fechar-btn:hover{background:rgba(21,30,73,.14);transform:scale(1.05)}
+
+/* Quick Actions Toolbar */
+.gaveta-toolbar{
+  display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:10px;
+  border-top:1px dashed var(--linha);flex-wrap:wrap;
+}
+.btn-action-exec{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 12px;font-size:12px;
+  font-weight:650;border-radius:8px;cursor:pointer;border:1px solid transparent;
+  text-decoration:none;transition:all .15s ease;white-space:nowrap;
+}
+.btn-action-exec.zap{
+  background:#E4F2EA;color:#107C41;border-color:rgba(16,124,65,.2);
+}
+.btn-action-exec.zap:hover{background:#D2EBDC;border-color:#107C41}
+.btn-action-exec.nova-cot{
+  background:var(--royal);color:#fff;
+}
+.btn-action-exec.nova-cot:hover{background:var(--acao)}
+.btn-action-exec.avaliar{
+  background:#FFF4E5;color:var(--alerta);border-color:rgba(168,91,18,.25);
+}
+.btn-action-exec.avaliar:hover{background:#FFE6C7}
+.btn-action-exec.secundario{
+  background:var(--superficie);color:var(--texto);border-color:var(--linha);
+}
+.btn-action-exec.secundario:hover{background:var(--superficie2)}
+
+/* Segmented Control (Abas estilo Apple) */
+.gaveta-nav-segmentos{
+  display:flex;background:#E7ECF3;padding:4px;border-radius:10px;
+  margin:12px 24px 0;gap:2px;
+}
+.gaveta-seg-btn{
+  flex:1;padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--suave);
+  background:transparent;border:0;border-radius:8px;cursor:pointer;text-align:center;
+  transition:all .18s cubic-bezier(.16,1,.3,1);white-space:nowrap;
+}
+.gaveta-seg-btn:hover{color:var(--texto)}
+.gaveta-seg-btn.ativo{
+  background:#FFFFFF;color:var(--noturno);box-shadow:0 2px 6px rgba(21,30,73,.1);
+}
+
+/* Área de Rolagem do Conteúdo */
+.gaveta-corpo{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:0}
+.gaveta-scroll-body{
+  flex:1;overflow-y:auto;padding:18px 24px 34px;
+}
+.tab-pane-ficha{display:none}
+.tab-pane-ficha.ativo{display:block;animation:fadeInFicha .2s ease}
+@keyframes fadeInFicha{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Cockpit de KPIs Grid */
+.cockpit-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px;
+}
+.cockpit-kpi-card{
+  background:linear-gradient(180deg,#FFFFFF 0%,#F9FBFE 100%);
+  border:1px solid var(--linha);border-radius:12px;padding:12px 14px;
+  box-shadow:0 1px 3px rgba(21,30,73,.04);
+}
+.cockpit-kpi-label{font-size:10.5px;font-weight:650;text-transform:uppercase;color:var(--suave);letter-spacing:.05em}
+.cockpit-kpi-val{font-size:20px;font-weight:750;color:var(--noturno);margin:3px 0 2px;font-variant-numeric:tabular-nums}
+.cockpit-kpi-sub{font-size:11px;color:var(--suave);line-height:1.35}
+
+/* Card Hero do IQF */
+.iqf-hero-card{
+  background:linear-gradient(135deg, #151E49 0%, #003D7B 100%);
+  color:#fff;border-radius:16px;padding:20px 22px;margin-bottom:20px;
+  box-shadow:0 12px 28px -8px rgba(0,61,123,.35);
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+}
+.iqf-hero-left{flex:1;min-width:240px}
+.iqf-hero-badge-classe{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;
+  font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  margin-bottom:8px;
+}
+.iqf-hero-badge-classe.classe-a{background:#1F7A4C;color:#E4F2EA}
+.iqf-hero-badge-classe.classe-b{background:#065CA9;color:#E0EEFA}
+.iqf-hero-badge-classe.classe-c{background:#A85B12;color:#FFF3E0}
+.iqf-hero-score{font-size:40px;font-weight:800;line-height:1;letter-spacing:-.03em;margin:4px 0}
+.iqf-hero-meta{font-size:12.5px;color:rgba(255,255,255,.8);margin-top:6px}
+
+.iqf-hero-right{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  border-radius:12px;padding:12px 16px;text-align:center;min-width:140px;
+}
+.iqf-hero-recontrataria{font-size:22px;font-weight:750;color:#fff}
+.iqf-hero-recontrataria-lbl{font-size:11px;color:rgba(255,255,255,.8)}
+
+/* Barras dos 5 Critérios Ponderados */
+.criterios-lista{
+  background:#fff;border:1px solid var(--linha);border-radius:14px;
+  padding:16px 18px;margin-bottom:20px;box-shadow:0 1px 3px rgba(21,30,73,.04);
+}
+.criterio-row{margin-bottom:12px}
+.criterio-row:last-child{margin-bottom:0}
+.criterio-cabecalho{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:12.5px;font-weight:600;color:var(--texto);margin-bottom:4px;
+}
+.criterio-peso{font-size:11px;color:var(--suave);font-weight:500;margin-left:6px}
+.criterio-nota{font-weight:700;color:var(--noturno);font-variant-numeric:tabular-nums}
+.criterio-bar-bg{
+  width:100%;height:7px;background:#EDF1F8;border-radius:999px;overflow:hidden;
+}
+.criterio-bar-fill{
+  height:100%;border-radius:999px;background:linear-gradient(90deg,var(--royal),var(--acao));
+  transition:width .4s ease;
+}
+.criterio-bar-fill.alto{background:linear-gradient(90deg,#1F7A4C,#2E9C64)}
+.criterio-bar-fill.medio{background:linear-gradient(90deg,var(--royal),var(--acao))}
+.criterio-bar-fill.baixo{background:linear-gradient(90deg,#A85B12,#D97706)}
+
+/* Depoimentos Executivos */
+.feed-avaliacoes{display:flex;flex-direction:column;gap:10px}
+.card-quote-exec{
+  background:#F9FBFE;border:1px solid var(--linha);border-radius:12px;
+  padding:12px 14px;font-size:13px;color:var(--texto);position:relative;
+}
+.quote-texto{font-style:italic;margin-bottom:6px;line-height:1.45}
+.quote-autor{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;color:var(--suave);font-weight:550;
+}
+.quote-estrelas{color:#D97706;font-weight:700}
+
+/* Tabela de Disputas Semântica */
+.tabela-exec-disputas{width:100%;border-collapse:collapse;font-size:12.5px}
+.tabela-exec-disputas th{
+  background:#F4F6FA;padding:9px 12px;font-size:10.5px;font-weight:700;
+  text-transform:uppercase;color:var(--suave);letter-spacing:.05em;border-bottom:1px solid var(--linha);
+  text-align:left;
+}
+.tabela-exec-disputas td{padding:10px 12px;border-bottom:1px solid var(--superficie2);vertical-align:middle}
+.tabela-exec-disputas tr:hover td{background:#F8FAFD}
+.badge-status-disputa{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;
+  font-size:11px;font-weight:650;white-space:nowrap;
+}
+.badge-status-disputa.venceu{background:#E4F2EA;color:#1F7A4C}
+.badge-status-disputa.aberta{background:#E0EEFA;color:#065CA9}
+.badge-status-disputa.perdeu{background:#F1F3F9;color:#5D6883}
+
+/* Catálogo de Preços com Busca */
+.busca-itens-box{
+  margin-bottom:12px;position:relative;
+}
+.busca-itens-input{
+  width:100%;padding:8px 12px 8px 32px;font-size:13px;
+  border:1.5px solid var(--linha);border-radius:8px;background:#fff;box-sizing:border-box;
+}
+.busca-itens-input:focus{outline:none;border-color:var(--acao);box-shadow:0 0 0 3px rgba(6,92,169,.1)}
+.busca-itens-icone{position:absolute;left:10px;top:9px;color:var(--suave);font-size:13px}
+
 .ficha-dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:13px}
 .ficha-dl dt{color:var(--suave);font-weight:600}
 .ficha-dl dd{margin:0;color:var(--texto)}
 .ficha-dl a{color:var(--acao)}
 .zap{margin-left:8px;font-size:11.5px;font-weight:600}
-.ficha-numeros{display:flex;gap:10px;flex-wrap:wrap}
-.ficha-numeros>div{
-  flex:1 1 110px;padding:11px 13px;border:1px solid var(--linha);border-radius:11px;
-  background:var(--superficie2);
-}
-.ficha-numeros b{display:block;font-size:19px;color:var(--noturno);font-variant-numeric:tabular-nums}
-.ficha-numeros span{font-size:11px;color:var(--suave)}
-.ficha-nota{font-size:12.5px;color:var(--suave);line-height:1.55;margin:10px 0 0}
-.ficha-nota b{color:var(--texto)}
-table.ficha-tab{border-collapse:collapse;width:100%;font-size:12.5px}
-table.ficha-tab th{
-  text-align:left;padding:6px 8px;border-bottom:1px solid var(--linha);
-  font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);
-}
-table.ficha-tab td{padding:8px;border-bottom:1px solid var(--superficie2);vertical-align:top}
-table.ficha-tab .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-table.ficha-tab small{display:block;font-size:11px;color:var(--suave);margin-top:2px}
-table.ficha-tab a{color:var(--acao);text-decoration:none;font-weight:600}
-table.ficha-tab a:hover{text-decoration:underline}
-.res{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
-.res.venceu{background:#E4F2EA;color:var(--ok)}
-.res.perdeu{background:var(--superficie2);color:var(--suave)}
-/* "Em aberto" não é derrota: a equalização ainda não foi decidida, e
-   pintá-la de perdida contaria uma disputa que não terminou. */
-.res.aberta{background:#FDF3E7;color:var(--alerta)}
-.delta.subiu{color:var(--critico);font-weight:700}
-.delta.caiu{color:var(--ok);font-weight:700}
 
 @media(max-width:640px){
-  .gaveta{width:96vw;max-height:92vh}
+  .gaveta{width:96vw;height:92vh;max-height:92vh}
   .ficha-dl{grid-template-columns:1fr;gap:2px 0}
   .ficha-dl dd{margin-bottom:8px}
 }
@@ -2759,14 +2908,7 @@ table.mapa .ref-historico-rotulo{
 </div>
 
 <div class="gaveta-fundo" id="gavetaFundo" hidden onclick="fecharFichaFornecedor()"></div>
-<aside class="gaveta" id="gaveta" hidden role="dialog" aria-modal="true" aria-labelledby="gavetaTitulo">
-  <div class="gaveta-topo">
-    <div>
-      <div class="gaveta-rotulo">Ficha do fornecedor</div>
-      <h2 id="gavetaTitulo">—</h2>
-    </div>
-    <button type="button" class="gaveta-fechar" onclick="fecharFichaFornecedor()" aria-label="Fechar">×</button>
-  </div>
+<aside class="gaveta" id="gaveta" hidden role="dialog" aria-modal="true" aria-label="Ficha do fornecedor">
   <div class="gaveta-corpo" id="gavetaCorpo"></div>
 </aside>
 
@@ -8269,180 +8411,335 @@ function cartaoForn(f) {
 function abrirFichaFornecedor(cnpj) {
   var g = document.getElementById('gaveta');
   var fundo = document.getElementById('gavetaFundo');
-  document.getElementById('gavetaTitulo').textContent = 'carregando…';
-  document.getElementById('gavetaCorpo').innerHTML = '<div class="carregando">buscando histórico…</div>';
   g.hidden = false; fundo.hidden = false;
-  requestAnimationFrame(function () { g.classList.add('aberta'); });
+  requestAnimationFrame(function () {
+    g.classList.add('aberta');
+    fundo.classList.add('aberta');
+  });
+  document.getElementById('gavetaCorpo').innerHTML =
+    '<div class="carregando" style="padding:60px 20px;text-align:center;color:var(--suave);font-size:14px;">Buscando histórico completo, IQF e cotações do fornecedor…</div>';
 
   google.script.run
     .withSuccessHandler(desenharFichaFornecedor)
     .withFailureHandler(function (e) {
-      document.getElementById('gavetaCorpo').innerHTML = '<div class="aviso erro">' + esc(e.message) + '</div>';
+      document.getElementById('gavetaCorpo').innerHTML = '<div class="aviso erro" style="margin:20px">' + esc(e.message) + '</div>';
     })
     .apiFichaFornecedor(cnpj);
 }
 
 function fecharFichaFornecedor() {
   var g = document.getElementById('gaveta');
+  var fundo = document.getElementById('gavetaFundo');
   g.classList.remove('aberta');
-  document.getElementById('gavetaFundo').hidden = true;
-  setTimeout(function () { g.hidden = true; }, 200);
+  fundo.classList.remove('aberta');
+  setTimeout(function () {
+    g.hidden = true;
+    fundo.hidden = true;
+  }, 220);
 }
 
 function desenharFichaFornecedor(f) {
   var corpo = document.getElementById('gavetaCorpo');
-  if (!f.ok) { corpo.innerHTML = '<div class="aviso erro">' + esc(f.erro) + '</div>'; return; }
-
-  document.getElementById('gavetaTitulo').textContent = f.nome;
-
-  var cadastro = [
-    ['CNPJ', f.cnpjFormatado],
-    ['Nome fantasia', f.nomeFantasia],
-    ['Situação cadastral', f.situacao],
-    ['CNAE', f.cnae],
-    ['Cidade', [f.cidade, f.uf].filter(Boolean).join('/')],
-    ['Código no ERP', f.codigoErp]
-  ].filter(function (l) { return l[1]; });
-
-  var contatos = [
-    ['Contato', f.contato],
-    ['Telefone', f.telefone],
-    ['E-mail', f.email]
-  ].filter(function (l) { return l[1]; });
-
-  // Esquerda: quem é o fornecedor. Direita: o que ele fez.
-  var esq = '';
-  var dir = '';
-
-  if (cadastro.length) {
-    esq += '<h3>Cadastro</h3><dl class="ficha-dl">' +
-      cadastro.map(function (l) {
-        return '<dt>' + esc(l[0]) + '</dt><dd>' + esc(l[1]) + '</dd>';
-      }).join('') + '</dl>';
+  if (!f.ok) {
+    corpo.innerHTML = '<div class="aviso erro" style="margin:20px">' + esc(f.erro) + '</div>';
+    return;
   }
 
-  if (contatos.length) {
-    esq += '<h3>Contato comercial</h3><dl class="ficha-dl">' +
-      contatos.map(function (l) {
-        var v = esc(l[1]);
-        if (l[0] === 'E-mail') v = '<a href="mailto:' + v + '">' + v + '</a>';
-        if (l[0] === 'Telefone') {
-          var so = String(l[1]).replace(/\D/g, '');
-          if (so.length >= 10) {
-            v += ' <a class="zap" href="https://wa.me/55' + so + '" target="_blank" rel="noopener">WhatsApp ↗</a>';
-          }
-        }
-        return '<dt>' + esc(l[0]) + '</dt><dd>' + v + '</dd>';
-      }).join('') + '</dl>';
+  // Determinação de Classe e Selo IQF
+  var iqf = f.iqf || null;
+  var temIqf = iqf && iqf.avaliacoes > 0;
+  var classeIqf = (iqf && iqf.classe) ? iqf.classe : (temIqf && iqf.nota >= 85 ? 'A' : (temIqf && iqf.nota >= 70 ? 'B' : (temIqf ? 'C' : '')));
+  var classeRotulo = (iqf && iqf.classeRotulo) ? iqf.classeRotulo : (classeIqf === 'A' ? 'Preferencial' : (classeIqf === 'B' ? 'Aprovado' : (classeIqf === 'C' ? 'Sob restrição' : '')));
+  var classeCss = classeIqf === 'A' ? 'classe-a' : (classeIqf === 'B' ? 'classe-b' : 'classe-c');
+
+  // Formatação de Telefone para WhatsApp
+  var telLimpo = String(f.telefone || '').replace(/\D/g, '');
+  var zapUrl = telLimpo.length >= 10 ? ('https://wa.me/55' + telLimpo + '?text=' + encodeURIComponent('Olá, equipe ' + f.nome + '! Entramos em contato a partir do portal de suprimentos da Capital Realty.')) : '';
+
+  // Categorias
+  var chipsCategoriasHtml = (f.categorias || []).map(function (c, idx) {
+    return '<span class="chip-cat-exec' + (idx === 0 ? ' destaque' : '') + '">' + esc(c) + '</span>';
+  }).join('');
+  if (f.subcategoria) {
+    chipsCategoriasHtml = '<span class="chip-cat-exec destaque" title="Especialidade derivada">★ ' + esc(f.subcategoria) + '</span>' + chipsCategoriasHtml;
   }
 
-  // ── Desempenho, com o denominador sempre à vista
-  esq += '<h3>Desempenho</h3>';
-  if (!f.disputas) {
-    esq += '<p class="ficha-nota">Este fornecedor aparece com ' + f.avulsos +
-      (f.avulsos === 1 ? ' orçamento avulso' : ' orçamentos avulsos') +
-      ' e nenhuma disputa. Orçamento avulso não tem concorrente — não é vitória nem derrota.</p>';
-  } else {
-    esq += '<div class="ficha-numeros">' +
-      '<div><b>' + f.disputas + '</b><span>disputas</span></div>' +
-      '<div><b>' + f.vitorias + '</b><span>vitórias</span></div>' +
-      (f.volumeHomologado ? '<div><b>' + moeda(f.volumeHomologado) + '</b><span>contratado</span></div>' : '') +
+  // ── CABEÇALHO EXECUTIVO E QUICK ACTIONS
+  var htmlHeader =
+    '<div class="gaveta-header-glass">' +
+      '<div class="gaveta-header-main">' +
+        '<div class="gaveta-header-titulos">' +
+          '<div class="gaveta-badge-row">' +
+            '<span class="gaveta-tag-tipo">Fornecedor Homologado</span>' +
+            '<span class="gaveta-tag-status ' + (f.situacao === 'Ativa' ? 'ativa' : '') + '">' + esc(f.situacao || 'Ativa') + '</span>' +
+            (f.codigoErp ? '<span class="gaveta-tag-erp">ERP: ' + esc(f.codigoErp) + '</span>' : '') +
+          '</div>' +
+          '<h2 class="gaveta-nome-razao">' + esc(f.nome) + '</h2>' +
+          (f.nomeFantasia ? '<div class="gaveta-nome-fantasia">' + esc(f.nomeFantasia) + '</div>' : '') +
+          (chipsCategoriasHtml ? '<div class="gaveta-chips-categorias">' + chipsCategoriasHtml + '</div>' : '') +
+        '</div>' +
+        '<button type="button" class="gaveta-fechar-btn" onclick="fecharFichaFornecedor()" aria-label="Fechar ficha">✕</button>' +
+      '</div>' +
+
+      // Quick Actions Toolbar
+      '<div class="gaveta-toolbar">' +
+        (zapUrl ? '<a class="btn-action-exec zap" href="' + zapUrl + '" target="_blank" rel="noopener">💬 WhatsApp Direto</a>' : '') +
+        '<button type="button" class="btn-action-exec nova-cot" onclick="fecharFichaFornecedor();aba(\'nova\');">⚡ Nova Cotação</button>' +
+        '<button type="button" class="btn-action-exec avaliar" onclick="abrirAvaliacao(\'' + esc(f.cnpj) + '\',\'' + esc(f.nome) + '\',\'\',\'\',\'\',\'\');">★ Avaliar Fornecedor</button>' +
+        '<button type="button" class="btn-action-exec secundario" onclick="copiarDadosFornecedor(\'' + esc(f.cnpjFormatado) + '\',\'' + esc(f.nome) + '\',\'' + esc(f.contato) + '\',\'' + esc(f.telefone) + '\',\'' + esc(f.email) + '\')">📋 Copiar Dados</button>' +
+        '<a class="btn-action-exec secundario" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(f.nome + ' ' + (f.cidade || '') + ' ' + (f.uf || '')) + '" target="_blank" rel="noopener">🗺️ Localização</a>' +
+      '</div>' +
+    '</div>';
+
+  // ── SEGMENTED CONTROL TABS
+  var htmlSegmentos =
+    '<div class="gaveta-nav-segmentos">' +
+      '<button type="button" class="gaveta-seg-btn ativo" onclick="trocarAbaFicha(\'visao-geral\', this)">Visão Geral</button>' +
+      '<button type="button" class="gaveta-seg-btn" onclick="trocarAbaFicha(\'iqf\', this)">IQF & Avaliações ' + (temIqf ? ('(' + iqf.nota.toFixed(1).replace('.', ',') + ')') : '') + '</button>' +
+      '<button type="button" class="gaveta-seg-btn" onclick="trocarAbaFicha(\'disputas\', this)">Equalizações (' + f.disputas + ')</button>' +
+      '<button type="button" class="gaveta-seg-btn" onclick="trocarAbaFicha(\'catalogo\', this)">Preços (' + (f.itens || []).length + ')</button>' +
+    '</div>';
+
+  // ── ABA 1: VISÃO GERAL & COCKPIT
+  var taxaVitTexto = f.taxaVitoria !== null && f.taxaVitoria !== undefined ? (Math.round(f.taxaVitoria * 100) + '%') : (f.disputas > 0 ? (f.vitorias + '/' + f.disputas) : '0%');
+  var taxaVitSub = f.amostraCurta ? (f.vitorias + ' vitórias em ' + f.disputasDecididas + ' decididas (amostra preliminar)') : (f.vitorias + ' vitórias em ' + f.disputasDecididas + ' disputas');
+  var taxaRespTexto = f.taxaRespostaConvites !== null && f.taxaRespostaConvites !== undefined ? (Math.round(f.taxaRespostaConvites * 100) + '%') : (f.convitesTotal > 0 ? (f.convitesRespondidos + '/' + f.convitesTotal) : '100%');
+
+  var htmlAbaVisao =
+    '<div class="tab-pane-ficha ativo" id="pane-visao-geral">' +
+      '<div class="cockpit-grid">' +
+        '<div class="cockpit-kpi-card">' +
+          '<div class="cockpit-kpi-label">Taxa de Vitória</div>' +
+          '<div class="cockpit-kpi-val" style="color:var(--ok)">' + taxaVitTexto + '</div>' +
+          '<div class="cockpit-kpi-sub">' + taxaVitSub + '</div>' +
+        '</div>' +
+        '<div class="cockpit-kpi-card">' +
+          '<div class="cockpit-kpi-label">Volume Homologado</div>' +
+          '<div class="cockpit-kpi-val">' + (f.volumeHomologado ? moeda(f.volumeHomologado) : 'R$ 0,00') + '</div>' +
+          '<div class="cockpit-kpi-sub">Total contratado pela Capital Realty</div>' +
+        '</div>' +
+        '<div class="cockpit-kpi-card">' +
+          '<div class="cockpit-kpi-label">Ticket Médio</div>' +
+          '<div class="cockpit-kpi-val">' + (f.ticketMedio ? moeda(f.ticketMedio) : '—') + '</div>' +
+          '<div class="cockpit-kpi-sub">Média por concorrência vencida</div>' +
+        '</div>' +
+        '<div class="cockpit-kpi-card">' +
+          '<div class="cockpit-kpi-label">Resposta a Convites</div>' +
+          '<div class="cockpit-kpi-val" style="color:var(--royal)">' + taxaRespTexto + '</div>' +
+          '<div class="cockpit-kpi-sub">' + (f.convitesTotal > 0 ? (f.convitesRespondidos + ' respondidos de ' + f.convitesTotal + ' convites') : 'Alta disponibilidade') + '</div>' +
+        '</div>' +
+      '</div>' +
+
+      // Cadastro e Contatos lado a lado
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;background:#fff;border:1px solid var(--linha);border-radius:14px;padding:18px 20px;">' +
+        '<div>' +
+          '<h3 style="margin:0 0 10px;font-size:11px;text-transform:uppercase;color:var(--suave);letter-spacing:.05em;">Dados Cadastrais</h3>' +
+          '<dl class="ficha-dl">' +
+            '<dt>CNPJ</dt><dd>' + esc(f.cnpjFormatado) + '</dd>' +
+            '<dt>Cidade/UF</dt><dd>' + esc([f.cidade, f.uf].filter(Boolean).join('/')) + '</dd>' +
+            (f.cnae ? '<dt>CNAE</dt><dd>' + esc(f.cnae) + '</dd>' : '') +
+          '</dl>' +
+        '</div>' +
+        '<div>' +
+          '<h3 style="margin:0 0 10px;font-size:11px;text-transform:uppercase;color:var(--suave);letter-spacing:.05em;">Contato Comercial</h3>' +
+          '<dl class="ficha-dl">' +
+            (f.contato ? '<dt>Responsável</dt><dd>' + esc(f.contato) + '</dd>' : '') +
+            (f.telefone ? '<dt>Telefone</dt><dd>' + esc(f.telefone) + (zapUrl ? ' <a class="zap" href="' + zapUrl + '" target="_blank" rel="noopener">WhatsApp ↗</a>' : '') + '</dd>' : '') +
+            (f.email ? '<dt>E-mail</dt><dd><a href="mailto:' + esc(f.email) + '">' + esc(f.email) + '</a></dd>' : '') +
+          '</dl>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  // ── ABA 2: IQF & AVALIAÇÃO PÓS-SERVIÇO
+  var htmlAbaIqf = '<div class="tab-pane-ficha" id="pane-iqf">';
+  if (!temIqf) {
+    htmlAbaIqf +=
+      '<div style="text-align:center;padding:40px 20px;background:#fff;border:1px solid var(--linha);border-radius:14px;">' +
+        '<div style="font-size:36px;margin-bottom:10px">★</div>' +
+        '<h3 style="margin:0 0 6px;font-size:17px;color:var(--noturno)">Sem avaliação pós-serviço registrada</h3>' +
+        '<p style="font-size:13.5px;color:var(--suave);max-width:440px;margin:0 auto 18px;">Ao concluir uma contratação, avalie a pontualidade, qualidade e segurança do trabalho para compor o índice corporativo.</p>' +
+        '<button type="button" class="btn-action-exec avaliar" onclick="abrirAvaliacao(\'' + esc(f.cnpj) + '\',\'' + esc(f.nome) + '\',\'\',\'\',\'\',\'\');">Registrar Primeira Avaliação</button>' +
       '</div>';
-    if (f.taxaVitoria !== null && f.taxaVitoria !== undefined) {
-      esq += '<p class="ficha-nota">Aproveitamento de <b>' + Math.round(f.taxaVitoria * 100) +
-        '%</b> em ' + f.disputasDecididas + ' disputas decididas.</p>';
-    } else {
-      esq += '<p class="ficha-nota">Só <b>' + f.disputasDecididas +
-        '</b> ' + (f.disputasDecididas === 1 ? 'disputa decidida' : 'disputas decididas') +
-        ' até aqui — poucas para um percentual dizer alguma coisa. ' +
-        'O aproveitamento aparece a partir de cinco.</p>';
-    }
-  }
-
-  // ── A nota do pós-serviço, e as avaliações que a formaram
-  //
-  //    Fica na coluna de quem é o fornecedor, e não na do que ele fez:
-  //    a nota é uma característica dele, não um evento.
-  esq += '<h3>Avaliação pós-serviço</h3>';
-  esq += '<div style="margin-bottom:8px">' + seloIqf(f.iqf) + '</div>';
-
-  if (!f.iqf) {
-    esq += '<p class="ficha-nota">Ninguém avaliou este fornecedor ainda. ' +
-      'Sem isso, a próxima cotação só vai saber o preço dele.</p>';
   } else {
-    esq += '<p class="ficha-nota"><b>' + f.iqf.recontratariam + '</b> de <b>' +
-      f.iqf.avaliacoes + '</b> ' +
-      (f.iqf.recontratariam === 1 ? 'avaliação diria' : 'avaliações dizem') +
-      ' que contrataria de novo' +
-      (f.iqf.ultima ? ' · última em ' + esc(f.iqf.ultima) : '') + '.</p>';
+    var recontratPct = Math.round((iqf.recontratariam / iqf.avaliacoes) * 100);
+    htmlAbaIqf +=
+      '<div class="iqf-hero-card">' +
+        '<div class="iqf-hero-left">' +
+          '<span class="iqf-hero-badge-classe ' + classeCss + '">Classe ' + classeIqf + ' · ' + classeRotulo + '</span>' +
+          '<div class="iqf-hero-score">★ ' + iqf.nota.toFixed(1).replace('.', ',') + '</div>' +
+          '<div class="iqf-hero-meta">' + iqf.avaliacoes + (iqf.avaliacoes === 1 ? ' avaliação pós-serviço' : ' avaliações') +
+            (iqf.preliminar ? ' (índice preliminar)' : ' (índice consolidado)') +
+            (iqf.ultima ? ' · Última em ' + esc(iqf.ultima) : '') + '</div>' +
+        '</div>' +
+        '<div class="iqf-hero-right">' +
+          '<div class="iqf-hero-recontrataria">' + recontratPct + '%</div>' +
+          '<div class="iqf-hero-recontrataria-lbl">recontratariam este prestador</div>' +
+        '</div>' +
+      '</div>';
 
-    var porCriterio = f.iqf.criterios || {};
-    var linhas = Object.keys(porCriterio).map(function (k) {
-      return '<dt>' + esc(k.charAt(0).toUpperCase() + k.slice(1)) + '</dt>' +
-             '<dd>' + porCriterio[k].toFixed(1).replace('.', ',') + '</dd>';
-    }).join('');
-    if (linhas) esq += '<dl class="ficha-dl">' + linhas + '</dl>';
-  }
+    // Barras dos 5 Critérios Ponderados
+    var pesosFixos = { qualidade: 30, prazo: 25, seguranca: 20, atendimento: 15, limpeza: 10 };
+    var nomesRotulos = {
+      qualidade: 'Qualidade Técnica e Acabamento',
+      prazo: 'Pontualidade e Cumprimento de SLA',
+      seguranca: 'Segurança do Trabalho e SST',
+      atendimento: 'Atendimento e Comunicação',
+      limpeza: 'Limpeza e Organização Pós-Obra'
+    };
+    var critObj = iqf.criterios || {};
 
-  if ((f.avaliacoes || []).length) {
-    // Só os comentários: a nota já está acima, e o que a próxima
-    // pessoa precisa ler é o que aconteceu.
-    var comentados = f.avaliacoes.filter(function (a) { return a.comentario; }).slice(0, 4);
-    if (comentados.length) {
-      esq += '<div class="ficha-comentarios">' + comentados.map(function (a) {
-        return '<blockquote>' + esc(a.comentario) +
-          '<cite>★ ' + a.nota.toFixed(1).replace('.', ',') +
-          (a.data ? ' · ' + esc(a.data) : '') + '</cite></blockquote>';
-      }).join('') + '</div>';
+    htmlAbaIqf +=
+      '<div class="criterios-lista">' +
+        '<h3 style="margin:0 0 14px;font-size:12px;text-transform:uppercase;color:var(--suave);letter-spacing:.05em;">Desempenho por Critério Ponderado</h3>' +
+        Object.keys(pesosFixos).map(function (chave) {
+          var val = Number(critObj[chave] || 0);
+          var pct = val > 5 ? Math.min(100, Math.round(val)) : (val >= 1 ? Math.round(((val - 1) / 4) * 100) : 0);
+          var notaFmt = val > 5 ? val.toFixed(1).replace('.', ',') : (val > 0 ? val.toFixed(1).replace('.', ',') + ' / 5,0' : '—');
+          var corClasse = pct >= 80 ? 'alto' : (pct >= 60 ? 'medio' : 'baixo');
+
+          return '<div class="criterio-row">' +
+            '<div class="criterio-cabecalho">' +
+              '<div>' + esc(nomesRotulos[chave]) + '<span class="criterio-peso">(peso ' + pesosFixos[chave] + '%)</span></div>' +
+              '<div class="criterio-nota">' + notaFmt + '</div>' +
+            '</div>' +
+            '<div class="criterio-bar-bg"><div class="criterio-bar-fill ' + corClasse + '" style="width:' + pct + '%"></div></div>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+
+    // Feed de Depoimentos e Comentários
+    var avalComentadas = (f.avaliacoes || []).filter(function (a) { return a.comentario; });
+    if (avalComentadas.length) {
+      htmlAbaIqf +=
+        '<h3 style="margin:20px 0 10px;font-size:12px;text-transform:uppercase;color:var(--suave);letter-spacing:.05em;">Feedbacks e Ocorrências em Campo</h3>' +
+        '<div class="feed-avaliacoes">' +
+          avalComentadas.map(function (a) {
+            return '<div class="card-quote-exec">' +
+              '<div class="quote-texto">“' + esc(a.comentario) + '”</div>' +
+              '<div class="quote-autor">' +
+                '<span>' + (a.papel ? esc(a.papel.toUpperCase()) : 'AVALIADOR') + (a.empreendimento ? ' · ' + esc(a.empreendimento) : '') + (a.data ? ' · ' + esc(a.data) : '') + '</span>' +
+                '<span class="quote-estrelas">★ ' + Number(a.nota).toFixed(1).replace('.', ',') + '</span>' +
+              '</div>' +
+            '</div>';
+          }).join('') +
+        '</div>';
     }
   }
+  htmlAbaIqf += '</div>';
 
-  // ── Histórico de disputas
-  if (f.historico.length) {
-    dir += '<h3>Equalizações que disputou</h3><table class="ficha-tab"><tbody>' +
-      f.historico.map(function (h) {
-        var res = h.venceu ? '<span class="res venceu">venceu</span>'
-                : (h.decidida ? '<span class="res perdeu">perdeu</span>'
-                              : '<span class="res aberta">em aberto</span>');
-        return '<tr><td>' + esc(h.data || '—') + '</td>' +
-          '<td><a href="#" onclick="fecharFichaFornecedor();abrirMapa(\'' + esc(h.idEqualizacao) +
-            '\');aba(\'mapa\');return false;">' + esc(h.projeto || h.idEqualizacao) + '</a>' +
-          '<small>' + esc(h.empreendimento) + '</small></td>' +
-          '<td class="num">' + (semValor(h.valor) ? '—' : moeda(h.valor)) + '</td>' +
-          '<td>' + res + '</td></tr>';
-      }).join('') + '</tbody></table>';
+  // ── ABA 3: EQUALIZAÇÕES QUE DISPUTOU
+  var htmlAbaDisputas = '<div class="tab-pane-ficha" id="pane-disputas">';
+  if (!f.historico || !f.historico.length) {
+    htmlAbaDisputas += '<div style="text-align:center;padding:30px;color:var(--suave)">Nenhuma equalização registrada para este fornecedor.</div>';
+  } else {
+    htmlAbaDisputas +=
+      '<div style="background:#fff;border:1px solid var(--linha);border-radius:14px;overflow:hidden;">' +
+        '<table class="tabela-exec-disputas">' +
+          '<thead><tr><th>Data</th><th>Equalização / Empreendimento</th><th style="text-align:right">Valor Cotado</th><th>Resultado</th><th style="text-align:center">Ação</th></tr></thead>' +
+          '<tbody>' +
+            f.historico.map(function (h) {
+              var badgeClass = h.venceu ? 'venceu' : (h.decidida ? 'perdeu' : 'aberta');
+              var badgeLabel = h.venceu ? '✓ Venceu' : (h.decidida ? 'Não Ganhou' : '● Em Aberto');
+              return '<tr>' +
+                '<td style="white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--suave)">' + esc(h.data || '—') + '</td>' +
+                '<td>' +
+                  '<div style="font-weight:650;color:var(--noturno)">' + esc(h.projeto || h.idEqualizacao) + '</div>' +
+                  '<div style="font-size:11.5px;color:var(--suave)">' + esc(h.empreendimento || '') + (h.categoria ? ' · ' + esc(h.categoria) : '') + '</div>' +
+                '</td>' +
+                '<td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums">' + (semValor(h.valor) ? '—' : moeda(h.valor)) + '</td>' +
+                '<td><span class="badge-status-disputa ' + badgeClass + '">' + badgeLabel + '</span></td>' +
+                '<td style="text-align:center">' +
+                  '<button type="button" class="btn-action-exec secundario" style="padding:4px 8px;font-size:11px" onclick="fecharFichaFornecedor();verMapaDe(\'' + esc(h.idEqualizacao) + '\');">Abrir ↗</button>' +
+                '</td>' +
+              '</tr>';
+            }).join('') +
+          '</tbody>' +
+        '</table>' +
+      '</div>';
   }
+  htmlAbaDisputas += '</div>';
 
-  // ── Histórico de preço por item — o que a planilha nunca teve
-  if (f.itens.length) {
-    dir += '<h3>Preços que praticou</h3>' +
-      '<p class="ficha-nota">Cada arquivo EQU era um retrato isolado. Aqui o mesmo item ' +
-      'aparece ao longo do tempo.</p>' +
-      '<table class="ficha-tab"><thead><tr><th>Item</th><th class="num">Último</th>' +
-      '<th class="num">Faixa</th><th class="num">Variação</th></tr></thead><tbody>' +
-      f.itens.map(function (i) {
-        var varia = '<span class="d-nulo">—</span>';
-        if (i.variacao !== null && i.variacao !== undefined) {
-          var sinal = i.variacao > 0 ? '+' : (i.variacao < 0 ? '−' : '=');
-          var classe = i.variacao > 0 ? 'subiu' : (i.variacao < 0 ? 'caiu' : '');
-          varia = '<span class="delta ' + classe + '">' + sinal +
-            Math.abs(i.variacao * 100).toFixed(1).replace('.', ',') + '%</span>';
-        }
-        return '<tr><td>' + esc(i.descricao) +
-          (i.unidade ? '<small>' + esc(i.unidade) + '</small>' : '') +
-          '<small>' + i.vezes + (i.vezes === 1 ? ' cotação' : ' cotações') + '</small></td>' +
-          '<td class="num">' + moeda(i.ultimo) + '</td>' +
-          '<td class="num">' + (i.menor === i.maior ? '—' : moeda(i.menor) + ' a ' + moeda(i.maior)) + '</td>' +
-          '<td class="num">' + varia + '</td></tr>';
-      }).join('') + '</tbody></table>';
+  // ── ABA 4: CATÁLOGO DE PREÇOS PRATICADOS
+  var itensLista = f.itens || [];
+  var htmlAbaCatalogo =
+    '<div class="tab-pane-ficha" id="pane-catalogo">' +
+      '<div class="busca-itens-box">' +
+        '<span class="busca-itens-icone">🔍</span>' +
+        '<input type="text" class="busca-itens-input" id="filtroItensFicha" placeholder="Buscar nos ' + itensLista.length + ' itens cotados por este fornecedor..." oninput="filtrarItensFicha(this.value)">' +
+      '</div>' +
+      '<div style="background:#fff;border:1px solid var(--linha);border-radius:14px;overflow:hidden;">' +
+        '<table class="tabela-exec-disputas" id="tabelaItensFicha">' +
+          '<thead><tr><th>Item e Especificação</th><th style="text-align:right">Último Preço</th><th style="text-align:right">Faixa Histórica</th><th style="text-align:center">Variação</th></tr></thead>' +
+          '<tbody>' +
+            (itensLista.length ? itensLista.map(function (i) {
+              var variaHtml = '<span style="color:var(--suave)">—</span>';
+              if (i.variacao !== null && i.variacao !== undefined) {
+                var pctVar = Math.abs(i.variacao * 100).toFixed(1).replace('.', ',') + '%';
+                if (i.variacao < 0) {
+                  variaHtml = '<span style="color:var(--ok);font-weight:650">↓ −' + pctVar + '</span>';
+                } else if (i.variacao > 0) {
+                  variaHtml = '<span style="color:var(--critico);font-weight:650">↑ +' + pctVar + '</span>';
+                } else {
+                  variaHtml = '<span style="color:var(--suave);font-weight:600">= 0,0%</span>';
+                }
+              }
+              return '<tr class="linha-item-ficha" data-desc="' + esc(i.descricao).toLowerCase() + '">' +
+                '<td>' +
+                  '<div style="font-weight:600;color:var(--texto)">' + esc(i.descricao) + '</div>' +
+                  '<div style="font-size:11px;color:var(--suave)">' + (i.unidade ? esc(i.unidade) + ' · ' : '') + i.vezes + (i.vezes === 1 ? ' cotação' : ' cotações') + '</div>' +
+                '</td>' +
+                '<td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums">' + moeda(i.ultimo) + '</td>' +
+                '<td style="text-align:right;font-size:12px;font-variant-numeric:tabular-nums;color:var(--suave)">' + (i.menor === i.maior ? '—' : moeda(i.menor) + ' a ' + moeda(i.maior)) + '</td>' +
+                '<td style="text-align:center;font-size:12px;font-variant-numeric:tabular-nums">' + variaHtml + '</td>' +
+              '</tr>';
+            }).join('') : '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--suave)">Nenhum item unitário registrado.</td></tr>') +
+          '</tbody>' +
+        '</table>' +
+      '</div>' +
+    '</div>';
+
+  // Montagem Final do Corpo com Abas Apple
+  corpo.innerHTML = htmlHeader + htmlSegmentos + '<div class="gaveta-scroll-body">' + htmlAbaVisao + htmlAbaIqf + htmlAbaDisputas + htmlAbaCatalogo + '</div>';
+}
+
+function trocarAbaFicha(nomeAba, btn) {
+  var pai = btn.parentElement;
+  var botoes = pai.querySelectorAll('.gaveta-seg-btn');
+  botoes.forEach(function (b) { b.classList.remove('ativo'); });
+  btn.classList.add('ativo');
+
+  var paineis = document.querySelectorAll('.tab-pane-ficha');
+  paineis.forEach(function (p) { p.classList.remove('ativo'); });
+
+  var ativo = document.getElementById('pane-' + nomeAba);
+  if (ativo) ativo.classList.add('ativo');
+}
+
+function filtrarItensFicha(termo) {
+  var t = (termo || '').trim().toLowerCase();
+  var linhas = document.querySelectorAll('.linha-item-ficha');
+  linhas.forEach(function (linha) {
+    var desc = linha.getAttribute('data-desc') || '';
+    linha.style.display = (!t || desc.indexOf(t) >= 0) ? '' : 'none';
+  });
+}
+
+function copiarDadosFornecedor(cnpj, nome, contato, tel, email) {
+  var texto = 'FORNECEDOR: ' + nome + '\nCNPJ: ' + cnpj +
+    (contato ? '\nCONTATO: ' + contato : '') +
+    (tel ? '\nTELEFONE: ' + tel : '') +
+    (email ? '\nE-MAIL: ' + email : '');
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(function () {
+      alert('✓ Dados copiados para a área de transferência:\n\n' + texto);
+    }).catch(function () {
+      prompt('Copie os dados abaixo (Ctrl+C):', texto);
+    });
+  } else {
+    prompt('Copie os dados abaixo (Ctrl+C):', texto);
   }
-
-  // Sem nada à direita, a coluna da esquerda ocupa tudo em vez de
-  // deixar metade da ficha em branco.
-  corpo.innerHTML = dir
-    ? '<div class="ficha-colunas"><div>' + esq + '</div>' +
-      '<div class="ficha-col-dir">' + dir + '</div></div>'
-    : esq;
 }
 
 document.addEventListener('keydown', function (ev) {

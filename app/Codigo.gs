@@ -516,11 +516,12 @@ function apiObterReferenciaPrecos(itens) {
   try {
     if (!itens) return { ok: true, referencias: {} };
     if (!Array.isArray(itens)) itens = [itens];
+    const precosBase = typeof cfCarregarPrecos_ === 'function' ? cfCarregarPrecos_() : [];
     const referencias = {};
     itens.forEach(function (it) {
       if (!it || !it.descricao) return;
       const chave = it.id !== undefined && it.id !== null ? String(it.id) : it.descricao;
-      const ref = cfBuscarReferenciaPrecoItem_(it.descricao, it.unidade);
+      const ref = cfBuscarReferenciaPrecoItem_(it.descricao, it.unidade, null, precosBase);
       if (ref) referencias[chave] = ref;
     });
     return { ok: true, referencias: referencias };
