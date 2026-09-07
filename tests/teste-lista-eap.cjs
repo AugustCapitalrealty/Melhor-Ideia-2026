@@ -226,7 +226,7 @@ console.log('   ✓ gl, conj, balde e par aparecem marcados no seletor');
 // ─────────────────────────────────────────────────────────────
 const servidor = vm.createContext({ Logger: { log() {} }, console: console });
 ['Util.gs', 'Cnpj.gs', 'Config.gs', 'Schema.gs', 'Persistencia.gs',
- 'Equalizacao.gs', 'Fornecedores.gs', 'Codigo.gs', 'Exportar.gs',
+ 'Equalizacao.gs', 'Avaliacao.gs', 'Fornecedores.gs', 'Codigo.gs', 'Exportar.gs',
  'Migracao.gs'].forEach(function (f) {
   vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), servidor, { filename: f });
 });

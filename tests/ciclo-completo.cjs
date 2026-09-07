@@ -43,7 +43,7 @@ try {
   assert(typeof context.cfAgruparPorItem_ === 'function', 'cfAgruparPorItem_ existe');
   // const no node:vm não expõe ao context — ler do fonte
   const configSrc = fs.readFileSync(path.join(root, 'app', 'Config.gs'), 'utf8');
-  assert(/CF_SCHEMA_VERSAO\s*=\s*4/.test(configSrc), 'CF_SCHEMA_VERSAO é 4');
+  assert(/CF_SCHEMA_VERSAO\s*=\s*5/.test(configSrc), 'CF_SCHEMA_VERSAO é 5');
   // Cada migração carimba a versão QUE ELA instala, em literal. Derivando
   // da constante, subir o schema faria a migração antiga anunciar uma
   // versão que ela não instalou — e o log registraria uma migração que
@@ -55,13 +55,21 @@ try {
   console.log(`✗ [Estrutura do código]: ${e.message}`);
 }
 
+function tabelaPorNome(lista, nome) {
+  return (lista || []).filter(function (t) { return t.nome === nome; })[0];
+}
+
 try {
   const schemaCtx = vm.createContext({});
   const configSrc = fs.readFileSync(path.join(root, 'app', 'Config.gs'), 'utf8');
   vm.runInContext(configSrc + '\n;globalThis.__CF_SCHEMA = CF_SCHEMA; globalThis.__CF_ENUM = CF_ENUM;', schemaCtx, { filename: 'Config.gs' });
   const schemaList = schemaCtx.__CF_SCHEMA;
   const enums = schemaCtx.__CF_ENUM;
-  assert(Array.isArray(schemaList) && schemaList.length === 21, 'Schema tem 21 tabelas (' + (schemaList ? schemaList.length : 0) + ')');
+  // A aba Avaliacoes entrou na v5: sem ela a nota do fornecedor não tem
+  // onde morar. Este número é trava de propósito — aba nova é decisão,
+  // não efeito colateral de outra mudança.
+  assert(Array.isArray(schemaList) && schemaList.length === 22, 'Schema tem 22 tabelas (' + (schemaList ? schemaList.length : 0) + ')');
+  assert(!!tabelaPorNome(schemaList, 'Avaliacoes'), 'Schema tem a aba Avaliacoes');
 
   const tableMap = {};
   schemaList.forEach(t => { tableMap[t.nome] = t; });

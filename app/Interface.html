@@ -2143,6 +2143,74 @@ table.ficha-tab a:hover{text-decoration:underline}
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+/* ── Avaliação pós-serviço e IQF ─────────────────────────────────── */
+.fila-avaliacao{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:#FFF8E1;border:1px solid #FDE68A;border-left:4px solid #F59E0B;
+  border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13.5px;
+}
+.fila-avaliacao b{color:#92400E}
+.fila-itens{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.fila-item{
+  background:#fff;border:1px solid #FDE68A;border-radius:8px;padding:8px 12px;
+  font-size:12.5px;cursor:pointer;text-align:left;font-family:inherit;
+}
+.fila-item:hover{border-color:#D97706;background:#FFFBEB}
+.fila-item b{display:block;color:var(--noturno);font-size:13px}
+.fila-item span{color:var(--suave)}
+
+.iqf{
+  display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;
+  padding:2px 8px;border-radius:999px;background:#E4F2EA;color:var(--ok);
+}
+.iqf.medio{background:#FDF3E7;color:var(--alerta)}
+.iqf.baixo{background:#FDECEC;color:var(--critico)}
+.iqf.preliminar{opacity:.85}
+.iqf small{font-weight:500;opacity:.8}
+.iqf-sem{font-size:12px;color:var(--suave)}
+
+.modal-aval-fundo{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:rgba(15,23,42,.55);z-index:10000;overflow-y:auto;
+}
+.modal-aval{
+  background:#fff;border-radius:16px;width:min(94vw,560px);max-height:88vh;
+  display:flex;flex-direction:column;box-shadow:0 24px 60px -12px rgba(15,23,42,.35);
+}
+.modal-aval-topo{padding:18px 22px 12px;border-bottom:1px solid var(--linha)}
+.modal-aval-topo h3{margin:0;font-size:17px;color:var(--noturno)}
+.modal-aval-topo p{margin:4px 0 0;font-size:13px;color:var(--suave)}
+.modal-aval-corpo{padding:14px 22px;overflow-y:auto;flex:1}
+.modal-aval-rodape{
+  padding:14px 22px;border-top:1px solid var(--linha);display:flex;
+  justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+}
+
+.criterio{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 0}
+.criterio + .criterio{border-top:1px solid var(--linha)}
+.criterio-rot{font-size:13.5px;font-weight:600;color:var(--noturno)}
+.criterio-ajuda{font-size:12px;color:var(--suave);font-weight:400;display:block;margin-top:1px}
+.estrelas{display:flex;gap:2px;flex-shrink:0}
+.estrela{
+  background:none;border:none;cursor:pointer;font-size:21px;line-height:1;padding:2px;
+  color:#D7DBE6;transition:color .12s ease,transform .12s ease;
+}
+.estrela:hover{transform:scale(1.15)}
+.estrela.on{color:#F59E0B}
+
+.aval-campo{margin-top:14px}
+.aval-campo label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:var(--noturno)}
+.aval-campo textarea{
+  width:100%;min-height:64px;border:1px solid var(--linha);border-radius:8px;
+  padding:8px 10px;font-family:inherit;font-size:13px;resize:vertical;
+}
+.aval-sim-nao{display:flex;gap:8px}
+.aval-sim-nao button{
+  flex:1;padding:9px;border:1.5px solid var(--linha);background:#fff;border-radius:8px;
+  cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--suave);
+}
+.aval-sim-nao button.on{border-color:var(--royal);background:#EEF4FC;color:var(--royal)}
+
 /* ── O atributo hidden tem a última palavra ──────────────────────────
    `hidden` esconde por uma regra do NAVEGADOR, que é a mais fraca de
    todas: qualquer `display` escrito aqui a sobrepõe, e com !important
@@ -2270,6 +2338,10 @@ table.ficha-tab a:hover{text-decoration:underline}
   </section>
 
   <section id="v-fornecedores" hidden>
+    <!-- A fila de avaliação vem antes das pílulas de propósito: é
+         trabalho pendente, e trabalho pendente escondido embaixo de
+         filtro não é feito. -->
+    <div class="fila-avaliacao" id="filaAvaliacao" hidden></div>
     <div class="pills" id="pillsForn"></div>
     <div class="pills pills-sub" id="subPillsForn" hidden></div>
     <div class="filtros">
@@ -2497,6 +2569,49 @@ table.ficha-tab a:hover{text-decoration:underline}
   </section>
 
   <footer id="rodape">carregando…</footer>
+<div class="modal-aval-fundo" id="modalAvalFundo" hidden onclick="fecharAvaliacao(event)">
+  <div class="modal-aval" onclick="event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="modal-aval-topo">
+      <h3 id="avalTitulo">Avaliar fornecedor</h3>
+      <p id="avalSub"></p>
+    </div>
+    <div class="modal-aval-corpo">
+      <div id="avalCriterios"></div>
+
+      <div class="aval-campo">
+        <label>Contrataria de novo?</label>
+        <div class="aval-sim-nao" id="avalRecontrataria">
+          <button type="button" data-v="sim" onclick="marcarRecontrataria(true)">Sim</button>
+          <button type="button" data-v="nao" onclick="marcarRecontrataria(false)">Não</button>
+        </div>
+      </div>
+
+      <div class="aval-campo">
+        <label for="avalPapel">Você está avaliando como</label>
+        <select id="avalPapel">
+          <option value="gestor_mega">Gestor do Mega — recebi o serviço</option>
+          <option value="suprimentos">Suprimentos — conduzi a compra</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+
+      <div class="aval-campo">
+        <label for="avalComentario">O que aconteceu <small style="font-weight:400;color:var(--suave)">(opcional, mas é o que a próxima pessoa vai ler)</small></label>
+        <textarea id="avalComentario" placeholder="Atrasou dois dias, avisou antes. Material conforme."></textarea>
+      </div>
+
+      <div id="avalMsg" class="aviso erro" hidden></div>
+    </div>
+    <div class="modal-aval-rodape">
+      <span class="d-nulo" style="font-size:12px" id="avalAssinatura"></span>
+      <span>
+        <button type="button" class="bt" onclick="fecharAvaliacao()">Cancelar</button>
+        <button type="button" class="bt primario" id="btSalvarAval" onclick="salvarAvaliacao()">Gravar avaliação</button>
+      </span>
+    </div>
+  </div>
+</div>
+
 <div class="modal-presets-fundo" id="modalPresetsFundo" hidden onclick="fecharModalPresets()"></div>
 <div class="modal-presets-janela" id="modalPresetsJanela" hidden role="dialog" aria-modal="true" aria-labelledby="modalPresetsTitulo">
   <div class="modal-presets-topo">
@@ -4506,6 +4621,7 @@ function aba(nome) {
   if (nome === 'fornecedores' && !fornecedoresCarregados) {
     fornecedoresCarregados = true;
     carregarFornecedores();
+    carregarFilaAvaliacao();
   }
   if (nome === 'nova' && !opcoesCarregadas) {
     opcoesCarregadas = true;
@@ -7439,6 +7555,194 @@ function escolherCategoriaForn(nome) {
   filtrarFornecedores();
 }
 
+// ─────────────────────────────────────────────────────────────
+//  Avaliação pós-serviço e IQF
+//
+//  A equalização sabe quem foi mais barato. Ela não sabe quem
+//  entregou no prazo, nem quem sumiu quando deu problema. Sem esta
+//  memória, "menor preço" é a única coisa que a empresa lembra.
+// ─────────────────────────────────────────────────────────────
+
+var CRITERIOS_AVAL = [];
+var avalAtual = null;
+var avalNotas = {};
+var avalRecontrataria = null;
+
+/**
+ * O selo de IQF.
+ *
+ * "Sem avaliação" não é nota baixa, e o selo tem de deixar isso
+ * óbvio: um fornecedor novo não pode parecer ruim por ser novo.
+ */
+function seloIqf(iqf) {
+  if (!iqf || !iqf.avaliacoes) {
+    return '<span class="iqf-sem">sem avaliação ainda</span>';
+  }
+  var faixa = iqf.nota >= 4 ? '' : (iqf.nota >= 3 ? ' medio' : ' baixo');
+  return '<span class="iqf' + faixa + (iqf.preliminar ? ' preliminar' : '') + '"' +
+    ' title="Média das avaliações pós-serviço' +
+    (iqf.preliminar ? ' — ainda preliminar, com poucas avaliações' : '') + '">' +
+    '★ ' + iqf.nota.toFixed(1).replace('.', ',') +
+    '<small>' + iqf.avaliacoes + (iqf.avaliacoes === 1 ? ' avaliação' : ' avaliações') +
+    (iqf.preliminar ? ' · preliminar' : '') + '</small></span>';
+}
+
+/** A fila de quem já foi contratado e ainda não foi avaliado. */
+function carregarFilaAvaliacao() {
+  google.script.run
+    .withSuccessHandler(function (r) {
+      var box = document.getElementById('filaAvaliacao');
+      if (!box || !r.ok) return;
+      CRITERIOS_AVAL = r.criterios || [];
+
+      if (!r.pendentes || !r.pendentes.length) { box.hidden = true; return; }
+
+      box.innerHTML =
+        '<div style="width:100%"><b>' + r.pendentes.length +
+        (r.pendentes.length === 1 ? ' compra homologada</b> ainda sem avaliação.'
+                                  : ' compras homologadas</b> ainda sem avaliação.') +
+        ' A nota do fornecedor só existe se alguém der.</div>' +
+        '<div class="fila-itens">' + r.pendentes.map(function (p) {
+          return '<button type="button" class="fila-item" onclick="abrirAvaliacao(' +
+            "'" + esc(p.cnpj) + "','" + esc(p.fornecedor) + "','" + esc(p.idEqualizacao) +
+            "','" + esc(p.empreendimento) + "','" + esc(p.numeroOc || '') + "'" + ')">' +
+            '<b>' + esc(p.fornecedor) + '</b>' +
+            '<span>' + esc(p.projeto || p.idEqualizacao) +
+            (p.empreendimento ? ' · ' + esc(simplificarMega(p.empreendimento)) : '') + '</span>' +
+            '</button>';
+        }).join('') + '</div>';
+      box.hidden = false;
+    })
+    .withFailureHandler(function () {
+      // A fila é um lembrete, não o conteúdo da tela: se ela falhar, a
+      // lista de fornecedores continua servindo. Some quieta.
+      var box = document.getElementById('filaAvaliacao');
+      if (box) box.hidden = true;
+    })
+    .apiAvaliacoesPendentes();
+}
+
+function abrirAvaliacao(cnpj, nome, idEq, empreendimento, numeroOc) {
+  avalAtual = { cnpj: cnpj, nome: nome, idEqualizacao: idEq || '',
+                empreendimento: empreendimento || '', numeroOc: numeroOc || '' };
+  avalNotas = {};
+  avalRecontrataria = null;
+
+  document.getElementById('avalTitulo').textContent = 'Avaliar ' + nome;
+  document.getElementById('avalSub').textContent =
+    (empreendimento ? simplificarMega(empreendimento) + ' · ' : '') +
+    'leva um minuto, e é o que a próxima cotação vai saber';
+
+  var msg = document.getElementById('avalMsg');
+  if (msg) { msg.hidden = true; msg.textContent = ''; }
+
+  document.querySelectorAll('#avalRecontrataria button').forEach(function (b) {
+    b.classList.remove('on');
+  });
+  document.getElementById('avalComentario').value = '';
+
+  desenharCriteriosAval();
+  document.getElementById('modalAvalFundo').hidden = false;
+}
+
+function desenharCriteriosAval() {
+  var el = document.getElementById('avalCriterios');
+  if (!el) return;
+
+  // Se a fila não carregou, os critérios vêm daqui — o formulário não
+  // pode ficar vazio por causa de uma chamada que falhou.
+  var criterios = CRITERIOS_AVAL.length ? CRITERIOS_AVAL : [
+    { chave: 'prazo', rotulo: 'Prazo', ajuda: 'Entregou na data combinada?' },
+    { chave: 'qualidade', rotulo: 'Qualidade', ajuda: 'O que entregou atendeu tecnicamente?' },
+    { chave: 'conformidade', rotulo: 'Conformidade', ajuda: 'Era o escopo e a marca contratados?' },
+    { chave: 'atendimento', rotulo: 'Atendimento', ajuda: 'Respondeu e resolveu quando deu problema?' },
+    { chave: 'documentacao', rotulo: 'Documentação', ajuda: 'NF, certidões e prazos em dia?' }
+  ];
+
+  el.innerHTML = criterios.map(function (c) {
+    var estrelas = '';
+    for (var n = 1; n <= 5; n++) {
+      estrelas += '<button type="button" class="estrela" data-c="' + esc(c.chave) + '"' +
+        ' data-n="' + n + '" aria-label="' + n + ' de 5 em ' + esc(c.rotulo) + '"' +
+        ' onclick="darNota(\'' + esc(c.chave) + '\',' + n + ')">★</button>';
+    }
+    return '<div class="criterio">' +
+      '<span class="criterio-rot">' + esc(c.rotulo) +
+      '<small class="criterio-ajuda">' + esc(c.ajuda) + '</small></span>' +
+      '<span class="estrelas">' + estrelas + '</span>' +
+      '</div>';
+  }).join('');
+}
+
+function darNota(chave, n) {
+  avalNotas[chave] = n;
+  document.querySelectorAll('.estrela[data-c="' + chave + '"]').forEach(function (b) {
+    b.classList.toggle('on', Number(b.getAttribute('data-n')) <= n);
+  });
+}
+
+function marcarRecontrataria(v) {
+  avalRecontrataria = v;
+  document.querySelectorAll('#avalRecontrataria button').forEach(function (b) {
+    b.classList.toggle('on', (b.getAttribute('data-v') === 'sim') === v);
+  });
+}
+
+function fecharAvaliacao(e) {
+  if (e && e.target && e.target.id !== 'modalAvalFundo') return;
+  document.getElementById('modalAvalFundo').hidden = true;
+}
+
+function salvarAvaliacao() {
+  if (!avalAtual) return;
+  var msg = document.getElementById('avalMsg');
+
+  var criterios = CRITERIOS_AVAL.length ? CRITERIOS_AVAL.map(function (c) { return c.chave; })
+                                        : ['prazo','qualidade','conformidade','atendimento','documentacao'];
+  var faltando = criterios.filter(function (c) { return !avalNotas[c]; });
+  if (faltando.length) {
+    // Dizer QUANTOS faltam, e não "preencha tudo": o formulário tem
+    // cinco linhas e a pessoa não sabe qual esqueceu.
+    msg.textContent = 'Faltam ' + faltando.length +
+      (faltando.length === 1 ? ' critério sem nota.' : ' critérios sem nota.');
+    msg.hidden = false;
+    return;
+  }
+
+  var bt = document.getElementById('btSalvarAval');
+  bt.disabled = true;
+  msg.hidden = true;
+
+  var dados = {
+    cnpj: avalAtual.cnpj,
+    idEqualizacao: avalAtual.idEqualizacao,
+    empreendimento: avalAtual.empreendimento,
+    numeroOc: avalAtual.numeroOc,
+    papel: document.getElementById('avalPapel').value,
+    recontrataria: avalRecontrataria === true,
+    comentario: document.getElementById('avalComentario').value
+  };
+  criterios.forEach(function (c) { dados[c] = avalNotas[c]; });
+
+  google.script.run
+    .withSuccessHandler(function (r) {
+      bt.disabled = false;
+      if (!r.ok) { msg.textContent = r.erro; msg.hidden = false; return; }
+      fecharAvaliacao();
+      // A lista e a fila mudaram as duas: a nota entrou no cartão e a
+      // pendência saiu da fila.
+      carregarFilaAvaliacao();
+      fornecedoresCarregados = false;
+      carregarFornecedores();
+    })
+    .withFailureHandler(function (e) {
+      bt.disabled = false;
+      msg.textContent = textoDoErro(e);
+      msg.hidden = false;
+    })
+    .apiSalvarAvaliacao(dados);
+}
+
 function filtrarFornecedores() {
   var termo = document.getElementById('fBuscaForn').value.trim().toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -7507,6 +7811,7 @@ function cartaoForn(f) {
 
   return '<button type="button" class="cartao-forn" onclick="abrirFichaFornecedor(\'' + esc(f.cnpj) + '\')">' +
     '<div class="forn-topo"><b>' + esc(f.nome) + '</b>' + selo + '</div>' +
+    '<div class="forn-linha">' + seloIqf(f.iqf) + '</div>' +
     '<div class="forn-cnpj">' + esc(f.cnpjFormatado) +
       (f.cidade ? ' · ' + esc(f.cidade) + (f.uf ? '/' + esc(f.uf) : '') : '') + '</div>' +
     '<div class="forn-linha">' + desempenho + '</div>' +

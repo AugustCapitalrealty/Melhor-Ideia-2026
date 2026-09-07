@@ -18,7 +18,7 @@ const CF_PASTA_ID = '1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G';
 const CF_NOME_PLANILHA = 'Capital Fornecedores — Base';
 
 /** Sobe de 1 a cada mudança no schema. Gravado em Script Properties. */
-const CF_SCHEMA_VERSAO = 4;
+const CF_SCHEMA_VERSAO = 5;
 
 /** Versão do parser de importação. Gravada em cada linha importada,
  *  para dar para reprocessar o que veio de uma geração antiga. */
@@ -78,7 +78,17 @@ const CF_ENUM = {
 
   origemCalculo: ['informado', 'calculado', 'ausente'],
 
-  periodoCobranca: ['unico', 'mensal', 'trimestral', 'semestral', 'anual']
+  periodoCobranca: ['unico', 'mensal', 'trimestral', 'semestral', 'anual'],
+
+  /**
+   * Quem deu a nota.
+   *
+   * O gestor do Mega viu o serviço acontecer; Suprimentos viu a
+   * negociação e a entrega documental. São percepções diferentes, e
+   * uma média que as some sem distinguir não pode ser separada depois.
+   * Gravar o papel custa uma coluna e preserva a escolha.
+   */
+  papelAvaliador: ['gestor_mega', 'suprimentos', 'outro']
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -131,6 +141,26 @@ const CF_SCHEMA = [
     { campo: 'TEM_CONTRATO_ATIVO',tipo: 'booleano', largura: 90, nota: 'vazio na v1; abre a porta para LPU na v2' },
     { campo: 'ORIGEM',            tipo: 'enum:origem', largura: 120 },
     { campo: 'ATUALIZADO_EM',     tipo: 'data', largura: 130 }
+  ]},
+
+  { nome: 'Avaliacoes', nota: 'A nota do fornecedor DEPOIS do serviço. É o que a equalização sozinha não sabe: preço bom com entrega ruim.', colunas: [
+    { campo: 'ID',                tipo: 'texto', largura: 130, nota: 'PK' },
+    { campo: 'CNPJ',              tipo: 'texto', largura: 150, nota: 'só dígitos — quem está sendo avaliado' },
+    { campo: 'ID_EQUALIZACAO',    tipo: 'texto', largura: 140, nota: 'de onde veio; vazio para avaliação avulsa' },
+    { campo: 'ID_EMPREENDIMENTO', tipo: 'texto', largura: 140, nota: 'onde o serviço foi prestado' },
+    { campo: 'NUMERO_OC',         tipo: 'texto', largura: 120 },
+    { campo: 'DATA_AVALIACAO',    tipo: 'data', largura: 130 },
+    { campo: 'AVALIADOR',         tipo: 'texto', largura: 240, nota: 'e-mail do login — não digitado' },
+    { campo: 'PAPEL_AVALIADOR',   tipo: 'enum:papelAvaliador', largura: 130 },
+    { campo: 'PRAZO',             tipo: 'inteiro', largura: 80, nota: '1 a 5 — cumpriu o prazo combinado' },
+    { campo: 'QUALIDADE',         tipo: 'inteiro', largura: 90, nota: '1 a 5 — qualidade do que entregou' },
+    { campo: 'CONFORMIDADE',      tipo: 'inteiro', largura: 110, nota: '1 a 5 — entregou o escopo e a marca contratados' },
+    { campo: 'ATENDIMENTO',       tipo: 'inteiro', largura: 110, nota: '1 a 5 — comunicação e resolução de problema' },
+    { campo: 'DOCUMENTACAO',      tipo: 'inteiro', largura: 120, nota: '1 a 5 — NF, certidões e prazos administrativos' },
+    { campo: 'NOTA',              tipo: 'numero', largura: 80, nota: 'média dos cinco, GRAVADA: mudar os critérios depois não pode reescrever o passado' },
+    { campo: 'RECONTRATARIA',     tipo: 'booleano', largura: 110, nota: 'a pergunta que mais prediz a próxima compra' },
+    { campo: 'COMENTARIO',        tipo: 'texto', largura: 420 },
+    { campo: 'CRIADO_EM',         tipo: 'data', largura: 130 }
   ]},
 
   { nome: 'Categorias', colunas: [

@@ -317,6 +317,34 @@ function apiFornecedores(categoria) {
   }
 }
 
+/**
+ * Grava a avaliação pós-serviço.
+ *
+ * Passa por cfExigeAutorizacao_ como qualquer escrita: a nota entra no
+ * histórico que decide contratação futura, e google.script.run é
+ * chamável de qualquer aba aberta.
+ */
+function apiSalvarAvaliacao(dados) {
+  try {
+    cfExigeAutorizacao_();
+    return { ok: true, resultado: cfSalvarAvaliacao_(dados) };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/** A fila de avaliação: homologadas que ninguém avaliou ainda. */
+function apiAvaliacoesPendentes() {
+  try {
+    return { ok: true, pendentes: cfAvaliacoesPendentes_(),
+             criterios: CF_CRITERIOS_AVALIACAO.map(function (c) {
+               return { chave: c.chave, rotulo: c.rotulo, ajuda: c.ajuda };
+             }) };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
 /** A ficha completa de um fornecedor: cadastro, disputas e preços. */
 function apiFichaFornecedor(cnpj) {
   try {

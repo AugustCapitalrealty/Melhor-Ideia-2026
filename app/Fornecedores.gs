@@ -115,6 +115,10 @@ function cfFornecedores_(categoria) {
 
   const alvo = cfNormalizar_(categoria || '');
 
+  // Uma leitura só, fora do laço: por fornecedor seriam N leituras
+  // da mesma faixa, e a lista tem dezenas.
+  const iqfs = cfIqfPorCnpj_();
+
   return Object.keys(porCnpj).map(function (cnpj) {
     const f = porCnpj[cnpj];
     const cad = cadastro[cnpj] || {};
@@ -140,6 +144,9 @@ function cfFornecedores_(categoria) {
       // mostra a fração crua, que é honesta e igualmente informativa.
       taxaVitoria: f.disputas >= 5 ? (f.vitorias / f.disputas) : null,
       amostraCurta: f.disputas < 5,
+      // A nota do pós-serviço. Null enquanto ninguém avaliou — e a
+      // tela precisa saber a diferença entre "nota zero" e "sem nota".
+      iqf: iqfs[cnpj] || null,
       volumeHomologado: f.volumeHomologado || null,
       megas: Object.keys(f.megas),
       categorias: cats,
@@ -266,6 +273,11 @@ function cfFichaFornecedor_(cnpjBruto) {
   const ganhas = disputas.filter(function (d) { return d.venceu; });
   const decididas = disputas.filter(function (d) { return d.decidida; });
 
+  // Uma chamada, dois usos: a nota e as avaliações que a formaram.
+  // Nota sem as avaliações por trás não dá para contestar, e nota que
+  // não se contesta não se usa para decidir contratação.
+  const iqf = cfIqfDoFornecedor_(cnpj) || { resumo: null, avaliacoes: [] };
+
   return {
     cnpj: cnpj,
     cnpjFormatado: cfCnpjFormatado_(cnpj),
@@ -287,6 +299,8 @@ function cfFichaFornecedor_(cnpjBruto) {
     // em aberto não foi perdida, está em andamento.
     taxaVitoria: decididas.length >= 5 ? (ganhas.length / decididas.length) : null,
     amostraCurta: decididas.length < 5,
+    iqf: iqf.resumo,
+    avaliacoes: iqf.avaliacoes,
     volumeHomologado: ganhas.reduce(function (a, d) { return a + (d.valor || 0); }, 0) || null,
     categorias: dedu.lista,
     categoriaPrincipal: dedu.principal,

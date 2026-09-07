@@ -2172,7 +2172,7 @@ try {
 // ─────────────────────────────────────────────────────────────
 try {
   const ctxF = vm.createContext({ Logger: { log: () => {} }, console: console });
-  ['Util.gs', 'Config.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Fornecedores.gs'].forEach(f => {
+  ['Util.gs', 'Config.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Avaliacao.gs', 'Fornecedores.gs'].forEach(f => {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxF, { filename: f });
   });
 
