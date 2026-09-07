@@ -798,7 +798,25 @@ table.grade thead th small{
 .col-desc{min-width:320px;width:360px;box-sizing:border-box}
 .col-qtd{width:76px;min-width:70px;box-sizing:border-box}
 .col-un{width:96px;min-width:90px;box-sizing:border-box}
-.col-preco{width:145px;min-width:135px;box-sizing:border-box}
+.col-preco{width:145px;min-width:135px;max-width:165px;box-sizing:border-box}
+table.grade th.col-preco{padding:0 6px 8px}
+table.grade th.col-preco .th-nome-prop{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-weight:700;
+  font-size:11px;
+  color:var(--noturno);
+  letter-spacing:.03em;
+  line-height:1.25;
+}
+table.mapa thead th .th-nome-prop{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
 .col-del{width:38px;min-width:38px;text-align:center;box-sizing:border-box}
 
 /* Controle de hierarquia: recuar é o gesto, não escolher um número. */
@@ -2536,6 +2554,50 @@ var esc = function (s) {
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 };
 
+/**
+ * Abreviatura inteligente de proponente para cabeçalhos de coluna compactos.
+ *
+ * Transforma razões sociais extensas em nomes concisos para não estourar a grade:
+ * - "CANAVERAL SERVIÇOS" -> "CANAVERAL"
+ * - "LITORAL SUPRIMENTOS" -> "LITORAL"
+ * - "CONTABILISTA SUPRIMENTOS PARA ESCRITÓRIO" -> "CONTABILISTA"
+ * - "BASE PAPÉIS DISTRIBUIDORA" -> "BASE PAPÉIS" (1ª palavra curta <= 4 letras mantém 2 palavras)
+ */
+function nomeCurtoProponente(nome) {
+  if (!nome || typeof nome !== 'string') return '';
+  var texto = nome.trim().replace(/\s+/g, ' ');
+  if (!texto) return '';
+
+  // Proponente 1, Proponente 2, Fornecedor 1 mantêm o nome padrão
+  if (/^(proponente|fornecedor)\s+\d+$/i.test(texto)) return texto;
+
+  // Remove sufixos jurídicos empresariais no fim (LTDA, EIRELI, S/A, ME, EPP, etc.)
+  var limpo = texto.replace(/\s+(LTDA|EIRELI|S\/?A\.?|ME|EPP|MEI|CIA\.?|EOP|S\.S\.)\.?$/gi, '').trim();
+  if (!limpo) limpo = texto;
+
+  var palavras = limpo.split(' ').filter(Boolean);
+  if (palavras.length <= 1) return palavras[0] || texto;
+
+  var primeira = palavras[0];
+  var primeiraSemPunct = primeira.replace(/[^\w\u00C0-\u017F]/g, '');
+  var tamPrimeira = primeiraSemPunct.length || primeira.length;
+
+  // Se a primeira palavra for curta (<= 4 letras, ex: "Base", "JC", "São", "Nova", "Bom", "Casa"):
+  // Mantém 2 palavras (ex: "BASE PAPÉIS").
+  // Se a 2ª palavra for preposição/conjunção (de, da, do, dos, das, e, &), pega até a 3ª (ex: "Casa do Pão")
+  if (tamPrimeira <= 4) {
+    var stopwords = /^(de|da|do|dos|das|e|&)$/i;
+    if (palavras.length >= 3 && stopwords.test(palavras[1])) {
+      return palavras.slice(0, 3).join(' ');
+    }
+    return palavras.slice(0, 2).join(' ');
+  }
+
+  // Se a 1ª palavra tiver mais de 4 letras (ex: "Contabilista", "Litoral", "Canaveral"),
+  // mantém somente ela.
+  return primeira;
+}
+
 function classeVariacao(p){ return p < 15 ? 'baixa' : (p < 60 ? 'media' : 'alta'); }
 
 /**
@@ -3332,7 +3394,8 @@ function desenharMapa(m) {
   var props = m.proponentes;
 
   var cabecalho = '<tr><th class="desc">Item</th>' + props.map(function (p) {
-    return '<th>' + esc(p.nome) +
+    var nomeCurto = nomeCurtoProponente(p.nome) || p.nome;
+    return '<th title="' + esc(p.nome) + '"><span class="th-nome-prop">' + esc(nomeCurto) + '</span>' +
            (p.rodada ? '<small>' + esc(p.rodada) + '</small>' : '') + '</th>';
   }).join('') + '</tr>';
 
@@ -4515,8 +4578,10 @@ function atualizarNomes() {
     // duas vezes, e das duas o nome foi parar na coluna errada.
     var th = document.querySelector('#grade thead th[data-prop="' + j + '"]');
     if (!th) return;
+    var nomeCurto = nomeCurtoProponente(p.nome) || ('Proponente ' + (j + 1));
+    th.title = p.nome || ('Proponente ' + (j + 1));
     // innerHTML, não textContent: textContent apagava o rótulo da unidade.
-    th.innerHTML = esc(p.nome || ('Proponente ' + (j + 1))) + '<small>' + rotulo + '</small>';
+    th.innerHTML = '<span class="th-nome-prop">' + esc(nomeCurto) + '</span><small>' + rotulo + '</small>';
   });
   calcular();
 }
@@ -4623,8 +4688,9 @@ function desenharGrade() {
       // data-prop identifica a coluna pelo proponente, não pela posição:
       // contar colunas fixas com um número mágico já mandou o nome de um
       // proponente para a coluna do seguinte quando a grade mudou.
-      return '<th class="col-preco" data-prop="' + i + '">' +
-             esc(p.nome || ('Proponente ' + (i + 1))) +
+      var nomeCurto = nomeCurtoProponente(p.nome) || ('Proponente ' + (i + 1));
+      return '<th class="col-preco" data-prop="' + i + '" title="' + esc(p.nome || ('Proponente ' + (i + 1))) + '">' +
+             '<span class="th-nome-prop">' + esc(nomeCurto) + '</span>' +
              '<small>' + rotuloBase + '</small></th>';
     }).join('') + '<th class="col-del"></th></tr></thead>';
 
@@ -4793,7 +4859,8 @@ function calcular() {
     // A cesta incompleta aparece junto do total: o mais barato pode ser
     // só o que deixou item sem cotar.
     var falta = itensReais - cotou[j];
-    return '<span>' + esc(p.nome || ('Proponente ' + (j + 1))) + ': <b' +
+    var nomeCurto = nomeCurtoProponente(p.nome) || ('Proponente ' + (j + 1));
+    return '<span title="' + esc(p.nome || '') + '">' + esc(nomeCurto) + ': <b' +
       (menor === j ? ' style="color:var(--ok)"' : '') + '>' + moeda(totais[j]) + '</b>' +
       (falta > 0 ? ' <small style="color:var(--alerta)">(' + falta + ' sem cotar)</small>' : '') +
       '</span>';
