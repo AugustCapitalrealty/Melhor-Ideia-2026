@@ -8,8 +8,8 @@
     "test:ciclo": "node tests/ciclo-completo.cjs",
     "test:correcoes": "node tests/validar-correcoes.cjs",
     "baseline": "node tests/snapshot-baseline.cjs",
-    "push": "npm test && clasp push -f",
-    "status": "clasp show-file-status",
+    "push": "npm test && npx clasp push -f",
+    "status": "npx clasp show-file-status",
     "test:features": "node tests/teste-catalogo-e-config.cjs && node tests/teste-categoria-e-logo.cjs && node tests/teste-consulta-executiva.cjs && node tests/teste-equalizacoes-executiva.cjs && node tests/teste-marcas-opcional.cjs && node tests/teste-nome-curto-proponente.cjs && node tests/teste-presets-eap.cjs"
   },
   "engines": {
