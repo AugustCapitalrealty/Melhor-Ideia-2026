@@ -1380,7 +1380,15 @@ table.ficha-tab a:hover{text-decoration:underline}
   .gaveta{width:100vw}
   .ficha-dl{grid-template-columns:1fr;gap:2px 0}
   .ficha-dl dd{margin-bottom:8px}
-/* ── PREDEFINIÇÕES DE GRUPOS E SUBGRUPOS (EAP PRESETS) ── */
+}
+
+/* ── PREDEFINIÇÕES DE GRUPOS E SUBGRUPOS (EAP PRESETS) ──
+   Esta chave de fechamento faltava. Sem ela, tudo daqui até o fim da
+   folha — as ~750 linhas do modal de predefinições — ficava dentro do
+   @media(max-width:640px) acima, e só valia em tela de celular. No
+   desktop o modal aparecia como HTML cru: botão de sistema, checkbox
+   solto, sem colunas. Os !important espalhados abaixo são a marca de
+   quem tentou resolver isso por especificidade, que não era o caso. */
 .grade-acoes-barra {
   display: flex;
   align-items: center;
