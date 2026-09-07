@@ -744,12 +744,39 @@ function cfLogoBlob_(chave) {
     tentativas.push('pasta do projeto: ' + e);
   }
 
-  // 3. O ID escrito no código.
+  // 3. O ID escrito no código, pelo DriveApp.
   const doCodigo = doId(CF_LOGO_DRIVE[chave], 'ID no código');
   if (doCodigo) return doCodigo;
 
-  // 4. A URL pública, para o caso de o arquivo estar compartilhado mas
-  //    fora do alcance do DriveApp desta conta.
+  // 4. O mesmo ID, mas pela API do Drive com o token da execução.
+  //
+  //    Não é redundância do passo anterior: o DriveApp resolve pelo
+  //    índice do usuário e falha em arquivo de Drive compartilhado ou
+  //    de outra conta; a API busca o conteúdo direto e alcança tudo o
+  //    que o token alcança.
+  const idBruto = CF_LOGO_DRIVE[chave];
+  try {
+    const resp = UrlFetchApp.fetch(
+      'https://www.googleapis.com/drive/v3/files/' + idBruto + '?alt=media&supportsAllDrives=true',
+      { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+        muteHttpExceptions: true });
+    if (resp.getResponseCode() === 200) {
+      const b = resp.getBlob();
+      const tipo = b.getContentType() || '';
+      if (tipo.indexOf('image/') === 0) {
+        return { blob: b.setName('logo.png'), origem: 'API do Drive (token da execução)' };
+      }
+      tentativas.push('API do Drive: devolveu ' + tipo + ', não uma imagem');
+    } else {
+      tentativas.push('API do Drive: HTTP ' + resp.getResponseCode());
+    }
+  } catch (e) {
+    tentativas.push('API do Drive: ' + e);
+  }
+
+  // 5. A URL pública. Última porque é a que menos depende de
+  //    permissão — e por isso a que menos costuma funcionar quando as
+  //    outras falharam.
   try {
     const resp = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + CF_LOGO_DRIVE[chave],
                                    { muteHttpExceptions: true });
@@ -764,6 +791,46 @@ function cfLogoBlob_(chave) {
   Logger.log('Logo "' + chave + '" não encontrada. Tentativas:');
   tentativas.forEach(function (t) { Logger.log('   · ' + t); });
   return null;
+}
+
+/**
+ * Guarda uma cópia da logo na pasta do projeto.
+ *
+ * Depois disto, a exportação para de depender de permissão em arquivo
+ * de terceiro: o arquivo passa a ser desta instalação, na pasta desta
+ * instalação, encontrado pelo nome. É a diferença entre uma logo que
+ * funciona hoje e uma que continua funcionando quando alguém arrumar o
+ * Drive da empresa.
+ *
+ * Rode: fixarLogosNaPasta   (neste arquivo, Exportar.gs)
+ */
+function fixarLogosNaPasta() {
+  const pasta = DriveApp.getFolderById(CF_PASTA_ID);
+
+  [['demercado', 'Demercado'], ['capitalRealty', 'Capital Realty']].forEach(function (par) {
+    const chave = par[0], nome = par[1];
+    const achada = cfLogoBlob_(chave);
+
+    if (!achada) {
+      Logger.log(nome + ': nenhuma fonte devolveu a imagem — nada a fixar.');
+      Logger.log('   Rode diagnosticarLogos() para ver o motivo de cada uma,');
+      Logger.log('   ou suba o PNG na pasta com o nome ' + CF_LOGO_ARQUIVO[chave] + '.png');
+      return;
+    }
+
+    if (achada.origem.indexOf('pasta do projeto') === 0) {
+      Logger.log(nome + ': já está na pasta — ' + achada.origem);
+      return;
+    }
+
+    const arq = pasta.createFile(achada.blob.setName(CF_LOGO_ARQUIVO[chave] + '.png'));
+    Logger.log(nome + ': copiada de ' + achada.origem);
+    Logger.log('   agora em ' + arq.getUrl());
+  });
+
+  Logger.log('');
+  Logger.log('A partir daqui a exportação lê da pasta do projeto, sem depender');
+  Logger.log('de permissão em arquivo de fora.');
 }
 
 /**

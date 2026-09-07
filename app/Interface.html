@@ -2275,20 +2275,12 @@ table.ficha-tab a:hover{text-decoration:underline}
       <div class="grade-compra">
         <div class="campo col-2">
           <label for="nCategoria">Categoria da compra</label>
+          <!-- As opções vêm do servidor, em carregarOpcoes(). Escritas
+               aqui, elas divergiam da taxonomia do Equalizacao.gs — e o
+               "Outra…" que existia só aqui virava categoria que nenhum
+               filtro encontrava. -->
           <select id="nCategoria" onchange="selecionouCategoria(this.value)">
-            <option value="">selecione a categoria…</option>
-            <optgroup label="Compras recorrentes (mensais)">
-              <option value="Material de Consumo">☕ Material de Consumo</option>
-              <option value="Material de Construção">🧱 Material de Construção</option>
-            </optgroup>
-            <optgroup label="Demais categorias">
-              <option value="Obras &amp; Reformas">🏗️ Obras &amp; Reformas</option>
-              <option value="Serviços &amp; Facilities">🧹 Serviços &amp; Facilities</option>
-              <option value="Manutenção Predial &amp; Engenharia">⚡ Manutenção Predial &amp; Engenharia</option>
-              <option value="Equipamentos &amp; Locação">🚜 Equipamentos &amp; Locação</option>
-              <option value="Tecnologia &amp; Segurança">💻 Tecnologia &amp; Segurança</option>
-              <option value="Outra">Outra…</option>
-            </optgroup>
+            <option value="">carregando categorias…</option>
           </select>
         </div>
         <div class="campo col-2">
@@ -2298,6 +2290,12 @@ table.ficha-tab a:hover{text-decoration:underline}
         <div class="campo col-2">
           <label>Empresa contratante</label>
           <div class="derivado" id="nEmpresa"><span class="emp-vazio">escolha o Mega primeiro</span></div>
+        </div>
+        <div class="campo col-2" id="boxSubcategoria" hidden>
+          <label for="nSubcategoria">Subcategoria <small style="font-weight:normal;color:var(--suave);margin-left:4px">(opcional)</small></label>
+          <select id="nSubcategoria" onchange="salvarRascunho()">
+            <option value="">todas desta categoria</option>
+          </select>
         </div>
         <div class="campo col-6">
           <label for="nProjeto">Projeto <small style="font-weight:normal;color:var(--suave);margin-left:4px">(sugerido pela categoria, editável)</small></label>
@@ -5231,9 +5229,90 @@ function limparFormulario() {
   if (bt) bt.disabled = false;
 }
 
+/**
+ * A taxonomia como o servidor a conhece.
+ *
+ * Guardada aqui para o seletor de subcategoria não precisar de outra
+ * ida ao servidor a cada troca de categoria.
+ */
+var CATEGORIAS_SERVIDOR = [];
+
+/**
+ * Monta o seletor de categoria a partir da taxonomia do servidor.
+ *
+ * As duas primeiras ficam num grupo à parte porque são as compras que
+ * se repetem todo mês — quem abre a tela está indo para uma delas na
+ * maior parte das vezes, e procurá-las numa lista de sete é atrito
+ * diário.
+ */
+function montarSeletorCategorias(cats) {
+  var sel = document.getElementById('nCategoria');
+  if (!sel || !cats || !cats.length) return;
+
+  var recorrentes = ['Material de Consumo', 'Material de Construção'];
+  var ehRecorrente = function (c) { return recorrentes.indexOf(c.nome) >= 0; };
+  var opcao = function (c) {
+    return '<option value="' + esc(c.nome) + '">' + c.icone + ' ' + esc(c.nome) + '</option>';
+  };
+
+  var html = '<option value="">selecione a categoria…</option>';
+  var mensais = cats.filter(ehRecorrente);
+  var demais = cats.filter(function (c) { return !ehRecorrente(c); });
+
+  if (mensais.length) {
+    html += '<optgroup label="Compras recorrentes (mensais)">' +
+            mensais.map(opcao).join('') + '</optgroup>';
+  }
+  if (demais.length) {
+    html += '<optgroup label="Demais categorias">' +
+            demais.map(opcao).join('') + '</optgroup>';
+  }
+
+  var antes = sel.value;
+  sel.innerHTML = html;
+  if (antes) sel.value = antes;
+}
+
+/**
+ * As subcategorias da categoria escolhida.
+ *
+ * Some quando a categoria não tem nenhuma, e some quando não há
+ * categoria: um select vazio ocupando espaço ensina a ignorá-lo.
+ */
+function montarSeletorSubcategorias(nomeCategoria) {
+  var box = document.getElementById('boxSubcategoria');
+  var sel = document.getElementById('nSubcategoria');
+  if (!box || !sel) return;
+
+  var cat = CATEGORIAS_SERVIDOR.filter(function (c) { return c.nome === nomeCategoria; })[0];
+  var subs = cat ? (cat.subs || []) : [];
+
+  if (!subs.length) {
+    box.hidden = true;
+    sel.innerHTML = '<option value="">todas desta categoria</option>';
+    sel.value = '';
+    return;
+  }
+
+  var antes = sel.value;
+  sel.innerHTML = '<option value="">todas desta categoria</option>' +
+    subs.map(function (s) {
+      return '<option value="' + esc(s) + '">' + esc(s) + '</option>';
+    }).join('');
+  // Só preserva a escolha anterior se ela pertence a esta categoria.
+  sel.value = subs.indexOf(antes) >= 0 ? antes : '';
+  box.hidden = false;
+}
+
 function carregarOpcoes() {
   google.script.run.withSuccessHandler(function (r) {
     if (!r.ok) return;
+    if (r.categorias && r.categorias.length) {
+      CATEGORIAS_SERVIDOR = r.categorias;
+      montarSeletorCategorias(r.categorias);
+      var sc = document.getElementById('nCategoria');
+      if (sc && sc.value) montarSeletorSubcategorias(sc.value);
+    }
     document.getElementById('nEmp').innerHTML =
       '<option value="">selecione o Mega…</option>' +
       r.empreendimentos.map(function (e) {
@@ -5339,6 +5418,7 @@ function gerarNomeProjetoSugerido(cat, emp, dataIso) {
 }
 
 function selecionouCategoria(cat) {
+  montarSeletorSubcategorias(cat);
   var emp = document.getElementById('nEmp') ? document.getElementById('nEmp').value : '';
   var dataIso = document.getElementById('nData') ? document.getElementById('nData').value : '';
   var campoProj = document.getElementById('nProjeto');
@@ -6923,6 +7003,7 @@ function salvarEqualizacao() {
       id: idEmEdicao || undefined,
       segundosPreenchimento: segundosDecorridos(),
       categoria: document.getElementById('nCategoria') ? document.getElementById('nCategoria').value : '',
+      subcategoria: document.getElementById('nSubcategoria') ? document.getElementById('nSubcategoria').value : '',
       empreendimento: document.getElementById('nEmp').value,
       projeto: document.getElementById('nProjeto').value,
       area: document.getElementById('nArea').value,

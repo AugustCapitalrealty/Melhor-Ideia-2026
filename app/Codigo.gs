@@ -234,6 +234,16 @@ function apiOpcoes() {
       ok: true,
       empreendimentos: CF_EMPREENDIMENTOS.map(function (e) {
         return { nome: e, empresa: cfEmpresaDoMega_(e).nome };
+      }),
+      // A taxonomia vai junto para a tela montar o seletor a partir
+      // dela. Escrita à mão no HTML, ela divergia da do servidor — e a
+      // divergência aparecia como categoria que nenhum filtro acha.
+      categorias: CF_CATEGORIAS.map(function (c) {
+        return {
+          nome: c.nome,
+          icone: c.icone,
+          subs: (CF_SUBCATEGORIAS[c.nome] || []).map(function (s) { return s.nome; })
+        };
       })
     };
   } catch (erro) {
