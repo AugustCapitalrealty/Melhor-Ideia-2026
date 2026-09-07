@@ -2245,6 +2245,11 @@ table.ficha-tab a:hover{text-decoration:underline}
 
 /* O número sozinho não significa nada: cinco pessoas calibram "3" de
    cinco jeitos, e a média vira ruído. A palavra ancora a escala. */
+.criterio-peso{
+  display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;
+  color:var(--royal);background:var(--superficie2);padding:1px 6px;border-radius:999px;
+  vertical-align:middle;
+}
 .criterio-valor{font-size:11.5px;font-weight:600;color:var(--suave);height:14px}
 .criterio-valor.dado{color:#B45309}
 
@@ -7672,22 +7677,30 @@ function seloIqfColuna(iqf) {
   if (!iqf || !iqf.avaliacoes) {
     return '<small class="iqf-col vazio" title="Nenhuma avaliação pós-serviço registrada">sem nota</small>';
   }
-  var faixa = iqf.nota >= 4 ? ' bom' : (iqf.nota >= 3 ? ' medio' : ' ruim');
-  return '<small class="iqf-col' + faixa + '" title="IQF: média de ' + iqf.avaliacoes +
+  var faixa = iqf.classe === 'A' ? ' bom' : (iqf.classe === 'B' ? ' medio' : ' ruim');
+  return '<small class="iqf-col' + faixa + '" title="IQF ' + iqf.nota + ' de 100 · Classe ' +
+    iqf.classe + ' (' + iqf.classeRotulo + ') · ' + iqf.avaliacoes +
     ' avaliação(ões) pós-serviço' + (iqf.preliminar ? ' — ainda preliminar' : '') + '">' +
-    '★ ' + iqf.nota.toFixed(1).replace('.', ',') +
+    'IQF ' + String(iqf.nota).replace('.', ',') + ' · ' + esc(iqf.classe) +
     (iqf.preliminar ? '<span class="iqf-col-prelim">prelim.</span>' : '') + '</small>';
 }
 
+/**
+ * O selo de IQF, na escala 0-100 com classe.
+ *
+ * A classe vem antes do número de propósito: "Classe C" se discute
+ * numa reunião, "72,4" não. O número fica do lado para quem quiser
+ * conferir.
+ */
 function seloIqf(iqf) {
   if (!iqf || !iqf.avaliacoes) {
     return '<span class="iqf-sem">sem avaliação ainda</span>';
   }
-  var faixa = iqf.nota >= 4 ? '' : (iqf.nota >= 3 ? ' medio' : ' baixo');
+  var faixa = iqf.classe === 'A' ? '' : (iqf.classe === 'B' ? ' medio' : ' baixo');
   return '<span class="iqf' + faixa + (iqf.preliminar ? ' preliminar' : '') + '"' +
-    ' title="Média das avaliações pós-serviço' +
+    ' title="IQF ' + iqf.nota + ' de 100 · Classe ' + iqf.classe + ' (' + iqf.classeRotulo + ')' +
     (iqf.preliminar ? ' — ainda preliminar, com poucas avaliações' : '') + '">' +
-    '★ ' + iqf.nota.toFixed(1).replace('.', ',') +
+    'IQF ' + String(iqf.nota).replace('.', ',') + ' · ' + esc(iqf.classe) +
     '<small>' + iqf.avaliacoes + (iqf.avaliacoes === 1 ? ' avaliação' : ' avaliações') +
     (iqf.preliminar ? ' · preliminar' : '') + '</small></span>';
 }
@@ -7771,12 +7784,21 @@ function desenharCriteriosAval() {
 
   // Se a fila não carregou, os critérios vêm daqui — o formulário não
   // pode ficar vazio por causa de uma chamada que falhou.
+  // A cópia de segurança dos critérios, para o formulário não ficar
+  // vazio se a chamada ao servidor falhar. Precisa ser a MESMA lista
+  // do Avaliacao.gs, com os mesmos pesos — divergir aqui seria gravar
+  // resposta a uma pergunta que o servidor não fez.
   var criterios = CRITERIOS_AVAL.length ? CRITERIOS_AVAL : [
-    { chave: 'prazo', rotulo: 'Prazo', ajuda: 'Entregou na data combinada?' },
-    { chave: 'qualidade', rotulo: 'Qualidade', ajuda: 'O que entregou atendeu tecnicamente?' },
-    { chave: 'conformidade', rotulo: 'Conformidade', ajuda: 'Era o escopo e a marca contratados?' },
-    { chave: 'atendimento', rotulo: 'Atendimento', ajuda: 'Respondeu e resolveu quando deu problema?' },
-    { chave: 'documentacao', rotulo: 'Documentação', ajuda: 'NF, certidões e prazos em dia?' }
+    { chave: 'qualidade', rotulo: 'Qualidade técnica e acabamento', peso: 30,
+      ajuda: 'A entrega atendeu ao escopo e ao padrão técnico do Mega?' },
+    { chave: 'prazo', rotulo: 'Pontualidade e cumprimento de SLA', peso: 25,
+      ajuda: 'Cumpriu o cronograma e os prazos acordados?' },
+    { chave: 'seguranca', rotulo: 'Segurança do trabalho e SST', peso: 20,
+      ajuda: 'Usou EPI, seguiu as normas e apresentou a documentação de segurança?' },
+    { chave: 'atendimento', rotulo: 'Atendimento, postura e comunicação', peso: 15,
+      ajuda: 'Respondeu, se relacionou bem com a equipe e resolveu pendências?' },
+    { chave: 'limpeza', rotulo: 'Limpeza e organização', peso: 10,
+      ajuda: 'Deixou a área limpa e organizada depois da execução?' }
   ];
 
   el.innerHTML = criterios.map(function (c) {
@@ -7789,6 +7811,8 @@ function desenharCriteriosAval() {
     }
     return '<div class="criterio pendente" data-crit="' + esc(c.chave) + '">' +
       '<span class="criterio-rot">' + esc(c.rotulo) +
+      (c.peso ? '<span class="criterio-peso" title="Peso deste critério no IQF">' +
+                c.peso + '%</span>' : '') +
       '<small class="criterio-ajuda">' + esc(c.ajuda) + '</small></span>' +
       '<span class="criterio-dir">' +
         '<span class="estrelas" onmouseout="limparPrevia(\'' + esc(c.chave) + '\')">' + estrelas + '</span>' +
@@ -7858,7 +7882,7 @@ function atualizarProgressoAval() {
 function chavesCriteriosAval() {
   return CRITERIOS_AVAL.length
     ? CRITERIOS_AVAL.map(function (c) { return c.chave; })
-    : ['prazo', 'qualidade', 'conformidade', 'atendimento', 'documentacao'];
+    : ['qualidade', 'prazo', 'seguranca', 'atendimento', 'limpeza'];
 }
 
 function marcarRecontrataria(v) {
@@ -8138,10 +8162,17 @@ function desenharFichaFornecedor(f) {
       ' que contrataria de novo' +
       (f.iqf.ultima ? ' · última em ' + esc(f.iqf.ultima) : '') + '.</p>';
 
+    esq += '<p class="ficha-nota">Classe <b>' + esc(f.iqf.classe) + '</b> — ' +
+      esc(f.iqf.classeRotulo) + '.</p>';
+
+    // O rótulo do critério pelo nome que a pessoa respondeu, não pela
+    // chave interna: "Seguranca" não é como ninguém escreve.
     var porCriterio = f.iqf.criterios || {};
     var linhas = Object.keys(porCriterio).map(function (k) {
-      return '<dt>' + esc(k.charAt(0).toUpperCase() + k.slice(1)) + '</dt>' +
-             '<dd>' + porCriterio[k].toFixed(1).replace('.', ',') + '</dd>';
+      var def = CRITERIOS_AVAL.filter(function (c) { return c.chave === k; })[0];
+      var rot = def ? def.rotulo : (k.charAt(0).toUpperCase() + k.slice(1));
+      return '<dt>' + esc(rot) + (def && def.peso ? ' <small>' + def.peso + '%</small>' : '') + '</dt>' +
+             '<dd>' + porCriterio[k].toFixed(1).replace('.', ',') + ' <small>de 5</small></dd>';
     }).join('');
     if (linhas) esq += '<dl class="ficha-dl">' + linhas + '</dl>';
   }

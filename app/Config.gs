@@ -18,7 +18,7 @@ const CF_PASTA_ID = '1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G';
 const CF_NOME_PLANILHA = 'Capital Fornecedores — Base';
 
 /** Sobe de 1 a cada mudança no schema. Gravado em Script Properties. */
-const CF_SCHEMA_VERSAO = 5;
+const CF_SCHEMA_VERSAO = 6;
 
 /** Versão do parser de importação. Gravada em cada linha importada,
  *  para dar para reprocessar o que veio de uma geração antiga. */
@@ -157,7 +157,10 @@ const CF_SCHEMA = [
     { campo: 'CONFORMIDADE',      tipo: 'inteiro', largura: 110, nota: '1 a 5 — entregou o escopo e a marca contratados' },
     { campo: 'ATENDIMENTO',       tipo: 'inteiro', largura: 110, nota: '1 a 5 — comunicação e resolução de problema' },
     { campo: 'DOCUMENTACAO',      tipo: 'inteiro', largura: 120, nota: '1 a 5 — NF, certidões e prazos administrativos' },
-    { campo: 'NOTA',              tipo: 'numero', largura: 80, nota: 'média dos cinco, GRAVADA: mudar os critérios depois não pode reescrever o passado' },
+    { campo: 'SEGURANCA',         tipo: 'inteiro', largura: 100, nota: '1 a 5 — EPI, normas e documentação de SST' },
+    { campo: 'LIMPEZA',           tipo: 'inteiro', largura: 90, nota: '1 a 5 — deixou a área limpa e organizada' },
+    { campo: 'VERSAO_CRITERIOS',  tipo: 'inteiro', largura: 90, nota: 'qual conjunto de critérios respondeu. O IQF só faz média DENTRO da mesma versão — 3,0 na escala 1-5 e 82 na 0-100 não somam' },
+    { campo: 'NOTA',              tipo: 'numero', largura: 80, nota: 'ponderada 0-100, GRAVADA: mudar os pesos depois não pode reescrever o passado' },
     { campo: 'RECONTRATARIA',     tipo: 'booleano', largura: 110, nota: 'a pergunta que mais prediz a próxima compra' },
     { campo: 'COMENTARIO',        tipo: 'texto', largura: 420 },
     { campo: 'CRIADO_EM',         tipo: 'data', largura: 130 }
@@ -437,4 +440,64 @@ const CF_SCHEMA = [
     { campo: 'ID_ALVO', tipo: 'texto', largura: 160 },
     { campo: 'DETALHE', tipo: 'texto', largura: 560 }
   ]}
+];
+
+
+// ─────────────────────────────────────────────────────────────
+//  Cotação mínima por faixa de valor — semente da tabela `Regras`
+//
+//  A regra NÃO mora aqui. Mora na aba `Regras`, e é de lá que
+//  cfHomologar_ a lê. Isto abaixo é só a semente do primeiro uso:
+//  semearCadastrosBase() (Manutencao.gs) copia estas linhas para a aba
+//  UMA vez, e a partir daí quem manda é a planilha. Mudar os números
+//  aqui não muda nada numa base já semeada — é assim de propósito, senão
+//  toda publicação de código apagaria o que a operação configurou.
+//
+//  Por que estas faixas, e não outras:
+//
+//  • Até R$ 1.000 — uma cotação. É reposição de copa, chaveiro, um reparo
+//    pequeno. Exigir três aqui custa mais em hora de comprador do que a
+//    diferença de preço que as três poderiam encontrar.
+//  • De R$ 1.000 a R$ 10.000 — três cotações. É a faixa de rotina de
+//    Facilities, onde as praças dos Megas têm oferta suficiente e a
+//    comparação de fato move o preço.
+//  • Acima de R$ 10.000 — três cotações também. O mínimo não sobe para
+//    quatro porque quatro fornecedores para o mesmo escopo raramente
+//    existem nessas praças, e um mínimo que ninguém consegue cumprir vira
+//    justificativa automática — o oposto do que a regra quer. A faixa
+//    existe separada justamente para que endurecer essa exigência depois
+//    seja mudar uma célula, e não partir uma faixa em duas.
+//
+//  Limites: a faixa vale para VALOR_DE <= valor < VALOR_ATE, com
+//  VALOR_ATE vazio significando "sem teto". Fechar embaixo e abrir em
+//  cima é o que faz R$ 1.000 cair em exatamente uma faixa: as três não se
+//  sobrepõem e não deixam buraco.
+//
+//  PERMITE_EXCECAO marcado significa "justificativa escrita supre a
+//  cotação que faltou" — exatamente como a homologação já trata a
+//  proposta mais cara, a validade vencida e a cesta parcial. Desmarcado,
+//  a faixa passa a bloquear de vez, com parecer ou sem. A semente não
+//  bloqueia nenhuma: regra nova que trava a homologação no primeiro dia
+//  é regra desligada no segundo.
+// ─────────────────────────────────────────────────────────────
+
+const CF_REGRAS_COTACAO_PADRAO = [
+  {
+    ID: 'REG-COT-001', CNPJ_EMPRESA: '',
+    VALOR_DE: 0, VALOR_ATE: 1000,
+    COTACOES_MINIMAS: 1, PERMITE_EXCECAO: true, ATIVA: true,
+    DESCRICAO: 'Até R$ 1.000: uma cotação basta. Compra de baixo valor não paga o custo de cotar três vezes.'
+  },
+  {
+    ID: 'REG-COT-002', CNPJ_EMPRESA: '',
+    VALOR_DE: 1000, VALOR_ATE: 10000,
+    COTACOES_MINIMAS: 3, PERMITE_EXCECAO: true, ATIVA: true,
+    DESCRICAO: 'De R$ 1.000 a R$ 10.000: três cotações. Com menos, escreva no parecer por que não houve três.'
+  },
+  {
+    ID: 'REG-COT-003', CNPJ_EMPRESA: '',
+    VALOR_DE: 10000, VALOR_ATE: '',
+    COTACOES_MINIMAS: 3, PERMITE_EXCECAO: true, ATIVA: true,
+    DESCRICAO: 'Acima de R$ 10.000: três cotações. Com menos, a justificativa precisa nomear os fornecedores procurados e o que impediu cada um de propor.'
+  }
 ];

@@ -338,7 +338,7 @@ function apiAvaliacoesPendentes() {
   try {
     return { ok: true, pendentes: cfAvaliacoesPendentes_(),
              criterios: CF_CRITERIOS_AVALIACAO.map(function (c) {
-               return { chave: c.chave, rotulo: c.rotulo, ajuda: c.ajuda };
+               return { chave: c.chave, rotulo: c.rotulo, ajuda: c.ajuda, peso: c.peso };
              }) };
   } catch (erro) {
     return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };

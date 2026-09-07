@@ -774,3 +774,138 @@ function zerarBaseOperacional() {
     return { ok: true, abasLimpas: totalLimpas };
   }, 180);
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Semear os cadastros que estavam no programa
+//
+//  Três abas do schema nasceram na v1 e nunca receberam uma linha:
+//  `Empresas`, `Empreendimentos` e `Regras`. Enquanto ficarem vazias, o
+//  sistema segue respondendo pelas constantes de Equalizacao.gs — abrir o
+//  quarto Mega é publicar código, e a cotação mínima não existe.
+//
+//  Esta rotina é o que liga o cadastro. Roda à mão, uma vez por base,
+//  pelo editor do Apps Script (arquivo Manutencao.gs, função
+//  semearCadastrosBase).
+//
+//  Duas garantias, nesta ordem de importância:
+//
+//  1. Nunca sobrescreve. Se a aba já tem qualquer linha, ela é da
+//     operação e esta rotina não encosta. O cadastro de quem opera vale
+//     mais que a semente de quem programou — inclusive quando divergem.
+//  2. Idempotente. Rodar duas vezes não duplica nada, porque a segunda
+//     execução encontra as linhas da primeira e não faz nada.
+// ─────────────────────────────────────────────────────────────
+
+/** Mostra o que a semeadura faria. Não escreve nada. */
+function simularSemearCadastrosBase() {
+  const r = cfSemearCadastros_(false);
+  cfRelatarSemeadura_(r, 'SIMULAÇÃO');
+  return r;
+}
+
+/**
+ * Copia para as abas `Empresas`, `Empreendimentos` e `Regras` o que hoje
+ * está no código. Só preenche aba vazia.
+ */
+function semearCadastrosBase() {
+  return cfComTrava_(function () {
+    const r = cfSemearCadastros_(true);
+    cfLog_('semear_cadastros', 'planilha', '', JSON.stringify(r));
+    cfRelatarSemeadura_(r, 'APLICADO');
+    return r;
+  }, 120);
+}
+
+function cfSemearCadastros_(aplicar) {
+  // Os apelidos e grafias não são enfeite: cfResolverEmpresa_ e
+  // cfResolverEmpreendimento_ (Persistencia.gs) casam o texto do
+  // documento importado contra estas colunas. Semear sem elas deixaria o
+  // importador pior do que estava.
+  const empresas = [
+    {
+      CNPJ: '08601964000105',
+      RAZAO_SOCIAL: 'DEMERCADO INVESTIMENTOS S.A.',
+      APELIDO: 'Demercado',
+      GRAFIAS_ALTERNATIVAS: 'DEMERCADO|DEMERCADO INVESTIMENTOS|DEMERCADO INVESTIMENTOS SA|DEMERCADO INVESTIMENTOS S/A',
+      ATIVA: true
+    },
+    {
+      CNPJ: '03015145000154',
+      RAZAO_SOCIAL: 'CAPITAL REALTY INFRAESTRUTURA LOGÍSTICA LTDA',
+      APELIDO: 'Capital Realty',
+      GRAFIAS_ALTERNATIVAS: 'CAPITAL REALTY|CAPITAL REALTY INFRAESTRUTURA|CAPITAL REALTY INFRAESTRUTURA LOGISTICA|CR INFRAESTRUTURA',
+      ATIVA: true
+    }
+  ];
+
+  // O ID repete o NOME de propósito: é o nome inteiro que já está gravado
+  // em ID_EMPREENDIMENTO nas equalizações da base. Inventar um código
+  // curto agora quebraria a ligação com tudo o que já existe.
+  const empreendimentos = [
+    {
+      ID: 'MEGA CENTRO LOGÍSTICO CURITIBA', NOME: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+      APELIDOS: 'MEGA CURITIBA|MEGA CTBA|MCTBA|CURITIBA|CWB',
+      CIDADE: 'Curitiba', UF: 'PR',
+      CNPJ_EMPRESA: '08601964000105', ATIVO: true
+    },
+    {
+      ID: 'MEGA CENTRO LOGÍSTICO ESTEIO', NOME: 'MEGA CENTRO LOGÍSTICO ESTEIO',
+      APELIDOS: 'MEGA ESTEIO|MESTEIO|ESTEIO',
+      CIDADE: 'Esteio', UF: 'RS',
+      CNPJ_EMPRESA: '03015145000154', ATIVO: true
+    },
+    {
+      ID: 'MEGA CENTRO LOGÍSTICO ITAJAÍ', NOME: 'MEGA CENTRO LOGÍSTICO ITAJAÍ',
+      APELIDOS: 'MEGA ITAJAÍ|MEGA ITAJAI|MITAJAI|ITAJAÍ|ITAJAI',
+      CIDADE: 'Itajaí', UF: 'SC',
+      CNPJ_EMPRESA: '03015145000154', ATIVO: true
+    }
+  ];
+
+  const abas = [
+    cfSemearAba_('Empresas', empresas, aplicar),
+    cfSemearAba_('Empreendimentos', empreendimentos, aplicar),
+    cfSemearAba_('Regras', CF_REGRAS_COTACAO_PADRAO, aplicar)
+  ];
+
+  // O cadastro é lido com cache por execução. Sem limpar, quem semeia e
+  // em seguida homologa na mesma execução continuaria vendo a aba vazia.
+  if (aplicar) cfLimparCacheCadastro_();
+
+  return { abas: abas, inseridas: abas.reduce(function (s, a) { return s + a.inseridas; }, 0) };
+}
+
+function cfSemearAba_(tabela, linhas, aplicar) {
+  let existentes;
+  try {
+    existentes = cfLerTudo_(tabela).length;
+  } catch (erro) {
+    return { tabela: tabela, existentes: 0, inseridas: 0, erro: String(erro) };
+  }
+
+  if (existentes) {
+    return { tabela: tabela, existentes: existentes, inseridas: 0 };
+  }
+  if (!aplicar) {
+    return { tabela: tabela, existentes: 0, inseridas: linhas.length };
+  }
+  return { tabela: tabela, existentes: 0, inseridas: cfInserir_(tabela, linhas) };
+}
+
+function cfRelatarSemeadura_(r, rotulo) {
+  Logger.log('═══ Semear cadastros — ' + rotulo + ' ═══');
+  r.abas.forEach(function (a) {
+    if (a.erro) {
+      Logger.log('  ' + a.tabela + ': aba indisponível (' + a.erro + '). Rode setupBaseDeDados().');
+    } else if (a.existentes) {
+      Logger.log('  ' + a.tabela + ': ' + a.existentes + ' linha(s) já cadastradas — não mexo.');
+    } else {
+      Logger.log('  ' + a.tabela + ': ' + a.inseridas + ' linha(s) ' +
+                 (rotulo === 'SIMULAÇÃO' ? 'seriam inseridas.' : 'inseridas.'));
+    }
+  });
+  Logger.log('');
+  Logger.log('Depois de semear `Regras`, a homologação passa a cobrar a cotação');
+  Logger.log('mínima da faixa. Confira as faixas na aba antes de contar com elas.');
+  return r;
+}

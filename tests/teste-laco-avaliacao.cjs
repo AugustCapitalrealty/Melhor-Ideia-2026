@@ -61,10 +61,10 @@ const root = path.resolve(__dirname, '..');
         VALOR_TOTAL: 130, STATUS_PRECO: 'cotado' }
     ],
     Avaliacoes: [
-      { ID: 'A1', CNPJ: avaliada, NOTA: 4.4, RECONTRATARIA: true, DATA_AVALIACAO: '2026-08-01',
-        PRAZO: 4, QUALIDADE: 5, CONFORMIDADE: 4, ATENDIMENTO: 5, DOCUMENTACAO: 4 },
-      { ID: 'A2', CNPJ: avaliada, NOTA: 4.0, RECONTRATARIA: true, DATA_AVALIACAO: '2026-09-01',
-        PRAZO: 4, QUALIDADE: 4, CONFORMIDADE: 4, ATENDIMENTO: 4, DOCUMENTACAO: 4 }
+      { ID: 'A1', CNPJ: avaliada, NOTA: 88, RECONTRATARIA: true, DATA_AVALIACAO: '2026-08-01',
+        VERSAO_CRITERIOS: 2, QUALIDADE: 5, PRAZO: 4, SEGURANCA: 5, ATENDIMENTO: 4, LIMPEZA: 4 },
+      { ID: 'A2', CNPJ: avaliada, NOTA: 80, RECONTRATARIA: true, DATA_AVALIACAO: '2026-09-01',
+        VERSAO_CRITERIOS: 2, QUALIDADE: 4, PRAZO: 4, SEGURANCA: 4, ATENDIMENTO: 4, LIMPEZA: 4 }
     ],
     Fornecedores: [], Pendencias: [], Notas: [], Clausulas: [], Ajustes: []
   };
@@ -81,7 +81,8 @@ const root = path.resolve(__dirname, '..');
     'o mapa da equalização precisa trazer o IQF do proponente — sem isso a nota ' +
     'nunca chega à tela de quem decide, e avaliar vira favor que não retorna');
   assert.equal(comNota.iqf.avaliacoes, 2, 'a contagem de avaliações veio errada');
-  assert.ok(Math.abs(comNota.iqf.nota - 4.2) < 0.01, 'a média de 4,4 e 4,0 é 4,2');
+  assert.equal(comNota.iqf.nota, 84, 'a média de 88 e 80 é 84');
+  assert.equal(comNota.iqf.classe, 'B', '84 é Classe B — e a classe precisa chegar à tela de decisão');
 
   assert.strictEqual(sem.iqf, null,
     'quem não tem avaliação precisa vir como null — "sem nota" e "nota zero" ' +
@@ -115,8 +116,11 @@ const root = path.resolve(__dirname, '..');
   assert.strictEqual(typeof ctx.seloIqfColuna, 'function',
     'faltou a função que desenha a nota no cabeçalho da coluna do proponente');
 
-  const bom = ctx.seloIqfColuna({ nota: 4.2, avaliacoes: 3, preliminar: false });
-  assert.ok(/4,2/.test(bom), 'a nota precisa sair com vírgula, e saiu: ' + bom);
+  const bom = ctx.seloIqfColuna({ nota: 88.5, classe: 'A', classeRotulo: 'Preferencial',
+                                  avaliacoes: 3, preliminar: false });
+  assert.ok(/88,5/.test(bom), 'a nota precisa sair com vírgula, e saiu: ' + bom);
+  assert.ok(/\bA\b/.test(bom),
+    'a classe precisa aparecer junto do número: "Classe A" se discute numa reunião, "88,5" não');
   assert.ok(/iqf-col/.test(bom), 'faltou a classe do selo de coluna');
   assert.ok(!/prelim/.test(bom), 'com três avaliações a nota não é preliminar');
 
@@ -126,7 +130,8 @@ const root = path.resolve(__dirname, '..');
   // "preliminar" também aparece no tooltip — e ninguém decide uma
   // compra passando o mouse por cima. A mutação pegou o teste, não o
   // código.
-  const preliminar = ctx.seloIqfColuna({ nota: 3.0, avaliacoes: 1, preliminar: true });
+  const preliminar = ctx.seloIqfColuna({ nota: 62, classe: 'C', classeRotulo: 'Sob restrição',
+                                         avaliacoes: 1, preliminar: true });
   assert.ok(/iqf-col-prelim/.test(preliminar),
     'nota preliminar precisa dizer que é preliminar no rótulo visível — é nesta ' +
     'tela que ela vai ser usada para decidir: ' + preliminar);

@@ -22,19 +22,90 @@
  *     usado para decidir.
  */
 
-/** Os cinco critérios, na ordem em que o formulário pergunta. */
+/**
+ * Os cinco critérios, com os pesos que o Comitê Avaliador recebeu.
+ *
+ * Estes cinco e estes pesos não são escolha nossa: são exatamente os que
+ * foram enviados ao comitê na minuta de resposta, item 2. Uma versão
+ * anterior deste arquivo trazia outros cinco, em média simples — tinha
+ * trocado Segurança do Trabalho e Limpeza por Conformidade e
+ * Documentação, e havia abandonado a ponderação. Um comitê que releia a
+ * própria minuta ao lado do sistema veria os itens não baterem.
+ *
+ * Segurança do Trabalho pesa 20% de propósito: em condomínio logístico,
+ * prestador que trabalha sem EPI é risco da CR, não do fornecedor. E
+ * Limpeza entra porque é a reclamação que chega ao gestor do Mega no dia
+ * seguinte, e é o tipo de coisa que nenhuma equalização captura.
+ *
+ * A ordem aqui é a ordem em que o formulário pergunta, e ela segue o
+ * peso: quem responde rápido responde melhor o que vem primeiro.
+ */
 const CF_CRITERIOS_AVALIACAO = [
-  { campo: 'PRAZO', chave: 'prazo', rotulo: 'Prazo',
-    ajuda: 'Entregou na data combinada?' },
-  { campo: 'QUALIDADE', chave: 'qualidade', rotulo: 'Qualidade',
-    ajuda: 'O que entregou atendeu tecnicamente?' },
-  { campo: 'CONFORMIDADE', chave: 'conformidade', rotulo: 'Conformidade',
-    ajuda: 'Era o escopo e a marca contratados?' },
-  { campo: 'ATENDIMENTO', chave: 'atendimento', rotulo: 'Atendimento',
-    ajuda: 'Respondeu e resolveu quando deu problema?' },
-  { campo: 'DOCUMENTACAO', chave: 'documentacao', rotulo: 'Documentação',
-    ajuda: 'NF, certidões e prazos administrativos em dia?' }
+  { campo: 'QUALIDADE', chave: 'qualidade', rotulo: 'Qualidade técnica e acabamento', peso: 30,
+    ajuda: 'A entrega atendeu ao escopo e ao padrão técnico do Mega?' },
+  { campo: 'PRAZO', chave: 'prazo', rotulo: 'Pontualidade e cumprimento de SLA', peso: 25,
+    ajuda: 'Cumpriu o cronograma e os prazos acordados?' },
+  { campo: 'SEGURANCA', chave: 'seguranca', rotulo: 'Segurança do trabalho e SST', peso: 20,
+    ajuda: 'Usou EPI, seguiu as normas e apresentou a documentação de segurança?' },
+  { campo: 'ATENDIMENTO', chave: 'atendimento', rotulo: 'Atendimento, postura e comunicação', peso: 15,
+    ajuda: 'Respondeu, se relacionou bem com a equipe e resolveu pendências?' },
+  { campo: 'LIMPEZA', chave: 'limpeza', rotulo: 'Limpeza e organização', peso: 10,
+    ajuda: 'Deixou a área limpa e organizada depois da execução?' }
 ];
+
+/**
+ * A versão do conjunto de critérios.
+ *
+ * A 1 foi a que existiu por poucas horas: cinco critérios em média
+ * simples, na escala 1-5, com Conformidade e Documentação no lugar de
+ * Segurança e Limpeza. Se houver avaliação gravada com ela, ela fica —
+ * apagar seria pior. Ela só não entra na mesma média.
+ */
+const CF_VERSAO_CRITERIOS = 2;
+
+/** Os pesos têm de somar 100 — se alguém mexer, isto avisa na hora. */
+const CF_PESO_TOTAL_AVALIACAO = CF_CRITERIOS_AVALIACAO.reduce(
+  function (s, c) { return s + c.peso; }, 0);
+
+/**
+ * As faixas do IQF, na escala 0 a 100.
+ *
+ * A minuta ao comitê descreve o IQF em classes A, B e C — e classe é
+ * mais útil que número solto numa reunião de decisão: "Classe C" se
+ * discute, "72,4" não.
+ */
+const CF_CLASSES_IQF = [
+  { classe: 'A', minimo: 85, rotulo: 'Preferencial' },
+  { classe: 'B', minimo: 70, rotulo: 'Aprovado' },
+  { classe: 'C', minimo: 0,  rotulo: 'Sob restrição' }
+];
+
+/** A classe de uma nota de 0 a 100. */
+function cfClasseIqf_(nota100) {
+  if (nota100 === null || nota100 === undefined || !isFinite(nota100)) return null;
+  for (let i = 0; i < CF_CLASSES_IQF.length; i++) {
+    if (nota100 >= CF_CLASSES_IQF[i].minimo) return CF_CLASSES_IQF[i];
+  }
+  return CF_CLASSES_IQF[CF_CLASSES_IQF.length - 1];
+}
+
+/**
+ * A nota ponderada de uma avaliação, de 0 a 100.
+ *
+ * Cada critério vem de 1 a 5 — é o que se responde rápido no celular.
+ * A conversão para 0-100 é linear com 1 valendo zero: um serviço
+ * "péssimo" em tudo tem de dar 0, não 20. Fosse `nota/5`, o pior
+ * fornecedor possível sairia com 20 pontos e Classe C viraria o piso de
+ * todo mundo, sem separar nada.
+ */
+function cfNota100_(notasPorCampo) {
+  let soma = 0;
+  CF_CRITERIOS_AVALIACAO.forEach(function (c) {
+    const n = Number(notasPorCampo[c.campo]);
+    soma += ((n - 1) / 4) * c.peso;
+  });
+  return Math.round((soma / CF_PESO_TOTAL_AVALIACAO) * 100 * 10) / 10;
+}
 
 /**
  * A partir de quantas avaliações a nota deixa de ser preliminar.
@@ -74,8 +145,7 @@ function cfSalvarAvaliacao_(d) {
     notas[c.campo] = Number(v);
   });
 
-  const soma = CF_CRITERIOS_AVALIACAO.reduce(function (s, c) { return s + notas[c.campo]; }, 0);
-  const media = Math.round((soma / CF_CRITERIOS_AVALIACAO.length) * 100) / 100;
+  const media = cfNota100_(notas);
 
   // "Contrataria de novo" não tem padrão.
   //
@@ -102,6 +172,13 @@ function cfSalvarAvaliacao_(d) {
     DATA_AVALIACAO: agora,
     AVALIADOR: cfUsuario_(),
     PAPEL_AVALIADOR: papel,
+    // Qual conjunto de critérios esta pessoa respondeu.
+    //
+    // Sem isto, uma avaliação antiga na escala 1-5 entraria na mesma
+    // média que uma nova de 0 a 100 — e o resultado não seria nem uma
+    // coisa nem outra. Gravar a versão é o que permite trocar os
+    // critérios sem corromper o histórico nem apagá-lo.
+    VERSAO_CRITERIOS: CF_VERSAO_CRITERIOS,
     NOTA: media,
     RECONTRATARIA: recontrataria,
     COMENTARIO: String(d.comentario || '').trim(),
@@ -151,6 +228,15 @@ function cfIqfPorCnpj_() {
     const nota = cfNumero_(a.NOTA);
     if (!cnpj || nota === null) return;
 
+    // Só a versão de critérios em vigor entra na média.
+    //
+    // Uma nota 3,0 da escala 1-5 e uma 82 da 0-100 não somam: o
+    // resultado não seria nem uma coisa nem outra, e seria pior que não
+    // ter nota — porque pareceria uma nota. As antigas ficam gravadas e
+    // continuam consultáveis na ficha; só não entram neste cálculo.
+    const versao = cfNumero_(a.VERSAO_CRITERIOS);
+    if (versao !== CF_VERSAO_CRITERIOS) return;
+
     if (!por[cnpj]) por[cnpj] = { soma: 0, n: 0, recontrataria: 0, ultima: null, criterios: {} };
     const g = por[cnpj];
     g.soma += nota;
@@ -178,8 +264,12 @@ function cfIqfPorCnpj_() {
     Object.keys(g.criterios).forEach(function (k) {
       criterios[k] = Math.round((g.criterios[k].soma / g.criterios[k].n) * 100) / 100;
     });
+    const nota = Math.round((g.soma / g.n) * 10) / 10;
+    const classe = cfClasseIqf_(nota);
     resultado[cnpj] = {
-      nota: Math.round((g.soma / g.n) * 100) / 100,
+      nota: nota,
+      classe: classe ? classe.classe : '',
+      classeRotulo: classe ? classe.rotulo : '',
       avaliacoes: g.n,
       preliminar: g.n < CF_IQF_MINIMO_FIRME,
       recontratariam: g.recontrataria,

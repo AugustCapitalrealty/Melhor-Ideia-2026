@@ -411,17 +411,188 @@ const CF_EMPRESA_DO_MEGA = {
   'MEGA CENTRO LOGÍSTICO ITAJAÍ':   '03015145000154'
 };
 
+// ─────────────────────────────────────────────────────────────
+//  Cadastro em tabela, constante como rede
+//
+//  Os três Megas e as duas contratantes acima nasceram no programa. Isso
+//  fecha o projeto em três empreendimentos: abrir o quarto exigiria
+//  publicar código, e é justamente a escala (Obras, Demercado, 2027) que
+//  o projeto promete. As abas `Empreendimentos` e `Empresas` já existiam
+//  no schema desde a v1 e ninguém escrevia nelas.
+//
+//  Daqui em diante o cadastro manda. As constantes ficam por dois
+//  motivos, ambos deliberados:
+//
+//  1. São a semente — semearCadastrosBase() copia exatamente elas para as
+//     abas no primeiro uso.
+//  2. São a rede. A base de alguém pode não ter sido semeada, e a aba
+//     pode nem existir numa instalação antiga. Tela sem Mega nenhum é
+//     falha total; cair na constante é degradar para o que já funcionava.
+//
+//  O fallback é por AUSÊNCIA DE RESPOSTA, não por tabela vazia: se o
+//  cadastro existe mas não conhece este Mega, a constante ainda responde.
+// ─────────────────────────────────────────────────────────────
+
+/** Cadastro lido uma vez por execução. Ler a aba por Mega, dentro dos
+ *  laços de Manutencao.gs, seria uma leitura de planilha por linha. */
+const CF_CACHE_CADASTRO = {};
+
+/** Descarta o cache. Quem escreve no cadastro chama isto. */
+function cfLimparCacheCadastro_() {
+  Object.keys(CF_CACHE_CADASTRO).forEach(function (k) { delete CF_CACHE_CADASTRO[k]; });
+}
+
+/**
+ * Lê uma aba de cadastro sem derrubar quem chamou.
+ *
+ * cfLerTudo_ lança quando a aba não existe, e numa base anterior ao
+ * schema atual ela pode mesmo não existir. Cadastro faltando nunca pode
+ * impedir de montar ou homologar uma equalização — para isso existem os
+ * fallbacks abaixo.
+ */
+function cfCadastro_(tabela) {
+  if (CF_CACHE_CADASTRO[tabela]) return CF_CACHE_CADASTRO[tabela];
+  let linhas = [];
+  try {
+    const lido = cfLerTudo_(tabela);
+    if (Array.isArray(lido)) linhas = lido;
+  } catch (erro) {
+    Logger.log('CF: não consegui ler o cadastro "' + tabela + '" — ' + erro);
+  }
+  CF_CACHE_CADASTRO[tabela] = linhas;
+  return linhas;
+}
+
+/**
+ * Coluna booleana de cadastro.
+ *
+ * Em branco conta como o padrão, não como false. A validação de checkbox
+ * que cfFormatarAba_ aplica deixa a coluna inteira em FALSE, então quem
+ * digita uma linha nova e não marca o quadradinho não pode ver o registro
+ * sumir da tela. Só o false EXPLÍCITO desliga.
+ */
+function cfBooleanoCadastro_(valor, padrao) {
+  if (valor === true) return true;
+  if (valor === false) return false;
+  if (valor === null || valor === undefined || String(valor).trim() === '') return padrao;
+  const t = String(valor).trim().toLowerCase();
+  if (t === 'false' || t === 'nao' || t === 'não' || t === 'n' || t === '0') return false;
+  return true;
+}
+
+/** Este texto é o mesmo empreendimento da linha de cadastro? */
+function cfLinhaDoMega_(linha, alvoNormalizado) {
+  const candidatos = [linha.NOME, linha.ID].concat(
+    String(linha.APELIDOS || '').split('|')
+  );
+  return candidatos.some(function (c) {
+    const n = cfNormalizar_(String(c || ''));
+    return n && n === alvoNormalizado;
+  });
+}
+
+/**
+ * Os Megas oferecidos na tela, em ordem de cadastro.
+ * Tabela primeiro; constante quando a tabela não responde.
+ */
+function cfEmpreendimentos_() {
+  const nomes = [];
+  cfCadastro_('Empreendimentos').forEach(function (e) {
+    if (!cfBooleanoCadastro_(e.ATIVO, true)) return;
+    const nome = String(e.NOME || e.ID || '').trim();
+    if (nome && nomes.indexOf(nome) < 0) nomes.push(nome);
+  });
+  return nomes.length ? nomes : CF_EMPREENDIMENTOS.slice();
+}
+
 function cfEmpresaDoMega_(empreendimento) {
-  const cnpj = CF_EMPRESA_DO_MEGA[empreendimento];
+  const alvo = String(empreendimento || '').trim();
+  if (!alvo) return { cnpj: '', nome: '' };
+  const alvoNorm = cfNormalizar_(alvo);
+
+  const doCadastro = cfCadastro_('Empreendimentos').filter(function (e) {
+    return cfLinhaDoMega_(e, alvoNorm);
+  })[0];
+
+  // Curitiba é Demercado; Esteio e Itajaí são Capital Realty. Continua
+  // determinístico e continua derivado — muda só de onde vem a resposta.
+  const cnpj = (doCadastro ? cfSoDigitos_(doCadastro.CNPJ_EMPRESA) : '')
+    || cfSoDigitos_(CF_EMPRESA_DO_MEGA[alvo] || '');
   if (!cnpj) return { cnpj: '', nome: '' };
-  const empresa = CF_EMPRESAS.filter(function (e) { return e.cnpj === cnpj; })[0];
-  return { cnpj: cnpj, nome: empresa ? empresa.nome : '' };
+
+  const empresaCadastrada = cfCadastro_('Empresas').filter(function (x) {
+    return cfSoDigitos_(x.CNPJ) === cnpj && cfBooleanoCadastro_(x.ATIVA, true);
+  })[0];
+  const razao = empresaCadastrada ? String(empresaCadastrada.RAZAO_SOCIAL || '').trim() : '';
+  if (razao) return { cnpj: cnpj, nome: razao };
+
+  const daConstante = CF_EMPRESAS.filter(function (e) { return e.cnpj === cnpj; })[0];
+  return { cnpj: cnpj, nome: daConstante ? daConstante.nome : '' };
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Cotação mínima por faixa de valor — tabela `Regras`
+//
+//  A aba existe no schema desde a v1 e nunca foi lida por ninguém. O
+//  efeito era que homologar R$ 80 mil com uma proposta só passava sem
+//  nenhum registro do porquê. É a primeira pergunta de qualquer comitê e
+//  o sistema não tinha resposta.
+//
+//  Tabela vazia é AUSÊNCIA DE REGRA, não regra zero, e por isso aqui não
+//  há fallback para constante: passar a exigir cotações que ninguém
+//  configurou seria endurecer a homologação de uma base legada pelas
+//  costas de quem a opera. Quem liga a regra é semearCadastrosBase().
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * A faixa que se aplica a este valor, ou null quando não há regra.
+ *
+ * VALOR_DE fecha embaixo e VALOR_ATE abre em cima (DE <= v < ATE), com
+ * ATE vazio = sem teto. É o que faz um valor cair em exatamente uma faixa
+ * quando ele calha de ser o limite entre duas.
+ */
+function cfRegraCotacao_(valor, cnpjEmpresa) {
+  const v = cfNumero_(valor);
+  if (v === null) return null;
+
+  const cnpj = cfSoDigitos_(cnpjEmpresa || '');
+  const aplicaveis = cfCadastro_('Regras').filter(function (r) {
+    if (!cfBooleanoCadastro_(r.ATIVA, true)) return false;
+    const minimo = cfNumero_(r.COTACOES_MINIMAS);
+    if (minimo === null || minimo < 1) return false;      // regra sem número não é regra
+    const de = cfNumero_(r.VALOR_DE);
+    const ate = cfNumero_(r.VALOR_ATE);
+    if (de !== null && v < de) return false;
+    if (ate !== null && v >= ate) return false;
+    const daEmpresa = cfSoDigitos_(r.CNPJ_EMPRESA || '');
+    return !daEmpresa || daEmpresa === cnpj;
+  });
+  if (!aplicaveis.length) return null;
+
+  // Regra escrita para a empresa ganha da genérica. Entre duas do mesmo
+  // alcance, vale a mais exigente: faixas sobrepostas são erro de
+  // cadastro, e escolher a mais frouxa esconderia o erro exatamente onde
+  // ele custa caro.
+  aplicaveis.sort(function (a, b) {
+    const espA = cfSoDigitos_(a.CNPJ_EMPRESA || '') ? 1 : 0;
+    const espB = cfSoDigitos_(b.CNPJ_EMPRESA || '') ? 1 : 0;
+    if (espA !== espB) return espB - espA;
+    return cfNumero_(b.COTACOES_MINIMAS) - cfNumero_(a.COTACOES_MINIMAS);
+  });
+
+  const escolhida = aplicaveis[0];
+  return {
+    id: String(escolhida.ID || ''),
+    minimo: cfNumero_(escolhida.COTACOES_MINIMAS),
+    permiteExcecao: cfBooleanoCadastro_(escolhida.PERMITE_EXCECAO, true),
+    descricao: String(escolhida.DESCRICAO || '')
+  };
 }
 
 function cfCriarEqualizacao_(d) {
   if (!d) throw new Error('Nada recebido.');
   if (!d.empreendimento) throw new Error('Escolha o empreendimento.');
-  if (CF_EMPREENDIMENTOS.indexOf(d.empreendimento) < 0) {
+  if (cfEmpreendimentos_().indexOf(d.empreendimento) < 0) {
     throw new Error('Empreendimento "' + d.empreendimento + '" não é um dos Megas.');
   }
 
@@ -876,6 +1047,31 @@ function cfHomologar_(idEq, idProposta, parecer) {
       }
     }
 
+    // C21: abaixo da cotação mínima da faixa, exige justificativa
+    //
+    // Mesma forma dos três bloqueios acima: o parecer escrito é o que
+    // libera. O número não está aqui — vem da aba `Regras`, porque regra
+    // de governança cravada no programa não se audita nem se ajusta sem
+    // uma publicação.
+    const regraCotacao = cfRegraCotacao_(valEscolhido, eq.CNPJ_EMPRESA);
+    let cotacoesValidas = null;
+    if (regraCotacao) {
+      cotacoesValidas = propostas.filter(function (p) {
+        const v = valorDe(p);
+        return v !== null && v > 0;      // proposta sem preço não é cotação
+      }).length;
+      if (cotacoesValidas < regraCotacao.minimo) {
+        const faltou = 'Esta compra tem ' + cotacoesValidas + ' cotação(ões) com preço e a faixa de ' +
+          cfMoedaTexto_(valEscolhido) + ' exige ' + regraCotacao.minimo + '.';
+        if (!regraCotacao.permiteExcecao) {
+          throw new Error(faltou + ' Esta faixa não admite exceção — inclua as propostas que faltam antes de homologar.');
+        }
+        if (!String(parecer || '').trim()) {
+          throw new Error(faltou + ' Escreva no parecer a justificativa da dispensa de cotações.');
+        }
+      }
+    }
+
     // Escolher a mais cara é decisão legítima — prazo, escopo, histórico do
     // fornecedor. Mas precisa estar escrita: é a defesa de quem comprou.
     const comValor = propostas.filter(function (p) { return valorDe(p) !== null; });
@@ -906,7 +1102,11 @@ function cfHomologar_(idEq, idProposta, parecer) {
       proposta: escolhida.ID,
       fornecedor: escolhida.RAZAO_SOCIAL_INFORMADA || cfSoDigitos_(escolhida.CNPJ),
       valor: valorDe(escolhida),
-      eraMenor: eMaisBarata
+      eraMenor: eMaisBarata,
+      // Quantas cotações havia e quantas a faixa pedia. É o que responde
+      // "por que uma proposta só?" meses depois, sem depender de memória.
+      cotacoes: cotacoesValidas,
+      cotacoesMinimas: regraCotacao ? regraCotacao.minimo : null
     }));
 
     return {

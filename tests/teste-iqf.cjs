@@ -64,7 +64,13 @@ function montar(dados) {
   return { ctx: ctx, gravado: gravado };
 }
 
-const notasBoas = { prazo: 5, qualidade: 4, conformidade: 4, atendimento: 5, documentacao: 2 };
+// Os cinco critérios ponderados que o comitê recebeu. Os pesos e a
+// conta são cobertos em teste-iqf-ponderado.cjs; aqui interessa o
+// comportamento de gravação.
+const notasBoas = { qualidade: 5, prazo: 4, seguranca: 4, atendimento: 5, limpeza: 2 };
+
+// (4/4)·30 + (3/4)·25 + (3/4)·20 + (4/4)·15 + (1/4)·10 = 81,25 → 81,3
+const NOTA_BOAS = 81.3;
 
 // ── 1. A média é gravada, e é a média mesmo
 {
@@ -74,16 +80,17 @@ const notasBoas = { prazo: 5, qualidade: 4, conformidade: 4, atendimento: 5, doc
     recontrataria: true, comentario: 'entregou, mas a NF atrasou'
   }, notasBoas));
 
-  // (5 + 4 + 4 + 5 + 2) / 5 = 4
-  assert.equal(r.nota, 4, 'a nota da avaliação é a média dos cinco critérios, e saiu ' + r.nota);
+  assert.equal(r.nota, NOTA_BOAS,
+    'a nota da avaliação é a ponderada de 0 a 100, e saiu ' + r.nota);
 
   assert.equal(a.gravado.length, 1, 'a avaliação precisa ser gravada');
   const l = a.gravado[0].linha;
   assert.equal(a.gravado[0].aba, 'Avaliacoes');
-  assert.equal(l.NOTA, 4, 'a nota tem que ir GRAVADA: critério novo amanhã não pode reescrever o passado');
+  assert.equal(l.NOTA, NOTA_BOAS,
+    'a nota tem que ir GRAVADA: peso novo amanhã não pode reescrever o passado');
   assert.equal(l.CNPJ, '11222333000181', 'o CNPJ é gravado só com dígitos');
-  assert.equal(l.PRAZO, 5);
-  assert.equal(l.DOCUMENTACAO, 2);
+  assert.equal(l.QUALIDADE, 5);
+  assert.equal(l.LIMPEZA, 2);
   assert.equal(l.RECONTRATARIA, true);
   assert.equal(l.PAPEL_AVALIADOR, 'gestor_mega');
 }
@@ -155,22 +162,24 @@ const notasBoas = { prazo: 5, qualidade: 4, conformidade: 4, atendimento: 5, doc
 // ── 5. O IQF é a média das avaliações, com a contagem junto
 {
   const ava = function (cnpj, nota, recontrataria, data) {
+    // A nota por critério aqui é ilustrativa; o que se mede neste bloco
+    // é a consolidação, não a ponderação.
     return { ID: 'A', CNPJ: cnpj, NOTA: nota, RECONTRATARIA: recontrataria,
-             DATA_AVALIACAO: data, PRAZO: nota, QUALIDADE: nota,
-             CONFORMIDADE: nota, ATENDIMENTO: nota, DOCUMENTACAO: nota };
+             DATA_AVALIACAO: data, VERSAO_CRITERIOS: 2,
+             QUALIDADE: 4, PRAZO: 4, SEGURANCA: 4, ATENDIMENTO: 4, LIMPEZA: 4 };
   };
   const a = montar({
     Avaliacoes: [
-      ava('11222333000181', 5, true, '2026-08-01'),
-      ava('11222333000181', 3, false, '2026-09-01'),
-      ava('11222333000181', 4, true, '2026-07-01'),
-      ava('99888777000166', 2, false, '2026-09-05')
+      ava('11222333000181', 90, true, '2026-08-01'),
+      ava('11222333000181', 70, false, '2026-09-01'),
+      ava('11222333000181', 80, true, '2026-07-01'),
+      ava('99888777000166', 40, false, '2026-09-05')
     ]
   });
 
   const iqfs = a.ctx.cfIqfPorCnpj_();
 
-  assert.equal(iqfs['11222333000181'].nota, 4, 'a média de 5, 3 e 4 é 4');
+  assert.equal(iqfs['11222333000181'].nota, 80, 'a média de 90, 70 e 80 é 80');
   assert.equal(iqfs['11222333000181'].avaliacoes, 3, 'a contagem tem que vir junto da nota');
   assert.equal(iqfs['11222333000181'].preliminar, false, 'três avaliações já não é preliminar');
   assert.equal(iqfs['11222333000181'].recontratariam, 2, 'dois dos três recontratariam');
@@ -178,7 +187,7 @@ const notasBoas = { prazo: 5, qualidade: 4, conformidade: 4, atendimento: 5, doc
 
   assert.equal(iqfs['99888777000166'].preliminar, true,
     'uma avaliação só não vira índice — precisa sair marcada como preliminar');
-  assert.equal(iqfs['99888777000166'].nota, 2, 'preliminar continua mostrando o número');
+  assert.equal(iqfs['99888777000166'].nota, 40, 'preliminar continua mostrando o número');
 }
 
 // ── 6. Fornecedor sem avaliação não vira nota zero
