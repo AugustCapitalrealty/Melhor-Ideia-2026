@@ -2850,7 +2850,7 @@ try {
 
   const imagem = function (nome) {
     return { getBlob: () => ({ tag: nome }), getMimeType: () => 'image/png',
-             getName: () => nome, getSize: () => 4200 };
+             getName: () => nome, getSize: () => 4200, getId: () => 'mock-id-' + nome };
   };
 
   const montar = function (opcoes) {

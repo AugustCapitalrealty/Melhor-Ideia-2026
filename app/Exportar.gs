@@ -693,6 +693,97 @@ const CF_LOGO_CONFIG = {
  * Devolve { blob, origem } ou null. A origem interessa: quando a logo
  * some, saber de qual das quatro fontes ela vinha é metade do conserto.
  */
+/**
+ * Quantos pixels tem o PNG, lendo o cabeçalho.
+ *
+ * O IHDR de um PNG traz largura e altura nos bytes 16..23. Ler isso
+ * custa nada e evita descobrir o tamanho só quando o insertImage
+ * estoura — que é tarde, porque ele estoura em silêncio dentro de um
+ * try e o documento sai sem logo.
+ *
+ * Devolve null quando não é PNG: aí não dá para saber, e quem decide
+ * é o insertImage mesmo.
+ */
+function cfDimensoesPng_(blob) {
+  try {
+    const b = blob.getBytes();
+    if (!b || b.length < 24) return null;
+    const u = function (i) { return b[i] & 0xFF; };
+    // Assinatura PNG: 137 80 78 71
+    if (u(0) !== 137 || u(1) !== 80 || u(2) !== 78 || u(3) !== 71) return null;
+    const n = function (i) {
+      return u(i) * 16777216 + u(i + 1) * 65536 + u(i + 2) * 256 + u(i + 3);
+    };
+    return { largura: n(16), altura: n(20) };
+  } catch (e) {
+    return null;
+  }
+}
+
+/** Teto do insertImage: 1 milhão de pixels e 2 MB. */
+const CF_LOGO_MAX_PIXELS = 1000000;
+
+/**
+ * A mesma imagem, pequena o bastante para caber na planilha.
+ *
+ * O insertImage recusa acima de 1 milhão de pixels. A logo da Capital
+ * Realty tem 2643×493 = 1.302.999 e era recusada; a da Demercado tem
+ * 886×281 = 248.966 e passava. Daí uma aparecer e a outra não, sem que
+ * houvesse nada de errado com o arquivo, com a permissão ou com o
+ * empreendimento.
+ *
+ * A redução vem do próprio Drive, pelo thumbnailLink com o lado maior
+ * pedido em 1000px — para uma logo que será desenhada com 240px de
+ * largura, sobra resolução de sobra.
+ */
+function cfLogoQueCabe_(blob, id, tentativas) {
+  const d = cfDimensoesPng_(blob);
+  if (!d || d.largura * d.altura <= CF_LOGO_MAX_PIXELS) return blob;
+
+  const grande = d.largura + '×' + d.altura + ' = ' +
+                 (d.largura * d.altura) + ' pixels, acima do teto de ' +
+                 CF_LOGO_MAX_PIXELS;
+
+  if (!id) {
+    if (tentativas) tentativas.push('imagem grande demais (' + grande + ') e sem ID para reduzir');
+    return blob;
+  }
+
+  try {
+    const meta = UrlFetchApp.fetch(
+      'https://www.googleapis.com/drive/v3/files/' + id +
+      '?fields=thumbnailLink&supportsAllDrives=true',
+      { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+        muteHttpExceptions: true });
+    if (meta.getResponseCode() !== 200) {
+      if (tentativas) tentativas.push('redução: HTTP ' + meta.getResponseCode() + ' ao pedir a miniatura');
+      return blob;
+    }
+    const link = JSON.parse(meta.getContentText()).thumbnailLink;
+    if (!link) {
+      if (tentativas) tentativas.push('redução: o Drive não devolveu miniatura para este arquivo');
+      return blob;
+    }
+    // O link vem com o tamanho no fim (=s220). Pedir maior é só trocar.
+    const grandeQb = link.replace(/=s\d+(-[a-z0-9]+)?$/i, '=s1000');
+    const resp = UrlFetchApp.fetch(grandeQb, { muteHttpExceptions: true });
+    if (resp.getResponseCode() !== 200) {
+      if (tentativas) tentativas.push('redução: HTTP ' + resp.getResponseCode() + ' ao baixar a miniatura');
+      return blob;
+    }
+    const menor = resp.getBlob();
+    if ((menor.getContentType() || '').indexOf('image/') !== 0) {
+      if (tentativas) tentativas.push('redução: a miniatura veio como ' + menor.getContentType());
+      return blob;
+    }
+    Logger.log('Logo reduzida para caber: era ' + grande + '.');
+    return menor.setName('logo.png');
+  } catch (e) {
+    if (tentativas) tentativas.push('redução: ' + e);
+    return blob;
+  }
+}
+
 function cfLogoBlob_(chave) {
   const tentativas = [];
 
@@ -705,7 +796,8 @@ function cfLogoBlob_(chave) {
         tentativas.push(origem + ': o arquivo é ' + tipo + ', não uma imagem');
         return null;
       }
-      return { blob: arq.getBlob(), origem: origem + ' (' + arq.getName() + ')' };
+      return { blob: cfLogoQueCabe_(arq.getBlob(), arq.getId(), tentativas),
+               origem: origem + ' (' + arq.getName() + ')' };
     } catch (e) {
       tentativas.push(origem + ': ' + e);
       return null;
@@ -739,7 +831,8 @@ function cfLogoBlob_(chave) {
       const arq = arquivos.next();
       if (cfNormalizar_(arq.getName()).indexOf(prefixo) !== 0) continue;
       if (arq.getMimeType().indexOf('image/') !== 0) continue;
-      return { blob: arq.getBlob(), origem: 'pasta do projeto (' + arq.getName() + ')' };
+      return { blob: cfLogoQueCabe_(arq.getBlob(), arq.getId(), tentativas),
+               origem: 'pasta do projeto (' + arq.getName() + ')' };
     }
     tentativas.push('pasta do projeto: nenhum arquivo de imagem começando com "' +
                     CF_LOGO_ARQUIVO[chave] + '"');
@@ -767,7 +860,8 @@ function cfLogoBlob_(chave) {
       const b = resp.getBlob();
       const tipo = b.getContentType() || '';
       if (tipo.indexOf('image/') === 0) {
-        return { blob: b.setName('logo.png'), origem: 'API do Drive (token da execução)' };
+        return { blob: cfLogoQueCabe_(b.setName('logo.png'), idBruto, tentativas),
+                 origem: 'API do Drive (token da execução)' };
       }
       tentativas.push('API do Drive: devolveu ' + tipo + ', não uma imagem');
     } else {

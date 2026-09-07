@@ -529,6 +529,7 @@ console.log('11. Busca da logo em várias fontes...');
   const criados = [];
   const arquivo = (nome, tipo) => ({
     getName: () => nome, getMimeType: () => tipo,
+    getId: () => 'mock-id-' + nome,
     getBlob: () => ({ marca: nome, setName(n) { this.nome = n; return this; } }),
     getUrl: () => 'https://drive/' + nome
   });
