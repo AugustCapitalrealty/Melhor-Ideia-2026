@@ -49,7 +49,8 @@ function cfExportarEqualizacao_(idEq) {
                    // Percentual e link precisam ser aplicados DEPOIS do
                    // setValues da grade: ele reescreve a célula inteira e
                    // levaria junto o formato e a âncora do hyperlink.
-                   percentual: [], links: [], assinatura: [], destaque: [], notas: [], marca: [] };
+                   percentual: [], links: [], assinatura: [], destaque: [], notas: [], marca: [],
+                   iqf: [], sobrepreco: [], economia: [], legenda: [] };
 
   const vazia = function () {
     const l = [];
@@ -124,6 +125,22 @@ function cfExportarEqualizacao_(idEq) {
   props.forEach(function (p, i) { merges.push({ l: lCab, c: colDe(i), nl: 1, nc: 2 }); });
   faixas.secao.push(lCab);
 
+  // Linha de IQF do fornecedor no cabeçalho do comparativo
+  li = vazia();
+  props.forEach(function (p, i) {
+    if (p.iqf && p.iqf.avaliacoes) {
+      const nota = Number(p.iqf.nota).toFixed(1).replace('.', ',');
+      const cls = p.iqf.classe ? ' Classe ' + p.iqf.classe : '';
+      const prel = p.iqf.preliminar ? ' prelim.' : '';
+      li[colDe(i) - 1] = '★ ' + nota + cls + prel;
+    } else {
+      li[colDe(i) - 1] = 'sem nota';
+    }
+  });
+  const lIqf = linha(li);
+  props.forEach(function (p, i) { merges.push({ l: lIqf, c: colDe(i), nl: 1, nc: 2 }); });
+  faixas.iqf.push(lIqf);
+
   li = vazia();
   props.forEach(function (p, i) {
     li[colDe(i) - 1] = 'Unitário';
@@ -131,16 +148,22 @@ function cfExportarEqualizacao_(idEq) {
   });
   const lSub = linha(li);
   faixas.secao.push(lSub);
-  merges.push({ l: lCab, c: COL_ROTULO, nl: 2, nc: 1 });
-  merges.push({ l: lCab, c: COL_VALOR, nl: 2, nc: 1 });
-  merges.push({ l: lCab, c: COL_QTD, nl: 2, nc: 1 });
-  merges.push({ l: lCab, c: COL_UN, nl: 2, nc: 1 });
+  merges.push({ l: lCab, c: COL_ROTULO, nl: 3, nc: 1 });
+  merges.push({ l: lCab, c: COL_VALOR, nl: 3, nc: 1 });
+  merges.push({ l: lCab, c: COL_QTD, nl: 3, nc: 1 });
+  merges.push({ l: lCab, c: COL_UN, nl: 3, nc: 1 });
 
   m.linhas.forEach(function (item) {
     const li = vazia();
     li[COL_ROTULO - 1] = item.codigo || '';
     const refTxt = item.marcaReferencia ? ' [Ref: ' + item.marcaReferencia + ']' : '';
-    li[COL_VALOR - 1] = new Array(item.nivel + 1).join('    ') + item.descricao + refTxt;
+    let histTxt = '';
+    if (item.referenciaHistorica && item.referenciaHistorica.ultimoPreco) {
+      const uPrecoTxt = 'R$ ' + cfValorTexto_(item.referenciaHistorica.ultimoPreco);
+      const megaTxt = item.referenciaHistorica.empreendimento ? ' (' + item.referenciaHistorica.empreendimento.replace('MEGA CENTRO LOGÍSTICO ', 'Mega ') + ')' : '';
+      histTxt = ' [★ Última: ' + uPrecoTxt + megaTxt + ']';
+    }
+    li[COL_VALOR - 1] = new Array(item.nivel + 1).join('    ') + item.descricao + refTxt + histTxt;
     if (item.tipo !== 'grupo') {
       li[COL_QTD - 1] = item.quantidade === null || item.quantidade === undefined ? '' : item.quantidade;
       li[COL_UN - 1] = item.unidade || '';
@@ -166,6 +189,13 @@ function cfExportarEqualizacao_(idEq) {
         const c = item.precos[p.id];
         if (c && c.marcaCotada) {
           faixas.notas.push({ l: num, c: colDe(i), nota: 'Marca cotada: ' + c.marcaCotada });
+        }
+        if (item.referenciaHistorica && item.referenciaHistorica.ultimoPreco && c && c.valor) {
+          const deltaP = ((c.valor - item.referenciaHistorica.ultimoPreco) / item.referenciaHistorica.ultimoPreco) * 100;
+          const notaHist = 'Última compra homologada: R$ ' + cfValorTexto_(item.referenciaHistorica.ultimoPreco) +
+            (item.referenciaHistorica.empreendimento ? ' (' + item.referenciaHistorica.empreendimento + ')' : '') +
+            '\nVariação: ' + (deltaP >= 0 ? '+' : '') + deltaP.toFixed(1) + '%';
+          faixas.notas.push({ l: num, c: colDe(i), nota: notaHist });
         }
         moeda.push({ l: num, c: colDe(i), n: 2 });
         if (item.menor && p.id === item.menor) {
@@ -207,6 +237,45 @@ function cfExportarEqualizacao_(idEq) {
           merges.push({ l: numM, c: colDe(i), nl: 1, nc: 2 });
         });
         faixas.marca.push(numM);
+      }
+
+      // A variação vs última compra homologada abaixo do preço de cada fornecedor
+      const uPreco = item.referenciaHistorica && item.referenciaHistorica.ultimoPreco;
+      const temVariacaoHist = uPreco && props.some(function (p) {
+        const c = item.precos[p.id];
+        return !!(c && c.status === 'cotado' && c.valor !== null);
+      });
+      if (temVariacaoHist) {
+        const lv = vazia();
+        lv[COL_VALOR - 1] = 'Variação vs últ. compra';
+        props.forEach(function (p, i) {
+          const c = item.precos[p.id];
+          const cotou = !!(c && c.status === 'cotado' && c.valor !== null);
+          if (!cotou) { lv[colDe(i) - 1] = ''; return; }
+          const delta = ((c.valor - uPreco) / uPreco) * 100;
+          if (delta >= 15) {
+            lv[colDe(i) - 1] = '▲ +' + delta.toFixed(0) + '% vs últ.';
+          } else if (delta <= -10) {
+            lv[colDe(i) - 1] = '▼ ' + delta.toFixed(0) + '% vs últ.';
+          } else {
+            const sinal = delta > 0 ? '+' : '';
+            lv[colDe(i) - 1] = (Math.abs(delta) < 0.5 ? '0% vs últ.' : sinal + delta.toFixed(0) + '% vs últ.');
+          }
+        });
+        const numV = linha(lv);
+        props.forEach(function (p, i) {
+          merges.push({ l: numV, c: colDe(i), nl: 1, nc: 2 });
+          const c = item.precos[p.id];
+          const cotou = !!(c && c.status === 'cotado' && c.valor !== null);
+          if (!cotou) return;
+          const delta = ((c.valor - uPreco) / uPreco) * 100;
+          if (delta >= 15) {
+            faixas.sobrepreco.push({ l: numV, c: colDe(i), nc: 2 });
+          } else if (delta <= -10) {
+            faixas.economia.push({ l: numV, c: colDe(i), nc: 2 });
+          }
+        });
+        faixas.marca.push(numV);
       }
     }
   });
@@ -275,6 +344,14 @@ function cfExportarEqualizacao_(idEq) {
       faixas.melhores.push({ l: lTotal, c: colDe(menorComercialIdx), nc: 2 });
     }
   }
+
+  // ── legenda explicativa do comparativo
+  li = vazia();
+  li[COL_ROTULO - 1] = 'Legenda:';
+  li[COL_VALOR - 1] = '✓ verde = menor preço da linha | ▲ vermelho = sobrepreço ≥ +15% vs última compra | ▼ verde = economia ≤ -10% vs última compra | · = não cotou';
+  const lLeg = linha(li);
+  merges.push({ l: lLeg, c: COL_VALOR, nl: 1, nc: largura - 2 });
+  faixas.legenda.push(lLeg);
 
   linha(vazia());
 
@@ -516,6 +593,11 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
     aba.getRange(l, 2, 1, largura - 1)
       .setBackground(CF_EXP_ROYAL).setFontColor('#FFFFFF').setFontWeight('bold');
   });
+  (faixas.iqf || []).forEach(function (l) {
+    aba.getRange(l, 2, 1, largura - 1)
+      .setBackground(CF_EXP_ROYAL).setFontColor('#F1F5F9').setFontWeight('bold').setFontSize(9)
+      .setHorizontalAlignment('center');
+  });
   faixas.grupo.forEach(function (l) {
     aba.getRange(l, 2, 1, largura - 1).setBackground(CF_EXP_CLARO).setFontWeight('bold');
   });
@@ -587,10 +669,33 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
   // dado concorrente. Com o mesmo peso do preço, a tabela passaria a
   // ter duas linhas de igual importância por item.
   (faixas.marca || []).forEach(function (l) {
-    aba.getRange(l, 2, 1, largura - 1)
-      .setFontSize(9).setFontStyle('italic').setFontColor('#5D6883');
+    const r = aba.getRange(l, 2, 1, largura - 1);
+    r.setFontSize(9).setFontColor('#5D6883');
+    try { if (r && typeof r.setFontStyle === 'function') r.setFontStyle('italic'); } catch (eStyle) {}
     aba.getRange(l, COL_VALOR)
       .setHorizontalAlignment('right').setFontColor('#8A93A8');
+  });
+
+  (faixas.sobrepreco || []).forEach(function (f) {
+    aba.getRange(f.l, f.c, 1, f.nc || 1)
+      .setFontColor('#B03024')
+      .setFontWeight('bold')
+      .setBackground('#FEE2E2');
+  });
+
+  (faixas.economia || []).forEach(function (f) {
+    aba.getRange(f.l, f.c, 1, f.nc || 1)
+      .setFontColor('#1F7A4C')
+      .setFontWeight('bold')
+      .setBackground('#DCFCE7');
+  });
+
+  (faixas.legenda || []).forEach(function (l) {
+    const r = aba.getRange(l, 2, 1, largura - 1);
+    r.setFontSize(8.5).setFontColor('#5D6883').setBackground('#F8FAFC');
+    try { if (r && typeof r.setFontStyle === 'function') r.setFontStyle('italic'); } catch (eStyle) {}
+    aba.getRange(l, 2)
+      .setFontWeight('bold').setFontColor('#334155');
   });
 
   (faixas.percentual || []).forEach(function (f) {
@@ -1299,6 +1404,19 @@ function cfBlocoScorecard_(eq, props, linha, vazia, grade, merges, moeda, faixas
     'CNPJ ' + (cfCnpjFormatado_(escolhido.cnpj) || '—') +
     (homologado ? '' : ' · indicação por menor valor, aguardando aprovação formal'),
     false, true);
+
+  if (escolhido.iqf) {
+    if (escolhido.iqf.avaliacoes) {
+      const notaIqf = Number(escolhido.iqf.nota).toFixed(1).replace('.', ',');
+      const classeIqf = escolhido.iqf.classe ? 'Classe ' + escolhido.iqf.classe : '';
+      const prelIqf = escolhido.iqf.preliminar ? ' (preliminar)' : '';
+      escreve('Índice Fornecedor (IQF):', '★ ' + notaIqf + (classeIqf ? ' · ' + classeIqf : '') + prelIqf,
+        escolhido.iqf.avaliacoes + (escolhido.iqf.avaliacoes === 1 ? ' avaliação pós-serviço registrada' : ' avaliações pós-serviço registradas'),
+        false, false);
+    } else {
+      escreve('Índice Fornecedor (IQF):', 'sem nota', 'sem avaliações pós-serviço registradas ainda', false, false);
+    }
+  }
 
   let detalheValor = 'soma dos itens cotados';
   if (homologado && eq.valorFinal !== null && eq.valorFinal !== undefined) {
