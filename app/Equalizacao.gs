@@ -207,6 +207,13 @@ function cfMapaEqualizacao_(idEq) {
         if (menor === null || c.valor < precos[menor].valor) menor = p.id;
       });
 
+      let refHist = null;
+      if (typeof cfBuscarReferenciaPrecoItem_ === 'function' && (n.TIPO || 'item') !== 'grupo') {
+        try {
+          refHist = cfBuscarReferenciaPrecoItem_(n.DESCRICAO, n.UNIDADE_REFERENCIA);
+        } catch (eRef) {}
+      }
+
       linhas.push({
         id: n.ID,
         nivel: nivel,
@@ -216,6 +223,7 @@ function cfMapaEqualizacao_(idEq) {
         marcaReferencia: n.MARCA_REFERENCIA || '',
         quantidade: cfNumero_(n.QUANTIDADE_REFERENCIA),
         unidade: n.UNIDADE_REFERENCIA || '',
+        referenciaHistorica: refHist,
         precos: precos,
         menor: menor
       });

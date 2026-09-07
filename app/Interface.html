@@ -2223,6 +2223,13 @@ table.ficha-tab a:hover{text-decoration:underline}
   font-size:11px;color:var(--suave);margin-top:3px;display:block;
 }
 .ref-historico-rotulo b{color:var(--royal);font-weight:600}
+table.mapa .delta-historico{
+  display:block;margin:3px auto 0;font-size:10px;font-weight:700;width:fit-content;padding:1px 5px;
+}
+table.mapa .ref-historico-rotulo{
+  display:inline-block;margin-left:6px;margin-top:0;font-size:10.5px;font-weight:600;
+  color:#065CA9;background:#EFF6FF;border:1px solid #BFDBFE;padding:1px 6px;border-radius:4px;
+}
 
 .modal-aval-fundo{
   position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
@@ -4835,9 +4842,15 @@ function aba(nome) {
   } catch (e) { /* navegador sem storage: fica em cartões */ }
 
   // Carrega só quando a aba é aberta pela primeira vez.
-  if (nome === 'mapa' && !equalizacoesCarregadas) {
-    equalizacoesCarregadas = true;
-    carregarEqualizacoes();
+  if (nome === 'mapa') {
+    var elMapa = document.getElementById('mapa');
+    if (elMapa && elMapa.style.display !== 'none' && !EH_FICHA) {
+      fecharFichaInline();
+    }
+    if (!equalizacoesCarregadas) {
+      equalizacoesCarregadas = true;
+      carregarEqualizacoes();
+    }
   }
   // As categorias servem às duas telas, e a contagem tem que ser a mesma
   // nas duas: uma só chamada, guardada.
@@ -4975,12 +4988,57 @@ function calcularKpisEqualizacoes(lista) {
 function abrirFichaDireta(id) {
   if (!id) return;
   var base = URL_BASE || (window.location.href ? window.location.href.split('?')[0] : '');
-  var url = base + (base.indexOf('?') >= 0 ? '&' : '?') + 'page=ficha&eq=' + encodeURIComponent(id);
-  try {
-    var win = window.open(url, '_blank');
-    if (win) return;
-  } catch (err) {}
-  window.location.href = url;
+  var url = base ? (base + (base.indexOf('?') >= 0 ? '&' : '?') + 'page=ficha&eq=' + encodeURIComponent(id)) : '';
+  if (url) {
+    try {
+      var win = window.open(url, '_blank');
+      if (win) return;
+    } catch (err) {}
+  }
+  exibirFichaInline(id);
+}
+
+function exibirFichaInline(id) {
+  if (!id) return;
+  aba('mapa');
+  var elLista = document.getElementById('listaEq');
+  var elMegas = document.getElementById('filtroMegasEq');
+  var elPills = document.getElementById('pillsEq');
+  var elKpi = document.getElementById('eqKpiGrid');
+  var elFiltros = document.querySelector('#v-mapa .filtros');
+  var elMapa = document.getElementById('mapa');
+
+  if (elLista) elLista.style.display = 'none';
+  if (elMegas) elMegas.style.display = 'none';
+  if (elPills) elPills.style.display = 'none';
+  if (elKpi) elKpi.style.display = 'none';
+  if (elFiltros) elFiltros.style.display = 'none';
+  if (elMapa) elMapa.style.display = 'block';
+
+  document.getElementById('tituloTela').textContent = 'Equalização';
+  document.getElementById('subTela').textContent = id;
+  abrirMapa(id);
+}
+
+function fecharFichaInline() {
+  var elLista = document.getElementById('listaEq');
+  var elMegas = document.getElementById('filtroMegasEq');
+  var elPills = document.getElementById('pillsEq');
+  var elKpi = document.getElementById('eqKpiGrid');
+  var elFiltros = document.querySelector('#v-mapa .filtros');
+  var elMapa = document.getElementById('mapa');
+
+  if (elMapa) elMapa.style.display = 'none';
+  if (elLista) elLista.style.display = '';
+  if (elMegas) elMegas.style.display = '';
+  if (elPills) elPills.style.display = '';
+  if (elKpi) elKpi.style.display = '';
+  if (elFiltros) elFiltros.style.display = '';
+
+  if (TITULOS && TITULOS['mapa']) {
+    document.getElementById('tituloTela').textContent = TITULOS['mapa'][0];
+    document.getElementById('subTela').textContent = TITULOS['mapa'][1];
+  }
 }
 
 function filtrarLista() {
@@ -5118,19 +5176,31 @@ function desenharMapa(m) {
           tagMarca = '<div class="marca-mapa tag-marca-neutra" title="Marca ofertada">' + esc(c.marcaCotada) + '</div>';
         }
       }
+      var tagDelta = '';
+      if (l.referenciaHistorica && l.referenciaHistorica.ultimoPreco && c.valor) {
+        var delta = ((c.valor - l.referenciaHistorica.ultimoPreco) / l.referenciaHistorica.ultimoPreco) * 100;
+        if (delta >= 15) {
+          tagDelta = '<div class="delta-historico subiu" title="Sobrepreço de +' + delta.toFixed(1) + '% vs última compra homologada (R$ ' + moeda(l.referenciaHistorica.ultimoPreco) + ')">▲ +' + delta.toFixed(0) + '% vs últ.</div>';
+        } else if (delta <= -10) {
+          tagDelta = '<div class="delta-historico caiu" title="Economia de ' + delta.toFixed(1) + '% vs última compra homologada (R$ ' + moeda(l.referenciaHistorica.ultimoPreco) + ')">▼ ' + delta.toFixed(0) + '% vs últ.</div>';
+        }
+      }
       return '<td class="preco' + (eMenor ? ' menor' : '') + '"' +
              (eMenor ? ' aria-label="menor preço da linha: ' + moeda(c.valor) + '"' : '') +
-             '>' + (eMenor ? '✓ ' : '') + moeda(c.valor) + tagMarca + '</td>';
+             '>' + (eMenor ? '✓ ' : '') + moeda(c.valor) + tagMarca + tagDelta + '</td>';
     }).join('');
 
     var refMarcaHtml = l.marcaReferencia
       ? ' <span class="pill-ref-executivo" title="Marca ou padrão técnico de referência">Ref: ' + esc(l.marcaReferencia) + '</span>'
       : '';
+    var refPrecoHtml = (l.referenciaHistorica && l.referenciaHistorica.ultimoPreco)
+      ? ' <span class="ref-historico-rotulo" title="Última compra homologada: R$ ' + moeda(l.referenciaHistorica.ultimoPreco) + ' (' + esc(l.referenciaHistorica.empreendimento || '') + ' · ' + esc(l.referenciaHistorica.fornecedorUltimo || '') + ')">★ Última: ' + moeda(l.referenciaHistorica.ultimoPreco) + '</span>'
+      : '';
 
     return '<tr class="' + (l.tipo === 'grupo' ? 'grupo' : '') + '">' +
            '<td class="desc" style="' + recuo + '">' +
            (l.codigo ? '<span class="cod-eap">' + esc(l.codigo) + '</span>' : '') +
-           esc(l.descricao) + qtd + refMarcaHtml + '</td>' + celulas + '</tr>';
+           esc(l.descricao) + qtd + refMarcaHtml + refPrecoHtml + '</td>' + celulas + '</tr>';
   }).join('');
 
   // Duas linhas, não uma. O que o app cria não tem total declarado — só a
@@ -5167,6 +5237,7 @@ function desenharMapa(m) {
         '<div><h2>' + esc(eq.projeto || eq.id) + '</h2>' +
         '<div class="meta">' + meta + '</div></div>' +
         '<div class="eq-acoes">' +
+          (!EH_FICHA ? '<button class="bt" onclick="fecharFichaInline()">← Voltar à lista</button>' : '') +
           '<button class="bt" onclick="editarEqualizacao(\'' + esc(eq.id) + '\')">✏ Editar / Renegociar</button>' +
           (EH_FICHA
             ? '<button class="bt" onclick="window.print()">Imprimir</button>'
@@ -5188,6 +5259,8 @@ function desenharMapa(m) {
       '<tfoot>' + rodape + '</tfoot>' +
     '</table></div>' +
     '<div class="legenda"><span><b>✓ verde</b> = menor preço da linha, entre quem cotou</span>' +
+    '<span><b style="color:var(--critico)">▲ vermelho</b> = sobrepreço &ge; +15% vs última compra</span>' +
+    '<span><b style="color:var(--ok)">▼ verde</b> = economia &le; -10% vs última compra</span>' +
     '<span>· = fornecedor não recebeu esta linha</span></div>' +
     blocoDecisao(m);
 }
@@ -7143,26 +7216,10 @@ window.addEventListener('beforeunload', function (ev) {
   ev.returnValue = '';
 });
 
-/** Leva ao mapa da equalização: abre em nova janela/aba ou na tela atual se sem URL base. */
+/** Leva ao mapa da equalização: abre em nova janela/aba (ficha) ou na tela atual exibindo o comparativo diretamente. */
 function verMapaDe(id) {
-  if (URL_BASE) {
-    try {
-      var win = window.open(URL_BASE + '?page=mapa&eq=' + encodeURIComponent(id), '_blank');
-      if (win) return;
-    } catch (e) {}
-  }
-  aba('mapa');
-  equalizacoesCarregadas = true;
-  google.script.run.withSuccessHandler(function (r) {
-    if (r.ok) {
-      todasEqualizacoes = r.equalizacoes;
-      preencherFiltro('fMega', 'empreendimento', 'Todos os Megas');
-      preencherFiltro('fArea', 'area', 'Todas as áreas');
-      preencherFiltro('fStatus', 'status', 'Todas as situações');
-      filtrarLista();
-    }
-    abrirMapa(id);
-  }).apiEqualizacoes();
+  if (!id) return;
+  abrirFichaDireta(id);
 }
 
 /** Carrega uma equalização existente no formulário para edição. */
