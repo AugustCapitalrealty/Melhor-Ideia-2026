@@ -2668,3 +2668,155 @@ try {
   console.log(`✗ FALHA na Correção 38: ${e.message}`);
   process.exitCode = 1;
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Correção 39 — a marca cotada sai no documento, e a logo
+//  reclama quando não sai
+//
+//  Marca estava sendo gravada como ANOTAÇÃO de célula. Anotação não sai
+//  no PDF e não aparece na planilha sem alguém passar o mouse — então o
+//  dado existia, era exportado, e ninguém via. Marca é justamente o que
+//  decide se dois preços são comparáveis: papel higiênico Coala e Pato
+//  têm a mesma descrição e não são o mesmo item.
+// ─────────────────────────────────────────────────────────────
+try {
+  const ctxE = vm.createContext({ Logger: { log: () => {} }, console: console });
+
+  let escrito = null;
+  const registrado = [];
+  const faixaE = {
+    setValues: (m) => { escrito = m; return faixaE; },
+    merge: () => faixaE,
+    setRichTextValue: () => faixaE,
+    setNote: (n) => { registrado.push(n); return faixaE; }
+  };
+  ['setFontWeight','setFontSize','setHorizontalAlignment','setVerticalAlignment',
+   'setBackground','setFontColor','setBorder','setNumberFormat','setWrap','setFontStyle']
+    .forEach(m => { faixaE[m] = () => faixaE; });
+
+  const abaE = {
+    setName: () => {}, setColumnWidth: () => {}, setRowHeight: () => {},
+    getSheetId: () => 0, getRange: () => faixaE,
+    getColumnWidth: () => 330, getRowHeight: () => 46,
+    insertImage: () => ({ setWidth: () => {}, setHeight: () => {} })
+  };
+
+  ctxE.SpreadsheetApp = {
+    create: () => ({ getSheets: () => [abaE], getId: () => 'SS1', getUrl: () => 'u' }),
+    flush: () => {},
+    BorderStyle: { SOLID: 'SOLID', SOLID_MEDIUM: 'SOLID_MEDIUM' },
+    newRichTextValue: () => {
+      const b = { setText: () => b, setLinkUrl: () => b, build: () => ({}) };
+      return b;
+    }
+  };
+  ctxE.DriveApp = {
+    getFileById: () => ({ moveTo: () => {}, getBlob: () => ({}),
+                          getName: () => 'logo.png', getMimeType: () => 'image/png', getSize: () => 4200 }),
+    getFolderById: () => ({ createFile: () => ({ getId: () => 'P', getUrl: () => 'u' }) }),
+    createFile: () => ({ getId: () => 'P', getUrl: () => 'u' })
+  };
+  ctxE.ScriptApp = { getOAuthToken: () => 't' };
+  ctxE.UrlFetchApp = {
+    fetch: () => ({ getResponseCode: () => 200, getBlob: () => ({
+      setName: function () { return this; }, getBytes: () => new Array(9000).fill(0) }) })
+  };
+  ctxE.Utilities = { formatDate: () => '06/09/2026 10:00', getUuid: () => 'x' };
+
+  ['Util.gs', 'Config.gs', 'Consulta.gs', 'Cnpj.gs', 'Equalizacao.gs', 'Exportar.gs'].forEach(f => {
+    vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctxE, { filename: f });
+  });
+
+  ctxE.cfLerTudo_ = (n) => ({
+    Equalizacoes: [{ ID: 'EQ1', ID_EMPREENDIMENTO: 'MEGA CENTRO LOGÍSTICO ESTEIO',
+                     PROJETO: 'Reposição', STATUS: 'em_cotacao' }],
+    Propostas: [
+      { ID: 'P1', ID_EQUALIZACAO: 'EQ1', CNPJ: '11222333000181', ORDEM: 1,
+        RAZAO_SOCIAL_INFORMADA: 'Alfa', VALOR_TOTAL_CALCULADO: 100 },
+      { ID: 'P2', ID_EQUALIZACAO: 'EQ1', CNPJ: '11222333000262', ORDEM: 2,
+        RAZAO_SOCIAL_INFORMADA: 'Beta', VALOR_TOTAL_CALCULADO: 130 }
+    ],
+    EAP: [
+      { ID: 'N1', ID_EQUALIZACAO: 'EQ1', ID_PAI: '', ORDEM: 1, TIPO: 'item',
+        DESCRICAO: 'Papel higiênico rolão', MARCA_REFERENCIA: 'Coala' },
+      { ID: 'N2', ID_EQUALIZACAO: 'EQ1', ID_PAI: '', ORDEM: 2, TIPO: 'item',
+        DESCRICAO: 'Rodo 60cm' }
+    ],
+    Precos: [
+      { ID_EAP: 'N1', ID_PROPOSTA: 'P1', ID_EQUALIZACAO: 'EQ1', PRECO_UNITARIO: 100,
+        VALOR_TOTAL: 100, STATUS_PRECO: 'cotado', MARCA_COTADA: 'Coala' },
+      { ID_EAP: 'N1', ID_PROPOSTA: 'P2', ID_EQUALIZACAO: 'EQ1', PRECO_UNITARIO: 130,
+        VALOR_TOTAL: 130, STATUS_PRECO: 'cotado', MARCA_COTADA: 'Pato' },
+      { ID_EAP: 'N2', ID_PROPOSTA: 'P1', ID_EQUALIZACAO: 'EQ1', PRECO_UNITARIO: 20,
+        VALOR_TOTAL: 20, STATUS_PRECO: 'cotado' },
+      { ID_EAP: 'N2', ID_PROPOSTA: 'P2', ID_EQUALIZACAO: 'EQ1', PRECO_UNITARIO: 22,
+        VALOR_TOTAL: 22, STATUS_PRECO: 'cotado' }
+    ],
+    Fornecedores: [], Pendencias: []
+  })[n] || [];
+  ctxE.cfDataTexto_ = () => '06/09/2026';
+  ctxE.cfUsuario_ = () => 'guilherme.marques@capitalrealty.com.br';
+
+  ctxE.cfExportarEqualizacao_('EQ1');
+  const texto = escrito.map(l => l.join('|')).join('\n');
+
+  // ── A marca chega ao conteúdo escrito, não só à anotação
+  assert.ok(texto.indexOf('Coala') >= 0, 'a marca cotada não foi escrita no documento');
+  assert.ok(texto.indexOf('Pato') >= 0, 'a marca do segundo proponente não foi escrita');
+
+  const lMarca = escrito.filter(l => l.indexOf('Marca cotada') >= 0)[0];
+  assert.ok(lMarca, 'faltou a linha de marca cotada');
+  assert.ok(lMarca.indexOf('Coala') >= 0 && lMarca.indexOf('Pato') >= 0,
+    'as duas marcas têm que estar na mesma linha, cada uma na coluna do seu proponente');
+
+  // Cada marca embaixo do preço do seu proponente — não numa lista solta.
+  const iCoala = lMarca.indexOf('Coala'), iPato = lMarca.indexOf('Pato');
+  assert.ok(iCoala < iPato, 'a marca saiu fora da ordem das colunas de proponente');
+
+  // ── Item sem marca não ganha linha vazia
+  //
+  //  Uma linha por item, dizendo "—" duas vezes, dobraria a altura da
+  //  tabela para não informar nada.
+  const linhasMarca = escrito.filter(l => l.indexOf('Marca cotada') >= 0);
+  assert.equal(linhasMarca.length, 1,
+    'o item sem marca nenhuma ganhou linha de marca (' + linhasMarca.length + ' linhas)');
+
+  // ── A marca de referência continua junto da descrição
+  assert.ok(texto.indexOf('[Ref: Coala]') >= 0,
+    'a marca de referência sumiu da descrição do item');
+
+  // ── A logo: os dois IDs existem e são distintos
+  const idsLogo = vm.runInContext('CF_LOGO_DRIVE', ctxE);
+  assert.ok(idsLogo.demercado && idsLogo.capitalRealty, 'faltou o ID de uma das logos');
+  assert.notEqual(idsLogo.demercado, idsLogo.capitalRealty,
+    'as duas empresas não podem apontar para o mesmo arquivo de logo');
+
+  // A inserção é chamada para as DUAS empresas. Antes havia um
+  // `&& ehDemercado` no caminho, e a Capital Realty nunca chegava aqui.
+  const srcExp = fs.readFileSync(path.join(root, 'app', 'Exportar.gs'), 'utf8');
+  assert.ok(srcExp.indexOf('if (lLinhaEmpresa && ehDemercado)') < 0,
+    'a inserção da logo voltou a acontecer só para a Demercado');
+
+  // Falha de logo não pode derrubar a exportação, mas tem que deixar
+  // rastro: silenciosa, ela vira "a logo sumiu" semanas depois sem
+  // ninguém saber em qual das duas vias.
+  ctxE.DriveApp.getFileById = () => { throw new Error('sem permissão'); };
+  ctxE.UrlFetchApp.fetch = () => ({ getResponseCode: () => 404 });
+  const registros = [];
+  ctxE.Logger = { log: (m) => registros.push(String(m)) };
+
+  const inseriu = ctxE.cfInserirLogoEmpresa_(abaE, 3, 5, 330, 46, false);
+  assert.equal(inseriu, false, 'logo inacessível não pode reportar sucesso');
+  assert.ok(registros.some(function (l) { return l.indexOf('Capital Realty') >= 0; }),
+    'a falha da logo não disse de qual empresa era');
+  assert.ok(registros.some(function (l) { return l.indexOf('404') >= 0 || l.indexOf('permissão') >= 0; }),
+    'a falha da logo não disse o motivo');
+
+  assert.ok(typeof ctxE.diagnosticarLogos === 'function',
+    'faltou a função de diagnóstico das logos');
+
+  console.log('✓ CORREÇÃO VERIFICADA: marca cotada sai no documento e falha de logo deixa rastro');
+} catch (e) {
+  console.log(`✗ FALHA na Correção 39: ${e.message}`);
+  process.exitCode = 1;
+}

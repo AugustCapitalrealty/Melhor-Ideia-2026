@@ -49,7 +49,7 @@ function cfExportarEqualizacao_(idEq) {
                    // Percentual e link precisam ser aplicados DEPOIS do
                    // setValues da grade: ele reescreve a célula inteira e
                    // levaria junto o formato e a âncora do hyperlink.
-                   percentual: [], links: [], assinatura: [], destaque: [], notas: [] };
+                   percentual: [], links: [], assinatura: [], destaque: [], notas: [], marca: [] };
 
   const vazia = function () {
     const l = [];
@@ -168,6 +168,30 @@ function cfExportarEqualizacao_(idEq) {
           faixas.melhores.push({ l: num, c: colDe(i), nc: 2 });
         }
       });
+
+      // A marca abaixo do preço de quem a cotou.
+      //
+      // Fica numa linha própria, alinhada com a coluna do proponente,
+      // porque é assim que se lê: o preço e a marca daquele fornecedor
+      // um embaixo do outro. Numa lista à parte, o comprador teria que
+      // reconstruir de cabeça quem cotou o quê.
+      const temMarca = props.some(function (p) {
+        const c = item.precos[p.id];
+        return !!(c && c.marcaCotada);
+      });
+      if (temMarca) {
+        const lm = vazia();
+        lm[COL_VALOR - 1] = 'Marca cotada';
+        props.forEach(function (p, i) {
+          const c = item.precos[p.id];
+          lm[colDe(i) - 1] = (c && c.marcaCotada) ? c.marcaCotada : '—';
+        });
+        const numM = linha(lm);
+        props.forEach(function (p, i) {
+          merges.push({ l: numM, c: colDe(i), nl: 1, nc: 2 });
+        });
+        faixas.marca.push(numM);
+      }
     }
   });
 
@@ -530,6 +554,16 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
       .setFontColor(CF_EXP_VERDE_TEXTO)
       .setFontWeight('bold');
   });
+  // Menor, em itálico e recuada: é qualificação do preço acima, não um
+  // dado concorrente. Com o mesmo peso do preço, a tabela passaria a
+  // ter duas linhas de igual importância por item.
+  (faixas.marca || []).forEach(function (l) {
+    aba.getRange(l, 2, 1, largura - 1)
+      .setFontSize(9).setFontStyle('italic').setFontColor('#5D6883');
+    aba.getRange(l, COL_VALOR)
+      .setHorizontalAlignment('right').setFontColor('#8A93A8');
+  });
+
   (faixas.percentual || []).forEach(function (f) {
     aba.getRange(f.l, f.c, 1, 2).setNumberFormat('+0.0%;-0.0%;0.0%').setHorizontalAlignment('center');
   });
@@ -621,23 +655,45 @@ function cfDataHoraTexto_(d) {
   return Utilities.formatDate(d, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
 }
 
+/** Qual arquivo do Drive é a logo de cada empresa. */
+const CF_LOGO_DRIVE = {
+  demercado:     '168kVyD9dXiZctYNl27f_-Ic9S1W3wm-T',
+  capitalRealty: '1XqFtIobiEq7VC2H41sKnFNUuOluw_J4V'
+};
+
 /**
- * Insere a imagem da logo da Demercado ou da Capital Realty diretamente na planilha de forma centralizada.
- * O blob incorporado na planilha garante que a imagem saia impressa no PDF sem depender de carregamento externo.
+ * Insere a logo da empresa contratante na planilha, centralizada.
+ *
+ * O blob é incorporado na planilha, e não carregado por URL, para a
+ * imagem sair impressa no PDF sem depender de o leitor ter acesso ao
+ * arquivo original.
+ *
+ * Quando falha, devolve false e o chamador deixa o nome da empresa em
+ * texto — o documento continua correto, só menos bonito. Mas a falha é
+ * REGISTRADA com o motivo: silenciosa, ela vira "a logo sumiu" semanas
+ * depois, sem ninguém saber de qual das duas etapas.
  */
 function cfInserirLogoEmpresa_(aba, col, lin, larguraCol, alturaLin, ehDemercado) {
+  const empresa = ehDemercado ? 'Demercado' : 'Capital Realty';
   try {
-    const idLogo = ehDemercado
-      ? '168kVyD9dXiZctYNl27f_-Ic9S1W3wm-T'  // Demercado Investimentos
-      : '1XqFtIobiEq7VC2H41sKnFNUuOluw_J4V'; // Capital Realty
+    const idLogo = ehDemercado ? CF_LOGO_DRIVE.demercado : CF_LOGO_DRIVE.capitalRealty;
     let blob = null;
     try {
       blob = DriveApp.getFileById(idLogo).getBlob();
     } catch (eDrive) {
+      Logger.log('Logo ' + empresa + ': Drive recusou o arquivo ' + idLogo + ' — ' + eDrive);
       try {
-        const resp = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + idLogo);
+        const resp = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + idLogo,
+                                       { muteHttpExceptions: true });
         if (resp.getResponseCode() === 200) blob = resp.getBlob();
-      } catch (eFetch) {}
+        else Logger.log('Logo ' + empresa + ': a URL pública devolveu HTTP ' + resp.getResponseCode());
+      } catch (eFetch) {
+        Logger.log('Logo ' + empresa + ': a URL pública também falhou — ' + eFetch);
+      }
+    }
+    if (!blob) {
+      Logger.log('Logo ' + empresa + ' não inserida: nenhuma das duas vias devolveu a imagem. ' +
+                 'Rode diagnosticarLogos() para ver o motivo exato.');
     }
     if (blob && aba && aba.insertImage) {
       let colW = larguraCol || 330;
@@ -666,9 +722,71 @@ function cfInserirLogoEmpresa_(aba, col, lin, larguraCol, alturaLin, ehDemercado
       return true;
     }
   } catch (erro) {
-    Logger.log('Aviso: falha ao inserir logo da empresa via insertImage: ' + erro);
+    Logger.log('Logo ' + empresa + ': insertImage falhou — ' + erro);
   }
   return false;
+}
+
+/**
+ * Por que a logo não apareceu.
+ *
+ * A inserção é tolerante a falha de propósito — logo ausente não pode
+ * derrubar uma exportação. O preço disso é que ela some sem explicação,
+ * e o documento sai com o nome da empresa em texto como se fosse o
+ * desenho. Esta função paga a diferença: diz qual arquivo, qual via e
+ * qual erro.
+ *
+ * Rode: diagnosticarLogos   (neste arquivo, Exportar.gs)
+ */
+function diagnosticarLogos() {
+  Logger.log('═══ Logos das empresas contratantes ═══');
+  Logger.log('');
+
+  Object.keys(CF_LOGO_DRIVE).forEach(function (chave) {
+    const id = CF_LOGO_DRIVE[chave];
+    Logger.log('── ' + (chave === 'demercado' ? 'Demercado' : 'Capital Realty') + ' ──');
+    Logger.log('   arquivo: ' + id);
+
+    let ok = false;
+    try {
+      const f = DriveApp.getFileById(id);
+      const tipo = f.getMimeType();
+      const tam = f.getSize();
+      Logger.log('   nome:  ' + f.getName());
+      Logger.log('   tipo:  ' + tipo);
+      Logger.log('   bytes: ' + tam);
+
+      if (tipo.indexOf('image/') !== 0) {
+        Logger.log('   PROBLEMA: não é imagem. insertImage precisa de PNG ou JPG —');
+        Logger.log('             Slides, Docs e PDF não servem. Exporte como PNG e troque o ID.');
+      } else if (!tam) {
+        Logger.log('   PROBLEMA: arquivo vazio.');
+      } else {
+        f.getBlob();
+        Logger.log('   OK: imagem legível pelo script.');
+        ok = true;
+      }
+    } catch (e) {
+      Logger.log('   PROBLEMA no Drive: ' + e);
+      Logger.log('   Em geral é permissão: a conta que roda o script precisa ter acesso');
+      Logger.log('   ao arquivo. Compartilhe com ela, ou mova a logo para a pasta do projeto.');
+    }
+
+    if (!ok) {
+      try {
+        const r = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + id,
+                                    { muteHttpExceptions: true });
+        Logger.log('   via URL pública: HTTP ' + r.getResponseCode() +
+                   (r.getResponseCode() === 200 ? ' — funcionaria por aqui' : ' — não é público'));
+      } catch (e2) {
+        Logger.log('   via URL pública: falhou — ' + e2);
+      }
+    }
+    Logger.log('');
+  });
+
+  Logger.log('Para trocar um arquivo: edite CF_LOGO_DRIVE no topo desta seção,');
+  Logger.log('em Exportar.gs. O ID é o trecho entre /d/ e /view na URL do Drive.');
 }
 
 /** Compatibilidade retroativa para chamadas diretas de logo Demercado */
