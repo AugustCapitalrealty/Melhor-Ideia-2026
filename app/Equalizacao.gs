@@ -436,6 +436,12 @@ function cfCriarEqualizacao_(d) {
       const nivel = Number(item.nivel) || 0;
       const idNo = cfNovoId_('EAP');
       pilha[nivel] = idNo;
+      // Ao voltar para um degrau de cima, os de baixo deixam de existir.
+      // Sem esta limpeza a pilha guardava o filho do GRUPO A, e o primeiro
+      // item fundo do GRUPO B era gravado com ID_PAI apontando para lá —
+      // ao reabrir, ele saía da lista de B, aparecia dentro de A e ainda
+      // mudava de posição, porque a leitura remonta a lista pela árvore.
+      for (let k = nivel + 1; k <= 3; k++) delete pilha[k];
 
       linhasEap.push({
         ID: idNo,
