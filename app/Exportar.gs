@@ -669,7 +669,10 @@ function cfDataHoraTexto_(d) {
  */
 const CF_LOGO_DRIVE = {
   demercado:     '168kVyD9dXiZctYNl27f_-Ic9S1W3wm-T',
-  capitalRealty: '1XqFtIobiEq7VC2H41sKnFNUuOluw_J4V'
+  // "RGB Color", e não a "RGB Positivo": a Positivo é o mesmo
+  // desenho em preto chapado, e sai destoando ao lado da Demercado,
+  // que é colorida. As duas são PNG, do mesmo dono, na mesma pasta.
+  capitalRealty: '1toRVfIgamy4CWBT2Gv2mGd6V_W0OGISS'
 };
 
 /** Nome do arquivo procurado na pasta do projeto, por empresa. */
@@ -834,6 +837,69 @@ function fixarLogosNaPasta() {
 }
 
 /**
+ * Desenha as duas logos lado a lado, numa aba só para isso.
+ *
+ * Existe para separar duas perguntas que se confundem: "a logo da
+ * Capital Realty está quebrada?" e "esta equalização é da Capital
+ * Realty?". A empresa não é escolhida — ela é derivada do Mega, e
+ * Curitiba é Demercado. Uma equalização de Curitiba sai com a logo da
+ * Demercado porque está certa, não porque a outra falhou.
+ *
+ * Aqui as duas são desenhadas pela MESMA rotina da exportação, sem
+ * depender de Mega nenhum. Se as duas aparecem, o que estava errado
+ * era o empreendimento do teste. Se só uma aparece, o defeito é real
+ * e o log diz de que fonte cada uma veio.
+ *
+ * Rode: testarAsDuasLogos   (neste arquivo, Exportar.gs)
+ */
+function testarAsDuasLogos() {
+  const planilha = cfPlanilha_();
+  const NOME = 'Teste de Logos';
+
+  let aba = planilha.getSheetByName(NOME);
+  if (aba) {
+    // Imagem sobre a grade não sai com clear(): tem de ser removida uma
+    // a uma, ou o teste seguinte mostra a logo da rodada anterior.
+    aba.getImages().forEach(function (i) { i.remove(); });
+    aba.clear();
+  } else {
+    aba = planilha.insertSheet(NOME);
+  }
+
+  aba.setColumnWidth(1, 200);
+  aba.setColumnWidth(2, 330);
+  aba.getRange('A1').setValue('Empresa').setFontWeight('bold');
+  aba.getRange('B1').setValue('Logo, pela mesma rotina da exportação').setFontWeight('bold');
+
+  const casos = [
+    { nome: 'Demercado (Curitiba)', ehDemercado: true, linha: 2 },
+    { nome: 'Capital Realty (Esteio, Itajaí)', ehDemercado: false, linha: 3 }
+  ];
+
+  Logger.log('Desenhando as duas logos na aba "' + NOME + '".');
+  Logger.log('');
+
+  casos.forEach(function (c) {
+    aba.setRowHeight(c.linha, 46);
+    aba.getRange(c.linha, 1).setValue(c.nome);
+    const colocou = cfInserirLogoEmpresa_(aba, 2, c.linha, 330, 46, c.ehDemercado);
+    if (!colocou) {
+      aba.getRange(c.linha, 2).setValue('— não desenhou —').setFontColor('#b00020');
+    }
+    Logger.log(c.nome + ': ' + (colocou ? 'desenhou' : 'NÃO desenhou'));
+  });
+
+  Logger.log('');
+  Logger.log('Abra a aba "' + NOME + '" e olhe as duas linhas.');
+  Logger.log('As duas aparecendo: a logo está boa, e o que estava errado era o');
+  Logger.log('empreendimento da equalização de teste — a empresa vem do Mega,');
+  Logger.log('e Curitiba é Demercado.');
+  Logger.log('Só uma aparecendo: o defeito é real, e as linhas acima dizem de');
+  Logger.log('que fonte cada logo veio.');
+  return NOME;
+}
+
+/**
  * Insere a logo da empresa contratante na planilha, centralizada.
  *
  * O blob é incorporado na planilha, e não carregado por URL, para a
@@ -871,16 +937,39 @@ function cfInserirLogoEmpresa_(aba, col, lin, larguraCol, alturaLin, ehDemercado
         }
       } catch (eDim) {}
 
-      const imgW = 140;
-      const imgH = 42;
-      const offsetX = Math.max(0, Math.round((colW - imgW) / 2));
-      const offsetY = Math.max(0, Math.round((rowH - imgH) / 2));
+      // A caixa em que a logo tem de caber.
+      const maxW = Math.min(240, Math.max(80, colW - 24));
+      const maxH = Math.max(20, rowH - 6);
 
-      const img = aba.insertImage(blob, col, lin, offsetX, offsetY);
+      const img = aba.insertImage(blob, col, lin, 0, 0);
+
+      // Cada logo tem a sua proporção — a da Capital Realty é quase
+      // duas vezes mais alongada que a da Demercado. Um tamanho fixo
+      // para as duas acerta uma e deforma a outra, então aqui a
+      // imagem é encaixada na caixa mantendo a proporção dela.
+      let imgW = maxW;
+      let imgH = maxH;
+      try {
+        const natW = img && img.getWidth ? img.getWidth() : 0;
+        const natH = img && img.getHeight ? img.getHeight() : 0;
+        if (natW > 0 && natH > 0) {
+          const escala = Math.min(maxW / natW, maxH / natH);
+          imgW = Math.max(1, Math.round(natW * escala));
+          imgH = Math.max(1, Math.round(natH * escala));
+        }
+      } catch (eDim2) {}
+
       if (img && img.setWidth && img.setHeight) {
         img.setWidth(imgW);
         img.setHeight(imgH);
       }
+      // Centralizar depois de saber o tamanho final.
+      try {
+        if (img && img.setAnchorCellXOffset) {
+          img.setAnchorCellXOffset(Math.max(0, Math.round((colW - imgW) / 2)));
+          img.setAnchorCellYOffset(Math.max(0, Math.round((rowH - imgH) / 2)));
+        }
+      } catch (eOff) {}
       return true;
     }
   } catch (erro) {

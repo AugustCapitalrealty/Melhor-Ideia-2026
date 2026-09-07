@@ -52,7 +52,7 @@ assert.ok(!html.includes("campoProp(i, 'centroCusto'"), 'detalhesProposta não d
 //    O ID continua no código como último recurso, mas não é mais a
 //    única fonte: ele falhava e a logo sumia sem explicação. Agora há
 //    Config, pasta do projeto e API do Drive antes dele.
-const idLogoCR = '1XqFtIobiEq7VC2H41sKnFNUuOluw_J4V';
+const idLogoCR = '1toRVfIgamy4CWBT2Gv2mGd6V_W0OGISS';
 assert.ok(html.includes(idLogoCR), 'Interface.html deve incorporar o ID da logo da Capital Realty');
 assert.ok(exportar.includes(idLogoCR), 'Exportar.gs deve manter o ID da logo como último recurso');
 assert.ok(exportar.includes('cfInserirLogoEmpresa_'), 'Exportar.gs deve conter cfInserirLogoEmpresa_');

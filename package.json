@@ -4,7 +4,7 @@
   "private": true,
   "description": "Sistema de Equalizacao Inteligente e Avaliacao Continua de Prestadores de Servico — Apps Script",
   "scripts": {
-    "test": "node tests/ciclo-completo.cjs && node tests/validar-correcoes.cjs && node tests/teste-catalogo-e-config.cjs && node tests/teste-categoria-e-logo.cjs && node tests/teste-consulta-executiva.cjs && node tests/teste-equalizacoes-executiva.cjs && node tests/teste-marcas-opcional.cjs && node tests/teste-nome-curto-proponente.cjs && node tests/teste-presets-eap.cjs",
+    "test": "node tests/ciclo-completo.cjs && node tests/validar-correcoes.cjs && node tests/teste-catalogo-e-config.cjs && node tests/teste-categoria-e-logo.cjs && node tests/teste-consulta-executiva.cjs && node tests/teste-equalizacoes-executiva.cjs && node tests/teste-marcas-opcional.cjs && node tests/teste-nome-curto-proponente.cjs && node tests/teste-presets-eap.cjs && node tests/teste-falha-de-carga.cjs",
     "test:ciclo": "node tests/ciclo-completo.cjs",
     "test:correcoes": "node tests/validar-correcoes.cjs",
     "baseline": "node tests/snapshot-baseline.cjs",

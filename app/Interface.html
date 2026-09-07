@@ -2272,6 +2272,7 @@ table.ficha-tab a:hover{text-decoration:underline}
 
     <div class="bloco vidro">
       <h2>A compra</h2>
+      <div id="avisoOpcoes" hidden></div>
       <div class="grade-compra">
         <div class="campo col-2">
           <label for="nCategoria">Categoria da compra</label>
@@ -4496,7 +4497,8 @@ function carregarEqualizacoes() {
   google.script.run
     .withSuccessHandler(function (r) {
       if (!r.ok) {
-        document.getElementById('listaEq').innerHTML = '<div class="aviso erro">' + esc(r.erro) + '</div>';
+        falhaAoCarregar('listaEq', 'as equalizações', r.erro, 'carregarEqualizacoes');
+        equalizacoesCarregadas = false;
         return;
       }
       todasEqualizacoes = r.equalizacoes;
@@ -4514,7 +4516,8 @@ function carregarEqualizacoes() {
       filtrarLista();
     })
     .withFailureHandler(function (e) {
-      document.getElementById('listaEq').innerHTML = '<div class="aviso erro">' + esc(e.message) + '</div>';
+      falhaAoCarregar('listaEq', 'as equalizações', e, 'carregarEqualizacoes');
+      equalizacoesCarregadas = false;
     })
     .apiEqualizacoes();
 }
@@ -5304,9 +5307,53 @@ function montarSeletorSubcategorias(nomeCategoria) {
   box.hidden = false;
 }
 
+/** A mensagem de um erro que pode chegar como Error, string ou nada. */
+function textoDoErro(e) {
+  if (!e) return 'falha de conexão com o servidor';
+  if (typeof e === 'string') return e;
+  return e.message || String(e);
+}
+
+/**
+ * Uma carga que falhou precisa dizer, e precisa poder ser refeita.
+ *
+ * O "já carreguei esta aba" é marcado ANTES de a resposta chegar.
+ * Isso evita disparar a mesma chamada duas vezes, mas transformava
+ * qualquer falha em permanente: a aba ficava vazia, e nem sair dela e
+ * voltar trazia os dados de volta — só recarregar a página inteira, o
+ * que ninguém tem como adivinhar.
+ *
+ * Vazio em silêncio é a pior das saídas: quem olha conclui que não há
+ * dados, não que houve erro, e fica sem nada para relatar. Aqui a
+ * falha vira texto, com o motivo e um botão que refaz a chamada.
+ */
+function falhaAoCarregar(idDestino, oQue, motivo, refazer) {
+  var el = document.getElementById(idDestino);
+  if (!el) return;
+  el.innerHTML = '<div class="aviso erro">Não foi possível carregar ' + esc(oQue) +
+    ': ' + esc(textoDoErro(motivo)) +
+    ' <button type="button" class="bt" onclick="' + refazer + '()">tentar de novo</button></div>';
+  el.hidden = false;
+}
+
+/**
+ * A tela deixou de trazer as categorias escritas nela — vêm do
+ * servidor, para não divergirem da taxonomia. O preço disso é que uma
+ * falha no caminho deixa o seletor vazio, e sem isto aqui ele ficaria
+ * preso em "carregando categorias…" para sempre.
+ */
+function falhaNasOpcoes(motivo) {
+  var sel = document.getElementById('nCategoria');
+  if (sel && !sel.value) sel.innerHTML = '<option value="">não foi possível carregar</option>';
+  falhaAoCarregar('avisoOpcoes', 'as categorias e os Megas', motivo, 'carregarOpcoes');
+  opcoesCarregadas = false;
+}
+
 function carregarOpcoes() {
   google.script.run.withSuccessHandler(function (r) {
-    if (!r.ok) return;
+    if (!r.ok) { falhaNasOpcoes(r.erro); return; }
+    var av = document.getElementById('avisoOpcoes');
+    if (av) av.hidden = true;
     if (r.categorias && r.categorias.length) {
       CATEGORIAS_SERVIDOR = r.categorias;
       montarSeletorCategorias(r.categorias);
@@ -5325,7 +5372,9 @@ function carregarOpcoes() {
       mostrarEmpresa();
       megaPendenteEdicao = null;
     }
-  }).apiOpcoes();
+  })
+  .withFailureHandler(function (e) { falhaNasOpcoes(e); })
+  .apiOpcoes();
 
   document.getElementById('nData').value = hojeISO();
   document.getElementById('nData').onchange = selecionouData;
@@ -5371,7 +5420,7 @@ function mostrarEmpresa() {
   } else {
     box.innerHTML =
       '<div class="emp-marca emp-cr" title="' + esc(nome) + '">' +
-        '<img src="https://lh3.googleusercontent.com/d/1XqFtIobiEq7VC2H41sKnFNUuOluw_J4V" ' +
+        '<img src="https://lh3.googleusercontent.com/d/1toRVfIgamy4CWBT2Gv2mGd6V_W0OGISS" ' +
              'alt="Capital Realty" class="logo-cr" ' +
              'onerror="this.onerror=null;this.innerHTML=\'<span class=\\\'cr-badge\\\'>CAPITAL REALTY</span><small class=\\\'cr-sub\\\'>Infraestrutura Logística</small>\'">' +
       '</div>';
@@ -6028,8 +6077,19 @@ var UNIDADES = ['un', 'cx', 'pct', 'fardo', 'kg', 'g', 'l', 'ml',
 
 function seletorUnidade(i, atual) {
   var v = atual || 'un';
-  var opcoes = UNIDADES.map(function (u) {
-    return '<option value="' + u + '"' + (u === v ? ' selected' : '') + '>' + u + '</option>';
+
+  // A lista é fechada para o que se DIGITA, não para o que já existe.
+  // O catálogo traz 'gl', 'conj' e 'balde', os modelos de EAP trazem
+  // 'par' e o acervo importado traz o que estiver lá — e como nenhuma
+  // dessas está em UNIDADES, nenhuma <option> ficava marcada e o select
+  // exibia a primeira, 'un'. A tela dizia 'un', o modelo guardava 'gl' e
+  // o servidor gravava 'gl': preço por galão comparado como preço por
+  // unidade, sem erro e sem aviso. Mostrar a unidade que o item tem de
+  // fato não reabre o campo livre; só impede o seletor de mentir.
+  var lista = UNIDADES.indexOf(v) >= 0 ? UNIDADES : UNIDADES.concat([v]);
+
+  var opcoes = lista.map(function (u) {
+    return '<option value="' + esc(u) + '"' + (u === v ? ' selected' : '') + '>' + esc(u) + '</option>';
   }).join('');
   return '<select aria-label="Unidade do item ' + (i + 1) + '"' +
          ' onchange="itens[' + i + '].unidade=this.value;salvarRascunho()">' + opcoes + '</select>';
@@ -6054,9 +6114,23 @@ function mudarNivel(i, passo) {
  */
 function recalcularCodigos() {
   var contador = [0, 0, 0, 0];
+  var anterior = -1;
 
   itens.forEach(function (it) {
     var nivel = Math.max(0, Math.min(3, Number(it.nivel) || 0));
+
+    // O nível também é derivado, pelo mesmo motivo que o código: ninguém
+    // pode estar dois degraus abaixo da linha de cima. Um clique em "›"
+    // logo abaixo de um grupo, ou apagar o item do meio deixando o
+    // subitem para trás, produzia nível 2 sem nível 1 — e daí saía
+    // "1.0.1", com o segmento zero que é exatamente o buraco de
+    // numeração que este sistema existe para matar. Pior que o número:
+    // ao gravar, a linha órfã ficava sem pai e reabria FORA do grupo,
+    // em outra posição da lista.
+    if (nivel > anterior + 1) nivel = anterior + 1;
+    it.nivel = nivel;
+    anterior = nivel;
+
     contador[nivel]++;
     // Ao subir um degrau, os de baixo recomeçam: o segundo item do grupo 2
     // é 2.1, não 2.3 porque o grupo 1 já tinha dois.
@@ -7045,14 +7119,25 @@ var infoCategorias = null;
 var categoriaAtiva = '';
 var modoLista = 'cards';
 
+/**
+ * As pílulas somem quando a contagem falha — e sumir calado é ruim
+ * aqui: elas são o filtro, e sem elas a tela parece apenas não ter
+ * categoria nenhuma. A lista continua utilizável, então o aviso vai
+ * no lugar das pílulas, não por cima de tudo.
+ */
+function falhaNasCategorias(motivo) {
+  falhaAoCarregar('pillsEq', 'os filtros por categoria', motivo, 'carregarCategorias');
+  categoriasCarregadas = false;
+}
+
 function carregarCategorias() {
   google.script.run
     .withSuccessHandler(function (r) {
-      if (!r.ok) return;
+      if (!r.ok) { falhaNasCategorias(r.erro); return; }
       infoCategorias = r;
       desenharPills('pillsEq', categoriaAtiva, escolherCategoria);
     })
-    .withFailureHandler(function () {})
+    .withFailureHandler(falhaNasCategorias)
     .apiCategorias();
 }
 
@@ -7202,7 +7287,8 @@ function carregarFornecedores() {
   google.script.run
     .withSuccessHandler(function (r) {
       if (!r.ok) {
-        document.getElementById('listaForn').innerHTML = '<div class="aviso erro">' + esc(r.erro) + '</div>';
+        falhaAoCarregar('listaForn', 'os fornecedores', r.erro, 'carregarFornecedores');
+        fornecedoresCarregados = false;
         return;
       }
       todosFornecedores = r.fornecedores;
@@ -7228,7 +7314,8 @@ function carregarFornecedores() {
       filtrarFornecedores();
     })
     .withFailureHandler(function (e) {
-      document.getElementById('listaForn').innerHTML = '<div class="aviso erro">' + esc(e.message) + '</div>';
+      falhaAoCarregar('listaForn', 'os fornecedores', e, 'carregarFornecedores');
+      fornecedoresCarregados = false;
     })
     .apiFornecedores('');
 }
