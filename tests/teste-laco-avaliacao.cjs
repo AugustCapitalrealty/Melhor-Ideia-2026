@@ -161,6 +161,7 @@ const root = path.resolve(__dirname, '..');
   assert.strictEqual(ctx.obterIqfProponente(pSemIqf), null);
 }
 
+console.log('OK: a nota do fornecedor chega à tela onde a compra é decidida.');
 // ── Ponta 4: cfBuscarFornecedor_ traz o IQF junto da busca do fornecedor ──────────
 {
   const ctxB = vm.createContext({ Logger: { log: function () {} }, console: console, JSON: JSON });

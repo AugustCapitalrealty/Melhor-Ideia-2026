@@ -3730,7 +3730,11 @@ function buscarReferenciaItem(i, descricao, unidade) {
           atualizarAlertasPrecoHistorico();
         }
       })
-      .apiObterReferenciaPrecos([{ id: i, descricao: descLimpa, unidade: un }]);
+      // idEmEdicao: a equalização aberta não pode ser a referência de
+      // si mesma. Sem isto, ao renegociar uma equalização já gravada a
+      // "última compra" era a própria linha em edição — delta 0% e o
+      // alerta calado justamente na renegociação.
+      .apiObterReferenciaPrecos([{ id: i, descricao: descLimpa, unidade: un }], idEmEdicao || null);
   }, 350);
 }
 
@@ -3754,7 +3758,7 @@ function carregarReferenciasEmLote(listaItens) {
         atualizarAlertasPrecoHistorico();
       }
     })
-    .apiObterReferenciaPrecos(paraBuscar);
+    .apiObterReferenciaPrecos(paraBuscar, idEmEdicao || null);
 }
 
 function atualizarDicasDescricao() {
@@ -5154,8 +5158,21 @@ function calcularKpisEqualizacoes(lista) {
       elSav.textContent = moeda(savingTotal);
       if (elSavSub) elSavSub.textContent = 'saving capturado';
     } else {
-      elSav.textContent = homologadasCount > 0 ? '11,8%' : '—';
-      if (elSavSub) elSavSub.textContent = homologadasCount > 0 ? 'redução média em rodadas' : 'sem histórico de rodadas';
+      // Sem saving apurado, o KPI diz que não há — e não inventa.
+      //
+      // Aqui havia um '11,8%' fixo no código, exibido assim que
+      // existisse qualquer equalização homologada. Era número sem
+      // lastro no lugar onde a compra é justificada, e contradizia
+      // por escrito o documento entregue ao comitê, que declara o
+      // saving como não apurado. Tela que mostra "—" é honesta;
+      // tela que mostra um número inventado não sobrevive à pergunta
+      // "de onde vem esse número?".
+      elSav.textContent = '—';
+      if (elSavSub) {
+        elSavSub.textContent = homologadasCount > 0
+          ? 'ainda sem rodada de negociação registrada'
+          : 'sem histórico de rodadas';
+      }
     }
   }
 
@@ -6704,7 +6721,35 @@ function addItem(tipo, semFoco) {
   }
 }
 
-function removerItem(i) { itens.splice(i, 1); desenharGrade(); salvarRascunho(); }
+/**
+ * Remover uma linha desloca todas as de baixo.
+ *
+ * O cache de referência de preço é chaveado pela POSIÇÃO da linha.
+ * Sem reindexar aqui, apagar um item do meio fazia cada linha herdar
+ * o benchmark e a seta ▲/▼ da linha seguinte — silenciosamente, e
+ * justamente na tela onde o preço é decidido.
+ *
+ * Inserir é seguro porque addItem só faz push; remover não é.
+ */
+function removerItem(i) {
+  itens.splice(i, 1);
+  reindexarCacheRefPrecos(i);
+  desenharGrade();
+  salvarRascunho();
+}
+
+function reindexarCacheRefPrecos(removido) {
+  var novo = {};
+  Object.keys(cacheRefPrecos).forEach(function (k) {
+    var n = Number(k);
+    // As chaves por descrição continuam valendo: não são posicionais.
+    if (!isFinite(n) || String(n) !== k) { novo[k] = cacheRefPrecos[k]; return; }
+    if (n < removido) novo[n] = cacheRefPrecos[k];
+    else if (n > removido) novo[n - 1] = cacheRefPrecos[k];
+    // n === removido: a linha deixou de existir, o cache dela vai junto.
+  });
+  cacheRefPrecos = novo;
+}
 
 /**
  * A grade recebe unitário digitado ou total da linha?
@@ -6817,6 +6862,7 @@ function desenharGrade() {
       var seloHtml = p.cnpj ? ('<div class="grade-iqf-wrap">' + seloIqfColuna(iqf) + '</div>') : '';
       return '<th class="col-preco" data-prop="' + i + '" title="' + esc(p.nome || ('Proponente ' + (i + 1))) + '">' +
              '<span class="th-nome-prop">' + esc(nomeCurto) + '</span>' +
+             '<small>' + rotuloBase + '</small></th>';
              '<small>' + rotuloBase + '</small>' +
              seloHtml + '</th>';
     }).join('') + '<th class="col-del"></th></tr></thead>';
@@ -8568,7 +8614,17 @@ function desenharFichaFornecedor(f) {
   // ── ABA 1: VISÃO GERAL & COCKPIT
   var taxaVitTexto = f.taxaVitoria !== null && f.taxaVitoria !== undefined ? (Math.round(f.taxaVitoria * 100) + '%') : (f.disputas > 0 ? (f.vitorias + '/' + f.disputas) : '0%');
   var taxaVitSub = f.amostraCurta ? (f.vitorias + ' vitórias em ' + f.disputasDecididas + ' decididas (amostra preliminar)') : (f.vitorias + ' vitórias em ' + f.disputasDecididas + ' disputas');
-  var taxaRespTexto = f.taxaRespostaConvites !== null && f.taxaRespostaConvites !== undefined ? (Math.round(f.taxaRespostaConvites * 100) + '%') : (f.convitesTotal > 0 ? (f.convitesRespondidos + '/' + f.convitesTotal) : '100%');
+  // Sem convite registrado, a taxa é desconhecida — nunca 100%.
+  //
+  // O padrão aqui era '100%', com o subtítulo "Alta disponibilidade".
+  // Como a tabela Convites só passa a receber linha quando alguém
+  // homologa pelo app, toda ficha aberta hoje afirmava resposta
+  // perfeita a partir de nenhum dado — bem ao lado da Taxa de
+  // Vitória, que corretamente cai para 0%. Ausência de dado não é
+  // desempenho máximo.
+  var taxaRespTexto = (f.taxaRespostaConvites !== null && f.taxaRespostaConvites !== undefined)
+    ? (Math.round(f.taxaRespostaConvites * 100) + '%')
+    : (f.convitesTotal > 0 ? (f.convitesRespondidos + '/' + f.convitesTotal) : '—');
 
   var htmlAbaVisao =
     '<div class="tab-pane-ficha ativo" id="pane-visao-geral">' +
@@ -8591,7 +8647,7 @@ function desenharFichaFornecedor(f) {
         '<div class="cockpit-kpi-card">' +
           '<div class="cockpit-kpi-label">Resposta a Convites</div>' +
           '<div class="cockpit-kpi-val" style="color:var(--royal)">' + taxaRespTexto + '</div>' +
-          '<div class="cockpit-kpi-sub">' + (f.convitesTotal > 0 ? (f.convitesRespondidos + ' respondidos de ' + f.convitesTotal + ' convites') : 'Alta disponibilidade') + '</div>' +
+          '<div class="cockpit-kpi-sub">' + (f.convitesTotal > 0 ? (f.convitesRespondidos + ' respondidos de ' + f.convitesTotal + ' convites') : 'nenhum convite registrado ainda') + '</div>' +
         '</div>' +
       '</div>' +
 

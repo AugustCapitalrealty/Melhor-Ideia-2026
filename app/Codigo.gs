@@ -512,7 +512,7 @@ function cfUrlPublicada_() {
  * Consulta referências históricas de preço para itens da grade de cotação (Fase 4).
  * @param {Array<{id: string|number, descricao: string, unidade?: string}>|Object} itens
  */
-function apiObterReferenciaPrecos(itens) {
+function apiObterReferenciaPrecos(itens, idEqIgnorar) {
   try {
     if (!itens) return { ok: true, referencias: {} };
     if (!Array.isArray(itens)) itens = [itens];
@@ -521,7 +521,12 @@ function apiObterReferenciaPrecos(itens) {
     itens.forEach(function (it) {
       if (!it || !it.descricao) return;
       const chave = it.id !== undefined && it.id !== null ? String(it.id) : it.descricao;
-      const ref = cfBuscarReferenciaPrecoItem_(it.descricao, it.unidade, null, precosBase);
+      // idEqIgnorar existe justamente para a equalização aberta não
+      // virar referência de si mesma. Passando null, ao editar uma
+      // equalização já gravada a "última compra" era a própria linha
+      // sendo editada: delta 0% e o alerta calado exatamente na
+      // renegociação, que é quando ele mais vale.
+      const ref = cfBuscarReferenciaPrecoItem_(it.descricao, it.unidade, idEqIgnorar || null, precosBase);
       if (ref) referencias[chave] = ref;
     });
     return { ok: true, referencias: referencias };
