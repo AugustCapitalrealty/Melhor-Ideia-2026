@@ -165,7 +165,8 @@ function cfMapaEqualizacao_(idEq) {
     (porNo[pr.ID_EAP] = porNo[pr.ID_EAP] || {})[pr.ID_PROPOSTA] = {
       valor: cfNumero_(pr.PRECO_UNITARIO),
       total: cfNumero_(pr.VALOR_TOTAL),
-      status: pr.STATUS_PRECO || ''
+      status: pr.STATUS_PRECO || '',
+      marcaCotada: pr.MARCA_COTADA || ''
     };
   });
 
@@ -201,6 +202,7 @@ function cfMapaEqualizacao_(idEq) {
         tipo: n.TIPO || 'item',
         codigo: n.CODIGO_ORIGINAL || '',
         descricao: n.DESCRICAO || '',
+        marcaReferencia: n.MARCA_REFERENCIA || '',
         quantidade: cfNumero_(n.QUANTIDADE_REFERENCIA),
         unidade: n.UNIDADE_REFERENCIA || '',
         precos: precos,
@@ -444,7 +446,8 @@ function cfCriarEqualizacao_(d) {
         DESCRICAO: String(item.descricao).trim(),
         QUANTIDADE_REFERENCIA: cfNumero_(item.quantidade),
         UNIDADE_REFERENCIA: item.unidade || '',
-        CODIGO_ORIGINAL: item.codigo || ''
+        CODIGO_ORIGINAL: item.codigo || '',
+        MARCA_REFERENCIA: item.marcaReferencia ? String(item.marcaReferencia).trim() : ''
       });
 
       // Grupo agrega; preço só existe em item. Gravar preço no grupo faz o
@@ -456,6 +459,7 @@ function cfCriarEqualizacao_(d) {
         const digitado = cfNumero_((item.precos || [])[colIdx]);
         const cotou = digitado !== null && digitado !== undefined &&
                       String((item.precos || [])[colIdx]).trim() !== '';
+        const marcaCotada = cotou && item.marcas && item.marcas[colIdx] ? String(item.marcas[colIdx]).trim() : '';
         const qtd = cfNumero_(item.quantidade);
         // C05: Quantidade zero é zero de fato (não vira 1 silenciosamente).
         const q = qtd !== null ? qtd : 1;
@@ -485,7 +489,8 @@ function cfCriarEqualizacao_(d) {
           CNPJ: cfSoDigitos_(p.cnpj),
           ID_EMPREENDIMENTO: d.empreendimento,
           DATA: agora,
-          ORIGEM: 'app'
+          ORIGEM: 'app',
+          MARCA_COTADA: marcaCotada
         });
       });
     });

@@ -855,6 +855,41 @@ table.grade thead th{
     background:#EDF1F8;
   }
 }
+
+/* ── Modo Marcas Opcional (Consumo, Limpeza e Obras) ── */
+.cel-desc-corpo{display:flex;flex-direction:column;gap:3px;flex:1 1 auto;min-width:180px;width:100%}
+.linha-ref-marca{display:flex;align-items:center;gap:5px;width:100%}
+.badge-ref{
+  font-size:10px;font-weight:700;text-transform:uppercase;color:var(--royal);
+  background:var(--superficie2);padding:1px 5px;border-radius:4px;letter-spacing:.04em;
+  flex:0 0 auto;
+}
+.input-ref-marca{
+  flex:1 1 auto;height:24px;padding:2px 7px;font-size:11.5px;font-family:inherit;
+  border:1px dashed var(--linha);border-radius:5px;background:rgba(255,255,255,.9);
+  color:var(--texto);box-sizing:border-box;
+}
+.input-ref-marca:focus{border-color:var(--acao);border-style:solid;outline:none;background:#fff;box-shadow:0 0 0 2px rgba(6,92,169,.12)}
+
+.sub-marca-campo{margin-top:4px;width:100%}
+.input-marca-prop{
+  width:100%;height:24px;padding:2px 7px;font-size:11.5px;font-family:inherit;
+  border:1px solid rgba(21,30,73,.12);border-radius:5px;background:#fff;color:var(--texto);
+  box-sizing:border-box;text-align:left;
+}
+.input-marca-prop:focus{border-color:var(--acao);outline:none;box-shadow:0 0 0 2px rgba(6,92,169,.15)}
+
+.pill-ref-executivo{
+  font-size:11px;font-weight:600;color:var(--royal);background:var(--superficie2);
+  padding:2px 7px;border-radius:4px;margin-left:6px;display:inline-block;vertical-align:middle;
+}
+.marca-mapa{
+  font-size:11px;margin-top:3px;padding:2px 6px;border-radius:4px;display:inline-block;
+  font-weight:500;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.tag-marca-neutra{background:rgba(21,30,73,.05);color:var(--suave)}
+.tag-marca-alerta{background:#FEF3C7;color:#92400E;font-weight:600;border:1px solid #FDE68A}
+
 .totais{
   display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;padding-top:14px;
   border-top:1px solid rgba(21,30,73,.12);font-size:14px;
@@ -1541,6 +1576,8 @@ table.ficha-tab a:hover{text-decoration:underline}
           onchange="mudarBase()"> preço <b>unitário</b></label>
         <label><input type="radio" name="baseValores" value="total"
           onchange="mudarBase()"> <b>total</b> da linha</label>
+        <span style="display:inline-block;width:1px;height:18px;background:var(--linha);margin:0 4px"></span>
+        <label style="cursor:pointer" title="Habilita especificação de marca de referência no item e marca cotada pelos fornecedores (ideal para Material de Consumo, Limpeza e Obras)"><input type="checkbox" id="chkModoMarcas" onchange="alternarModoMarcas(this.checked)"> 🏷️ Especificar <b>marcas</b> <small style="font-weight:normal;color:var(--suave)">(opcional)</small></label>
       </div>
       <p class="dica">A planilha EQU só traz o total da linha — ao transcrever uma
         antiga, escolha <b>total</b> e o unitário sai da quantidade. É essa conta
@@ -1616,6 +1653,26 @@ var EDITAR_INICIAL = '<?= editar ?>';
 var URL_BASE = '<?= urlBase ?>';
 var EH_FICHA = PAGINA === 'ficha' && !!EQ_INICIAL;
 var idEmEdicao = null;
+var modoMarcasAtivo = false;
+
+function alternarModoMarcas(ativo) {
+  modoMarcasAtivo = !!ativo;
+  var chk = document.getElementById('chkModoMarcas');
+  if (chk) chk.checked = modoMarcasAtivo;
+  desenharGrade();
+  salvarRascunho();
+}
+
+function replicarMarcaRef(i) {
+  var ref = (itens[i] && itens[i].marcaReferencia) ? String(itens[i].marcaReferencia).trim() : '';
+  if (!ref) return;
+  if (!itens[i].marcas) itens[i].marcas = [];
+  proponentes.forEach(function (p, j) {
+    itens[i].marcas[j] = ref;
+  });
+  desenharGrade();
+  salvarRascunho();
+}
 
 function paraISO(dStr) {
   if (!dStr) return '';
@@ -2452,15 +2509,30 @@ function desenharMapa(m) {
       // O ✓ não é enfeite: cor sozinha não comunica para quem tem
       // deuteranopia, e "qual é o menor" é a informação central do mapa.
       var eMenor = l.menor === p.id;
+      var tagMarca = '';
+      if (c.marcaCotada) {
+        var refNorm = String(l.marcaReferencia || '').trim().toLowerCase();
+        var cotNorm = String(c.marcaCotada).trim().toLowerCase();
+        var ehDiferente = refNorm && cotNorm && refNorm.indexOf(cotNorm) < 0 && cotNorm.indexOf(refNorm) < 0;
+        if (ehDiferente && eMenor) {
+          tagMarca = '<div class="marca-mapa tag-marca-alerta" title="Marca alternativa à referência requisitada pela CR">⚠️ ' + esc(c.marcaCotada) + '</div>';
+        } else {
+          tagMarca = '<div class="marca-mapa tag-marca-neutra" title="Marca ofertada">' + esc(c.marcaCotada) + '</div>';
+        }
+      }
       return '<td class="preco' + (eMenor ? ' menor' : '') + '"' +
              (eMenor ? ' aria-label="menor preço da linha: ' + moeda(c.valor) + '"' : '') +
-             '>' + (eMenor ? '✓ ' : '') + moeda(c.valor) + '</td>';
+             '>' + (eMenor ? '✓ ' : '') + moeda(c.valor) + tagMarca + '</td>';
     }).join('');
+
+    var refMarcaHtml = l.marcaReferencia
+      ? ' <span class="pill-ref-executivo" title="Marca ou padrão técnico de referência">Ref: ' + esc(l.marcaReferencia) + '</span>'
+      : '';
 
     return '<tr class="' + (l.tipo === 'grupo' ? 'grupo' : '') + '">' +
            '<td class="desc" style="' + recuo + '">' +
            (l.codigo ? '<span class="cod-eap">' + esc(l.codigo) + '</span>' : '') +
-           esc(l.descricao) + qtd + '</td>' + celulas + '</tr>';
+           esc(l.descricao) + qtd + refMarcaHtml + '</td>' + celulas + '</tr>';
   }).join('');
 
   // Duas linhas, não uma. O que o app cria não tem total declarado — só a
@@ -2911,6 +2983,9 @@ function limparFormulario() {
 
   proponentes = [];
   itens = [];
+  modoMarcasAtivo = false;
+  var chkM = document.getElementById('chkModoMarcas');
+  if (chkM) chkM.checked = false;
   jaGravada = false;
   inicioPreenchimento = null;
   descartarRascunho();   // e agora a da cotação nova
@@ -3076,6 +3151,13 @@ function selecionouCategoria(cat) {
     if (campoCC && !campoCC.value) campoCC.value = 'Manutenção Predial';
   }
 
+  // Sugestão/ativação inteligente de marcas para materiais e obras
+  if (cat === 'Material de Consumo' || cat === 'Material de Construção' || cat === 'Obras & Reformas') {
+    if (!modoMarcasAtivo) {
+      alternarModoMarcas(true);
+    }
+  }
+
   salvarRascunho();
 }
 
@@ -3104,13 +3186,20 @@ function atualizarProjetoSeAuto() {
 
 function addProponente() {
   proponentes.push({ nome: '', cnpj: '' });
-  itens.forEach(function (i) { i.precos.push(''); });
+  itens.forEach(function (i) {
+    i.precos.push('');
+    if (!i.marcas) i.marcas = [];
+    i.marcas.push('');
+  });
   desenharProponentes(); desenharGrade();
 }
 
 function removerProponente(i) {
   proponentes.splice(i, 1);
-  itens.forEach(function (it) { it.precos.splice(i, 1); });
+  itens.forEach(function (it) {
+    it.precos.splice(i, 1);
+    if (it.marcas) it.marcas.splice(i, 1);
+  });
   desenharProponentes(); desenharGrade();
 }
 
@@ -3591,8 +3680,10 @@ function atualizarNomes() {
 function addItem(tipo, semFoco) {
   itens.push({
     tipo: tipo, nivel: tipo === 'grupo' ? 0 : 1, descricao: '',
+    marcaReferencia: '',
     quantidade: '', unidade: 'un',
-    precos: proponentes.map(function () { return ''; })
+    precos: proponentes.map(function () { return ''; }),
+    marcas: proponentes.map(function () { return ''; })
   });
   desenharGrade();
 
@@ -3700,6 +3791,17 @@ function desenharGrade() {
       : proponentes.map(function (p, j) {
           // Cifrão fixo à esquerda: deixa claro que o campo é dinheiro e
           // que o valor é UNITÁRIO, não o total da linha.
+          var subMarca = (modoMarcasAtivo && it.tipo !== 'grupo')
+            ? '<div class="sub-marca-campo">' +
+              '<input class="input-marca-prop" placeholder="marca cotada…" ' +
+              'value="' + esc((it.marcas || [])[j] || '') + '" ' +
+              'data-l="' + i + '" data-c="' + j + '" ' +
+              'aria-label="Marca cotada — ' + esc(it.descricao || ('item ' + (i + 1))) + ' — ' + esc(p.nome || ('proponente ' + (j + 1))) + '" ' +
+              'oninput="if(!itens[' + i + '].marcas) itens[' + i + '].marcas=[]; itens[' + i + '].marcas[' + j + ']=this.value;salvarRascunho()" ' +
+              'onkeydown="navegarMarca(event,this)">' +
+              '</div>'
+            : '';
+
           return '<td class="col-preco"><span class="moeda-campo">' +
                  '<i>R$</i>' +
                  '<input class="preco" inputmode="decimal" value="' + esc(it.precos[j]) + '"' +
@@ -3710,7 +3812,7 @@ function desenharGrade() {
                  ' onblur="normalizarCampo(this,' + i + ',' + j + ')"' +
                  ' onkeydown="navegarGrade(event,this)"' +
                  ' onpaste="colarColuna(event,this)">' +
-                 '</span></td>';
+                 '</span>' + subMarca + '</td>';
         }).join('');
 
     // A hierarquia se controla recuando a linha, não escolhendo um número.
@@ -3723,6 +3825,22 @@ function desenharGrade() {
       '<button class="degrau" onclick="mudarNivel(' + i + ',1)" title="Empurrar para dentro do grupo acima"' +
       (it.nivel >= 3 ? ' disabled' : '') + ' aria-label="Aumentar o recuo">›</button>';
 
+    var celulaDesc = (modoMarcasAtivo && it.tipo !== 'grupo')
+      ? '<div class="cel-desc-corpo">' +
+          '<input class="desc" value="' + esc(it.descricao) + '" placeholder="descrição do item"' +
+          ' oninput="itens[' + i + '].descricao=this.value;salvarRascunho()">' +
+          '<div class="linha-ref-marca">' +
+            '<span class="badge-ref" onclick="replicarMarcaRef(' + i + ')" title="Clique para replicar esta marca para todos os proponentes">Ref:</span>' +
+            '<input class="input-ref-marca" placeholder="marca ref. / padrão (ex: Melitta, Suvinil, Tigre)…"' +
+            ' value="' + esc(it.marcaReferencia || '') + '"' +
+            ' oninput="itens[' + i + '].marcaReferencia=this.value;salvarRascunho()"' +
+            ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}">' +
+          '</div>' +
+        '</div>'
+      : '<input class="desc" value="' + esc(it.descricao) + '" placeholder="' +
+        (it.tipo === 'grupo' ? 'NOME DO GRUPO' : 'descrição do item') +
+        '" oninput="itens[' + i + '].descricao=this.value;salvarRascunho()">';
+
     return '<tr class="' + (it.tipo === 'grupo' ? 'eh-grupo' : '') + '">' +
       // Derivado, então mostrado e não editável: um campo que se pode
       // digitar convida a divergir da hierarquia que o gera.
@@ -3730,9 +3848,7 @@ function desenharGrade() {
       '<td class="col-desc">' +
         '<div class="cel-desc" style="' + recuo + '">' +
           '<span class="degraus">' + controles + '</span>' +
-          '<input class="desc" value="' + esc(it.descricao) + '" placeholder="' +
-          (it.tipo === 'grupo' ? 'NOME DO GRUPO' : 'descrição do item') +
-          '" oninput="itens[' + i + '].descricao=this.value;salvarRascunho()">' +
+          celulaDesc +
         '</div>' +
       '</td>' +
       '<td class="col-qtd"><input value="' + esc(it.quantidade) + '" inputmode="decimal" placeholder="1"' +
@@ -3925,6 +4041,28 @@ function navegarGrade(ev, el) {
   if (alvo !== undefined) focarCelula(alvo, c);
 }
 
+function navegarMarca(ev, el) {
+  var l = Number(el.dataset.l), c = Number(el.dataset.c);
+  var desce = (ev.key === 'Enter' && !ev.shiftKey) || ev.key === 'ArrowDown';
+  var sobe = (ev.key === 'Enter' && ev.shiftKey) || ev.key === 'ArrowUp';
+  if (!desce && !sobe) return;
+
+  ev.preventDefault();
+  el.blur();
+
+  var linhas = linhasComPreco();
+  var pos = linhas.indexOf(l);
+
+  if (desce && pos === linhas.length - 1) {
+    addItem('item');
+    focarCelula(itens.length - 1, c);
+    return;
+  }
+
+  var alvo = linhas[pos + (desce ? 1 : -1)];
+  if (alvo !== undefined) focarCelula(alvo, c);
+}
+
 /**
  * Colar do Excel — uma coluna ou um bloco inteiro.
  *
@@ -4058,6 +4196,7 @@ function chaveRascunho() {
 function estadoAtual() {
   return {
     quando: new Date().toISOString(),
+    modoMarcas: !!modoMarcasAtivo,
     categoria: document.getElementById('nCategoria') ? document.getElementById('nCategoria').value : '',
     projetoAutoGerado: !!projetoAutoGerado,
     emp: document.getElementById('nEmp').value,
@@ -4162,6 +4301,9 @@ function restaurarRascunho() {
   if (e.data) document.getElementById('nData').value = e.data;
   proponentes = e.proponentes || [];
   itens = e.itens || [];
+  modoMarcasAtivo = !!e.modoMarcas;
+  var chkM = document.getElementById('chkModoMarcas');
+  if (chkM) chkM.checked = modoMarcasAtivo;
   // O relógio do rascunho vale mais que um novo: o trabalho começou lá.
   if (e.inicioPreenchimento) inicioPreenchimento = e.inicioPreenchimento;
   mostrarEmpresa(); desenharProponentes(); desenharGrade();
@@ -4425,6 +4567,7 @@ function carregarDadosParaEdicao(m) {
   }
 
   // Itens
+  var temAlgumaMarca = false;
   itens = (m.linhas || []).map(function (l) {
     var precos = (m.proponentes || []).map(function (p) {
       var precoObj = l.precos ? l.precos[p.id] : null;
@@ -4436,19 +4579,36 @@ function carregarDadosParaEdicao(m) {
         : String(precoObj.valor);
     });
 
+    var marcas = (m.proponentes || []).map(function (p) {
+      var precoObj = l.precos ? l.precos[p.id] : null;
+      var mc = (precoObj && precoObj.marcaCotada) ? String(precoObj.marcaCotada) : '';
+      if (mc) temAlgumaMarca = true;
+      return mc;
+    });
+
+    if (l.marcaReferencia) temAlgumaMarca = true;
+
     return {
       tipo: l.tipo || 'item',
       nivel: Number(l.nivel) || 0,
       codigo: l.codigo || '',
       descricao: l.descricao || '',
+      marcaReferencia: l.marcaReferencia || '',
       quantidade: (l.quantidade !== null && l.quantidade !== undefined) ? String(l.quantidade) : '',
       unidade: l.unidade || 'un',
-      precos: precos
+      precos: precos,
+      marcas: marcas
     };
   });
 
   if (itens.length === 0) {
-    itens = [{ tipo: 'item', nivel: 0, descricao: '', quantidade: '', unidade: 'un', precos: proponentes.map(function () { return ''; }) }];
+    itens = [{ tipo: 'item', nivel: 0, descricao: '', marcaReferencia: '', quantidade: '', unidade: 'un', precos: proponentes.map(function () { return ''; }), marcas: proponentes.map(function () { return ''; }) }];
+  }
+
+  if (temAlgumaMarca) {
+    modoMarcasAtivo = true;
+    var chkM = document.getElementById('chkModoMarcas');
+    if (chkM) chkM.checked = true;
   }
 
   desenharProponentes();

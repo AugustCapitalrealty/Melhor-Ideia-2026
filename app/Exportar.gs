@@ -49,7 +49,7 @@ function cfExportarEqualizacao_(idEq) {
                    // Percentual e link precisam ser aplicados DEPOIS do
                    // setValues da grade: ele reescreve a célula inteira e
                    // levaria junto o formato e a âncora do hyperlink.
-                   percentual: [], links: [], assinatura: [], destaque: [] };
+                   percentual: [], links: [], assinatura: [], destaque: [], notas: [] };
 
   const vazia = function () {
     const l = [];
@@ -139,7 +139,8 @@ function cfExportarEqualizacao_(idEq) {
   m.linhas.forEach(function (item) {
     const li = vazia();
     li[COL_ROTULO - 1] = item.codigo || '';
-    li[COL_VALOR - 1] = new Array(item.nivel + 1).join('    ') + item.descricao;
+    const refTxt = item.marcaReferencia ? ' [Ref: ' + item.marcaReferencia + ']' : '';
+    li[COL_VALOR - 1] = new Array(item.nivel + 1).join('    ') + item.descricao + refTxt;
     if (item.tipo !== 'grupo') {
       li[COL_QTD - 1] = item.quantidade === null || item.quantidade === undefined ? '' : item.quantidade;
       li[COL_UN - 1] = item.unidade || '';
@@ -158,6 +159,10 @@ function cfExportarEqualizacao_(idEq) {
     if (item.tipo === 'grupo') faixas.grupo.push(num);
     else {
       props.forEach(function (p, i) {
+        const c = item.precos[p.id];
+        if (c && c.marcaCotada) {
+          faixas.notas.push({ l: num, c: colDe(i), nota: 'Marca cotada: ' + c.marcaCotada });
+        }
         moeda.push({ l: num, c: colDe(i), n: 2 });
         if (item.menor && p.id === item.menor) {
           faixas.melhores.push({ l: num, c: colDe(i), nc: 2 });
@@ -554,6 +559,14 @@ function cfPintarExportacao_(aba, grade, merges, moeda, faixas, largura, n, colD
       // Link inválido não pode derrubar a exportação inteira: o texto já
       // está na célula, só deixa de ser clicável.
       Logger.log('Link não aplicado em ' + f.l + ',' + f.c + ': ' + erro);
+    }
+  });
+
+  (faixas.notas || []).forEach(function (f) {
+    try {
+      aba.getRange(f.l, f.c).setNote(f.nota);
+    } catch (erro) {
+      Logger.log('Nota não aplicada em ' + f.l + ',' + f.c + ': ' + erro);
     }
   });
 

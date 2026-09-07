@@ -108,3 +108,4 @@ assert.ok(!cartaoHtml.includes('abrirMapa'), 'O cartão executivo NÃO deve cham
 assert.ok(cartaoHtml.includes('Abrir ficha ↗'), 'O cartão executivo deve ter botão Abrir ficha ↗');
 
 console.log('✓ Todos os testes do Redesign Executivo de Equalizações passaram com 100% de sucesso!');
+

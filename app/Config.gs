@@ -289,7 +289,8 @@ const CF_SCHEMA = [
     { campo: 'QUANTIDADE_REFERENCIA', tipo: 'numero', largura: 130, nota: 'o que a CR pede' },
     { campo: 'UNIDADE_REFERENCIA',    tipo: 'texto', largura: 110 },
     { campo: 'CODIGO_ORIGINAL',       tipo: 'texto', largura: 120, nota: 'só para auditoria da importação' },
-    { campo: 'ID_IMPORTACAO',         tipo: 'texto', largura: 120, nota: 'Importação que criou este nó' }
+    { campo: 'ID_IMPORTACAO',         tipo: 'texto', largura: 120, nota: 'Importação que criou este nó' },
+    { campo: 'MARCA_REFERENCIA',      tipo: 'texto', largura: 160, nota: 'Marca ou padrão técnico de referência da CR' }
   ]},
 
   { nome: 'Precos', nota: 'Formato longo: 1 linha por item x proponente. ESTA tabela é o histórico de preço.', colunas: [
@@ -318,7 +319,8 @@ const CF_SCHEMA = [
     { campo: 'DURACAO_CONTRATO_MESES', tipo: 'inteiro', largura: 110, nota: 'Duração do contrato em meses' },
     { campo: 'PERIODO_COBRANCA',     tipo: 'enum:periodoCobranca', largura: 120, nota: 'Periodicidade: unico, mensal, trimestral, semestral, anual' },
     { campo: 'VISITAS_PERIODO',      tipo: 'inteiro', largura: 110, nota: 'Número de visitas por período' },
-    { campo: 'DESCONTO_PERCENTUAL',  tipo: 'numero', largura: 110, nota: 'Percentual de desconto aplicado' }
+    { campo: 'DESCONTO_PERCENTUAL',  tipo: 'numero', largura: 110, nota: 'Percentual de desconto aplicado' },
+    { campo: 'MARCA_COTADA',         tipo: 'texto', largura: 160, nota: 'Marca ou modelo cotado pelo proponente' }
   ]},
 
   { nome: 'Notas', nota: "Três canais. 'interna' NUNCA sai em exportação para fornecedor.", colunas: [
