@@ -2488,6 +2488,52 @@ table.mapa .ref-historico-rotulo{
 }
 .aval-sim-nao button.on{border-color:var(--royal);background:#EEF4FC;color:var(--royal)}
 
+/* ── Panorama de saving ───────────────────────────────────────────
+   O indicador que hoje mora disperso numa planilha por compra. O que
+   a tela acrescenta não é economizar mais: é somar e comparar. */
+.sav-bloco{
+  background:var(--superficie);border:1px solid var(--linha);border-radius:12px;
+  padding:16px 18px;margin:14px 0;
+}
+.sav-topo{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sav-topo h3{margin:0;font-size:15px;color:var(--noturno)}
+.sav-topo p{margin:2px 0 0;font-size:12.5px;color:var(--suave)}
+.sav-total{text-align:right}
+.sav-total b{display:block;font-size:24px;color:var(--ok);font-variant-numeric:tabular-nums}
+.sav-total small{font-size:11.5px;color:var(--suave)}
+
+.sav-denominador{
+  margin-top:10px;padding:8px 12px;background:var(--superficie2);border-radius:8px;
+  font-size:12px;color:var(--texto);display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+}
+.sav-denominador b{color:var(--noturno)}
+.sav-ressalva{color:var(--alerta);font-weight:600}
+
+.sav-serie{margin-top:14px}
+.sav-mes{display:grid;grid-template-columns:74px 1fr 96px;gap:10px;align-items:center;padding:3px 0}
+.sav-mes-rot{font-size:12px;color:var(--suave);font-variant-numeric:tabular-nums}
+.sav-barra{height:16px;background:var(--superficie2);border-radius:4px;overflow:hidden}
+.sav-barra i{display:block;height:100%;background:var(--ok);border-radius:4px}
+.sav-mes-val{font-size:12.5px;font-weight:700;color:var(--noturno);text-align:right;font-variant-numeric:tabular-nums}
+
+.sav-quebras{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+@media (max-width:820px){ .sav-quebras{grid-template-columns:1fr} }
+.sav-quebra h4{
+  margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--suave);font-weight:700;
+}
+.sav-linha{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:12.5px;border-bottom:1px solid var(--linha)}
+.sav-linha:last-child{border-bottom:0}
+.sav-linha span{color:var(--texto);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sav-linha b{color:var(--ok);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sav-linha small{color:var(--suave);font-weight:400;margin-left:5px}
+
+.sav-vazio{
+  margin-top:12px;padding:14px 16px;background:var(--superficie2);border-radius:8px;
+  border-left:3px solid var(--royal);font-size:13px;color:var(--texto);line-height:1.5;
+}
+.sav-vazio b{color:var(--noturno)}
+
 /* ── O atributo hidden tem a última palavra ──────────────────────────
    `hidden` esconde por uma regra do NAVEGADOR, que é a mais fraca de
    todas: qualquer `display` escrito aqui a sobrepõe, e com !important
@@ -2579,6 +2625,11 @@ table.mapa .ref-historico-rotulo{
         <div class="eq-kpi-sub" id="kpiEmAbertoSub">aguardando decisão</div>
       </div>
     </div>
+
+    <!-- O saving deixa de morar numa planilha por compra e passa a ter
+         série. É o que permite perguntar "como o time negociou neste
+         semestre?" sem abrir dezenas de arquivos. -->
+    <div class="sav-bloco" id="blocoSaving" hidden></div>
 
     <!-- Segmented Pill Tabs para Megas (Harmonizado com Consulta de Preço) -->
     <div class="mega-selector-bar" id="filtroMegasEq">
@@ -5062,6 +5113,7 @@ function aba(nome) {
     if (!equalizacoesCarregadas) {
       equalizacoesCarregadas = true;
       carregarEqualizacoes();
+      carregarPanoramaSaving();
     }
   }
   // As categorias servem às duas telas, e a contagem tem que ser a mesma
@@ -5143,6 +5195,129 @@ function selecionarMegaEq(slug) {
     if (b) b.classList.toggle('ativo', s === megaAtivoEq);
   });
   filtrarLista();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Panorama de saving
+//
+//  O saving já existia: ele ficava disperso numa planilha por compra.
+//  Para saber como o time negociou num semestre era preciso abrir
+//  dezenas de arquivos — e o que não fosse aberto não entrava na
+//  conta. O que esta tela acrescenta não é economizar mais: é somar,
+//  comparar e ver a série.
+// ─────────────────────────────────────────────────────────────
+
+var MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun',
+                    'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+function rotuloMesSaving(chave) {
+  var p = String(chave).split('-');
+  if (p.length !== 2) return chave;
+  var m = Number(p[1]) - 1;
+  return (MESES_CURTOS[m] || p[1]) + '/' + String(p[0]).slice(2);
+}
+
+function carregarPanoramaSaving() {
+  google.script.run
+    .withSuccessHandler(function (r) {
+      if (!r || !r.ok) return;
+      desenharPanoramaSaving(r.panorama);
+    })
+    .withFailureHandler(function () {
+      // O panorama é leitura adicional: se falhar, a lista de
+      // equalizações continua servindo. Some quieto.
+      var el = document.getElementById('blocoSaving');
+      if (el) el.hidden = true;
+    })
+    .apiPanoramaSaving();
+}
+
+function desenharPanoramaSaving(p) {
+  var el = document.getElementById('blocoSaving');
+  if (!el || !p) return;
+
+  var cabecalho =
+    '<div class="sav-topo">' +
+      '<div>' +
+        '<h3>💰 Saving ao longo do tempo</h3>' +
+        '<p>Quanto a negociação rendeu — por mês, por Mega, por categoria e por quem negociou.</p>' +
+      '</div>' +
+      (p.compras > 0
+        ? '<div class="sav-total"><b>' + moeda(p.total) + '</b>' +
+          '<small>' + (p.percentual !== null ? p.percentual.toFixed(1).replace('.', ',') + '% sobre a proposta inicial' : 'sem base para percentual') + '</small></div>'
+        : '') +
+    '</div>';
+
+  // Estado vazio que ENSINA. Um bloco em branco não explica ao gestor
+  // por que não há número, e a razão aqui é acionável: alguém precisa
+  // registrar o valor da proposta inicial ao negociar.
+  if (!p.compras) {
+    el.innerHTML = cabecalho +
+      '<div class="sav-vazio">' +
+        (p.homologadas > 0
+          ? '<b>' + p.homologadas + (p.homologadas === 1 ? ' compra homologada' : ' compras homologadas') +
+            ', nenhuma com rodada de negociação registrada.</b> O saving aparece aqui quando ' +
+            'a proposta inicial do vencedor for informada — é a diferença entre ela e o valor contratado.'
+          : '<b>Ainda não há compra homologada.</b> A partir da primeira, este bloco passa a somar ' +
+            'o que a negociação rendeu e a comparar os meses entre si.') +
+        '<br><br>Hoje esse número existe espalhado numa planilha por compra: para responder ' +
+        '“quanto o time economizou no semestre?” alguém precisa abrir uma por uma.' +
+      '</div>';
+    el.hidden = false;
+    return;
+  }
+
+  // O denominador vem antes dos gráficos, de propósito: número de
+  // saving sem denominador é vitrine.
+  var denominador =
+    '<div class="sav-denominador">' +
+      '<span>Negociado em <b>' + p.compras + '</b> de <b>' + p.homologadas + '</b> ' +
+        (p.homologadas === 1 ? 'compra homologada' : 'compras homologadas') + '</span>' +
+      (p.semRegistro > 0
+        ? '<span>·</span><span><b>' + p.semRegistro + '</b> sem rodada registrada</span>' : '') +
+      (p.dataAproximada > 0
+        ? '<span>·</span><span class="sav-ressalva" title="Compras anteriores ao registro da data de homologação entram pelo mês da equalização">' +
+          p.dataAproximada + ' com mês aproximado</span>' : '') +
+    '</div>';
+
+  // Série mensal. A barra é proporcional ao maior mês — é comparação
+  // entre meses, não escala absoluta.
+  var maior = 0;
+  (p.porMes || []).forEach(function (m) { if (m.saving > maior) maior = m.saving; });
+
+  var serie = '<div class="sav-serie">' + (p.porMes || []).map(function (m) {
+    var pct = maior > 0 ? Math.max(2, Math.round((m.saving / maior) * 100)) : 0;
+    return '<div class="sav-mes">' +
+      '<span class="sav-mes-rot">' + esc(rotuloMesSaving(m.chave)) + '</span>' +
+      '<span class="sav-barra" title="' + m.compras +
+        (m.compras === 1 ? ' compra' : ' compras') + '"><i style="width:' + pct + '%"></i></span>' +
+      '<span class="sav-mes-val">' + moeda(m.saving) + '</span>' +
+    '</div>';
+  }).join('') + '</div>';
+
+  var quebra = function (titulo, lista, encurtar) {
+    if (!lista || !lista.length) return '';
+    return '<div class="sav-quebra"><h4>' + titulo + '</h4>' +
+      lista.slice(0, 5).map(function (g) {
+        var nome = encurtar ? encurtar(g.chave) : g.chave;
+        return '<div class="sav-linha" title="' + esc(g.chave) + ' · ' + g.compras +
+          (g.compras === 1 ? ' compra' : ' compras') + '">' +
+          '<span>' + esc(nome) + '</span>' +
+          '<b>' + moeda(g.saving) +
+          (g.percentual !== null ? '<small>' + g.percentual.toFixed(1).replace('.', ',') + '%</small>' : '') +
+          '</b></div>';
+      }).join('') + '</div>';
+  };
+
+  var soLogin = function (e) { return String(e || '').split('@')[0]; };
+
+  el.innerHTML = cabecalho + denominador + serie +
+    '<div class="sav-quebras">' +
+      quebra('Por Mega', p.porMega, simplificarMega) +
+      quebra('Por categoria', p.porCategoria) +
+      quebra('Por quem negociou', p.porPessoa, soLogin) +
+    '</div>';
+  el.hidden = false;
 }
 
 function calcularKpisEqualizacoes(lista) {
