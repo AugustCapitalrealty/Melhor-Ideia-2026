@@ -62,7 +62,8 @@ const suspeitas = [];
 
 ['app/Interface.html', 'app/Codigo.gs', 'app/Equalizacao.gs', 'app/Avaliacao.gs',
  'app/Cnpj.gs', 'app/Exportar.gs', 'app/Fornecedores.gs', 'app/Consulta.gs',
- 'app/Util.gs', 'app/Manutencao.gs'].forEach(function (rel) {
+ 'app/Util.gs', 'app/Manutencao.gs',
+ 'app/Apresentacao_Conselho.gs'].forEach(function (rel) {
   const linhas = fs.readFileSync(path.join(root, rel), 'utf8')
     .replace(/\r\n/g, '\n').split('\n');
 
