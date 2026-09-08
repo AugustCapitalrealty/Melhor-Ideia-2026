@@ -3,6 +3,9 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 :root{
   --noturno:#151E49; --royal:#003D7B; --acao:#065CA9;
@@ -10,6 +13,19 @@
   --linha:#D6DEEC; --texto:#1B2340; --suave:#5D6883;
   --ok:#1F7A4C; --alerta:#A85B12; --critico:#B03024;
   --sombra:0 1px 2px rgba(21,30,73,.06), 0 8px 24px -14px rgba(21,30,73,.2);
+
+  /* Refino 08/09: a folha tinha uma borda só e um raio só. Borda mais clara
+     para o cartão em repouso, raio maior, e uma sombra de contato somada a
+     uma difusa — é o que separa "caixa" de "cartão". */
+  --linha2:#DDE3EF;
+  --raio:12px; --raio-sm:9px;
+  --sombra2:0 1px 2px rgba(21,30,73,.05), 0 10px 22px -18px rgba(21,30,73,.45);
+
+  /* A fonte do sistema fica como alternativa na mesma regra: se o Google
+     Fonts não responder, a tela cai na aparência anterior em vez de quebrar.
+     A dependência é de acabamento, não de funcionamento. */
+  --fonte:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 *{box-sizing:border-box}
 body{
@@ -21,7 +37,7 @@ body{
     radial-gradient(900px 520px at 98% 2%,   rgba(21,30,73,.11),  transparent 62%),
     var(--fundo);
   background-attachment:fixed;
-  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font:15px/1.55 var(--fonte);
   -webkit-font-smoothing:antialiased;
 }
 /* Largura útil maior: a grade comparativa e o formulário são densos e a
@@ -48,7 +64,7 @@ body{
 .barra .abas{margin:0}
 .barra #ab-nova{margin-left:auto;white-space:nowrap}
 
-h1{margin:22px 0 0;font-size:27px;letter-spacing:-.02em;color:var(--noturno);font-weight:700}
+h1{margin:22px 0 0;font-size:27px;letter-spacing:-.022em;color:var(--noturno);font-weight:600;text-wrap:balance}
 .sub{margin:5px 0 0;color:var(--suave);font-size:15px}
 
 /* Um anel de foco só, para tudo. Nenhum controle tinha :focus-visible. */
@@ -60,12 +76,14 @@ select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
 .busca{display:flex;gap:10px;margin:24px 0 8px}
 .busca input{
   flex:1;padding:14px 16px;font-size:16px;border:1.5px solid var(--linha);
-  border-radius:8px;background:var(--superficie);color:var(--texto);
+  border-radius:var(--raio-sm);background:var(--superficie);color:var(--texto);
 }
 .busca input:focus{outline:none;border-color:var(--acao);box-shadow:0 0 0 3px rgba(6,92,169,.12)}
 .busca button{
-  padding:14px 24px;font-size:15px;font-weight:600;border:0;border-radius:8px;
+  display:inline-flex;align-items:center;gap:7px;
+  padding:14px 24px;font-size:15px;font-weight:600;border:0;border-radius:var(--raio-sm);
   background:var(--royal);color:#fff;cursor:pointer;
+  box-shadow:0 1px 2px rgba(0,61,123,.24);
 }
 .busca button:hover{background:var(--acao)}
 .busca button:disabled{opacity:.5;cursor:default}
@@ -78,18 +96,36 @@ select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
 .chip:hover{border-color:var(--acao);background:var(--superficie2)}
 
 .painel{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:1px;background:var(--linha);border:1px solid var(--linha);
-  border-radius:6px;overflow:hidden;margin-bottom:8px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));
+  gap:10px;margin-bottom:8px;
 }
-.stat{background:var(--superficie);padding:14px 16px}
-.stat b{display:block;font-size:26px;line-height:1.1;color:var(--noturno);font-variant-numeric:tabular-nums}
-.stat span{display:block;font-size:12px;color:var(--suave);margin-top:4px}
+.stat{
+  background:var(--superficie);border:1px solid var(--linha2);
+  border-radius:var(--raio);padding:14px 15px;box-shadow:var(--sombra2);
+  display:flex;flex-direction:column;gap:9px;
+}
+.stat-topo{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.stat span{font-size:12px;font-weight:500;color:var(--suave);letter-spacing:.01em}
+.stat b{
+  display:block;font-size:28px;line-height:1;color:var(--noturno);
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;font-weight:700;
+}
+.stat .ico{
+  width:26px;height:26px;border-radius:7px;background:#EDF2FB;flex:none;
+  display:grid;place-items:center;color:var(--acao);
+}
+.stat .pe{font-size:11.5px;color:var(--suave);line-height:1.35}
+/* Sem dado é diferente de zero: zero afirma, o traço declara ausência. */
+.stat.vazio{border-style:dashed;box-shadow:none}
+.stat.vazio b{color:#8A93AD;font-weight:600}
+.ic{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic-sm{width:12px;height:12px}
 .periodo{font-size:13px;color:var(--suave);margin:0 0 26px}
 
 .item{
-  background:var(--superficie);border:1px solid var(--linha);border-radius:8px;
-  padding:18px 20px;margin-bottom:14px;box-shadow:var(--sombra);
+  background:var(--superficie);border:1px solid var(--linha2);border-radius:var(--raio);
+  padding:18px 20px;margin-bottom:14px;box-shadow:var(--sombra2);
 }
 .item h3{margin:0 0 3px;font-size:17px;color:var(--noturno);font-weight:600}
 .item .meta{font-size:12.5px;color:var(--suave);margin-bottom:14px}
@@ -98,20 +134,27 @@ select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
 table{width:100%;border-collapse:collapse}
 td{padding:7px 0;border-bottom:1px solid var(--superficie2);font-size:14.5px;vertical-align:middle}
 tr:last-child td{border-bottom:0}
-td.v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;padding-left:16px}
+td.v{text-align:right;font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap;padding-left:16px}
 tr.menor td.v{color:var(--ok)}
 tr.maior td.v{color:var(--critico)}
-th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);padding:0 0 8px;border-bottom:1px solid var(--linha)}
+th{text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#4A5578;background:#EEF2FA;padding:9px 10px;border-bottom:1px solid var(--linha2)}
+thead tr:first-child th:first-child{border-top-left-radius:var(--raio-sm)}
+thead tr:first-child th:last-child{border-top-right-radius:var(--raio-sm)}
 th.c{text-align:center}
 th.r{text-align:right}
 td.un{text-align:center;font-size:13px;color:var(--suave);white-space:nowrap;padding:0 12px}
+/* Pílula com contorno: reconhecível pela forma, não só pela cor — o que
+   importa para quem não distingue verde de laranja. */
 .tag{
-  display:inline-block;margin-left:8px;padding:1px 7px;border-radius:4px;
-  font-size:11px;font-weight:600;vertical-align:1px;
+  display:inline-flex;align-items:center;gap:5px;margin-left:8px;
+  padding:2.5px 9px;border-radius:999px;border:1px solid transparent;
+  font-size:11px;font-weight:600;letter-spacing:.01em;vertical-align:1px;
+  white-space:nowrap;
 }
-.tag.ok{background:#E4F2EA;color:var(--ok)}
-.tag.av{background:#FAEEDF;color:var(--alerta)}
-.tag.emp{background:#E8EDF5;color:var(--royal)}
+.tag.ok{background:#E8F4EC;color:#1A6B43;border-color:#BEDECB}
+.tag.av{background:#FBF0E1;color:#8F4E0D;border-color:#E9D2AE}
+.tag.emp{background:#EAF0FA;color:#24457E;border-color:#C6D5EC}
+.tag.pre{background:#F1F2F7;color:#55607F;border-color:#D6DBE8}
 
 .faixa{
   margin-top:12px;padding-top:11px;border-top:1px solid var(--linha);
@@ -4584,11 +4627,11 @@ google.script.run.withSuccessHandler(function (p) {
 
   document.getElementById('painel').innerHTML =
     '<div class="painel">' +
-      stat(p.precos, 'pontos de preço') +
-      stat(p.equalizacoes, 'equalizações') +
-      stat(p.fornecedores, 'fornecedores') +
-      stat(p.empreendimentos, 'empreendimentos') +
-      stat(p.pendencias, 'pendências') +
+      stat(p.precos, 'pontos de preço', 'preco') +
+      stat(p.equalizacoes, 'equalizações', 'lista') +
+      stat(p.fornecedores, 'fornecedores', 'empresa') +
+      stat(p.empreendimentos, 'empreendimentos', 'local') +
+      stat(p.pendencias, 'pendências', 'alerta') +
     '</div>' +
     (p.periodo ? '<p class="periodo">Cotações de ' + esc(p.periodo) + '</p>' : '');
 
@@ -4600,7 +4643,39 @@ google.script.run.withSuccessHandler(function (p) {
     'Capital Fornecedores · web ' + p.versao + ' · dados importados do acervo de equalizações';
 }).apiPanorama();
 
-function stat(n, r){ return '<div class="stat"><b>' + n + '</b><span>' + r + '</span></div>'; }
+/* Um conjunto pequeno de ícones embutidos: sem CDN, sem fonte de ícone,
+   sem requisição. Herdam a cor de quem os contém. */
+var ICONES = {
+  preco:  '<path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/>',
+  lista:  '<path d="M3 7h18M3 12h18M3 17h18"/>',
+  empresa:'<path d="M3 21h18"/><path d="M5 21V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v16"/><path d="M14 9h4a1 1 0 0 1 1 1v11"/>',
+  local:  '<path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
+  alerta: '<path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 4.3 2.5 18a1.7 1.7 0 0 0 1.5 2.5h16a1.7 1.7 0 0 0 1.5-2.5L13.7 4.3a1.7 1.7 0 0 0-3 0z"/>'
+};
+
+function icone(nome, classe){
+  var d = ICONES[nome];
+  if (!d) return '';
+  return '<svg class="' + (classe || 'ic') + '" viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>';
+}
+
+/**
+ * Um cartão do painel.
+ *
+ * Contador zerado continua sendo zero — "0 pendências" é notícia boa e
+ * verdadeira. Só valor ausente (null) vira traço, porque aí o número não
+ * existe e fingir que é zero seria afirmar o que não se apurou.
+ */
+function stat(n, r, ico, pe){
+  var ausente = (n === null || n === undefined || n === '');
+  return '<div class="stat' + (ausente ? ' vazio' : '') + '">' +
+    '<div class="stat-topo"><span>' + r + '</span>' +
+      (ico ? '<span class="ico">' + icone(ico) + '</span>' : '') +
+    '</div>' +
+    '<b>' + (ausente ? '&mdash;' : n) + '</b>' +
+    (pe ? '<div class="pe">' + pe + '</div>' : '') +
+  '</div>';
+}
 
 // ── estado da consulta de preços ──
 var estadoConsulta = {
