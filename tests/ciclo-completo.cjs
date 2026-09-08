@@ -48,7 +48,7 @@ try {
   // v7: HOMOLOGADO_POR e HOMOLOGADO_EM em Equalizacoes — sem a data da
   //     DECISÃO, o saving do mês mudaria depois de o mês fechar; sem
   //     quem homologou, "saving por comprador" mediria quem digitou.
-  assert(/CF_SCHEMA_VERSAO\s*=\s*7/.test(configSrc), 'CF_SCHEMA_VERSAO é 7');
+  assert(/CF_SCHEMA_VERSAO\s*=\s*8/.test(configSrc), 'CF_SCHEMA_VERSAO é 8');
   // Cada migração carimba a versão QUE ELA instala, em literal. Derivando
   // da constante, subir o schema faria a migração antiga anunciar uma
   // versão que ela não instalou — e o log registraria uma migração que
@@ -73,7 +73,15 @@ try {
   // A aba Avaliacoes entrou na v5: sem ela a nota do fornecedor não tem
   // onde morar. Este número é trava de propósito — aba nova é decisão,
   // não efeito colateral de outra mudança.
-  assert(Array.isArray(schemaList) && schemaList.length === 22, 'Schema tem 22 tabelas (' + (schemaList ? schemaList.length : 0) + ')');
+  //
+  // v8 trouxe duas abas: Naturezas, a taxonomia do orçamento, e
+  // Contratacoes, o histórico de compra vindo da plataforma.
+  // Contratacoes é separada de propósito — 738 compras importadas
+  // dentro de Equalizacoes inflariam de 4 para centenas um número que
+  // é declarado ao comitê.
+  assert(Array.isArray(schemaList) && schemaList.length === 24, 'Schema tem 24 tabelas (' + (schemaList ? schemaList.length : 0) + ')');
+  assert(!!tabelaPorNome(schemaList, 'Naturezas'), 'Schema tem a aba Naturezas');
+  assert(!!tabelaPorNome(schemaList, 'Contratacoes'), 'Schema tem a aba Contratacoes');
   assert(!!tabelaPorNome(schemaList, 'Avaliacoes'), 'Schema tem a aba Avaliacoes');
 
   const tableMap = {};

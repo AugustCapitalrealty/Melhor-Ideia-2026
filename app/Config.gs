@@ -18,7 +18,7 @@ const CF_PASTA_ID = '1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G';
 const CF_NOME_PLANILHA = 'Capital Fornecedores — Base';
 
 /** Sobe de 1 a cada mudança no schema. Gravado em Script Properties. */
-const CF_SCHEMA_VERSAO = 7;
+const CF_SCHEMA_VERSAO = 8;
 
 /** Versão do parser de importação. Gravada em cada linha importada,
  *  para dar para reprocessar o que veio de uma geração antiga. */
@@ -43,7 +43,7 @@ const CF_ENUM = {
    * dado digitado no app não tem a mesma confiança de dado extraído
    * de PDF antigo. Toda consulta de preço pode filtrar por isto.
    */
-  origem: ['app', 'import_sheets', 'import_xlsx', 'import_pdf', 'manual'],
+  origem: ['app', 'import_sheets', 'import_xlsx', 'import_pdf', 'manual', 'import_plataforma'],
 
   /**
    * Preço não é sempre número. Encontrados no acervo real:
@@ -140,7 +140,22 @@ const CF_SCHEMA = [
     { campo: 'CONTATO_EMAIL',     tipo: 'texto', largura: 240 },
     { campo: 'TEM_CONTRATO_ATIVO',tipo: 'booleano', largura: 90, nota: 'vazio na v1; abre a porta para LPU na v2' },
     { campo: 'ORIGEM',            tipo: 'enum:origem', largura: 120 },
-    { campo: 'ATUALIZADO_EM',     tipo: 'data', largura: 130 }
+    { campo: 'ATUALIZADO_EM',     tipo: 'data', largura: 130 },
+    // v8 — o retrato cadastral da Receita, que a plataforma já mantinha
+    // com cache de 7 dias. Chega pronto: ninguém digita porte nem capital.
+    { campo: 'PORTE',             tipo: 'texto', largura: 150, nota: 'ME, EPP, DEMAIS' },
+    { campo: 'CAPITAL_SOCIAL',    tipo: 'moeda', largura: 150 },
+    { campo: 'DATA_INICIO_ATIVIDADE', tipo: 'data', largura: 140, nota: 'idade da empresa — proxy de solidez' },
+    { campo: 'NATUREZA_JURIDICA', tipo: 'texto', largura: 240 },
+    { campo: 'IS_MEI',            tipo: 'booleano', largura: 80 },
+    { campo: 'CNAES_SECUNDARIOS', tipo: 'texto', largura: 520, nota: 'lista achatada; o principal sozinho esconde o que a empresa faz' },
+    { campo: 'DATA_SITUACAO_CADASTRAL', tipo: 'data', largura: 150, nota: 'desde quando está baixada, suspensa ou ativa' },
+    // v8 — quantas vezes esta empresa de fato foi contratada. Não é nota:
+    // é relevância. Sem isto o autocomplete é uma lista alfabética, e
+    // quem compra não tem como saber quem a companhia realmente usa.
+    { campo: 'CONTRATACOES_HISTORICO', tipo: 'inteiro', largura: 130, nota: 'só natureza disputável — conta de luz não conta' },
+    { campo: 'ULTIMA_CONTRATACAO', tipo: 'data', largura: 140 },
+    { campo: 'VALOR_TOTAL_HISTORICO', tipo: 'moeda', largura: 150 }
   ]},
 
   { nome: 'Avaliacoes', nota: 'A nota do fornecedor DEPOIS do serviço. É o que a equalização sozinha não sabe: preço bom com entrega ruim.', colunas: [
@@ -164,6 +179,26 @@ const CF_SCHEMA = [
     { campo: 'RECONTRATARIA',     tipo: 'booleano', largura: 110, nota: 'a pergunta que mais prediz a próxima compra' },
     { campo: 'COMENTARIO',        tipo: 'texto', largura: 420 },
     { campo: 'CRIADO_EM',         tipo: 'data', largura: 130 }
+  ]},
+
+  // A taxonomia do ORÇAMENTO, que não é a mesma da COMPRA.
+  //
+  // 'Categorias' responde o que se está comprando, e guia catálogo e
+  // histórico de preço. 'Naturezas' responde qual linha do orçamento é
+  // debitada, e é por ela que o saving fala a língua que a diretoria já
+  // acompanha. Trocar uma pela outra perderia a comparação de preço;
+  // por isso as duas coexistem.
+  //
+  // DISPUTAVEL separa compra de conta. Fatura de concessionária, taxa de
+  // bombeiros e folha entram no orçamento e nunca vão a equalização —
+  // 34% do valor histórico é disso. Sem esta coluna, o ranking de
+  // fornecedor mais contratado devolve RGE, Celesc e Corsan no topo:
+  // as três empresas que o comprador nunca vai cotar.
+  { nome: 'Naturezas', nota: 'Natureza orçamentária. DISPUTAVEL separa compra de conta de concessionária.', colunas: [
+    { campo: 'ID',         tipo: 'texto', largura: 220, nota: 'o valor gravado na plataforma — PK' },
+    { campo: 'NOME',       tipo: 'texto', largura: 280, nota: 'o rótulo como aparece na interface' },
+    { campo: 'DISPUTAVEL', tipo: 'booleano', largura: 110, nota: 'false = conta, taxa ou folha: nunca vai a equalização' },
+    { campo: 'ATIVA',      tipo: 'booleano', largura: 70 }
   ]},
 
   { nome: 'Categorias', colunas: [
@@ -257,7 +292,10 @@ const CF_SCHEMA = [
     // Quem NEGOCIOU, que é diferente de quem criou a equalização.
     // Sem esta coluna, "saving por comprador" mediria quem digitou.
     { campo: 'HOMOLOGADO_POR',     tipo: 'texto', largura: 220 },
-    { campo: 'HOMOLOGADO_EM',      tipo: 'data', largura: 130, nota: 'a data da DECISÃO, não a da cotação — é por ela que o saving entra no mês' }
+    { campo: 'HOMOLOGADO_EM',      tipo: 'data', largura: 130, nota: 'a data da DECISÃO, não a da cotação — é por ela que o saving entra no mês' },
+    // v8 — a linha do orçamento. Convive com CATEGORIA: uma diz o que se
+    // comprou, a outra de onde saiu o dinheiro.
+    { campo: 'NATUREZA_ORCAMENTARIA', tipo: 'texto', largura: 240, nota: 'ver tabela Naturezas' }
   ]},
 
   { nome: 'Baselines', nota: 'Versão de escopo. Histórico só compara dentro do mesmo baseline.', colunas: [
@@ -400,6 +438,35 @@ const CF_SCHEMA = [
     { campo: 'OBSERVACAO',     tipo: 'texto', largura: 380 }
   ]},
 
+  // O que a companhia já comprou, importado da plataforma de compras.
+  //
+  // NÃO é equalização e não pode virar uma: o número de equalizações é
+  // declarado ao comitê, e 738 compras importadas inflariam de 4 para
+  // centenas algo que ninguém equalizou aqui. Tabela separada, portanto.
+  //
+  // DESCRICAO ficou de fora de propósito. É texto livre digitado pelo
+  // solicitante e carrega nome de pessoa — de funcionário e de motorista
+  // terceirizado, com placa de veículo junto. A varredura achou indício
+  // em 54 das 738 linhas. Quem precisar do texto busca pelo PROTOCOLO,
+  // que fica gravado; o dado pessoal não sai da plataforma, que o
+  // protege com RLS e função SECURITY DEFINER.
+  //
+  // EMPREENDIMENTO é texto, não chave: a plataforma atende imóveis que
+  // este sistema ainda não cadastrou, e recusar a linha por isso seria
+  // perder histórico por causa de um cadastro que vem depois.
+  { nome: 'Contratacoes', nota: 'Compras já realizadas, vindas da plataforma. Alimentam relevância do fornecedor — não são equalizações.', colunas: [
+    { campo: 'ID',            tipo: 'texto', largura: 140, nota: 'PK' },
+    { campo: 'CNPJ',          tipo: 'texto', largura: 150, nota: 'só dígitos — quem foi contratado' },
+    { campo: 'DATA',          tipo: 'data', largura: 130, nota: 'emissão do documento (OC/AC)' },
+    { campo: 'EMPREENDIMENTO',tipo: 'texto', largura: 200, nota: 'texto: pode citar imóvel ainda não cadastrado' },
+    { campo: 'NATUREZA_ORCAMENTARIA', tipo: 'texto', largura: 240 },
+    { campo: 'DISPUTAVEL',    tipo: 'booleano', largura: 110, nota: 'derivado da natureza na importação' },
+    { campo: 'VALOR',         tipo: 'moeda', largura: 140 },
+    { campo: 'PROTOCOLO',     tipo: 'texto', largura: 140, nota: 'chave natural: reimportar não duplica' },
+    { campo: 'ORIGEM',        tipo: 'enum:origem', largura: 130 },
+    { campo: 'IMPORTADO_EM',  tipo: 'data', largura: 130 }
+  ]},
+
   { nome: 'Regras', nota: 'Faixas de valor x cotações mínimas. Em tabela porque muda.', colunas: [
     { campo: 'ID',              tipo: 'texto', largura: 100 },
     { campo: 'CNPJ_EMPRESA',    tipo: 'texto', largura: 150, nota: 'vazio = vale para todas' },
@@ -484,6 +551,51 @@ const CF_SCHEMA = [
 //  bloqueia nenhuma: regra nova que trava a homologação no primeiro dia
 //  é regra desligada no segundo.
 // ─────────────────────────────────────────────────────────────
+
+/**
+ * As 16 naturezas orçamentárias, como a plataforma de compras as grava.
+ *
+ * DISPUTAVEL false não é desprezo pelo gasto: energia é a segunda maior
+ * linha do histórico, R$ 1,5 milhão em nove meses. É que ela não se
+ * equaliza — não se pede três cotações para a fatura da Celesc. Manter a
+ * marca aqui é o que impede o painel de misturar negociação com conta.
+ */
+const CF_NATUREZAS_ORCAMENTARIAS = [
+  { ID: 'materiais_informatica',   NOME: 'Materiais de Informática',   DISPUTAVEL: true },
+  { ID: 'assistencia_informatica', NOME: 'Assistência Informática',    DISPUTAVEL: true },
+  { ID: 'servicos_diversos',       NOME: 'Serviços Diversos',          DISPUTAVEL: true },
+  { ID: 'seguranca_vigilancia',    NOME: 'Segurança e Vigilância',     DISPUTAVEL: true },
+  { ID: 'limpeza_conservacao',     NOME: 'Limpeza e Conservação',      DISPUTAVEL: true },
+  { ID: 'material_expediente',     NOME: 'Material de Expediente',     DISPUTAVEL: true },
+  { ID: 'material_consumo',        NOME: 'Material de Consumo',        DISPUTAVEL: true },
+  { ID: 'propaganda_publicidade',  NOME: 'Propaganda e Publicidade',   DISPUTAVEL: true },
+  { ID: 'manutencao_imoveis',      NOME: 'Manutenção de Imóveis',      DISPUTAVEL: true },
+  { ID: 'manutencao_maquinas_equipamentos', NOME: 'Manutenção de Máquinas e Equipamentos', DISPUTAVEL: true },
+  { ID: 'energia_eletrica',        NOME: 'Energia Elétrica',           DISPUTAVEL: false },
+  { ID: 'agua',                    NOME: 'Água',                       DISPUTAVEL: false },
+  { ID: 'telefone',                NOME: 'Telefone',                   DISPUTAVEL: false },
+  { ID: 'taxa_impostos',           NOME: 'Taxa/Impostos',              DISPUTAVEL: false },
+  { ID: 'despesas_pessoal',        NOME: 'Despesas com Pessoal',       DISPUTAVEL: false },
+  { ID: 'despesas_administrador',  NOME: 'Despesas com Administrador', DISPUTAVEL: false }
+];
+
+/** O rótulo é o que vem nos arquivos da plataforma; o ID é o que ela grava. */
+function cfNaturezaPorRotulo_(rotulo) {
+  const alvo = String(rotulo || '').trim().toLowerCase();
+  if (!alvo) return null;
+  for (let i = 0; i < CF_NATUREZAS_ORCAMENTARIAS.length; i++) {
+    if (CF_NATUREZAS_ORCAMENTARIAS[i].NOME.toLowerCase() === alvo) return CF_NATUREZAS_ORCAMENTARIAS[i];
+    if (CF_NATUREZAS_ORCAMENTARIAS[i].ID === alvo) return CF_NATUREZAS_ORCAMENTARIAS[i];
+  }
+  return null;
+}
+
+/** Natureza desconhecida é tratada como disputável: o erro seguro é
+ *  mostrar demais no painel de negociação, não esconder uma compra. */
+function cfNaturezaDisputavel_(rotulo) {
+  const n = cfNaturezaPorRotulo_(rotulo);
+  return n ? n.DISPUTAVEL === true : true;
+}
 
 const CF_REGRAS_COTACAO_PADRAO = [
   {
