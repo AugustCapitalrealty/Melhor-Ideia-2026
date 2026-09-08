@@ -763,6 +763,10 @@ tr.eh-grupo .cod-auto{color:var(--noturno)}
 .bt.primario{background:var(--royal);border-color:var(--royal);color:#fff}
 .bt.primario:hover{background:var(--acao);border-color:var(--acao)}
 .bt.some{color:var(--critico);border-color:rgba(176,48,36,.25)}
+/* A via em Slides é teste, e o botão precisa dizer isso sem gritar:
+   tracejado e apagado, ao lado do oficial — nunca com o mesmo peso. */
+.bt.secundario{background:transparent;border-style:dashed;color:var(--suave)}
+.bt.secundario:hover{background:rgba(255,255,255,.7);border-style:solid}
 .bt:disabled{opacity:.45;cursor:default}
 .acoes{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
 
@@ -5668,6 +5672,12 @@ function desenharMapa(m) {
             : '<button class="bt" onclick="alternarCompleto()" id="btCompleto">Ver detalhes aqui</button>' +
               '<button class="bt primario" onclick="abrirFicha()">Abrir ficha completa ↗</button>') +
           '<button class="bt" onclick="exportar()" id="btExportar">Exportar planilha e PDF</button>' +
+          // A segunda via fica ao lado, e discreta: é teste, não escolha
+          // de igual para igual. Quem exporta por engano a via errada
+          // leva um documento diferente para a mesma reunião.
+          '<button class="bt secundario" onclick="exportarSlides()" id="btExportarSlides" ' +
+            'title="Versão alternativa desenhada em Google Slides — em teste">' +
+            'Versão em Slides (teste)</button>' +
         '</div>' +
       '</div>' +
       (eq.detalhamento ? '<div class="eq-texto"><b>Serviço a aprovar:</b> ' + esc(eq.detalhamento) + '</div>' : '') +
@@ -5822,6 +5832,36 @@ function exportar() {
       msg.innerHTML = '<span style="color:var(--critico)">' + esc(e.message) + '</span>';
     })
     .apiExportar(mapaAberto.equalizacao.id);
+}
+
+/**
+ * A segunda via, desenhada em Google Slides.
+ *
+ * Demora mais que a planilha e a mensagem diz isso: o Slides não tem
+ * escrita em lote, então cada linha da grade é desenhada elemento por
+ * elemento. Sem o aviso, quem clica acha que travou e clica de novo.
+ */
+function exportarSlides() {
+  var bt = document.getElementById('btExportarSlides');
+  var msg = document.getElementById('exportMsg');
+  bt.disabled = true;
+  msg.innerHTML = 'desenhando a versão em Slides… ela leva mais tempo que a ' +
+    'planilha, porque cada linha é desenhada uma a uma.';
+
+  google.script.run
+    .withSuccessHandler(function (r) {
+      bt.disabled = false;
+      if (!r.ok) { msg.innerHTML = '<span style="color:var(--critico)">' + esc(r.erro) + '</span>'; return; }
+      msg.innerHTML = '<b>Versão em Slides pronta</b> (' + r.resultado.paginas + ' páginas): ' +
+        '<a href="' + esc(r.resultado.slides) + '" target="_blank" rel="noopener">abrir apresentação</a> · ' +
+        '<a href="' + esc(r.resultado.pdf) + '" target="_blank" rel="noopener">abrir PDF</a> ' +
+        '<small>— versão em teste; a via oficial continua sendo a planilha.</small>';
+    })
+    .withFailureHandler(function (e) {
+      bt.disabled = false;
+      msg.innerHTML = '<span style="color:var(--critico)">' + esc(e.message) + '</span>';
+    })
+    .apiExportarSlides(mapaAberto.equalizacao.id);
 }
 
 /**

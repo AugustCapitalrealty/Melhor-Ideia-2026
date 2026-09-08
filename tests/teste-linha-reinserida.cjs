@@ -102,7 +102,7 @@ const suspeitas = [];
 const alvos = ['app/Interface.html', 'app/Codigo.gs', 'app/Equalizacao.gs',
   'app/Avaliacao.gs', 'app/Cnpj.gs', 'app/Exportar.gs', 'app/Fornecedores.gs',
   'app/Consulta.gs', 'app/Util.gs', 'app/Manutencao.gs',
-  'app/Apresentacao_Conselho.gs']
+  'app/Apresentacao_Conselho.gs', 'app/ExportarSlides.gs']
   .concat(fs.readdirSync(path.join(root, 'tests'))
     .filter(function (f) { return /[.]cjs$/.test(f) && f !== 'teste-linha-reinserida.cjs'; })
     .map(function (f) { return 'tests/' + f; }));

@@ -282,6 +282,23 @@ function apiExportar(idEqualizacao) {
 }
 
 /**
+ * A mesma equalização, desenhada em Google Slides.
+ *
+ * Segunda via, não substituta: a planilha continua sendo o documento
+ * oficial. Esta existe porque no Slides a gente desenha em vez de
+ * negociar com uma grade — e porque só comparando as duas na mesa dá
+ * para decidir qual vai à Diretoria.
+ */
+function apiExportarSlides(idEqualizacao) {
+  try {
+    cfExigeAutorizacao_();
+    return { ok: true, resultado: cfExportarEqualizacaoSlides_(idEqualizacao) };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
+/**
  * Registra a proposta vencedora e o parecer.
  * Escrita, portanto passa por cfExigeAutorizacao_.
  */
