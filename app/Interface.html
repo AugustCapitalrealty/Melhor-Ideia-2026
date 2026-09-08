@@ -8,59 +8,47 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 :root{
-  --noturno:#151E49; --royal:#003D7B; --acao:#065CA9;
-  --fundo:#F4F6FA; --superficie:#FFFFFF; --superficie2:#EDF1F8;
-  --linha:#D6DEEC; --texto:#1B2340; --suave:#5D6883;
-  --ok:#1F7A4C; --alerta:#A85B12; --critico:#B03024;
-  --sombra:0 1px 2px rgba(21,30,73,.06), 0 8px 24px -14px rgba(21,30,73,.2);
-
-  /* Refino 08/09: a folha tinha uma borda só e um raio só. Borda mais clara
-     para o cartão em repouso, raio maior, e uma sombra de contato somada a
-     uma difusa — é o que separa "caixa" de "cartão". */
-  --linha2:#DDE3EF;
-  --raio:12px; --raio-sm:9px;
-  --sombra2:0 1px 2px rgba(21,30,73,.05), 0 10px 22px -18px rgba(21,30,73,.45);
-
-  /* A fonte do sistema fica como alternativa na mesma regra: se o Google
-     Fonts não responder, a tela cai na aparência anterior em vez de quebrar.
-     A dependência é de acabamento, não de funcionamento. */
+  --noturno:#0B132B; --noturno-suave:#151E49; --royal:#003D7B; --acao:#0284C7; --acao-hover:#0369A1;
+  --fundo:#F8FAFC; --superficie:#FFFFFF; --superficie2:#F1F5F9; --superficie3:#E2E8F0;
+  --linha:#E2E8F0; --linha2:#CBD5E1; --texto:#0F172A; --suave:#475569; --mutado:#64748B;
+  --ok:#059669; --ok-bg:#ECFDF5; --alerta:#D97706; --alerta-bg:#FFFBEB;
+  --critico:#DC2626; --critico-bg:#FEF2F2; --ouro:#B45309; --ouro-bg:#FEF3C7;
+  --sombra:0 1px 3px 0 rgba(15,23,42,.05), 0 1px 2px -1px rgba(15,23,42,.04);
+  --sombra2:0 4px 6px -1px rgba(15,23,42,.05), 0 2px 4px -2px rgba(15,23,42,.04);
+  --sombra3:0 10px 15px -3px rgba(15,23,42,.05), 0 4px 6px -4px rgba(15,23,42,.04);
+  --sombra-card:0 1px 3px rgba(15,23,42,.04), 0 8px 24px -6px rgba(15,23,42,.04);
+  --sombra-hud:0 -4px 20px -2px rgba(15,23,42,.08), 0 0 1px rgba(15,23,42,.15);
+  --raio:10px; --raio-sm:6px; --raio-lg:14px; --raio-pill:999px;
   --fonte:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 *{box-sizing:border-box}
 body{
   margin:0; color:var(--texto);
-  /* Profundidade em toda a aplicação, não só numa aba: a tela trocava de
-     aparência ao mudar de contexto e parecia dois produtos diferentes. */
-  background:
-    radial-gradient(1100px 560px at 10% -10%, rgba(6,92,169,.13), transparent 60%),
-    radial-gradient(900px 520px at 98% 2%,   rgba(21,30,73,.11),  transparent 62%),
-    var(--fundo);
-  background-attachment:fixed;
-  font:15px/1.55 var(--fonte);
+  background:var(--fundo);
+  font:14.5px/1.5 var(--fonte);
   -webkit-font-smoothing:antialiased;
 }
 /* Largura útil maior: a grade comparativa e o formulário são densos e a
    tela larga estava sendo desperdiçada nas laterais. */
 .wrap{max-width:1480px;margin:0 auto;padding:0 24px 80px}
 
-/* ── barra de navegação fixa ──
-   O vidro vive aqui, no cromo, com o conteúdo passando por baixo. Nunca
-   no plano onde se digita dinheiro. */
+/* ── barra de navegação fixa FinTech Precision ── */
 .barra{
-  position:sticky;top:0;z-index:50;margin-bottom:26px;
-  background:linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.66));
-  backdrop-filter:blur(22px) saturate(180%);
-  -webkit-backdrop-filter:blur(22px) saturate(180%);
-  border-bottom:1px solid rgba(21,30,73,.12);
-  box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 6px 22px -18px rgba(21,30,73,.5);
+  position:sticky;top:0;z-index:50;margin-bottom:24px;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--linha);
+  box-shadow:0 1px 2px rgba(15,23,42,.03);
 }
 .barra-in{
-  max-width:1480px;margin:0 auto;padding:11px 24px;
-  display:flex;align-items:center;gap:22px;
+  max-width:1480px;margin:0 auto;padding:10px 24px;
+  display:flex;align-items:center;gap:20px;
 }
-.marca{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--suave)}
-.marca-nome{font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--noturno);line-height:1.2}
+.marca-bloco{display:flex;flex-direction:column;gap:1px}
+.marca{font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--suave)}
+.marca-nome{font-size:16.5px;font-weight:700;letter-spacing:-.015em;color:var(--noturno);line-height:1.2}
 .barra .abas{margin:0}
 .barra #ab-nova{margin-left:auto;white-space:nowrap}
 
@@ -435,16 +423,25 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--linha);font-s
   text-decoration: underline;
 }
 
-/* ── navegação entre as duas telas ── */
+/* ── navegação entre telas FinTech Segmented Control ── */
 .abas{
-  display:inline-flex;gap:2px;padding:2px;margin:22px 0 4px;
-  background:var(--superficie2);border:1px solid var(--linha);border-radius:8px;
+  display:inline-flex;align-items:center;gap:3px;padding:3px;margin:0;
+  background:#F1F5F9;border:1px solid var(--linha);border-radius:var(--raio-sm);
 }
 .abas button{
-  padding:8px 18px;font-size:14px;font-weight:600;border:0;border-radius:6px;
+  padding:7px 15px;font-size:13px;font-weight:600;border:0;border-radius:calc(var(--raio-sm) - 1px);
   background:transparent;color:var(--suave);cursor:pointer;
+  transition:all .15s ease;font-family:inherit;
 }
-.abas button[aria-selected="true"]{background:var(--superficie);color:var(--noturno);box-shadow:var(--sombra)}
+.abas button:hover{
+  color:var(--noturno);
+  background:rgba(255,255,255,.6);
+}
+.abas button[aria-selected="true"]{
+  background:var(--superficie);color:var(--noturno);
+  box-shadow:0 1px 3px rgba(15,23,42,.08), 0 0 0 1px rgba(15,23,42,.03);
+  font-weight:700;
+}
 
 /* ── ficha: a equalização sozinha, numa janela própria ── */
 body.ficha .barra,
@@ -2575,11 +2572,319 @@ table.mapa .ref-historico-rotulo{
 .sav-linha b{color:var(--ok);font-variant-numeric:tabular-nums;white-space:nowrap}
 .sav-linha small{color:var(--suave);font-weight:400;margin-left:5px}
 
-.sav-vazio{
-  margin-top:12px;padding:14px 16px;background:var(--superficie2);border-radius:8px;
-  border-left:3px solid var(--royal);font-size:13px;color:var(--texto);line-height:1.5;
+
+/* ═════════════════════════════════════════════════════════════════════
+   CAPITAL FINTECH PRECISION — DESIGN SYSTEM & WORKSTATION ENTERPRISE
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* ── TELA 4: WORKSTATION OPERACIONAL & FREEZE 2D ── */
+.grade-rolo {
+  overflow: auto;
+  max-height: 66vh;
+  position: relative;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
 }
-.sav-vazio b{color:var(--noturno)}
+table.grade {
+  width: 100%;
+  min-width: max-content;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+table.grade thead th {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #F8FAFC;
+  border-bottom: 1.5px solid var(--linha2);
+  padding: 10px 8px;
+  color: var(--noturno);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+table.grade th.col-cod,
+table.grade td.col-cod {
+  position: sticky;
+  left: 0;
+  z-index: 15;
+  background: inherit;
+}
+table.grade thead th.col-cod {
+  z-index: 25;
+  background: #F8FAFC;
+}
+table.grade th.col-desc,
+table.grade td.col-desc {
+  position: sticky;
+  left: 68px;
+  z-index: 15;
+  background: inherit;
+  box-shadow: 4px 0 8px -3px rgba(15, 23, 42, 0.05);
+}
+table.grade thead th.col-desc {
+  z-index: 25;
+  background: #F8FAFC;
+}
+table.grade tbody tr:hover td {
+  background: #F8FAFC;
+}
+table.grade tbody tr.linha-grupo {
+  background: #F1F5F9;
+  font-weight: 700;
+}
+table.grade tbody tr.linha-grupo td {
+  border-top: 1px solid var(--linha2);
+  border-bottom: 1px solid var(--linha2);
+  color: var(--noturno);
+}
+.cel-grupo-subtotal {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--royal);
+  text-align: right;
+  padding: 6px 12px;
+  letter-spacing: -0.01em;
+}
+
+/* ── STICKY ACTION HUD DE DECISÃO & SAVING (TELA 4) ── */
+.hud-decisao {
+  position: sticky;
+  bottom: 16px;
+  z-index: 40;
+  margin-top: 24px;
+  background: rgba(11, 19, 43, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra-hud), 0 20px 40px -15px rgba(11, 19, 43, 0.5);
+  color: #fff;
+  padding: 12px 20px;
+  transition: all .2s ease;
+}
+.hud-in {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.hud-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hud-rotulo {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+.hud-valor-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.hud-valor {
+  font-size: 24px;
+  font-weight: 800;
+  color: #34D399;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.hud-pct {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6EE7B7;
+}
+.hud-divisor {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.hud-alcada {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.hud-alcada-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--raio-pill);
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(2, 132, 199, 0.2);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+.hud-alcada-badge.ouro {
+  background: rgba(245, 158, 11, 0.2);
+  color: #FBBF24;
+  border-color: rgba(251, 191, 36, 0.4);
+}
+.hud-alcada-badge.royal {
+  background: rgba(99, 102, 241, 0.2);
+  color: #A5B4FC;
+  border-color: rgba(165, 180, 252, 0.4);
+}
+.hud-acoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+.bt-secundario-hud {
+  background: rgba(255, 255, 255, 0.1);
+  color: #F1F5F9;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--raio-sm);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.bt-secundario-hud:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.bt-destaque-hud {
+  background: #059669 !important;
+  color: #fff !important;
+  border: 0;
+  border-radius: var(--raio-sm);
+  padding: 9px 18px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.4);
+  transition: all .15s ease;
+}
+.bt-destaque-hud:hover {
+  background: #047857 !important;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.6);
+}
+
+/* ── TELA 2: COCKPIT BENTO GRID & ALÇADAS EXECUTIVAS ── */
+.cockpit-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.badge-alcada {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2.5px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.badge-alcada.presidencia {
+  background: var(--ouro-bg);
+  color: var(--ouro);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+.badge-alcada.diretoria {
+  background: #EFF6FF;
+  color: var(--royal);
+  border: 1px solid rgba(0, 61, 123, 0.25);
+}
+.badge-alcada.gerencia {
+  background: var(--superficie2);
+  color: var(--suave);
+  border: 1px solid var(--linha);
+}
+
+/* ── TELA 1: OMNISEARCH COMMAND BAR & BOX-PLOT VIRTUAL ── */
+.omnisearch-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--linha);
+  border-radius: var(--raio);
+  padding: 4px 6px 4px 16px;
+  box-shadow: var(--sombra);
+  transition: border-color .15s, box-shadow .15s;
+}
+.omnisearch-box:focus-within {
+  border-color: var(--acao);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12), var(--sombra2);
+}
+.box-plot-container {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: 18px 20px;
+  margin: 16px 0 20px;
+  box-shadow: var(--sombra);
+}
+.radar-arbitragem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin: 14px 0 20px;
+}
+.radar-arbitragem-card {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: 14px 16px;
+  box-shadow: var(--sombra);
+  position: relative;
+}
+.radar-arbitragem-card.benchmark {
+  border-color: #A7F3D0;
+  background: #F0FDF4;
+}
+
+/* ── TELA 3: SRM RADAR DE RISCO & ACTION CENTER ── */
+.srm-cockpit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.srm-action-center {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-left: 4px solid var(--ok);
+  border-radius: var(--raio);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ── TELA 5: MASTER DATA GOVERNANCE & HEALTH CHECK ── */
+.gov-health-cockpit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.gov-health-card {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: 14px 16px;
+  box-shadow: var(--sombra);
+}
 
 /* ── O atributo hidden tem a última palavra ──────────────────────────
    `hidden` esconde por uma regra do NAVEGADOR, que é a mais fraca de
@@ -2713,6 +3018,30 @@ table.mapa .ref-historico-rotulo{
   </section>
 
   <section id="v-fornecedores" hidden>
+    <!-- Cockpit Executivo SRM & Governança de Fornecedores -->
+    <div class="srm-cockpit" id="srmCockpit">
+      <div class="kpi-card" style="background:var(--superficie);border:1px solid var(--linha);border-radius:var(--raio);padding:14px 18px;box-shadow:var(--sombra);">
+        <div style="font-size:10.5px;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.05em;">Base Homologada</div>
+        <div style="font-size:24px;font-weight:800;color:var(--noturno);margin:4px 0 2px;" id="kpiFornTotal">—</div>
+        <div style="font-size:11.5px;color:var(--suave);" id="kpiFornAtivosSub">fornecedores cadastrados</div>
+      </div>
+      <div class="kpi-card" style="background:var(--superficie);border:1px solid var(--linha);border-radius:var(--raio);padding:14px 18px;box-shadow:var(--sombra);">
+        <div style="font-size:10.5px;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.05em;">IQF Médio Corporativo</div>
+        <div style="font-size:24px;font-weight:800;color:#059669;margin:4px 0 2px;" id="kpiFornIqfMedio">—</div>
+        <div style="font-size:11.5px;color:var(--suave);" id="kpiFornIqfSub">rede em conformidade</div>
+      </div>
+      <div class="kpi-card" style="background:var(--superficie);border:1px solid var(--linha);border-radius:var(--raio);padding:14px 18px;box-shadow:var(--sombra);">
+        <div style="font-size:10.5px;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.05em;">Volume Homologado</div>
+        <div style="font-size:24px;font-weight:800;color:var(--royal);margin:4px 0 2px;" id="kpiFornVolume">—</div>
+        <div style="font-size:11.5px;color:var(--suave);">em contratos auditados</div>
+      </div>
+      <div class="kpi-card" style="background:var(--superficie);border:1px solid var(--linha);border-radius:var(--raio);padding:14px 18px;box-shadow:var(--sombra);">
+        <div style="font-size:10.5px;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.05em;">Compliance Fiscal</div>
+        <div style="font-size:24px;font-weight:800;color:#0284C7;margin:4px 0 2px;" id="kpiFornCompliance">—</div>
+        <div style="font-size:11.5px;color:var(--suave);">CNPJs ativos / verificados</div>
+      </div>
+    </div>
+
     <!-- A fila de avaliação vem antes das pílulas de propósito: é
          trabalho pendente, e trabalho pendente escondido embaixo de
          filtro não é feito. -->
@@ -2872,10 +3201,60 @@ table.mapa .ref-historico-rotulo{
         ↺ Descartar e começar do zero
       </button>
     </div>
+
+    <!-- Sticky Action HUD de Decisão & Saving em Tempo Real FinTech Precision -->
+    <div class="hud-decisao" id="hudDecisao">
+      <div class="hud-in">
+        <div class="hud-kpi">
+          <span class="hud-rotulo">💰 SAVING APURADO EM TEMPO REAL</span>
+          <div class="hud-valor-row">
+            <span class="hud-valor" id="hudSavingValor">R$ 0,00</span>
+            <span class="hud-pct" id="hudSavingPct">—</span>
+          </div>
+        </div>
+        <div class="hud-divisor"></div>
+        <div class="hud-alcada" id="hudAlcadaBox">
+          <span class="hud-rotulo">🛡️ ALÇADA REQUERIDA</span>
+          <div class="hud-alcada-badge" id="hudAlcadaBadge">👔 Gerência de Facilities (&lt; R$ 50k)</div>
+        </div>
+        <div class="hud-divisor"></div>
+        <div class="hud-acoes">
+          <button type="button" class="bt bt-secundario-hud" onclick="document.getElementById('grade').scrollIntoView({behavior:'smooth'})">📋 Ver Grade</button>
+          <button type="button" class="bt primario bt-destaque-hud" onclick="salvarEqualizacao()">★ Homologar &amp; Salvar</button>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section id="v-config" hidden>
     <div class="config-painel">
+      <!-- Master Data Governance Health Check -->
+      <div class="gov-health-cockpit">
+        <div class="gov-health-card">
+          <div style="font-size:10.5px;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.05em;">Estrutura EAP</div>
+          <div style="font-size:24px;font-weight:800;color:var(--noturno);margin:4px 0 2px;" id="gov-card-grupos-val">0</div>
+          <div style="font-size:11.5px;color:var(--ok);font-weight:600;">100% canônico / fixo</div>
+        </div>
+        <div class="gov-health-card">
+          <div style="font-size:10.5px;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.05em;">Itens Catalogados</div>
+          <div style="font-size:24px;font-weight:800;color:var(--royal);margin:4px 0 2px;" id="gov-card-itens-val">0</div>
+          <div style="font-size:11.5px;color:var(--suave);">autocomplete ativo</div>
+        </div>
+        <div class="gov-health-card">
+          <div style="font-size:10.5px;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.05em;">Dicionário de Marcas</div>
+          <div style="font-size:24px;font-weight:800;color:var(--acao);margin:4px 0 2px;" id="gov-card-marcas-val">0</div>
+          <div style="font-size:11.5px;color:var(--suave);">fabricantes auditados</div>
+        </div>
+        <div class="gov-health-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:10.5px;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.05em;">Pendências Triage</div>
+            <div id="gov-card-pend-badge"></div>
+          </div>
+          <div style="font-size:24px;font-weight:800;color:var(--noturno);margin:4px 0 2px;" id="gov-card-pend-val">0</div>
+          <div style="font-size:11.5px;color:var(--suave);">solicitações on-the-fly</div>
+        </div>
+      </div>
+
       <div class="config-segmented-bar" role="tablist">
         <button type="button" class="config-segmento-btn ativo" id="btn-cfg-grupos" onclick="trocarAbaConfig('grupos')">
           🏢 Grupos Padronizados (<span id="cfg-count-grupos">0</span>)
@@ -2951,6 +3330,13 @@ table.mapa .ref-historico-rotulo{
       <p id="avalSub"></p>
     </div>
     <div class="modal-aval-corpo">
+      <div id="avalLiveScore" style="display:flex;align-items:center;justify-content:space-between;background:var(--superficie2);border:1px solid var(--linha);border-radius:10px;padding:10px 16px;margin-bottom:14px;">
+        <div>
+          <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;color:var(--suave);letter-spacing:.05em;">Projeção do IQF Ponderado</span>
+          <div style="font-size:12px;color:var(--suave);margin-top:2px;" id="avalLiveClasse">Aguardando notas...</div>
+        </div>
+        <div style="font-size:22px;font-weight:800;color:var(--ok);" id="avalLiveNota">— / 100</div>
+      </div>
       <div class="aval-progresso" id="avalProgresso">
         <span id="avalProgressoTxt">0 de 6 respondidas</span>
         <span class="barra"><i id="avalProgressoBarra"></i></span>
@@ -4217,6 +4603,19 @@ function atualizarContadoresConfig() {
   var cI = document.getElementById('cfg-count-itens'); if (cI) cI.textContent = CF_CATALOGO_ITENS.length;
   var cM = document.getElementById('cfg-count-marcas'); if (cM) cM.textContent = CF_MARCAS_ACERVO.length;
   var cP = document.getElementById('cfg-count-pendentes'); if (cP) cP.textContent = CF_MARCAS_PENDENTES.length;
+
+  var hG = document.getElementById('gov-card-grupos-val'); if (hG) hG.textContent = CF_GRUPOS_PADRAO.length;
+  var hI = document.getElementById('gov-card-itens-val'); if (hI) hI.textContent = CF_CATALOGO_ITENS.length;
+  var hM = document.getElementById('gov-card-marcas-val'); if (hM) hM.textContent = CF_MARCAS_ACERVO.length;
+  var hP = document.getElementById('gov-card-pend-val'); if (hP) hP.textContent = CF_MARCAS_PENDENTES.length;
+  var hPBadge = document.getElementById('gov-card-pend-badge');
+  if (hPBadge) {
+    if (CF_MARCAS_PENDENTES.length === 0) {
+      hPBadge.innerHTML = '<span style="font-size:10px;font-weight:700;color:var(--ok);background:var(--ok-bg);padding:2px 7px;border-radius:999px;">✓ Inbox Zero</span>';
+    } else {
+      hPBadge.innerHTML = '<span style="font-size:10px;font-weight:700;color:var(--alerta);background:var(--alerta-bg);padding:2px 7px;border-radius:999px;">⚠️ Requer Triage</span>';
+    }
+  }
 }
 
 function renderizarTabelaGruposConfig() {
@@ -4814,6 +5213,60 @@ function renderizarResultados() {
     produtos[k].cotacoes.push(r);
   });
 
+  var _produtosConsultaCache = [];
+
+  function copiarPautaNegociacao(idx) {
+    var item = _produtosConsultaCache[idx];
+    if (!item) return;
+    var prod = item.prod;
+    var cots = item.cots;
+    var menor = item.menor;
+    var media = item.media;
+    var mediana = item.mediana;
+    var dispersao = item.dispersao;
+    var cotMenor = item.cotMenor;
+
+    var texto = '========================================\n' +
+      'PAUTA DE NEGOCIAÇÃO EXECUTIVA — CAPITAL REALTY\n' +
+      '========================================\n' +
+      'Item: ' + (prod.codigo ? '[' + prod.codigo + '] ' : '') + prod.descricao + '\n' +
+      'Unidade de Referência: ' + (prod.unidade || 'UN') + '\n' +
+      'Base Analisada: ' + cots.length + ' cotações no histórico corporativo\n\n' +
+      '🎯 METAS DE PREÇO (BENCHMARK INTERNO):\n' +
+      '• Menor Preço Vigente: R$ ' + moeda(menor) + (cotMenor ? ' (' + cotMenor.fornecedor + ' - ' + (cotMenor.data || '—') + ')' : '') + '\n' +
+      '• Preço Médio Praticado: R$ ' + moeda(media) + '\n' +
+      (mediana !== null ? '• Preço Mediano de Mercado: R$ ' + moeda(mediana) + '\n' : '') +
+      '• Dispersão / Spread da Concorrência: ' + dispersao + '%\n\n' +
+      '💡 DIRETRIZ ESTRATÉGICA DE COMPRA:\n' +
+      'Exigir que as propostas alinhem-se ao benchmark de R$ ' + moeda(menor) + '.\n' +
+      'Negociações acima de R$ ' + moeda(mediana || media) + ' demandam justificativa técnica formal.\n' +
+      '========================================';
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(function () {
+        var btn = document.getElementById('bt-pauta-' + idx);
+        if (btn) {
+          var txtOriginal = btn.innerHTML;
+          btn.innerHTML = '✓ Pauta Copiada!';
+          btn.style.background = '#DCFCE7';
+          btn.style.borderColor = '#86EFAC';
+          btn.style.color = '#15803D';
+          setTimeout(function () {
+            btn.innerHTML = txtOriginal;
+            btn.style.background = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+          }, 2200);
+        }
+      }).catch(function () {
+        if (typeof prompt === 'function') prompt('Copie a pauta de negociação abaixo:', texto);
+      });
+    } else {
+      if (typeof prompt === 'function') prompt('Copie a pauta de negociação abaixo:', texto);
+    }
+  }
+  window.copiarPautaNegociacao = copiarPautaNegociacao;
+
   var html = '';
 
   Object.keys(produtos).forEach(function (k, idx) {
@@ -4831,6 +5284,24 @@ function renderizarResultados() {
     var cotMenor = cots.filter(function (c) { return c.valor === menor; })[0];
     var dispersao = (menor && maior && menor > 0) ? Math.round(((maior - menor) / menor) * 100) : 0;
 
+    var precosSorted = precosValidos.slice().sort(function (a, b) { return a - b; });
+    var mediana = null;
+    if (precosSorted.length) {
+      var meio = Math.floor(precosSorted.length / 2);
+      mediana = precosSorted.length % 2 !== 0 ? precosSorted[meio] : (precosSorted[meio - 1] + precosSorted[meio]) / 2;
+    }
+
+    _produtosConsultaCache[idx] = {
+      prod: prod,
+      cots: cots,
+      menor: menor,
+      maior: maior,
+      media: media,
+      mediana: mediana,
+      dispersao: dispersao,
+      cotMenor: cotMenor
+    };
+
     var fornecedoresMap = {};
     cots.forEach(function (c) { if (c.fornecedor) fornecedoresMap[c.fornecedor] = true; });
     var qtdFornecedores = Object.keys(fornecedoresMap).length;
@@ -4838,14 +5309,17 @@ function renderizarResultados() {
     html += '<div class="produto-executivo">';
 
     // Header do Produto
-    html += '<div class="produto-header">' +
+    html += '<div class="produto-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px;">' +
       '<div>' +
-        '<h2 class="produto-titulo">' +
+        '<h2 class="produto-titulo" style="margin:0 0 4px;">' +
           (prod.codigo ? '<span style="color:var(--acao);font-family:monospace;margin-right:8px">[' + esc(prod.codigo) + ']</span>' : '') +
           esc(prod.descricao) +
         '</h2>' +
-        '<div class="produto-aliases">' + cots.length + ' cotação(ões) analisada(s) · Unidade de referência: <b>' + esc(prod.unidade || 'UN') + '</b></div>' +
+        '<div class="produto-aliases" style="font-size:12.5px;color:var(--suave);">' + cots.length + ' cotação(ões) analisada(s) · Unidade de referência: <b>' + esc(prod.unidade || 'UN') + '</b></div>' +
       '</div>' +
+      '<button type="button" id="bt-pauta-' + idx + '" class="bt" style="font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--linha2);background:var(--superficie);border-radius:var(--raio-sm);cursor:pointer;" onclick="copiarPautaNegociacao(' + idx + ')">' +
+        '📋 Copiar Pauta de Negociação' +
+      '</button>' +
     '</div>';
 
     // Grid de 4 KPIs Executivos
@@ -4856,9 +5330,9 @@ function renderizarResultados() {
         '<div class="kpi-sub">' + (cotMenor ? esc(cotMenor.fornecedor) + ' (' + (cotMenor.data || '—') + ')' : '—') + '</div>' +
       '</div>' +
       '<div class="kpi-card">' +
-        '<div class="kpi-label">Preço Médio Referência</div>' +
+        '<div class="kpi-label">Preço Médio / Mediana</div>' +
         '<div class="kpi-valor">R$ ' + moeda(media) + '</div>' +
-        '<div class="kpi-sub">' + (menor !== null ? 'Faixa: R$ ' + moeda(menor) + ' a R$ ' + moeda(maior) : '—') + '</div>' +
+        '<div class="kpi-sub">' + (mediana !== null ? 'Mediana: <b>R$ ' + moeda(mediana) + '</b> · ' : '') + (menor !== null ? 'Faixa: R$ ' + moeda(menor) + ' a R$ ' + moeda(maior) : '—') + '</div>' +
       '</div>' +
       '<div class="kpi-card">' +
         '<div class="kpi-label">Dispersão da Oferta</div>' +
@@ -4871,6 +5345,44 @@ function renderizarResultados() {
         '<div class="kpi-sub">' + (qtdFornecedores === 1 ? '1 empresa cotada' : qtdFornecedores + ' empresas cotadas') + '</div>' +
       '</div>' +
     '</div>';
+
+    // Box-Plot Virtual de Dispersão
+    if (precosValidos.length >= 2 && menor !== null && maior !== null && maior > menor) {
+      var spreadTotal = maior - menor;
+      var medPct = mediana !== null ? Math.max(8, Math.min(92, Math.round(((mediana - menor) / spreadTotal) * 100))) : 50;
+      html += '<div class="box-plot-container">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+          '<div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--noturno);display:flex;align-items:center;gap:6px;">' +
+            '<span>⚖️ Faixa &amp; Dispersão de Mercado</span>' +
+            '<span style="font-weight:normal;color:var(--suave);font-size:11px;">(Menor vs Mediana vs Máximo)</span>' +
+          '</div>' +
+          '<div style="font-size:11.5px;color:var(--suave);">' +
+            'Spread Concorrencial: <b style="color:' + (dispersao > 25 ? 'var(--alerta)' : 'var(--ok)') + '">' + dispersao + '%</b>' +
+          '</div>' +
+        '</div>' +
+        '<div style="position:relative;height:8px;background:var(--superficie2);border-radius:999px;margin:28px 24px 34px;">' +
+          '<div style="position:absolute;left:0;right:0;top:0;bottom:0;background:linear-gradient(90deg, #10B981 0%, #0284C7 50%, #F59E0B 100%);border-radius:999px;opacity:0.35;"></div>' +
+          '<div style="position:absolute;left:0%;top:-5px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;">' +
+            '<div style="width:14px;height:18px;background:#059669;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.2);"></div>' +
+            '<div style="position:absolute;top:22px;white-space:nowrap;text-align:center;font-size:11px;font-weight:700;color:#059669;">' +
+              'R$ ' + moeda(menor) + '<br><span style="font-size:9.5px;font-weight:500;color:var(--suave);">Menor</span>' +
+            '</div>' +
+          '</div>' +
+          '<div style="position:absolute;left:' + medPct + '%;top:-5px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;">' +
+            '<div style="width:14px;height:18px;background:#0284C7;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.2);"></div>' +
+            '<div style="position:absolute;top:22px;white-space:nowrap;text-align:center;font-size:11px;font-weight:700;color:#0284C7;">' +
+              'R$ ' + moeda(mediana) + '<br><span style="font-size:9.5px;font-weight:500;color:var(--suave);">Mediana</span>' +
+            '</div>' +
+          '</div>' +
+          '<div style="position:absolute;left:100%;top:-5px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;">' +
+            '<div style="width:14px;height:18px;background:#D97706;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.2);"></div>' +
+            '<div style="position:absolute;top:22px;white-space:nowrap;text-align:center;font-size:11px;font-weight:700;color:#D97706;">' +
+              'R$ ' + moeda(maior) + '<br><span style="font-size:9.5px;font-weight:500;color:var(--suave);">Máximo</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
 
     // MODO CORPORATIVO: Matriz Regional Comparativa Lado a Lado
     if (estadoConsulta.megaAtivo === 'todos') {
@@ -7218,8 +7730,10 @@ function desenharGrade() {
 
   var corpo = itens.map(function (it, i) {
     var precos = it.tipo === 'grupo'
-      // Grupo agrega e não recebe preço: gravar aqui contaria duas vezes.
-      ? proponentes.map(function () { return '<td class="col-preco"></td>'; }).join('')
+      // Grupo agrega e exibe o rollup subtotal calculado dos itens filhos.
+      ? proponentes.map(function (p, j) {
+          return '<td class="col-preco"><div class="cel-grupo-subtotal" id="subtotal-grupo-' + i + '-' + j + '" title="Subtotal do grupo para ' + esc(p.nome || '') + '">—</div></td>';
+        }).join('')
       : proponentes.map(function (p, j) {
           // Cifrão fixo à esquerda: deixa claro que o campo é dinheiro e
           // que o valor é UNITÁRIO, não o total da linha.
@@ -7435,6 +7949,86 @@ function calcular() {
       (falta > 0 ? ' <small style="color:var(--alerta)">(' + falta + ' sem cotar)</small>' : '') +
       '</span>';
   }).join('');
+
+  // ── Rollup Subtotais por Grupo da EAP ──
+  try {
+    var grupoAtualIdx = null;
+    var subtotalGrupo = {};
+
+    itens.forEach(function (it, idx) {
+      if (it.tipo === 'grupo') {
+        grupoAtualIdx = idx;
+        subtotalGrupo[grupoAtualIdx] = proponentes.map(function () { return 0; });
+      } else if (grupoAtualIdx !== null) {
+        var q = num(it.quantidade);
+        var mult = (q === null || q === 0) ? 1 : q;
+        it.precos.forEach(function (p, j) {
+          var v = num(p);
+          if (v !== null) {
+            subtotalGrupo[grupoAtualIdx][j] += porTotal ? v : v * mult;
+          }
+        });
+      }
+    });
+
+    Object.keys(subtotalGrupo).forEach(function (gIdx) {
+      var valores = subtotalGrupo[gIdx];
+      var minVal = null;
+      valores.forEach(function (val) {
+        if (val > 0 && (minVal === null || val < minVal)) minVal = val;
+      });
+      valores.forEach(function (val, j) {
+        var cel = document.getElementById('subtotal-grupo-' + gIdx + '-' + j);
+        if (cel) {
+          if (val > 0) {
+            var ehMenor = (minVal !== null && val === minVal);
+            cel.innerHTML = (ehMenor ? '<span style="color:var(--ok);font-weight:800">★ </span>' : '') + moeda(val);
+            cel.style.color = ehMenor ? 'var(--ok)' : 'var(--royal)';
+          } else {
+            cel.innerHTML = '—';
+            cel.style.color = 'var(--suave)';
+          }
+        }
+      });
+    });
+
+    // ── Atualização do Sticky Action HUD de Decisão ──
+    var hudValEl = document.getElementById('hudSavingValor');
+    var hudPctEl = document.getElementById('hudSavingPct');
+    var hudAlcadaEl = document.getElementById('hudAlcadaBadge');
+    if (hudValEl && menor !== null) {
+      var menorVal = totais[menor];
+      var maiorVal = null;
+      totais.forEach(function (t, j) {
+        if (cotou[j] > 0 && (maiorVal === null || t > maiorVal)) maiorVal = t;
+      });
+
+      if (maiorVal !== null && maiorVal > menorVal) {
+        var savingVal = maiorVal - menorVal;
+        var savingPct = (savingVal / maiorVal) * 100;
+        hudValEl.textContent = moeda(savingVal);
+        if (hudPctEl) hudPctEl.textContent = '(-' + savingPct.toFixed(1) + '%)';
+      } else {
+        hudValEl.textContent = moeda(menorVal);
+        if (hudPctEl) hudPctEl.textContent = '(Menor cesta)';
+      }
+
+      if (hudAlcadaEl) {
+        if (menorVal > 150000) {
+          hudAlcadaEl.className = 'hud-alcada-badge ouro';
+          hudAlcadaEl.innerHTML = '👑 Presidência &amp; Conselho (&gt; R$ 150k)';
+        } else if (menorVal >= 50000) {
+          hudAlcadaEl.className = 'hud-alcada-badge royal';
+          hudAlcadaEl.innerHTML = '🏛️ Diretoria Executiva (R$ 50k–150k)';
+        } else {
+          hudAlcadaEl.className = 'hud-alcada-badge';
+          hudAlcadaEl.innerHTML = '👔 Gerência de Facilities (&lt; R$ 50k)';
+        }
+      }
+    }
+  } catch (errHUD) {
+    /* Não bloqueia fluxo de cálculo */
+  }
 }
 
 /**
@@ -8271,11 +8865,24 @@ function cartaoEq(e) {
       (e.icone || '📦') + ' ' + esc(e.categoria) + '</span>'
     : '';
 
+  var alcadaHtml = '';
+  var valNum = Number(e.menor || 0);
+  if (valNum > 150000) {
+    alcadaHtml = '<span class="badge-alcada presidencia" title="Alçada: Presidência &amp; Conselho">👑 Presidência</span>';
+  } else if (valNum >= 50000) {
+    alcadaHtml = '<span class="badge-alcada diretoria" title="Alçada: Diretoria Executiva">🏛️ Diretoria</span>';
+  } else if (valNum > 0) {
+    alcadaHtml = '<span class="badge-alcada gerencia" title="Alçada: Gerência de Facilities">👔 Gerência</span>';
+  }
+
   return '<div class="card-eq-executivo" onclick="abrirFichaDireta(\'' + esc(e.id) + '\')" tabindex="0" title="Clique para abrir a ficha completa em nova janela">' +
     '<div>' +
       '<div class="card-eq-topo">' +
         (catHtml || '<span style="font-size:11px;color:var(--suave)">' + esc(e.id) + '</span>') +
-        '<span class="badge-status ' + esc(stCls) + '"><span class="badge-status-dot"></span>' + stRotulo + '</span>' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          alcadaHtml +
+          '<span class="badge-status ' + esc(stCls) + '"><span class="badge-status-dot"></span>' + stRotulo + '</span>' +
+        '</div>' +
       '</div>' +
       '<div class="card-eq-titulo">' + esc(e.projeto || e.id) + '</div>' +
       '<div class="card-eq-meta">' +
@@ -8303,7 +8910,7 @@ function cartaoEq(e) {
 function tabelaEq(lista) {
   return '<div class="tabela-executiva-wrap"><table class="tabela-executiva">' +
     '<thead><tr>' +
-      '<th>Situação</th>' +
+      '<th>Situação &amp; Alçada</th>' +
       '<th>Data</th>' +
       '<th>Projeto / Cotação</th>' +
       '<th>Categoria</th>' +
@@ -8319,8 +8926,18 @@ function tabelaEq(lista) {
         ? '<span class="etq etq-cat">' + (e.icone || '📦') + ' ' + esc(e.categoria) + '</span>'
         : '<span class="d-nulo">—</span>';
 
+      var alcadaHtml = '';
+      var valNum = Number(e.menor || 0);
+      if (valNum > 150000) {
+        alcadaHtml = '<span class="badge-alcada presidencia" title="Alçada: Presidência &amp; Conselho">👑 Presidência</span>';
+      } else if (valNum >= 50000) {
+        alcadaHtml = '<span class="badge-alcada diretoria" title="Alçada: Diretoria Executiva">🏛️ Diretoria</span>';
+      } else if (valNum > 0) {
+        alcadaHtml = '<span class="badge-alcada gerencia" title="Alçada: Gerência de Facilities">👔 Gerência</span>';
+      }
+
       return '<tr onclick="abrirFichaDireta(\'' + esc(e.id) + '\')" tabindex="0" title="Clique para abrir a ficha completa em nova janela">' +
-        '<td><span class="badge-status ' + esc(stCls) + '"><span class="badge-status-dot"></span>' + stRotulo + '</span></td>' +
+        '<td><div style="display:flex;align-items:center;gap:6px"><span class="badge-status ' + esc(stCls) + '"><span class="badge-status-dot"></span>' + stRotulo + '</span>' + alcadaHtml + '</div></td>' +
         '<td style="color:var(--suave);font-size:12px">' + esc(e.data || '—') + '</td>' +
         '<td><b>' + esc(e.projeto || e.id) + '</b><div class="td-id-sub">' + esc(e.id) + (e.area ? ' · ' + esc(e.area) : '') + '</div></td>' +
         '<td>' + catHtml + '</td>' +
@@ -8346,6 +8963,46 @@ var categoriasDeFornecedores = null;
 var categoriaForn = '';
 var subcategoriaForn = '';
 
+function atualizarKpisFornecedores() {
+  if (!todosFornecedores || !todosFornecedores.length) return;
+  var elTotal = document.getElementById('kpiFornTotal');
+  var elAtivosSub = document.getElementById('kpiFornAtivosSub');
+  var elIqf = document.getElementById('kpiFornIqfMedio');
+  var elIqfSub = document.getElementById('kpiFornIqfSub');
+  var elVolume = document.getElementById('kpiFornVolume');
+  var elComp = document.getElementById('kpiFornCompliance');
+
+  if (!elTotal) return;
+
+  var total = todosFornecedores.length;
+  var ativos = todosFornecedores.filter(function (f) { return /ativa/i.test(f.situacao || ''); }).length;
+  var somaVol = todosFornecedores.reduce(function (acc, f) { return acc + (f.volumeHomologado || 0); }, 0);
+
+  var notasIqf = todosFornecedores
+    .filter(function (f) { return f.iqf && f.iqf.avaliacoes && f.iqf.nota !== null && f.iqf.nota !== undefined; })
+    .map(function (f) { return f.iqf.nota; });
+
+  var mediaIqf = notasIqf.length ? (notasIqf.reduce(function (a, b) { return a + b; }, 0) / notasIqf.length) : null;
+
+  elTotal.textContent = total;
+  if (elAtivosSub) elAtivosSub.textContent = ativos + ' ativos no cadastro (' + Math.round((ativos / total) * 100) + '%)';
+  if (elVolume) elVolume.textContent = 'R$ ' + moeda(somaVol);
+
+  if (elIqf) {
+    if (mediaIqf !== null) {
+      elIqf.textContent = mediaIqf.toFixed(1).replace('.', ',') + ' / 100';
+      if (elIqfSub) elIqfSub.textContent = (mediaIqf >= 85 ? 'Classe A (Preferencial)' : (mediaIqf >= 70 ? 'Classe B (Aprovado)' : 'Classe C (Restrito)'));
+    } else {
+      elIqf.textContent = '—';
+      if (elIqfSub) elIqfSub.textContent = 'aguardando avaliações';
+    }
+  }
+
+  if (elComp) {
+    elComp.textContent = Math.round((ativos / total) * 100) + '%';
+  }
+}
+
 function carregarFornecedores() {
   document.getElementById('listaForn').innerHTML = '<div class="carregando">carregando…</div>';
 
@@ -8357,6 +9014,7 @@ function carregarFornecedores() {
         return;
       }
       todosFornecedores = r.fornecedores;
+      atualizarKpisFornecedores();
 
       if (!todosFornecedores.length) {
         document.getElementById('listaForn').innerHTML =
@@ -8693,6 +9351,29 @@ function atualizarProgressoAval() {
 
   var bt = document.getElementById('btSalvarAval');
   if (bt) bt.disabled = !completo;
+
+  // Atualização em tempo real do score IQF projetado
+  var pesos = { qualidade: 30, prazo: 25, seguranca: 20, atendimento: 15, limpeza: 10 };
+  var notaCalc = 0;
+  var pesoTotal = 0;
+  Object.keys(pesos).forEach(function (k) {
+    if (avalNotas[k]) {
+      notaCalc += ((avalNotas[k] - 1) / 4) * pesos[k];
+      pesoTotal += pesos[k];
+    }
+  });
+  var elLiveNota = document.getElementById('avalLiveNota');
+  var elLiveClasse = document.getElementById('avalLiveClasse');
+  if (elLiveNota && elLiveClasse) {
+    if (pesoTotal > 0) {
+      var nota100 = Math.round((notaCalc / pesoTotal) * 100);
+      elLiveNota.textContent = (pesoTotal === 100 ? notaCalc.toFixed(1).replace('.', ',') : String(nota100)) + ' / 100';
+      elLiveClasse.textContent = (nota100 >= 85 ? 'Classe A (Preferencial)' : (nota100 >= 70 ? 'Classe B (Aprovado)' : 'Classe C (Restrito)')) + (pesoTotal < 100 ? ' · nota parcial' : ' · nota ponderada final');
+    } else {
+      elLiveNota.textContent = '— / 100';
+      elLiveClasse.textContent = 'Aguardando notas...';
+    }
+  }
 }
 
 function chavesCriteriosAval() {
@@ -8833,12 +9514,12 @@ function cartaoForn(f) {
   }
 
   return '<button type="button" class="cartao-forn" onclick="abrirFichaFornecedor(\'' + esc(f.cnpj) + '\')">' +
-    '<div class="forn-topo"><b>' + esc(f.nome) + '</b>' + selo + '</div>' +
+    '<div class="forn-topo"><b style="font-size:13.5px;color:var(--noturno);">' + esc(f.nome) + '</b>' + selo + '</div>' +
     '<div class="forn-linha">' + seloIqf(f.iqf) + '</div>' +
     '<div class="forn-cnpj">' + esc(f.cnpjFormatado) +
       (f.cidade ? ' · ' + esc(f.cidade) + (f.uf ? '/' + esc(f.uf) : '') : '') + '</div>' +
     '<div class="forn-linha">' + desempenho + '</div>' +
-    (f.volumeHomologado ? '<div class="forn-linha">contratado: <b>' + moeda(f.volumeHomologado) + '</b></div>' : '') +
+    (f.volumeHomologado ? '<div class="forn-linha" style="font-size:12.5px;color:var(--royal);margin:3px 0;">contratado: <b style="font-weight:700;font-variant-numeric:tabular-nums;">' + moeda(f.volumeHomologado) + '</b></div>' : '') +
     '<div class="forn-linha d-nulo">' + f.itensDistintos +
       (f.itensDistintos === 1 ? ' item cotado' : ' itens cotados') +
       (f.ultimaProposta ? ' · última em ' + esc(f.ultimaProposta) : '') + '</div>' +
@@ -8857,6 +9538,7 @@ function cartaoForn(f) {
         }).join('') + '</div>'
       : '') +
     (f.cnae ? '<div class="forn-cnae">' + esc(f.cnae) + '</div>' : '') +
+    '<div style="margin-top:8px;padding-top:6px;border-top:1px dashed var(--linha);display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--acao);font-weight:600;"><span>Dossiê 360° &amp; Auditoria</span><span>→</span></div>' +
     '</button>';
 }
 
@@ -9066,6 +9748,51 @@ function desenharFichaFornecedor(f) {
       limpeza: 'Limpeza e Organização Pós-Obra'
     };
     var critObj = iqf.criterios || {};
+
+    // Cálculo do Radar Spider-Chart SVG Pentagonal
+    var chavesRadar = ['qualidade', 'prazo', 'seguranca', 'atendimento', 'limpeza'];
+    var rotulosCurto = ['Qualidade', 'Prazo/SLA', 'Segurança', 'Atendimento', 'Limpeza'];
+    var centroX = 140, centroY = 110, raioMax = 70;
+    var pontosRadar = [];
+    var webSvg = '';
+
+    [0.25, 0.5, 0.75, 1.0].forEach(function(nivel) {
+      var r = raioMax * nivel;
+      var pts = [];
+      for (var i = 0; i < 5; i++) {
+        var ang = -Math.PI / 2 + (i * 2 * Math.PI / 5);
+        pts.push((centroX + r * Math.cos(ang)).toFixed(1) + ',' + (centroY + r * Math.sin(ang)).toFixed(1));
+      }
+      webSvg += '<polygon points="' + pts.join(' ') + '" fill="' + (nivel === 1 ? '#F8FAFC' : 'none') + '" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="' + (nivel === 1 ? 'none' : '2,2') + '" />';
+    });
+
+    var labelsSvg = '';
+    for (var i = 0; i < 5; i++) {
+      var ang = -Math.PI / 2 + (i * 2 * Math.PI / 5);
+      var xFim = centroX + raioMax * Math.cos(ang);
+      var yFim = centroY + raioMax * Math.sin(ang);
+      webSvg += '<line x1="' + centroX + '" y1="' + centroY + '" x2="' + xFim.toFixed(1) + '" y2="' + yFim.toFixed(1) + '" stroke="#CBD5E1" stroke-width="1" />';
+
+      var cKey = chavesRadar[i];
+      var rawVal = Number(critObj[cKey] || 0);
+      var pctRadar = rawVal > 5 ? Math.min(1, rawVal / 100) : (rawVal >= 1 ? ((rawVal - 1) / 4) : 0);
+      var ptX = centroX + (raioMax * pctRadar) * Math.cos(ang);
+      var ptY = centroY + (raioMax * pctRadar) * Math.sin(ang);
+      pontosRadar.push(ptX.toFixed(1) + ',' + ptY.toFixed(1));
+
+      var lblX = centroX + (raioMax + 24) * Math.cos(ang);
+      var lblY = centroY + (raioMax + 14) * Math.sin(ang) + 4;
+      labelsSvg += '<text x="' + lblX.toFixed(1) + '" y="' + lblY.toFixed(1) + '" font-size="10" font-weight="600" fill="#475569" text-anchor="middle">' + rotulosCurto[i] + '</text>';
+    }
+
+    var radarPolygonSvg = '<polygon points="' + pontosRadar.join(' ') + '" fill="rgba(2, 132, 199, 0.22)" stroke="#0284C7" stroke-width="2" />';
+    htmlAbaIqf +=
+      '<div style="background:#FFFFFF;border:1px solid var(--linha);border-radius:14px;padding:16px 20px;margin-bottom:16px;text-align:center;">' +
+        '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--suave);letter-spacing:.05em;margin-bottom:8px;text-align:left;">🕸️ Radar Pentagonal de Desempenho</div>' +
+        '<svg width="280" height="220" viewBox="0 0 280 220" style="overflow:visible;margin:0 auto;display:block;">' +
+          webSvg + radarPolygonSvg + labelsSvg +
+        '</svg>' +
+      '</div>';
 
     htmlAbaIqf +=
       '<div class="criterios-lista">' +
