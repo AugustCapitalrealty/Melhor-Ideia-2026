@@ -62,10 +62,31 @@ function cfPlanilha_() {
     try {
       return SpreadsheetApp.openById(id);
     } catch (erro) {
-      Logger.log('CF: não abri a planilha ' + id + ' (' + erro + '). Vou criar outra.');
+      // NÃO cria outra. Esta linha já foi `Logger.log(...); vou criar outra`,
+      // e era a falha mais perigosa do sistema.
+      //
+      // O que acontecia: quem abrisse o app sem acesso à planilha fazia o
+      // openById falhar; o código criava uma base VAZIA e gravava o id dela
+      // em Script Properties — que é compartilhada por todos. A partir dali
+      // o sistema inteiro apontava para a base vazia, para todo mundo, e o
+      // histórico continuava existindo num arquivo que ninguém mais lia.
+      // Um usuário sem permissão derrubava a base de todos, em silêncio.
+      //
+      // Existe um ID configurado. Ele não abrir é problema de acesso, de
+      // arquivo apagado ou de implantação rodando como o usuário errado —
+      // três coisas que se resolvem, e nenhuma que se resolve criando outra
+      // planilha. Falhar alto é o comportamento correto.
+      throw new Error(
+        'Não consegui abrir a planilha-base ' + id + '. ' +
+        'Verifique se você tem acesso a ela, se ela não foi apagada, e se a ' +
+        'implantação está como "Executar como: eu". ' +
+        'A base NÃO foi recriada de propósito: criar outra apagaria o ' +
+        'histórico de vista. Detalhe: ' + erro);
     }
   }
 
+  // Só chega aqui na primeira execução, sem ID nenhum configurado. É o
+  // único caso em que criar é a resposta certa.
   const nova = SpreadsheetApp.create(CF_NOME_PLANILHA);
   try {
     DriveApp.getFileById(nova.getId()).moveTo(DriveApp.getFolderById(CF_PASTA_ID));
