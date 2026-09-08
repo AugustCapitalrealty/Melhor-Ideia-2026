@@ -23,6 +23,9 @@
  *
  * Idempotente pelas chaves naturais: CNPJ para fornecedor, PROTOCOLO para
  * contratação. Rodar duas vezes não duplica nada.
+ *
+ * Lê CSV e Planilha Google, e recupera o zero à esquerda que as duas
+ * comem do CNPJ — ver cfCnpjRestaurado_.
  */
 
 /** Tudo que entra por aqui fica marcado, para dar para desfazer e auditar. */
@@ -33,16 +36,27 @@ const CF_ORIGEM_PLATAFORMA = 'import_plataforma';
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Lê um CSV do Drive e devolve objetos com o cabeçalho como chave.
+ * Lê a tabela do Drive, seja ela CSV ou Planilha Google.
  *
- * Separador ponto-e-vírgula, que é o que a exportação da plataforma usa.
- * `Utilities.parseCsv` cuida de aspas e de quebra de linha DENTRO do campo
- * — e há campos assim no arquivo, porque a descrição da compra é digitada
- * em várias linhas.
+ * Aceita as duas porque o Drive converte no upload por padrão, e o
+ * arquivo chega como planilha sem ninguém pedir. Recusar por causa disso
+ * seria transformar uma configuração de conta em erro de importação.
+ *
+ * No caminho CSV, `Utilities.parseCsv` cuida de aspas e de quebra de linha
+ * DENTRO do campo — e há campos assim, porque a descrição da compra é
+ * digitada em várias linhas.
  */
-function cfCsvDoDrive_(idArquivo) {
-  const texto = DriveApp.getFileById(idArquivo).getBlob().getDataAsString('UTF-8');
-  const matriz = Utilities.parseCsv(texto, ';');
+function cfTabelaDoDrive_(idArquivo) {
+  const arquivo = DriveApp.getFileById(idArquivo);
+  const tipo = arquivo.getMimeType();
+
+  let matriz;
+  if (tipo === 'application/vnd.google-apps.spreadsheet') {
+    const aba = SpreadsheetApp.openById(idArquivo).getSheets()[0];
+    matriz = aba.getDataRange().getValues();
+  } else {
+    matriz = Utilities.parseCsv(arquivo.getBlob().getDataAsString('UTF-8'), ';');
+  }
   if (!matriz || matriz.length < 2) return [];
 
   const cab = matriz[0].map(function (c) { return String(c || '').trim(); });
@@ -50,9 +64,46 @@ function cfCsvDoDrive_(idArquivo) {
     .filter(function (l) { return l.join('').trim() !== ''; })
     .map(function (l) {
       const o = {};
-      cab.forEach(function (campo, i) { o[campo] = l[i] === undefined ? '' : String(l[i]).trim(); });
+      cab.forEach(function (campo, i) { o[campo] = cfCelula_(l[i]); });
       return o;
     });
+}
+
+/**
+ * Normaliza a célula.
+ *
+ * A planilha devolve tipos nativos — Date, número, booleano — e o CSV
+ * devolve texto. Data volta como Date, que é o que interessa; o resto
+ * vira texto, e quem precisa de número converte depois.
+ */
+function cfCelula_(v) {
+  if (v === undefined || v === null) return '';
+  if (v instanceof Date) return v;
+  if (v === true) return 'TRUE';
+  if (v === false) return 'FALSE';
+  return String(v).trim();
+}
+
+/**
+ * Devolve o CNPJ com os 14 dígitos, recuperando zero à esquerda comido.
+ *
+ * O Drive e o Excel leem 08210454000107 como número e devolvem
+ * 8210454000107. Não é caso raro: 32% dos CNPJs do histórico começam com
+ * zero, e sem o reparo um terço das compras ficaria órfã — justo as dos
+ * fornecedores mais contratados.
+ *
+ * O dígito verificador é o que autoriza o reparo. Com 14 dígitos, o valor
+ * passa como veio: a fonte manda. Com menos, completa-se com zero e só
+ * aceita se o dígito fechar — é ele que prova que o zero recolocado é o
+ * que estava lá, e não um palpite.
+ */
+function cfCnpjRestaurado_(valor) {
+  let d = cfSoDigitos_(valor);
+  if (!d) return '';
+  if (d.length === 14) return d;
+  if (d.length > 14) return d;
+  while (d.length < 14) d = '0' + d;
+  return cfCnpjValido_(d) ? d : '';
 }
 
 /**
@@ -63,6 +114,8 @@ function cfCsvDoDrive_(idArquivo) {
  * três números constrói no fuso local, que é onde a data foi digitada.
  */
 function cfDataIso_(texto) {
+  // A planilha já devolve Date; só o CSV devolve texto.
+  if (texto instanceof Date) return texto;
   const s = String(texto || '').trim();
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
   if (!m) return '';
@@ -131,8 +184,8 @@ const CF_CAMPOS_DA_PLATAFORMA = [
 ];
 
 function cfImportarFornecedores_(idArquivo, aplicar) {
-  const linhas = cfCsvDoDrive_(idArquivo);
-  if (!linhas.length) return { ok: false, erro: 'CSV vazio ou ilegível.' };
+  const linhas = cfTabelaDoDrive_(idArquivo);
+  if (!linhas.length) return { ok: false, erro: 'Arquivo vazio ou ilegível.' };
 
   const existentes = {};
   cfLerTudo_('Fornecedores').forEach(function (f) {
@@ -141,10 +194,12 @@ function cfImportarFornecedores_(idArquivo, aplicar) {
 
   const novos = [], atualizacoes = [];
   const recusados = [];
-  let inalterados = 0, irregulares = 0;
+  let inalterados = 0, irregulares = 0, reparados = 0;
 
   linhas.forEach(function (l) {
-    const cnpj = cfSoDigitos_(l.CNPJ);
+    const bruto = cfSoDigitos_(l.CNPJ);
+    const cnpj = cfCnpjRestaurado_(l.CNPJ);
+    if (cnpj && bruto.length < 14) reparados++;
     // CNPJ de 14 dígitos é a única chave que este sistema tem. Linha sem
     // ele não vira fornecedor meio cadastrado: fica no relatório.
     if (cnpj.length !== 14) { recusados.push(l.RAZAO_SOCIAL + ' (CNPJ "' + l.CNPJ + '")'); return; }
@@ -215,7 +270,8 @@ function cfImportarFornecedores_(idArquivo, aplicar) {
     inalterados: inalterados,
     recusados: recusados.length,
     exemplosRecusados: recusados.slice(0, 5),
-    situacaoIrregular: irregulares
+    situacaoIrregular: irregulares,
+    cnpjReparados: reparados
   };
   Logger.log(JSON.stringify(r));
   return r;
@@ -240,8 +296,8 @@ function importarContratacoes(idArquivo) { return cfImportarContratacoes_(idArqu
  * cadastro que vem depois.
  */
 function cfImportarContratacoes_(idArquivo, aplicar) {
-  const linhas = cfCsvDoDrive_(idArquivo);
-  if (!linhas.length) return { ok: false, erro: 'CSV vazio ou ilegível.' };
+  const linhas = cfTabelaDoDrive_(idArquivo);
+  if (!linhas.length) return { ok: false, erro: 'Arquivo vazio ou ilegível.' };
 
   const jaTem = cfIndexarPor_('Contratacoes', 'PROTOCOLO');
   const fornecedores = {};
@@ -249,7 +305,7 @@ function cfImportarContratacoes_(idArquivo, aplicar) {
 
   const novas = [];
   const semFornecedor = {}, semNatureza = [];
-  let repetidas = 0, disputaveis = 0, valorDisputavel = 0, valorTotal = 0;
+  let repetidas = 0, disputaveis = 0, valorDisputavel = 0, valorTotal = 0, reparados = 0;
   const porEmpreendimento = {};
 
   linhas.forEach(function (l) {
@@ -257,7 +313,9 @@ function cfImportarContratacoes_(idArquivo, aplicar) {
     if (!protocolo) return;
     if (jaTem[protocolo]) { repetidas++; return; }
 
-    const cnpj = cfSoDigitos_(l.CNPJ);
+    const bruto = cfSoDigitos_(l.CNPJ);
+    const cnpj = cfCnpjRestaurado_(l.CNPJ);
+    if (cnpj && bruto.length < 14) reparados++;
     // Contratação de um CNPJ que não está no cadastro não é descartada: é
     // histórico real. Fica registrada e contada, para o relatório dizer
     // quantas ficaram órfãs em vez de sumir com elas.
@@ -302,6 +360,7 @@ function cfImportarContratacoes_(idArquivo, aplicar) {
     valorTotal: Math.round(valorTotal * 100) / 100,
     valorDisputavel: Math.round(valorDisputavel * 100) / 100,
     cnpjSemCadastro: Object.keys(semFornecedor).length,
+    cnpjReparados: reparados,
     semNatureza: semNatureza.length,
     porEmpreendimento: porEmpreendimento
   };

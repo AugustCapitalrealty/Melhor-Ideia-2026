@@ -52,6 +52,27 @@ const mutacoes = [
     de: '    if (c.DISPUTAVEL !== true) return;',
     para: '    if (false) return;',
     custo: 'a COPEL passa a ser o fornecedor mais relevante da base'
+  },
+  {
+    nome: 'CNPJ não recupera o zero à esquerda',
+    arquivo: IMPORT,
+    de: "  while (d.length < 14) d = '0' + d;\n  return cfCnpjValido_(d) ? d : '';",
+    para: "  return d;",
+    custo: 'um terço das compras fica órfã, justo as dos mais contratados'
+  },
+  {
+    nome: 'reparo aceita qualquer coisa, sem dígito verificador',
+    arquivo: IMPORT,
+    de: "  return cfCnpjValido_(d) ? d : '';",
+    para: '  return d;',
+    custo: 'lixo como "123" vira 00000000000123 e entra como fornecedor'
+  },
+  {
+    nome: 'planilha do Drive deixa de ser lida',
+    arquivo: IMPORT,
+    de: "  if (tipo === 'application/vnd.google-apps.spreadsheet') {",
+    para: '  if (false) {',
+    custo: 'arquivo convertido pelo Drive volta a ser ilegível'
   }
 ];
 

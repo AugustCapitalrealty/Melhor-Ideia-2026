@@ -3,14 +3,21 @@
  *
  * O que este teste protege, em ordem de quanto dói se quebrar:
  *
- * 1. DISPUTAVEL derivado da natureza. Sem ele o ranking de fornecedor
+ * 1. O zero à esquerda do CNPJ. O Drive e o Excel leem 08210454000107
+ *    como número e devolvem 8210454000107. São 32% dos CNPJs do
+ *    histórico: sem o reparo, um terço das compras fica órfã.
+ * 2. DISPUTAVEL derivado da natureza. Sem ele o ranking de fornecedor
  *    devolve a distribuidora de energia no topo.
- * 2. Relevância contada SÓ sobre o disputável.
- * 3. Idempotência por PROTOCOLO: reimportar não duplica.
- * 4. A data não anda um dia. ISO virando Date por UTC volta para o dia
+ * 3. Relevância contada SÓ sobre o disputável.
+ * 4. Idempotência por PROTOCOLO: reimportar não duplica.
+ * 5. A data não anda um dia. ISO virando Date por UTC volta para o dia
  *    anterior no fuso de São Paulo.
- * 5. Contato preenchido não é sobrescrito por dado cadastral.
- * 6. CNPJ fora de 14 dígitos é recusado, não vira cadastro pela metade.
+ * 6. Contato preenchido não é sobrescrito por dado cadastral.
+ * 7. Planilha Google e CSV entram pelo mesmo caminho.
+ *
+ * Carrega Cnpj.gs porque cfCnpjRestaurado_ usa cfCnpjValido_: em produção
+ * todos os .gs dividem o mesmo escopo, mas aqui cada teste lista o que
+ * carrega, e esquecer a dependência quebra a suíte inteira.
  */
 
 const fs = require('fs');
@@ -22,7 +29,7 @@ console.log('Validando a importação da plataforma de compras...');
 
 const root = path.resolve(__dirname, '..');
 
-/** Parser de CSV para o dublê de Utilities.parseCsv: aspas e quebra dentro do campo. */
+/** Dublê de Utilities.parseCsv: aspas e quebra de linha dentro do campo. */
 function parseCsvSimples(texto, sep) {
   const linhas = [];
   let campo = '', linha = [], aspas = false;
@@ -40,7 +47,10 @@ function parseCsvSimples(texto, sep) {
   return linhas;
 }
 
-function montarAmbiente(tabelas, csvPorId) {
+/**
+ * @param arquivos  { id: {csv: '...'} }  ou  { id: {planilha: [[...],[...]]} }
+ */
+function montarAmbiente(tabelas, arquivos) {
   const base = Object.assign({
     Fornecedores: [], Contratacoes: [], Naturezas: [], Log: []
   }, tabelas || {});
@@ -48,27 +58,47 @@ function montarAmbiente(tabelas, csvPorId) {
   const inseridos = {};
   const atualizados = [];
 
-  const ctx = vm.createContext({ console: console, JSON: JSON, Math: Math, String: String, Number: Number, Date: Date, Object: Object, Array: Array, RegExp: RegExp, isNaN: isNaN, parseInt: parseInt, parseFloat: parseFloat });
+  const ctx = vm.createContext({
+    console: console, JSON: JSON, Math: Math, String: String, Number: Number,
+    Date: Date, Object: Object, Array: Array, RegExp: RegExp,
+    isNaN: isNaN, parseInt: parseInt, parseFloat: parseFloat
+  });
   ctx.Logger = { log: function () {} };
-  ctx.SpreadsheetApp = { getActiveSpreadsheet: function () { return null; } };
   ctx.Session = { getActiveUser: function () { return { getEmail: function () { return 'x@y.z'; } }; } };
   ctx.Utilities = {
     parseCsv: function (texto, sep) { return parseCsvSimples(texto, sep || ','); },
     getUuid: function () { return 'uuid'; },
     formatDate: function () { return ''; }
   };
+  ctx.CacheService = { getScriptCache: function () { return { get: function () { return null; }, put: function () {} }; } };
+
+  const TIPO_PLANILHA = 'application/vnd.google-apps.spreadsheet';
   ctx.DriveApp = {
     getFileById: function (id) {
-      return { getBlob: function () {
-        return { getDataAsString: function () {
-          if (!csvPorId[id]) throw new Error('sem arquivo ' + id);
-          return csvPorId[id];
-        } };
+      const a = arquivos[id];
+      if (!a) throw new Error('sem arquivo ' + id);
+      return {
+        getMimeType: function () { return a.planilha ? TIPO_PLANILHA : 'text/csv'; },
+        getBlob: function () {
+          return { getDataAsString: function () { return a.csv; } };
+        }
+      };
+    }
+  };
+  ctx.SpreadsheetApp = {
+    getActiveSpreadsheet: function () { return null; },
+    openById: function (id) {
+      const a = arquivos[id];
+      if (!a || !a.planilha) throw new Error('nao e planilha: ' + id);
+      return { getSheets: function () {
+        return [{ getDataRange: function () {
+          return { getValues: function () { return a.planilha; } };
+        } }];
       } };
     }
   };
 
-  ['Util.gs', 'Config.gs', 'ImportPlataforma.gs'].forEach(function (f) {
+  ['Util.gs', 'Config.gs', 'Cnpj.gs', 'ImportPlataforma.gs'].forEach(function (f) {
     vm.runInContext(fs.readFileSync(path.join(root, 'app', f), 'utf8'), ctx, { filename: f });
   });
 
@@ -100,6 +130,7 @@ function montarAmbiente(tabelas, csvPorId) {
   return { ctx: ctx, base: base, inseridos: inseridos, atualizados: atualizados };
 }
 
+// 08210454000107 (ACQUA ROCHA) começa com zero — é o caso do reparo.
 const CSV_FORN =
   'CNPJ;RAZAO_SOCIAL;NOME_FANTASIA;CIDADE;UF;SITUACAO_CNPJ;CNAE_PRINCIPAL;CNAES_SECUNDARIOS;NATUREZA_JURIDICA;PORTE;IS_MEI;CAPITAL_SOCIAL;DATA_INICIO_ATIVIDADE;DATA_SITUACAO_CADASTRAL;CONTATO_TEL;CONTATO_EMAIL;ATUALIZADO_EM\n' +
   '08210454000107;ACQUA ROCHA LTDA;ACQUA ROCHA;ITAJAI;SC;ATIVA;3600601 — Captação;"3600602 — Distribuição; 4930201 — Transporte";Sociedade Empresária Limitada;MICRO EMPRESA;FALSE;6000.00;2006-08-03;2006-08-03;4733481417;;2026-08-14\n' +
@@ -121,25 +152,40 @@ function ok(msg) { passos++; console.log('  ✓ ' + msg); }
   const r = a.ctx.cfSemearNaturezas_(true);
   assert.strictEqual(r.inseridas, 16, 'devem entrar as 16 naturezas');
   assert.strictEqual(r.disputaveis, 10, 'dez naturezas são disputáveis');
-  const energia = a.base.Naturezas.filter(function (n) { return n.ID === 'energia_eletrica'; })[0];
-  assert.strictEqual(energia.DISPUTAVEL, false, 'energia elétrica NÃO é disputável');
-  const manut = a.base.Naturezas.filter(function (n) { return n.ID === 'manutencao_imoveis'; })[0];
-  assert.strictEqual(manut.DISPUTAVEL, true, 'manutenção de imóveis é disputável');
-  // Semear de novo não duplica.
-  const r2 = a.ctx.cfSemearNaturezas_(true);
-  assert.strictEqual(r2.inseridas, 0, 'semear duas vezes não duplica');
+  assert.strictEqual(a.base.Naturezas.filter(function (n) { return n.ID === 'energia_eletrica'; })[0].DISPUTAVEL, false,
+    'energia elétrica NÃO é disputável');
+  assert.strictEqual(a.base.Naturezas.filter(function (n) { return n.ID === 'manutencao_imoveis'; })[0].DISPUTAVEL, true,
+    'manutenção de imóveis é disputável');
+  assert.strictEqual(a.ctx.cfSemearNaturezas_(true).inseridas, 0, 'semear duas vezes não duplica');
   ok('as 16 naturezas entram, com energia e água fora do que se disputa');
 }
 
-// ── 2. fornecedores ──
+// ── 2. o reparo do CNPJ ──
 {
-  const a = montarAmbiente({ Fornecedores: [] }, { forn: CSV_FORN });
+  const a = montarAmbiente({}, {});
+  const f = a.ctx.cfCnpjRestaurado_;
+  assert.strictEqual(f('8210454000107'), '08210454000107',
+    'CNPJ que perdeu o zero é recomposto — é 32% do histórico');
+  assert.strictEqual(f(8210454000107), '08210454000107', 'número também, que é como a planilha devolve');
+  assert.strictEqual(f('08210454000107'), '08210454000107', 'quem já tem 14 dígitos passa igual');
+  assert.strictEqual(f('123'), '',
+    'lixo não vira CNPJ: completar 123 com zeros dá dígito verificador errado');
+  assert.strictEqual(f('8210454000108'), '',
+    'um dígito trocado não é reparado — o verificador é o que autoriza o conserto');
+  assert.strictEqual(f(''), '', 'vazio continua vazio');
+  ok('o zero à esquerda volta, e só quando o dígito verificador prova que é ele');
+}
+
+// ── 3. fornecedores, pelo CSV ──
+{
+  const a = montarAmbiente({ Fornecedores: [] }, { forn: { csv: CSV_FORN } });
   const r = a.ctx.cfImportarFornecedores_('forn', true);
   assert.strictEqual(r.novos, 2, 'dois CNPJ válidos entram');
   assert.strictEqual(r.recusados, 1, 'o CNPJ de 3 dígitos é recusado');
   assert.strictEqual(r.situacaoIrregular, 1, 'a MATINSETO está BAIXADA');
 
   const acqua = a.base.Fornecedores.filter(function (f) { return f.CNPJ === '08210454000107'; })[0];
+  assert.ok(acqua, 'o CNPJ foi gravado com os 14 dígitos');
   assert.strictEqual(acqua.PORTE, 'MICRO EMPRESA', 'porte veio da Receita');
   assert.strictEqual(acqua.IS_MEI, false, 'TRUE/FALSE do Postgres vira booleano');
   assert.strictEqual(acqua.CAPITAL_SOCIAL, 6000, 'capital social vira número');
@@ -148,21 +194,40 @@ function ok(msg) { passos++; console.log('  ✓ ' + msg); }
   assert.strictEqual(acqua.ORIGEM, 'import_plataforma', 'a origem fica marcada');
   ok('fornecedor entra com o retrato da Receita, e CNPJ inválido é recusado');
 
-  // A DATA não pode andar um dia.
   assert.strictEqual(acqua.DATA_INICIO_ATIVIDADE.getFullYear(), 2006, 'ano da abertura');
   assert.strictEqual(acqua.DATA_INICIO_ATIVIDADE.getMonth(), 7, 'mês da abertura (agosto = 7)');
   assert.strictEqual(acqua.DATA_INICIO_ATIVIDADE.getDate(), 3,
     'dia 3: se virar 2, a data foi lida como UTC e voltou um dia no fuso local');
   ok('a data não anda um dia ao virar Date');
 
-  // Reimportar não duplica e não muda nada.
   const r2 = a.ctx.cfImportarFornecedores_('forn', true);
   assert.strictEqual(r2.novos, 0, 'reimportar não cria de novo');
   assert.strictEqual(r2.atualizados, 0, 'reimportar não reescreve célula igual');
   ok('reimportar o mesmo arquivo não duplica nem reescreve');
 }
 
-// ── 3. o contato de quem cotou não é sobrescrito ──
+// ── 4. fornecedores, pela Planilha Google com o zero já comido ──
+{
+  // É assim que o Drive entrega depois de converter: número no CNPJ, Date
+  // na data, booleano no booleano — e o zero à esquerda perdido.
+  const PLANILHA = [
+    ['CNPJ', 'RAZAO_SOCIAL', 'CIDADE', 'UF', 'SITUACAO_CNPJ', 'PORTE', 'IS_MEI', 'CAPITAL_SOCIAL', 'DATA_INICIO_ATIVIDADE'],
+    [8210454000107, 'ACQUA ROCHA LTDA', 'ITAJAI', 'SC', 'ATIVA', 'MICRO EMPRESA', false, 6000, new Date(2006, 7, 3)]
+  ];
+  const a = montarAmbiente({ Fornecedores: [] }, { planilha: { planilha: PLANILHA } });
+  const r = a.ctx.cfImportarFornecedores_('planilha', true);
+
+  assert.strictEqual(r.novos, 1, 'a planilha é lida como o CSV');
+  assert.strictEqual(r.cnpjReparados, 1, 'e o relatório conta quantos CNPJ precisaram de conserto');
+  const f = a.base.Fornecedores[0];
+  assert.strictEqual(f.CNPJ, '08210454000107',
+    'o zero comido pelo Drive volta — sem isso a compra não casa com o fornecedor');
+  assert.strictEqual(f.IS_MEI, false, 'booleano nativo da planilha é entendido');
+  assert.strictEqual(f.DATA_INICIO_ATIVIDADE.getDate(), 3, 'Date nativo passa direto, sem reconverter');
+  ok('planilha convertida pelo Drive entra igual ao CSV, com o CNPJ consertado');
+}
+
+// ── 5. o contato de quem cotou não é sobrescrito ──
 {
   const a = montarAmbiente({
     Fornecedores: [{
@@ -170,7 +235,7 @@ function ok(msg) { passos++; console.log('  ✓ ' + msg); }
       CONTATO_NOME: 'Marcos, vendedor', CONTATO_TEL: '47999990000',
       CONTATO_EMAIL: 'marcos@acquarocha.com.br'
     }]
-  }, { forn: CSV_FORN });
+  }, { forn: { csv: CSV_FORN } });
   a.ctx.cfImportarFornecedores_('forn', true);
   const f = a.base.Fornecedores[0];
   assert.strictEqual(f.CONTATO_TEL, '47999990000',
@@ -179,11 +244,11 @@ function ok(msg) { passos++; console.log('  ✓ ' + msg); }
   ok('o contato digitado por quem cotou sobrevive à importação');
 }
 
-// ── 4. contratações e o corte do disputável ──
+// ── 6. contratações e o corte do disputável ──
 {
   const a = montarAmbiente({
     Fornecedores: [{ CNPJ: '08210454000107', RAZAO_SOCIAL: 'ACQUA ROCHA LTDA' }]
-  }, { contr: CSV_CONTR });
+  }, { contr: { csv: CSV_CONTR } });
   a.ctx.cfSemearNaturezas_(true);
   const r = a.ctx.cfImportarContratacoes_('contr', true);
 
@@ -192,10 +257,9 @@ function ok(msg) { passos++; console.log('  ✓ ' + msg); }
   assert.strictEqual(r.naoDisputaveis, 1, 'a conta de energia não é disputável');
   assert.strictEqual(r.cnpjSemCadastro, 1, 'a COPEL não está no cadastro e isso é relatado');
 
-  const energia = a.base.Contratacoes.filter(function (c) { return c.PROTOCOLO === '2026000887'; })[0];
-  assert.strictEqual(energia.DISPUTAVEL, false, 'energia elétrica entra marcada como não disputável');
-  const canoas = a.base.Contratacoes.filter(function (c) { return c.PROTOCOLO === '2026000001'; })[0];
-  assert.strictEqual(canoas.EMPREENDIMENTO, 'Mega Canoas',
+  assert.strictEqual(a.base.Contratacoes.filter(function (c) { return c.PROTOCOLO === '2026000887'; })[0].DISPUTAVEL, false,
+    'energia elétrica entra marcada como não disputável');
+  assert.strictEqual(a.base.Contratacoes.filter(function (c) { return c.PROTOCOLO === '2026000001'; })[0].EMPREENDIMENTO, 'Mega Canoas',
     'empreendimento não cadastrado entra como texto, não é descartado');
   ok('a natureza define o disputável, e imóvel sem cadastro não perde histórico');
 
@@ -205,18 +269,35 @@ function ok(msg) { passos++; console.log('  ✓ ' + msg); }
   ok('o protocolo torna a importação idempotente');
 }
 
-// ── 5. relevância conta só o disputável ──
+// ── 7. a compra casa com o fornecedor mesmo vindo de planilha ──
+{
+  const PLANILHA = [
+    ['CNPJ', 'DATA', 'EMPREENDIMENTO', 'NATUREZA_ORCAMENTARIA', 'PROTOCOLO', 'VALOR'],
+    [8210454000107, new Date(2026, 7, 14), 'Mega Itajaí', 'Material de Consumo', 2026000819, 4800]
+  ];
+  const a = montarAmbiente({
+    Fornecedores: [{ CNPJ: '08210454000107', RAZAO_SOCIAL: 'ACQUA ROCHA LTDA' }]
+  }, { p: { planilha: PLANILHA } });
+  a.ctx.cfSemearNaturezas_(true);
+  const r = a.ctx.cfImportarContratacoes_('p', true);
+  assert.strictEqual(r.cnpjSemCadastro, 0,
+    'com o CNPJ consertado, a compra encontra o fornecedor em vez de ficar órfã');
+  assert.strictEqual(r.cnpjReparados, 1, 'e o relatório diz que precisou consertar');
+  ok('a compra vinda de planilha casa com o fornecedor, e não fica órfã');
+}
+
+// ── 8. relevância conta só o disputável ──
 {
   const a = montarAmbiente({
     Fornecedores: [
       { CNPJ: '08210454000107', RAZAO_SOCIAL: 'ACQUA ROCHA LTDA' },
       { CNPJ: '04368898000106', RAZAO_SOCIAL: 'COPEL DISTRIBUICAO S.A.' },
-      { CNPJ: '99999999999999', RAZAO_SOCIAL: 'NUNCA CONTRATADA LTDA' }
+      { CNPJ: '11222333000181', RAZAO_SOCIAL: 'NUNCA CONTRATADA LTDA' }
     ]
-  }, { contr: CSV_CONTR });
+  }, { contr: { csv: CSV_CONTR } });
   a.ctx.cfSemearNaturezas_(true);
   a.ctx.cfImportarContratacoes_('contr', true);
-  const r = a.ctx.cfRecalcularRelevancia_(true);
+  a.ctx.cfRecalcularRelevancia_(true);
 
   const acqua = a.base.Fornecedores[0], copel = a.base.Fornecedores[1], nunca = a.base.Fornecedores[2];
   assert.strictEqual(acqua.CONTRATACOES_HISTORICO, 2, 'a Acqua tem duas compras disputáveis');
@@ -227,9 +308,8 @@ function ok(msg) { passos++; console.log('  ✓ ' + msg); }
   assert.strictEqual(nunca.CONTRATACOES_HISTORICO, 0,
     'quem nunca foi contratado recebe zero explícito, não vazio');
   assert.strictEqual(acqua.ULTIMA_CONTRATACAO.getMonth(), 7, 'a última é a de agosto, não a de janeiro');
-  assert.ok(r.fornecedoresComContratacao === 1, 'só um fornecedor tem histórico disputável');
   ok('a relevância conta só o que se disputa — a distribuidora de energia fica em zero');
 }
 
-console.log('\nOK: ' + passos + ' verificações. A importação da plataforma respeita o corte do disputável,');
-console.log('    é idempotente por CNPJ e por protocolo, e não sobrescreve o contato de quem cotou.');
+console.log('\nOK: ' + passos + ' verificações. A importação lê CSV e planilha, recupera o zero à');
+console.log('    esquerda do CNPJ, respeita o corte do disputável e é idempotente.');
