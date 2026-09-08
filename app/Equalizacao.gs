@@ -120,8 +120,23 @@ function cfPanoramaSaving_() {
     g.compras++;
   };
 
+  let semDecisao = 0;
+
   cfLerTudo_('Equalizacoes').forEach(function (eq) {
-    if (String(eq.STATUS || '') !== 'homologada') return;
+    if (String(eq.STATUS || '') !== 'homologada') {
+      // O acervo importado cai TODO aqui, e é preciso dizer isso.
+      //
+      // Uma equalização importada traz as propostas e o valor inicial,
+      // mas não traz quem venceu: o documento de origem não registra a
+      // decisão. Sem vencedor marcado ela não produz saving — e, calada,
+      // o painel mostraria zero sem explicar que existem N compras
+      // esperando um clique de duas pessoas para virarem número.
+      //
+      // Não é ruído: é a fila de trabalho que separa o painel vazio do
+      // painel com a série histórica inteira.
+      semDecisao++;
+      return;
+    }
     homologadas++;
 
     const minhas = propostas.filter(function (p) {
@@ -182,6 +197,9 @@ function cfPanoramaSaving_() {
     // ou ninguém registrou o valor inicial. As duas são acionáveis, e
     // esconder o denominador transformaria o indicador em vitrine.
     semRegistro: homologadas - compras,
+    // Equalizações que existem na base e ainda não têm decisão marcada.
+    // Cada uma é um saving que a tela não pode mostrar ainda.
+    semDecisao: semDecisao,
     dataAproximada: aproximadas,
     porMes: comPercentual(porMes, true),
     porMega: comPercentual(porMega),

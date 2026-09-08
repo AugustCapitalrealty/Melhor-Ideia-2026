@@ -87,12 +87,68 @@ function topoDaExpressao(s) {
 
 const suspeitas = [];
 
-['app/Interface.html', 'app/Codigo.gs', 'app/Equalizacao.gs', 'app/Avaliacao.gs',
- 'app/Cnpj.gs', 'app/Exportar.gs', 'app/Fornecedores.gs', 'app/Consulta.gs',
- 'app/Util.gs', 'app/Manutencao.gs',
- 'app/Apresentacao_Conselho.gs'].forEach(function (rel) {
+/**
+ * Os testes entram na varredura, e nao por simetria.
+ *
+ * Numa linha de producao a duplicata quebra alguma coisa e alguem
+ * percebe. Num teste ela PASSA — duas vezes — e a suite fica verde
+ * enquanto a assercao some do lugar onde deveria estar. Foi assim que
+ * teste-exportacao-benchmark-iqf.cjs ficou com um par de linhas
+ * repetido: dois "5." iguais na saida, e ninguem leu.
+ *
+ * O proprio arquivo da varredura fica de fora: ele carrega, dentro de
+ * strings, exemplos do padrao que procura, e se auto-acusaria.
+ */
+const alvos = ['app/Interface.html', 'app/Codigo.gs', 'app/Equalizacao.gs',
+  'app/Avaliacao.gs', 'app/Cnpj.gs', 'app/Exportar.gs', 'app/Fornecedores.gs',
+  'app/Consulta.gs', 'app/Util.gs', 'app/Manutencao.gs',
+  'app/Apresentacao_Conselho.gs']
+  .concat(fs.readdirSync(path.join(root, 'tests'))
+    .filter(function (f) { return /[.]cjs$/.test(f) && f !== 'teste-linha-reinserida.cjs'; })
+    .map(function (f) { return 'tests/' + f; }));
+
+alvos.forEach(function (rel) {
   const linhas = fs.readFileSync(path.join(root, rel), 'utf8')
     .replace(/\r\n/g, '\n').split('\n');
+
+  // ── Quarta regra: um BLOCO inteiro colado duas vezes.
+  //
+  // As outras tres olham duas linhas vizinhas, e por isso nao veem o
+  // caso mais comum de colagem: selecionar duas ou tres linhas e colar
+  // sem apagar as antigas. O resultado e a-b-a-b, onde nenhum par
+  // VIZINHO e igual — (a,b) difere, (b,a) difere — e a varredura passa
+  // batido. Foi exatamente o que houve em
+  // teste-exportacao-benchmark-iqf.cjs: assert + console.log repetidos,
+  // numa suite verde.
+  //
+  // Dois blocos identicos e consecutivos nao acontecem por acaso em
+  // codigo escrito a mao, entao a regra pode ser larga sem ser barulhenta.
+  // O que a segura sao as linhas SEM substancia: fechamentos e brancos
+  // se repetem o tempo todo e nao significam nada.
+  const temSubstancia = function (l) {
+    const n = nucleo(l);
+    return n.length >= 20 && !/^[)\]}\s]+$/.test(n) && !/^(\/\/|\/[*]|[*])/.test(n);
+  };
+
+  for (let i = 0; i < linhas.length; i++) {
+    for (let k = 2; k <= 6 && i + 2 * k <= linhas.length; k++) {
+      const bloco = linhas.slice(i, i + k);
+      let igual = true;
+      for (let j = 0; j < k; j++) { if (bloco[j] !== linhas[i + k + j]) { igual = false; break; } }
+      if (!igual) continue;
+      if (!bloco.some(temSubstancia)) continue;
+
+      suspeitas.push({
+        arquivo: rel,
+        linha: i + k + 1,
+        tipo: 'bloco de ' + k + ' linhas colado duas vezes',
+        de: nucleo(bloco[0]).slice(0, 78),
+        para: nucleo(bloco[k - 1]).slice(0, 78)
+      });
+      i += 2 * k - 1;
+      break;
+    }
+  }
 
   for (let i = 0; i + 1 < linhas.length; i++) {
     const a = linhas[i];

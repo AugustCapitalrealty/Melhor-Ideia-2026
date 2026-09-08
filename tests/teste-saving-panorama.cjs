@@ -211,4 +211,42 @@ function base(compras, extras) {
     'o saving é de quem negociou, não de quem criou a equalização');
 }
 
+// ── 10. O acervo sem decisão precisa ser contado, não ignorado
+//
+//    Equalização importada não traz vencedor: o documento de origem
+//    não registra quem ganhou. Ela já tem as propostas e o valor
+//    inicial, mas até alguém homologar não produz saving nenhum.
+//
+//    Se o painel apenas as ignorar, o gestor lê "não há dado" onde a
+//    verdade é "há N compras esperando um clique" — e a única ação que
+//    enche a tela fica invisível. É o mesmo princípio do denominador:
+//    número de saving sem o que ficou de fora é vitrine.
+{
+  const importadas = [{ ID: 'EQ-IMP-1', STATUS: 'importada' },
+                      { ID: 'EQ-IMP-2', STATUS: 'importada' },
+                      { ID: 'EQ-RASC', STATUS: 'rascunho' }];
+  const ctx = montar(base([compra('EQ12', 100000, 90000, { em: new Date(2026, 4, 1) })],
+                          { eqs: importadas }));
+  const p = ctx.cfPanoramaSaving_();
+
+  assert.equal(p.semDecisao, 3,
+    'as equalizações sem homologação precisam ser contadas: cada uma é um ' +
+    'saving que a tela ainda não pode mostrar, e somá-las é o que separa ' +
+    '“painel vazio” de “fila de trabalho”');
+
+  // E não podem contaminar o que JÁ foi decidido.
+  assert.equal(p.homologadas, 1, 'só a homologada entra no denominador');
+  assert.equal(p.compras, 1);
+  assert.equal(p.total, 10000);
+}
+
+// ── 11. Sem acervo pendente, o contador é zero e não some
+{
+  const ctx = montar(base([compra('EQ13', 100000, 90000, { em: new Date(2026, 4, 1) })]));
+  const p = ctx.cfPanoramaSaving_();
+  assert.strictEqual(p.semDecisao, 0,
+    'o campo precisa existir sempre: se sumir quando é zero, a tela passa a ' +
+    'testar undefined e a mensagem some junto');
+}
+
 console.log('OK: saving por mês, Mega, categoria e negociador — com denominador à vista.');

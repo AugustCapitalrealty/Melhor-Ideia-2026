@@ -100,6 +100,43 @@ function montar() {
     'zero não pode ser exibido como se fosse resultado apurado');
 }
 
+// ── 2b. O acervo esperando decisão aparece no estado vazio
+//
+//    É a fila que explica a tela vazia. As equalizações importadas
+//    trazem propostas e valor inicial, mas nenhuma traz vencedor — o
+//    documento de origem não registra a decisão. Sem esta linha o
+//    gestor lê "não há dado" onde a verdade é "o dado está aqui,
+//    falta marcar quem venceu", e a única ação que enche a tela some.
+{
+  const a = montar();
+  a.ctx.desenharPanoramaSaving({
+    total: 0, totalContratado: 0, percentual: null,
+    compras: 0, homologadas: 0, semRegistro: 0, semDecisao: 47, dataAproximada: 0,
+    porMes: [], porMega: [], porCategoria: [], porPessoa: []
+  });
+
+  const html = a.el.blocoSaving.innerHTML;
+  assert.ok(/47/.test(html),
+    'o estado vazio precisa dizer quantas equalizações estão esperando ' +
+    'vencedor: é a fila de trabalho que transforma esta tela vazia em série');
+  assert.ok(/vencedor/i.test(html),
+    'e precisa dizer o que falta — marcar o vencedor — e não só exibir o número');
+}
+
+// ── 2c. Sem acervo pendente, a fila não é inventada
+{
+  const a = montar();
+  a.ctx.desenharPanoramaSaving({
+    total: 0, totalContratado: 0, percentual: null,
+    compras: 0, homologadas: 0, semRegistro: 0, semDecisao: 0, dataAproximada: 0,
+    porMes: [], porMega: [], porCategoria: [], porPessoa: []
+  });
+
+  assert.ok(!/sem vencedor marcado/i.test(a.el.blocoSaving.innerHTML),
+    'base limpa não tem fila: anunciar “0 equalizações esperando” é ruído ' +
+    'no lugar onde a mensagem precisa ser acionável');
+}
+
 // ── 3. Com saving, o denominador vem junto do total
 {
   const a = montar();

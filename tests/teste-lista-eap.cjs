@@ -102,8 +102,9 @@ console.log('1. Numeração derivada ao adicionar itens...');
 tela.itens = [];
 tela.proponentes = [{ nome: 'ALFA' }];
 tela.addItem('grupo', true);
-tela.addItem('item', true);
-tela.addItem('item', true);
+tela.addItem('item', true);   // 1.1
+tela.addItem('item', true);   // 1.2 — dois no grupo 1 de propósito: é o que
+                              // obriga o grupo seguinte a reiniciar em 2.1
 tela.addItem('grupo', true);
 tela.addItem('item', true);
 

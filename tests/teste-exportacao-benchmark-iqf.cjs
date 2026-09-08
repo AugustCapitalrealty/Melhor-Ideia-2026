@@ -255,8 +255,6 @@ const descItem = linhaItem.join(' | ');
 assert.ok(descItem.includes('[Ref: Melitta]'), 'Descrição deve manter [Ref: Melitta]');
 assert.ok(descItem.includes('★ Última: R$ 30,00'), 'Descrição deve exibir benchmark histórico [★ Última: R$ 30,00]');
 console.log('✓ 5. Descrição do item exibe benchmark histórico [★ Última: R$ 30,00 (Mega Curitiba)].');
-assert.ok(descItem.includes('★ Última: R$ 30,00'), 'Descrição deve exibir benchmark histórico [★ Última: R$ 30,00]');
-console.log('✓ 5. Descrição do item exibe benchmark histórico [★ Última: R$ 30,00 (Mega Curitiba)].');
 
 // ── 6. Linha de 'Variação vs últ. compra' com Alertas de Sobrepreço e Economia
 const linhaVariacao = escrito.filter(l => l.indexOf('Variação vs últ. compra') >= 0)[0];
@@ -283,6 +281,55 @@ assert.ok(txtLegenda.includes('▲ vermelho = sobrepreço ≥ +15%'), 'Legenda d
 assert.ok(txtLegenda.includes('▼ verde = economia ≤ -10%'), 'Legenda deve explicar ▼ economia');
 assert.ok(txtLegenda.includes('· = não cotou'), 'Legenda deve explicar não cotado');
 console.log('✓ 8. Legenda executiva de rodapé documenta todas as cores e símbolos para auditoria da Diretoria.');
+// ── 9. Referência que NUNCA foi comprada não pode virar "compra"
+//
+//    Até aqui o acervo do teste tinha "vencedora: true", e por isso o
+//    rótulo "compra" estava certo. O outro ramo nunca era exercitado — e
+//    era justamente o ramo do acervo REAL: equalização importada não tem
+//    vencedor marcado, então sua referência é uma proposta cotada e não
+//    uma compra. O cabeçalho da linha e a legenda diziam "compra" de
+//    qualquer jeito, contradizendo a nota da própria célula ao lado.
+//
+//    Num documento assinado que vai à Diretoria, afirmar que houve
+//    compra onde só houve cotação é afirmar um fato que não aconteceu.
+escrito.length = 0;
+ctx.cfCarregarPrecos_ = () => [
+  {
+    idEqualizacao: 'EQ-ANTIGA',
+    statusEqualizacao: 'importada',
+    data: new Date('2026-06-01'),
+    empreendimento: 'MEGA CENTRO LOGÍSTICO CURITIBA',
+    itemDescricao: 'Café em pó tradicional 500g',
+    descricao: 'Café em pó tradicional 500g',
+    chave: 'cafe em po tradicional 500g',
+    unidade: 'pct',
+    precoUnitario: 30.00,
+    valor: 30.00,
+    fornecedor: 'FORNECEDOR HISTORICO LTDA',
+    marcaCotada: 'Melitta',
+    vencedora: false,
+    status: 'cotado'
+  }
+];
+
+ctx.cfExportarEqualizacao_('EQ-BENCH-1');
+
+assert.ok(!escrito.some(l => l.indexOf('Variação vs últ. compra') >= 0),
+  'a referência não foi comprada (vencedora: false) e mesmo assim a grade ' +
+  'anuncia “últ. compra” — o documento afirma uma compra que não houve');
+
+const linhaVarProp = escrito.filter(l => l.indexOf('Variação vs últ. proposta') >= 0)[0];
+assert.ok(linhaVarProp,
+  'sem compra homologada o rótulo precisa dizer “últ. proposta”: é o que a ' +
+  'nota de cada célula já dizia, e o cabeçalho contradizia');
+
+const legendaProp = escrito.filter(l => l.indexOf('Legenda:') >= 0)[0].join(' | ');
+assert.ok(legendaProp.indexOf('vs última compra') < 0,
+  'a legenda vale para a grade INTEIRA e não pode afirmar compra: itens ' +
+  'diferentes têm referências de naturezas diferentes');
+assert.ok(/refer[êe]ncia/i.test(legendaProp),
+  'a legenda precisa falar em referência e mandar ler o rótulo da linha');
+console.log('✓ 9. Referência apenas cotada é rotulada como proposta, nunca como compra.');
 
 console.log('\n===============================================================');
 console.log('🎉 SUCESSO: Exportação de Planilha e PDF com Benchmark Histórico');

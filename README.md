@@ -27,9 +27,11 @@ A planilha equaliza, mas não lembra. Cada arquivo nasce isolado: o preço cotad
 - Ficha 360° do fornecedor: cadastro, contatos, disputas e histórico de preço por item ao longo do tempo
 - Colagem de bloco do Excel na grade e navegação completa por teclado
 - Tempo por equalização medido automaticamente, do primeiro campo até a gravação
+- Avaliação pós-Ordem de Compra e IQF (Índice de Qualificação do Fornecedor): cinco critérios ponderados conforme a ata do comitê — qualidade 30, prazo 25, segurança 20, atendimento 15, limpeza 10 — com a nota do fornecedor visível no autocomplete, no cabeçalho do proponente e no documento exportado
+- Painel de saving ao longo do tempo, por mês, Mega, categoria e negociador, com o denominador à vista
 
 **O que ainda não existe** — e está declarado aqui de propósito, para que o escopo entregue seja verificável:
-- Avaliação pós-Ordem de Compra e Índice de Qualificação do Fornecedor (IQF), diretriz do comitê: mapeada, sem código
+- **Base de avaliações**: o IQF existe em código (`Avaliacao.gs`: cinco critérios ponderados, exatamente os da ata do comitê) e aparece no selo do proponente e no documento exportado — mas há 1 avaliação registrada. Com uma amostra dessa, a nota diz mais sobre quem avaliou do que sobre o fornecedor, e a tela a marca como preliminar
 - **Linha de base de tempo na planilha**: a instrumentação existe dos dois lados, mas ninguém cronometrou ainda uma equalização feita no Excel. Sem ela não há comparação, e o ganho continua sendo afirmação
 - **Piloto com cotações reais**: as equalizações da base são de teste e do acervo importado
 - Taxa de vitória por fornecedor: calculada, mas ainda sem disputas homologadas suficientes para virar percentual (a tela mostra a fração crua até lá)

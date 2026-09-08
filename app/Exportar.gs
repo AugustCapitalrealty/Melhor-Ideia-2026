@@ -243,7 +243,13 @@ function cfExportarEqualizacao_(idEq) {
         faixas.marca.push(numM);
       }
 
-      // A variação vs última compra homologada abaixo do preço de cada fornecedor
+      // A variação vs a referência histórica, abaixo do preço de cada fornecedor.
+      //
+      // O rótulo diz COMPRA ou PROPOSTA conforme o que a referência é de
+      // fato. A nota de cada célula já fazia essa distinção; o cabeçalho
+      // da linha não fazia, e afirmava 'compra' mesmo quando o acervo só
+      // tinha uma proposta que ninguém chegou a contratar. Num documento
+      // que vai à Diretoria, isso é dizer que houve compra sem ter havido.
       const uPreco = item.referenciaHistorica && item.referenciaHistorica.ultimoPreco;
       const temVariacaoHist = uPreco && props.some(function (p) {
         const c = item.precos[p.id];
@@ -251,7 +257,9 @@ function cfExportarEqualizacao_(idEq) {
       });
       if (temVariacaoHist) {
         const lv = vazia();
-        lv[COL_VALOR - 1] = 'Variação vs últ. compra';
+        lv[COL_VALOR - 1] = item.referenciaHistorica.foiVencedora
+          ? 'Variação vs últ. compra'
+          : 'Variação vs últ. proposta';
         props.forEach(function (p, i) {
           const c = item.precos[p.id];
           const cotou = !!(c && c.status === 'cotado' && c.valor !== null);
@@ -352,7 +360,11 @@ function cfExportarEqualizacao_(idEq) {
   // ── legenda explicativa do comparativo
   li = vazia();
   li[COL_ROTULO - 1] = 'Legenda:';
-  li[COL_VALOR - 1] = '✓ verde = menor preço da linha | ▲ vermelho = sobrepreço ≥ +15% vs última compra | ▼ verde = economia ≤ -10% vs última compra | · = não cotou';
+  // A legenda vale para a grade INTEIRA, e itens diferentes podem ter
+  // referências de naturezas diferentes: um já foi comprado, outro só
+  // foi cotado. Por isso ela fala em 'referência' e manda ler o rótulo
+  // da linha de cada item, que é onde a natureza está dita.
+  li[COL_VALOR - 1] = '✓ verde = menor preço da linha | ▲ vermelho = sobrepreço ≥ +15% vs a referência | ▼ verde = economia ≤ -10% vs a referência | · = não cotou. A referência é a última compra homologada do item; onde não houve compra, a última proposta cotada — o rótulo de cada linha diz qual.';
   const lLeg = linha(li);
   merges.push({ l: lLeg, c: COL_VALOR, nl: 1, nc: largura - 2 });
   faixas.legenda.push(lLeg);

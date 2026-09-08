@@ -5260,6 +5260,19 @@ function desenharPanoramaSaving(p) {
             'a proposta inicial do vencedor for informada — é a diferença entre ela e o valor contratado.'
           : '<b>Ainda não há compra homologada.</b> A partir da primeira, este bloco passa a somar ' +
             'o que a negociação rendeu e a comparar os meses entre si.') +
+        // A fila que explica o painel vazio.
+        //
+        // O acervo importado entra sem vencedor: o documento de origem
+        // não registra quem ganhou. Sem dizer isso, o gestor lê "sem
+        // dado" onde a verdade é "o dado está aqui, falta marcar quem
+        // venceu" — e some a única ação que enche esta tela.
+        (p.semDecisao > 0
+          ? '<br><br><b>' + p.semDecisao +
+            (p.semDecisao === 1
+              ? ' equalização na base ainda sem vencedor marcado.</b> Ela já tem'
+              : ' equalizações na base ainda sem vencedor marcado.</b> Elas já têm') +
+            ' as propostas e o valor inicial; falta homologar para o saving virar número aqui.'
+          : '') +
         '<br><br>Hoje esse número existe espalhado numa planilha por compra: para responder ' +
         '“quanto o time economizou no semestre?” alguém precisa abrir uma por uma.' +
       '</div>';
