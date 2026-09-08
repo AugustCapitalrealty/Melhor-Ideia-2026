@@ -43,9 +43,12 @@ try {
   assert(typeof context.cfAgruparPorItem_ === 'function', 'cfAgruparPorItem_ existe');
   // const no node:vm não expõe ao context — ler do fonte
   const configSrc = fs.readFileSync(path.join(root, 'app', 'Config.gs'), 'utf8');
-  // v6: colunas SEGURANCA, LIMPEZA e VERSAO_CRITERIOS na aba Avaliacoes,
-  // quando os critérios foram alinhados aos que o comitê recebeu.
-  assert(/CF_SCHEMA_VERSAO\s*=\s*6/.test(configSrc), 'CF_SCHEMA_VERSAO é 6');
+  // v6: SEGURANCA, LIMPEZA e VERSAO_CRITERIOS em Avaliacoes, quando os
+  //     critérios foram alinhados aos que o comitê recebeu.
+  // v7: HOMOLOGADO_POR e HOMOLOGADO_EM em Equalizacoes — sem a data da
+  //     DECISÃO, o saving do mês mudaria depois de o mês fechar; sem
+  //     quem homologou, "saving por comprador" mediria quem digitou.
+  assert(/CF_SCHEMA_VERSAO\s*=\s*7/.test(configSrc), 'CF_SCHEMA_VERSAO é 7');
   // Cada migração carimba a versão QUE ELA instala, em literal. Derivando
   // da constante, subir o schema faria a migração antiga anunciar uma
   // versão que ela não instalou — e o log registraria uma migração que

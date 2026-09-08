@@ -192,7 +192,11 @@ function cfExportarEqualizacao_(idEq) {
         }
         if (item.referenciaHistorica && item.referenciaHistorica.ultimoPreco && c && c.valor) {
           const deltaP = ((c.valor - item.referenciaHistorica.ultimoPreco) / item.referenciaHistorica.ultimoPreco) * 100;
-          const notaHist = 'Última compra homologada: R$ ' + cfValorTexto_(item.referenciaHistorica.ultimoPreco) +
+          // "compra" só quando há vencedor gravado; o acervo importado
+        // não tem, e o documento não pode afirmar o que não se sabe.
+        const notaHist = (item.referenciaHistorica.foiVencedora
+            ? 'Última compra: R$ ' : 'Última proposta cotada: R$ ') +
+          cfValorTexto_(item.referenciaHistorica.ultimoPreco) +
             (item.referenciaHistorica.empreendimento ? ' (' + item.referenciaHistorica.empreendimento + ')' : '') +
             '\nVariação: ' + (deltaP >= 0 ? '+' : '') + deltaP.toFixed(1) + '%';
           faixas.notas.push({ l: num, c: colDe(i), nota: notaHist });

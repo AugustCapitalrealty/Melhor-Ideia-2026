@@ -3707,7 +3707,35 @@ function selecionarItemDoCatalogo(i, itemId) {
 
 // ── INTELIGÊNCIA DE PREÇO HISTÓRICO NA GRADE (FASE 4) ──
 
-var debounceBuscaRef = null;
+/**
+ * Um temporizador POR LINHA, não um para a grade inteira.
+ *
+ * Era uma variável só: digitar a descrição do item 2 dentro de 350ms
+ * cancelava a busca do item 1 — e ela nunca era refeita, porque a
+ * guarda de cache só ignora o que já foi buscado, e nada tinha sido.
+ * Em digitação rápida, parte dos itens ficava sem benchmark sem
+ * nenhum aviso: o alerta de preço simplesmente não aparecia.
+ */
+var debounceBuscaRef = {};
+/**
+ * "Compra" só quando foi compra.
+ *
+ * A referência prefere a proposta vencedora, mas cai para a mais
+ * recente de qualquer proponente quando nenhuma foi marcada como
+ * vencedora. E o acervo importado NÃO tem vencedor gravado — o
+ * importador nunca escreve VENCEDORA. Então hoje quase todo
+ * benchmark vem de uma proposta cujo desfecho ninguém registrou.
+ *
+ * Chamar isso de "última compra" num documento que vai à Diretoria
+ * afirma mais do que se sabe. O número continua útil como referência
+ * de mercado; só não é prova de que se pagou aquilo.
+ */
+function rotuloRef(ref, curto) {
+  var comprou = ref && ref.foiVencedora;
+  if (curto) return comprou ? 'últ. compra' : 'últ. proposta';
+  return comprou ? 'Última compra' : 'Última proposta cotada';
+}
+
 function buscarReferenciaItem(i, descricao, unidade) {
   if (!descricao || String(descricao).trim().length < 3) return;
   var descLimpa = String(descricao).trim();
@@ -3717,8 +3745,8 @@ function buscarReferenciaItem(i, descricao, unidade) {
 
   if (typeof google === 'undefined' || !google.script || !google.script.run) return;
 
-  clearTimeout(debounceBuscaRef);
-  debounceBuscaRef = setTimeout(function () {
+  clearTimeout(debounceBuscaRef[i]);
+  debounceBuscaRef[i] = setTimeout(function () {
     google.script.run
       .withSuccessHandler(function (res) {
         if (res && res.ok && res.referencias) {
@@ -3772,7 +3800,7 @@ function atualizarDicasDescricao() {
     }
     var txt = '★ Última: <b>' + moeda(ref.ultimoPreco) + '</b>' +
       (ref.empreendimento ? ' <small style="opacity:.8">(' + esc(ref.empreendimento) + ')</small>' : '');
-    var dica = 'Última compra registrada: ' + moeda(ref.ultimoPreco) +
+    var dica = rotuloRef(ref) + ': ' + moeda(ref.ultimoPreco) +
       (ref.empreendimento ? ' (' + ref.empreendimento + ')' : '') +
       (ref.dataUltima ? ' em ' + ref.dataUltima : '') +
       (ref.fornecedorUltimo ? ' · Fornecedor: ' + ref.fornecedorUltimo : '');
@@ -3821,8 +3849,8 @@ function atualizarAlertasPrecoHistorico() {
       var subiu = delta > 0;
       var classe = subiu ? 'subiu' : 'caiu';
       var sinal = subiu ? '▲ +' : '▼ ';
-      var txt = sinal + Math.abs(delta).toFixed(0) + '% vs últ. compra';
-      var dica = 'Última compra: ' + moeda(ref.ultimoPreco) +
+      var txt = sinal + Math.abs(delta).toFixed(0) + '% vs ' + rotuloRef(ref, true);
+      var dica = rotuloRef(ref) + ': ' + moeda(ref.ultimoPreco) +
         (ref.empreendimento ? ' (' + ref.empreendimento + ')' : '') +
         (ref.dataUltima ? ' em ' + ref.dataUltima : '') +
         (ref.fornecedorUltimo ? ' · Fornecedor: ' + ref.fornecedorUltimo : '');
@@ -5123,6 +5151,7 @@ function calcularKpisEqualizacoes(lista) {
   var homologadasCount = 0;
   var emAbertoCount = 0;
   var savingTotal = 0;
+  var comSavingCount = 0;
 
   (lista || []).forEach(function (e) {
     var st = String(e.status || '').toLowerCase();
@@ -5136,8 +5165,12 @@ function calcularKpisEqualizacoes(lista) {
       emAbertoCount++;
     }
 
+    // Só entra no total quem tem saving apurado no servidor. O
+    // denominador é contado à parte porque "R$ 12 mil em 2 compras"
+    // e "R$ 12 mil em 40 compras" são resultados muito diferentes.
     if (e.savingAbsoluto && e.savingAbsoluto > 0) {
       savingTotal += Number(e.savingAbsoluto);
+      comSavingCount++;
     }
   });
 
@@ -5156,7 +5189,13 @@ function calcularKpisEqualizacoes(lista) {
   if (elSav) {
     if (savingTotal > 0) {
       elSav.textContent = moeda(savingTotal);
-      if (elSavSub) elSavSub.textContent = 'saving capturado';
+      // Quantas compras produziram esse número. Sem isso o valor
+      // sozinho não diz se é resultado de processo ou de uma sorte.
+      if (elSavSub) {
+        elSavSub.textContent = 'negociado em ' + comSavingCount +
+          (comSavingCount === 1 ? ' compra' : ' compras') +
+          ' de ' + homologadasCount + ' homologadas';
+      }
     } else {
       // Sem saving apurado, o KPI diz que não há — e não inventa.
       //
@@ -5377,9 +5416,9 @@ function desenharMapa(m) {
       if (l.referenciaHistorica && l.referenciaHistorica.ultimoPreco && c.valor) {
         var delta = ((c.valor - l.referenciaHistorica.ultimoPreco) / l.referenciaHistorica.ultimoPreco) * 100;
         if (delta >= 15) {
-          tagDelta = '<div class="delta-historico subiu" title="Sobrepreço de +' + delta.toFixed(1) + '% vs última compra homologada (R$ ' + moeda(l.referenciaHistorica.ultimoPreco) + ')">▲ +' + delta.toFixed(0) + '% vs últ.</div>';
+          tagDelta = '<div class="delta-historico subiu" title="Sobrepreço de +' + delta.toFixed(1) + '% vs ' + rotuloRef(l.referenciaHistorica) + ' (R$ ' + moeda(l.referenciaHistorica.ultimoPreco) + ')">▲ +' + delta.toFixed(0) + '% vs últ.</div>';
         } else if (delta <= -10) {
-          tagDelta = '<div class="delta-historico caiu" title="Economia de ' + delta.toFixed(1) + '% vs última compra homologada (R$ ' + moeda(l.referenciaHistorica.ultimoPreco) + ')">▼ ' + delta.toFixed(0) + '% vs últ.</div>';
+          tagDelta = '<div class="delta-historico caiu" title="Economia de ' + delta.toFixed(1) + '% vs ' + rotuloRef(l.referenciaHistorica) + ' (R$ ' + moeda(l.referenciaHistorica.ultimoPreco) + ')">▼ ' + delta.toFixed(0) + '% vs últ.</div>';
         }
       }
       return '<td class="preco' + (eMenor ? ' menor' : '') + '"' +
@@ -5391,7 +5430,7 @@ function desenharMapa(m) {
       ? ' <span class="pill-ref-executivo" title="Marca ou padrão técnico de referência">Ref: ' + esc(l.marcaReferencia) + '</span>'
       : '';
     var refPrecoHtml = (l.referenciaHistorica && l.referenciaHistorica.ultimoPreco)
-      ? ' <span class="ref-historico-rotulo" title="Última compra homologada: R$ ' + moeda(l.referenciaHistorica.ultimoPreco) + ' (' + esc(l.referenciaHistorica.empreendimento || '') + ' · ' + esc(l.referenciaHistorica.fornecedorUltimo || '') + ')">★ Última: ' + moeda(l.referenciaHistorica.ultimoPreco) + '</span>'
+      ? ' <span class="ref-historico-rotulo" title="' + rotuloRef(l.referenciaHistorica) + ': R$ ' + moeda(l.referenciaHistorica.ultimoPreco) + ' (' + esc(l.referenciaHistorica.empreendimento || '') + ' · ' + esc(l.referenciaHistorica.fornecedorUltimo || '') + ')">★ Última: ' + moeda(l.referenciaHistorica.ultimoPreco) + '</span>'
       : '';
 
     return '<tr class="' + (l.tipo === 'grupo' ? 'grupo' : '') + '">' +
@@ -5456,8 +5495,9 @@ function desenharMapa(m) {
       '<tfoot>' + rodape + '</tfoot>' +
     '</table></div>' +
     '<div class="legenda"><span><b>✓ verde</b> = menor preço da linha, entre quem cotou</span>' +
-    '<span><b style="color:var(--critico)">▲ vermelho</b> = sobrepreço &ge; +15% vs última compra</span>' +
-    '<span><b style="color:var(--ok)">▼ verde</b> = economia &le; -10% vs última compra</span>' +
+    '<span><b style="color:var(--critico)">▲ vermelho</b> = sobrepreço &ge; +15% vs a última referência</span>' +
+    '<span><b style="color:var(--ok)">▼ verde</b> = economia &le; -10% vs a última referência</span>' +
+    '<span>★ <b>Última</b> = compra contratada quando há vencedor gravado; senão, última proposta cotada</span>' +
     '<span>· = fornecedor não recebeu esta linha</span></div>' +
     blocoDecisao(m);
 }
@@ -6739,6 +6779,13 @@ function removerItem(i) {
 }
 
 function reindexarCacheRefPrecos(removido) {
+  // O temporizador pendente da linha apagada precisa morrer junto: se
+  // disparasse depois, gravaria o resultado no índice de outra linha.
+  Object.keys(debounceBuscaRef).forEach(function (k) {
+    if (Number(k) >= removido) clearTimeout(debounceBuscaRef[k]);
+  });
+  debounceBuscaRef = {};
+
   var novo = {};
   Object.keys(cacheRefPrecos).forEach(function (k) {
     var n = Number(k);
@@ -6894,9 +6941,9 @@ function desenharGrade() {
             if (precoVal !== null && precoVal > 0) {
               var delta = ((precoVal - ref.ultimoPreco) / ref.ultimoPreco) * 100;
               if (delta >= 15) {
-                subAlerta = '<div class="delta-historico subiu" title="Última compra: ' + moeda(ref.ultimoPreco) + (ref.empreendimento ? ' (' + esc(ref.empreendimento) + ')' : '') + '">▲ +' + delta.toFixed(0) + '% vs últ. compra</div>';
+                subAlerta = '<div class="delta-historico subiu" title="' + rotuloRef(ref) + ': ' + moeda(ref.ultimoPreco) + (ref.empreendimento ? ' (' + esc(ref.empreendimento) + ')' : '') + '">▲ +' + delta.toFixed(0) + '% vs ' + rotuloRef(ref, true) + '</div>';
               } else if (delta <= -10) {
-                subAlerta = '<div class="delta-historico caiu" title="Última compra: ' + moeda(ref.ultimoPreco) + (ref.empreendimento ? ' (' + esc(ref.empreendimento) + ')' : '') + '">▼ ' + delta.toFixed(0) + '% vs últ. compra</div>';
+                subAlerta = '<div class="delta-historico caiu" title="' + rotuloRef(ref) + ': ' + moeda(ref.ultimoPreco) + (ref.empreendimento ? ' (' + esc(ref.empreendimento) + ')' : '') + '">▼ ' + delta.toFixed(0) + '% vs ' + rotuloRef(ref, true) + '</div>';
               }
             }
           }

@@ -346,6 +346,21 @@ function apiAvaliacoesPendentes() {
   }
 }
 
+/**
+ * O saving do time ao longo do tempo.
+ *
+ * É o indicador que hoje não existe em lugar nenhum de forma
+ * consolidada: ele mora numa planilha por compra, e somar um semestre
+ * exige abrir dezenas de arquivos.
+ */
+function apiPanoramaSaving() {
+  try {
+    return { ok: true, panorama: cfPanoramaSaving_() };
+  } catch (erro) {
+    return { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
+  }
+}
+
 /** A ficha completa de um fornecedor: cadastro, disputas e preços. */
 function apiFichaFornecedor(cnpj) {
   try {

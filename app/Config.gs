@@ -18,7 +18,7 @@ const CF_PASTA_ID = '1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G';
 const CF_NOME_PLANILHA = 'Capital Fornecedores — Base';
 
 /** Sobe de 1 a cada mudança no schema. Gravado em Script Properties. */
-const CF_SCHEMA_VERSAO = 6;
+const CF_SCHEMA_VERSAO = 7;
 
 /** Versão do parser de importação. Gravada em cada linha importada,
  *  para dar para reprocessar o que veio de uma geração antiga. */
@@ -253,7 +253,11 @@ const CF_SCHEMA = [
     // campo que depende de alguém classificar cada equalização nasce
     // preenchido e morre desatualizado.
     { campo: 'CATEGORIA',          tipo: 'texto', largura: 200, nota: 'macro-categoria — ver CF_CATEGORIAS' },
-    { campo: 'SUBCATEGORIA',       tipo: 'texto', largura: 200 }
+    { campo: 'SUBCATEGORIA',       tipo: 'texto', largura: 200 },
+    // Quem NEGOCIOU, que é diferente de quem criou a equalização.
+    // Sem esta coluna, "saving por comprador" mediria quem digitou.
+    { campo: 'HOMOLOGADO_POR',     tipo: 'texto', largura: 220 },
+    { campo: 'HOMOLOGADO_EM',      tipo: 'data', largura: 130, nota: 'a data da DECISÃO, não a da cotação — é por ela que o saving entra no mês' }
   ]},
 
   { nome: 'Baselines', nota: 'Versão de escopo. Histórico só compara dentro do mesmo baseline.', colunas: [

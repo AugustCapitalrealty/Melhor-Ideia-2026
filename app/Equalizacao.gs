@@ -61,6 +61,17 @@ function cfListarEqualizacoes_() {
       status: eq.STATUS || '',
       proponentes: minhas.length,
       menor: menor,
+      // O saving da NEGOCIAÇÃO, que é o que foi prometido ao comitê:
+      // "diferença entre proposta inicial e valor contratado".
+      //
+      // Não confundir com a economia da disputa (o quanto o vencedor é
+      // mais barato que o mais caro). Aquela existe por ter cotado;
+      // esta existe por ter negociado, e é a única que a ferramenta
+      // pode reivindicar como resultado do processo.
+      //
+      // Null quando não houve rodada registrada — e null é diferente de
+      // zero: zero afirmaria que se negociou e não se ganhou nada.
+      savingAbsoluto: cfSavingDaEqualizacao_(eq, minhas),
       // Para a busca livre não precisar de N comparações no cliente.
       busca: cfNormalizar_([eq.ID, eq.ID_EMPREENDIMENTO, eq.PROJETO, eq.AREA,
                             eq.GRUPO_CENTRO_CUSTO, eq.STATUS, categoria].filter(Boolean).join(' '))
@@ -70,6 +81,157 @@ function cfListarEqualizacoes_() {
     // depois de 05/05, e a lista saía fora de ordem cronológica.
     return (b.ordenacao || 0) - (a.ordenacao || 0);
   });
+}
+
+/**
+ * O saving do time ao longo do tempo.
+ *
+ * Este é o ponto do indicador, e vale escrever para não se perder:
+ * o saving já existia — ele ficava disperso numa planilha por compra.
+ * Para saber como o time negociou num semestre era preciso abrir
+ * dezenas de arquivos, e o que não fosse aberto simplesmente não
+ * entrava na conta.
+ *
+ * O que a ferramenta acrescenta não é economizar mais: é tornar o
+ * que se economizou visível, somável e comparável — por mês, por
+ * Mega, por categoria e por quem negociou.
+ *
+ * Duas decisões de leitura:
+ *
+ *  - O saving entra no mês da DECISÃO (HOMOLOGADO_EM), não no da
+ *    cotação. Uma compra cotada em março e fechada em maio rendeu em
+ *    maio; jogá-la em março faria o mês fechado mudar depois.
+ *  - Equalização sem HOMOLOGADO_EM (as anteriores a esta versão)
+ *    cai para a data da equalização, e isso vai marcado em
+ *    `dataAproximada` — para ninguém apresentar como precisão o que
+ *    é aproximação.
+ */
+function cfPanoramaSaving_() {
+  const propostas = cfLerTudo_('Propostas');
+  const porMes = {}, porMega = {}, porCategoria = {}, porPessoa = {};
+  let total = 0, compras = 0, homologadas = 0, aproximadas = 0;
+  let totalContratado = 0;
+
+  const acumular = function (mapa, chave, saving, contratado) {
+    if (!chave) chave = '(sem registro)';
+    const g = mapa[chave] || (mapa[chave] = { chave: chave, saving: 0, compras: 0, contratado: 0 });
+    g.saving += saving;
+    g.contratado += contratado || 0;
+    g.compras++;
+  };
+
+  cfLerTudo_('Equalizacoes').forEach(function (eq) {
+    if (String(eq.STATUS || '') !== 'homologada') return;
+    homologadas++;
+
+    const minhas = propostas.filter(function (p) {
+      return String(p.ID_EQUALIZACAO) === String(eq.ID);
+    });
+    const saving = cfSavingDaEqualizacao_(eq, minhas);
+    if (saving === null) return;
+
+    const contratado = cfValorContratado_(eq, minhas) || 0;
+    total += saving;
+    totalContratado += contratado;
+    compras++;
+
+    const dataDecisao = cfData_(eq.HOMOLOGADO_EM);
+    const data = dataDecisao || cfData_(eq.DATA_EQUALIZACAO);
+    if (!dataDecisao) aproximadas++;
+
+    const mes = data
+      ? (data.getFullYear() + '-' + ('0' + (data.getMonth() + 1)).slice(-2))
+      : '(sem data)';
+
+    acumular(porMes, mes, saving, contratado);
+    acumular(porMega, eq.ID_EMPREENDIMENTO, saving, contratado);
+    acumular(porCategoria, eq.CATEGORIA, saving, contratado);
+    acumular(porPessoa, eq.HOMOLOGADO_POR || eq.CRIADO_POR, saving, contratado);
+  });
+
+  // Percentual sobre o contratado: R$ 50 mil de saving em R$ 200 mil
+  // comprados é outra história de R$ 50 mil em R$ 5 milhões.
+  const comPercentual = function (mapa, ordenarPorChave) {
+    const lista = Object.keys(mapa).map(function (k) {
+      const g = mapa[k];
+      g.percentual = g.contratado > 0
+        ? Math.round((g.saving / (g.saving + g.contratado)) * 1000) / 10
+        : null;
+      g.saving = Math.round(g.saving * 100) / 100;
+      return g;
+    });
+    return ordenarPorChave
+      ? lista.sort(function (a, b) { return String(a.chave).localeCompare(String(b.chave)); })
+      : lista.sort(function (a, b) { return b.saving - a.saving; });
+  };
+
+  return {
+    total: Math.round(total * 100) / 100,
+    totalContratado: Math.round(totalContratado * 100) / 100,
+    percentual: totalContratado > 0
+      ? Math.round((total / (total + totalContratado)) * 1000) / 10 : null,
+    compras: compras,
+    homologadas: homologadas,
+    // Quantas homologadas NÃO produziram saving: ou não houve rodada,
+    // ou ninguém registrou o valor inicial. As duas são acionáveis, e
+    // esconder o denominador transformaria o indicador em vitrine.
+    semRegistro: homologadas - compras,
+    dataAproximada: aproximadas,
+    porMes: comPercentual(porMes, true),
+    porMega: comPercentual(porMega),
+    porCategoria: comPercentual(porCategoria),
+    porPessoa: comPercentual(porPessoa)
+  };
+}
+
+/** O valor efetivamente contratado, na mesma precedência do resto. */
+function cfValorContratado_(eq, propostas) {
+  const vencedora = (propostas || []).filter(function (p) {
+    return p.VENCEDORA === true ||
+           (eq.ID_PROPOSTA_VENCEDORA && String(p.ID) === String(eq.ID_PROPOSTA_VENCEDORA));
+  })[0];
+  if (cfNumero_(eq.VALOR_FINAL) !== null) return cfNumero_(eq.VALOR_FINAL);
+  if (!vencedora) return null;
+  const dec = cfNumero_(vencedora.VALOR_TOTAL_DECLARADO);
+  return dec !== null ? dec : cfNumero_(vencedora.VALOR_TOTAL_CALCULADO);
+}
+
+/**
+ * Quanto a negociação rendeu nesta equalização.
+ *
+ * Só existe com três coisas juntas: a compra foi homologada, sabe-se
+ * qual proposta venceu, e alguém registrou o valor inicial dela. Sem
+ * as três, devolve null — a tela mostra "—" e ninguém apresenta um
+ * número que não tem de onde sair.
+ *
+ * O valor contratado segue a mesma precedência do resto do sistema:
+ * o VALOR_FINAL carimbado na homologação manda; depois o total
+ * declarado pelo fornecedor; por último a soma dos itens.
+ */
+function cfSavingDaEqualizacao_(eq, propostas) {
+  if (String(eq.STATUS || '') !== 'homologada') return null;
+
+  const vencedora = (propostas || []).filter(function (p) {
+    return p.VENCEDORA === true ||
+           (eq.ID_PROPOSTA_VENCEDORA && String(p.ID) === String(eq.ID_PROPOSTA_VENCEDORA));
+  })[0];
+  if (!vencedora) return null;
+
+  const inicial = cfNumero_(vencedora.VALOR_PROPOSTA_INICIAL);
+  if (inicial === null || inicial <= 0) return null;
+
+  const contratado = cfNumero_(eq.VALOR_FINAL) !== null
+    ? cfNumero_(eq.VALOR_FINAL)
+    : (cfNumero_(vencedora.VALOR_TOTAL_DECLARADO) !== null
+        ? cfNumero_(vencedora.VALOR_TOTAL_DECLARADO)
+        : cfNumero_(vencedora.VALOR_TOTAL_CALCULADO));
+  if (contratado === null) return null;
+
+  const saving = inicial - contratado;
+  // Contratar por mais que a proposta inicial não é saving negativo:
+  // é escopo que mudou no meio, e chamar isso de economia (ou de
+  // prejuízo) seria inventar uma leitura que o dado não sustenta.
+  return saving > 0 ? Math.round(saving * 100) / 100 : null;
 }
 
 /**
@@ -1104,6 +1266,8 @@ function cfHomologar_(idEq, idProposta, parecer) {
     cfAtualizarLinha_('Equalizacoes', eq._linha, {
       STATUS: 'homologada',
       CNPJ_VENCEDOR: cfSoDigitos_(escolhida.CNPJ),
+      HOMOLOGADO_POR: cfUsuario_(),
+      HOMOLOGADO_EM: new Date(),
       ID_PROPOSTA_VENCEDORA: escolhida.ID,
       VALOR_FINAL: valorDe(escolhida),
       PARECER_FAVORAVEL: String(parecer || '').trim(),
