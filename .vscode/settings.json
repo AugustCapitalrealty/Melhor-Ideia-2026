@@ -1,0 +1,16 @@
+{
+  // Apps Script roda V8: os arquivos .gs são JavaScript.
+  // Sem esta linha, os 26 arquivos de produção ficam sem realce,
+  // sem autocompletar e sem detecção de erro.
+  "files.associations": {
+    "*.gs": "javascript"
+  },
+
+  // O código e os 37 documentos deste projeto são em português.
+  // Requer a extensão streetsidesoftware.code-spell-checker-portuguese-brazilian.
+  "cSpell.language": "en,pt,pt-BR",
+
+  // Não formatar ao salvar: o projeto não tem configuração de formatação,
+  // e reformatar 22 mil linhas de uma vez destrói a legibilidade do diff.
+  "editor.formatOnSave": false
+}
