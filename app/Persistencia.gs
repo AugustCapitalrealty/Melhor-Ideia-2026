@@ -284,6 +284,20 @@ function cfGravarAnalise_(analise, idImportacao) {
         DATA_PREV_TERMINO: p.dataPrevTermino || '',
         VALOR_TOTAL_DECLARADO: total === undefined ? '' : total,
         VALOR_TOTAL_CALCULADO: somaItens,
+        // A proposta INICIAL, antes da negociação.
+        //
+        // O parser já extraía este valor do rótulo "proposta inicial:"
+        // (Import.gs:45) e calculava a redução — e o gravador jogava os
+        // dois fora. O dado atravessava o sistema inteiro e morria na
+        // última etapa.
+        //
+        // Sem ele não existe saving: cfSavingDaEqualizacao_ precisa da
+        // diferença entre o que se ia pagar e o que se pagou. Era por
+        // isso que o indicador mais importante do projeto não tinha como
+        // produzir número a partir do acervo, por construção e não por
+        // falta de uso.
+        VALOR_PROPOSTA_INICIAL: cfNumero_(p.propostaInicial) === null ? '' : cfNumero_(p.propostaInicial),
+        REDUCAO_NEGOCIADA: cfNumero_(p.reducaoCalculada) || '',
         OBSERVACAO: p.nomeCentroCusto || '',
         ORIGEM: 'import_sheets',
         ID_IMPORTACAO: idImportacao

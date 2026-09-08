@@ -97,11 +97,33 @@ const root = path.resolve(__dirname, '..');
   const fScript = html.lastIndexOf('</script>');
   const script = html.slice(iScript + 8, fScript);
 
+  // Um DOM com ESTADO: o mock antigo devolvia um objeto novo a cada
+  // getElementById, então nada do que a tela escrevia podia ser
+  // inspecionado depois. É por isso que aqui só cabiam asserções sobre o
+  // texto-fonte — e foi assim que o selo de IQF ficou morto sem ninguém
+  // ver. Com estado, dá para exigir o HTML que sai.
+  const elementos = {};
+  const novoEl = function (id) {
+    return {
+      id: id, innerHTML: '', value: '', hidden: false, textContent: '', style: {},
+      options: [], dataset: {},
+      classList: { add: function () {}, remove: function () {}, toggle: function () {},
+                   contains: function () { return false; } },
+      addEventListener: function () {}, appendChild: function () {},
+      setAttribute: function () {}, getAttribute: function () { return null; },
+      querySelector: function () { return null; }, querySelectorAll: function () { return []; },
+      closest: function () { return null; }, focus: function () {}, remove: function () {}
+    };
+  };
+
   const ctx = {
     document: {
-      getElementById: function () { return { value: '', addEventListener: function () {}, options: [] }; },
+      getElementById: function (id) {
+        if (!elementos[id]) elementos[id] = novoEl(id);
+        return elementos[id];
+      },
       addEventListener: function () {}, querySelector: function () { return null; },
-      querySelectorAll: function () { return []; },
+      querySelectorAll: function () { return []; }, createElement: novoEl,
       body: { classList: { add: function () {} } }
     },
     window: { addEventListener: function () {} },
@@ -145,13 +167,37 @@ const root = path.resolve(__dirname, '..');
   assert.ok(/seloIqfColuna\(p\.iqf\)/.test(script),
     'a função existe mas o cabeçalho da tabela não a usa — o selo nunca apareceria');
 
-  // Ponta 3: Autocomplete de fornecedores e cabeçalho da grade de digitação
+  // Ponta 3: o selo no cabeçalho da GRADE DE DIGITAÇÃO — testado pelo
+  // HTML que sai, não pela string que existe no arquivo.
+  //
+  // Aqui havia `assert.ok(/seloIqfColuna\(iqf\)/.test(script), ...)`, e
+  // ele passava com a funcionalidade MORTA: a linha existia dentro de
+  // `var seloHtml = ...`, mas o `return` do cabeçalho fechava antes e o
+  // selo nunca chegava ao HTML. Ficou desligado por cinco commits sem
+  // ninguém perceber, porque este era o único teste do arquivo escrito
+  // como regex sobre o fonte.
   assert.ok(/seloIqfColuna\(a\.iqf\)/.test(script),
     'o dropdown de autocomplete de fornecedores precisa exibir o selo de IQF');
-  assert.ok(/seloIqfColuna\(iqf\)/.test(script),
-    'o cabeçalho da grade de digitação e o cartão do fornecedor selecionado precisam exibir o selo de IQF');
   assert.ok(typeof ctx.obterIqfProponente === 'function',
     'faltou a função auxiliar obterIqfProponente');
+
+  ctx.proponentes = [{
+    nome: 'Alfa Materiais Ltda', cnpj: '11222333000181',
+    iqf: { nota: 88, classe: 'A', classeRotulo: 'Preferencial', avaliacoes: 4, preliminar: false }
+  }];
+  ctx.itens = [{ tipo: 'item', descricao: 'Rodo 60cm', quantidade: '2',
+                 unidade: 'un', precos: [''], marcas: [''] }];
+
+  const grade = ctx.document.getElementById('grade');
+  grade.innerHTML = '';
+  try { ctx.desenharGrade(); } catch (e) { /* o resto do desenho não é o alvo */ }
+
+  assert.ok(/iqf-col/.test(grade.innerHTML),
+    'o selo de IQF não chegou ao HTML do cabeçalho da grade. A string pode ' +
+    'existir no arquivo e o selo continuar morto — foi o que aconteceu quando ' +
+    'uma linha antiga reinserida fechou o return antes dele: ' +
+    grade.innerHTML.slice(0, 400));
+  assert.ok(/88/.test(grade.innerHTML), 'a nota precisa sair no cabeçalho');
 
   // Testando obterIqfProponente
   const pComIqf = { cnpj: '11.222.333/0001-81', iqf: { nota: 85, classe: 'A', avaliacoes: 4 } };

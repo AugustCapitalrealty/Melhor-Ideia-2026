@@ -7084,7 +7084,6 @@ function desenharGrade() {
       var seloHtml = p.cnpj ? ('<div class="grade-iqf-wrap">' + seloIqfColuna(iqf) + '</div>') : '';
       return '<th class="col-preco" data-prop="' + i + '" title="' + esc(p.nome || ('Proponente ' + (i + 1))) + '">' +
              '<span class="th-nome-prop">' + esc(nomeCurto) + '</span>' +
-             '<small>' + rotuloBase + '</small></th>';
              '<small>' + rotuloBase + '</small>' +
              seloHtml + '</th>';
     }).join('') + '<th class="col-del"></th></tr></thead>';
@@ -8834,7 +8833,15 @@ function desenharFichaFornecedor(f) {
     '</div>';
 
   // ── ABA 1: VISÃO GERAL & COCKPIT
-  var taxaVitTexto = f.taxaVitoria !== null && f.taxaVitoria !== undefined ? (Math.round(f.taxaVitoria * 100) + '%') : (f.disputas > 0 ? (f.vitorias + '/' + f.disputas) : '0%');
+  // Sem disputa, a taxa é desconhecida — nunca 0%.
+  //
+  // É o espelho do defeito que a Resposta a Convites tinha: lá a
+  // ausência de dado virava 100%, aqui virava 0%. Os dois inventam
+  // desempenho a partir de nada, e um fornecedor novo não pode
+  // aparecer como fornecedor ruim só por ser novo.
+  var taxaVitTexto = (f.taxaVitoria !== null && f.taxaVitoria !== undefined)
+    ? (Math.round(f.taxaVitoria * 100) + '%')
+    : (f.disputas > 0 ? (f.vitorias + '/' + f.disputas) : '—');
   var taxaVitSub = f.amostraCurta ? (f.vitorias + ' vitórias em ' + f.disputasDecididas + ' decididas (amostra preliminar)') : (f.vitorias + ' vitórias em ' + f.disputasDecididas + ' disputas');
   // Sem convite registrado, a taxa é desconhecida — nunca 100%.
   //

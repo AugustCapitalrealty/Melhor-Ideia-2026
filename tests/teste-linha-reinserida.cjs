@@ -45,6 +45,33 @@ function tronco(linha) {
 }
 
 /**
+ * A linha sem o que está dentro de parênteses e colchetes.
+ *
+ * Serve para olhar o TOPO da expressão. `cfInserir_('x', [y])` é uma
+ * chamada — código vivo — mesmo tendo `+` lá dentro; `seloHtml + '</th>'`
+ * é uma expressão solta, e depois de um `;` ela é código morto. Sem
+ * remover o interior dos parênteses, as duas parecem iguais e a regra
+ * acusa meia dúzia de chamadas legítimas.
+ */
+function topoDaExpressao(s) {
+  // 1. As strings saem PRIMEIRO. Uma delas pode conter um parêntese
+  //    solto — 'E-mail enviado (EQU ' — e aí a contagem de parênteses
+  //    nunca fecha.
+  let t = s.replace(/'(\\.|[^'\\])*'/g, '§')
+           .replace(/"(\\.|[^"\\])*"/g, '§')
+           .replace(/`(\\.|[^`\\])*`/g, '§');
+
+  // 2. Agora os parênteses, do mais interno para fora. O substituto NÃO
+  //    pode ter parênteses: trocar "()" por "()" não muda nada e o laço
+  //    para antes de chegar ao de fora.
+  let antes;
+  do { antes = t; t = t.replace(/\([^()]*\)/g, '§').replace(/\[[^\[\]]*\]/g, '§'); }
+  while (t !== antes);
+
+  return t;
+}
+
+/**
  * Duas regras, escolhidas por PRECISÃO e não por cobertura.
  *
  * Uma terceira — "mesma variável atribuída em linhas seguidas" — pegaria
@@ -88,11 +115,32 @@ const suspeitas = [];
     const prefixo = !identicas && ta.length >= 24 && tb.length > ta.length &&
                     tb.startsWith(ta);
 
-    if (identicas || prefixo) {
+    // Terceira regra: expressão que continua DEPOIS de a anterior fechar.
+    //
+    // Foi este o caso que escapou e matou o selo de IQF no cabeçalho da
+    // grade: a linha de cima terminava em `;` e a de baixo começava com
+    // `+` ou com uma string, virando código inalcançável dentro de um
+    // return. Sintaxe válida, nenhum erro, recurso desligado em silêncio.
+    //
+    // A condição é estreita de propósito: linha anterior termina em `;`,
+    // esta começa como continuação de expressão, mesma indentação, e
+    // nenhuma das duas é declaração. Zero falsos positivos no projeto.
+    //    A checagem do `;` é na linha CRUA, não no núcleo — o núcleo
+    //    remove justamente o `;` que interessa. Foi esse o erro da
+    //    primeira versão desta regra, e ela não pegou o caso real.
+    const continuacao = !identicas && !prefixo &&
+      /;\s*$/.test(a) && /;\s*$/.test(b) &&
+      / \+ |^\+/.test(topoDaExpressao(nb)) &&   // concatena no TOPO, não dentro de uma chamada
+      nb.indexOf('=') < 0 &&                    // não é atribuição: seria código vivo
+      !/^(var|let|const|function|return|if|for|while|throw)\b/.test(nb);
+
+    if (identicas || prefixo || continuacao) {
       suspeitas.push({
         arquivo: rel,
         linha: i + 1,
-        tipo: identicas ? 'linha idêntica repetida' : 'versão curta acima da longa',
+        tipo: identicas ? 'linha idêntica repetida'
+            : (prefixo ? 'versão curta acima da longa'
+                       : 'expressão continua depois de a anterior fechar (código morto)'),
         de: na.slice(0, 78),
         para: nb.slice(0, 78)
       });

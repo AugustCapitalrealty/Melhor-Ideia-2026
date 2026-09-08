@@ -146,7 +146,13 @@ function cfPanoramaSaving_() {
     acumular(porMes, mes, saving, contratado);
     acumular(porMega, eq.ID_EMPREENDIMENTO, saving, contratado);
     acumular(porCategoria, eq.CATEGORIA, saving, contratado);
-    acumular(porPessoa, eq.HOMOLOGADO_POR || eq.CRIADO_POR, saving, contratado);
+    // O fallback vai MARCADO. Equalização anterior ao schema v7 não
+    // tem HOMOLOGADO_POR, e cair calado para CRIADO_POR faria a
+    // quebra "por quem negociou" medir quem digitou — exatamente o
+    // que a coluna nova existe para evitar.
+    const negociador = eq.HOMOLOGADO_POR ||
+      (eq.CRIADO_POR ? eq.CRIADO_POR + ' (criou; sem registro de quem homologou)' : '');
+    acumular(porPessoa, negociador, saving, contratado);
   });
 
   // Percentual sobre o contratado: R$ 50 mil de saving em R$ 200 mil

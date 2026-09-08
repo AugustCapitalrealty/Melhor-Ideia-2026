@@ -628,7 +628,7 @@ function _cnSlideFaltaProvar(deck) {
   const zeros = [
     ['EQUALIZAÇÕES REAIS', '0', 'nenhuma compra passou pelo sistema ainda'],
     ['MEDIÇÕES DE TEMPO', '0', 'nem no Excel, nem no sistema'],
-    ['SAVING APURADO', '—', 'o dado existe na base; falta somar'],
+    ['SAVING APURADO', '—', 'a partir das compras feitas no sistema'],
     ['AVALIAÇÕES', '1', 'o índice precisa de 3 para deixar de ser preliminar']
   ];
   zeros.forEach(function (k, i) {
