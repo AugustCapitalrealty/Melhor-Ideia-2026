@@ -612,28 +612,32 @@ function _cnSlideAImplementar(deck) {
 function _cnSlideFaltaProvar(deck) {
   const W = deck.getPageWidth(), H = deck.getPageHeight();
   const slide = _cnNovoSlide_(deck);
-  _cnHeader_(slide, W, 'Os números que ainda não temos',
+  _cnHeader_(slide, W, 'O primeiro dado real — e o que ainda falta',
     ['a parte mais importante desta apresentação']);
 
   const w = W - 2 * CN_MX;
   let y = CN_TOP;
 
   _cnParagrafo_(slide, CN_MX, y, w, 24,
-    'Sou direto: a ferramenta está construída, a prova não. Estes são os números que ' +
-    'o Conselho vai querer e que ainda não existem.',
+    'Metade da conta chegou. Três equalizações foram feitas por duas pessoas que não ' +
+    'sou eu, e o sistema cronometrou cada uma sozinho. Falta o outro lado: quanto a ' +
+    'mesma coisa levava no Excel.',
     { fs: 9.5, fsMin: 7.5, cor: DS_CN.colors.textBody });
   y += 30;
 
   const kw = (w - 3 * 10) / 4;
+  // Verde = já apurado, medido pelo próprio sistema. Vermelho = ainda falta.
   const zeros = [
-    ['EQUALIZAÇÕES REAIS', '0', 'nenhuma compra passou pelo sistema ainda'],
-    ['MEDIÇÕES DE TEMPO', '0', 'nem no Excel, nem no sistema'],
-    ['SAVING APURADO', '—', 'a partir das compras feitas no sistema'],
-    ['AVALIAÇÕES', '1', 'o índice precisa de 3 para deixar de ser preliminar']
+    ['EQUALIZAÇÕES DE OUTROS', '3', 'por 2 pessoas que não o autor', true],
+    ['TEMPO NO SISTEMA', '11min32', 'mediana das três, medida sozinha', true],
+    ['TEMPO NO EXCEL', '—', 'em cronometragem por dois analistas', false],
+    ['AVALIAÇÕES', '3', 'ainda concentradas em 2 fornecedores', false]
   ];
   zeros.forEach(function (k, i) {
+    const apurado = k[3] === true;
     _cnKPI_(slide, CN_MX + i * (kw + 10), y, kw, 62, k[0], k[1],
-      DS_CN.colors.redInk, k[2], DS_CN.colors.redBg);
+      apurado ? DS_CN.colors.greenInk : DS_CN.colors.redInk, k[2],
+      apurado ? DS_CN.colors.greenBg : DS_CN.colors.redBg);
   });
   y += 74;
 
@@ -644,9 +648,9 @@ function _cnSlideFaltaProvar(deck) {
     'POR QUE ISSO IMPORTA MAIS QUE O RESTO', DS_CN.colors.redSolid);
   _cnParagrafo_(slide, CN_MX + 16, iy, colW - 32, alturaRestante - 42,
     'A redução de tempo por equalização é o indicador de maior peso do concurso.\n\n' +
-    'A instrumentação já mede sozinha os dois lados — e não rodou nenhuma vez.\n\n' +
-    'Hoje eu consigo defender "a ferramenta existe, funciona e está testada". ' +
-    'Ainda não consigo defender "aqui está o impacto".',
+    'As três medições do sistema são de usuários reais: 9min10, 11min32 e 13min35. ' +
+    'As minhas próprias não entram — eu testava com dado preparado e sei onde clicar.\n\n' +
+    'Uma amostra de três não é uma prova. É o primeiro dado honesto que este projeto tem.',
     { fs: 8.6, fsMin: 6.5, cor: DS_CN.colors.textBody });
 
   const x2 = CN_MX + colW + 14;

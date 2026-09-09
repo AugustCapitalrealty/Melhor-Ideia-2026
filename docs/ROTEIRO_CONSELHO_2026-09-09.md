@@ -50,15 +50,27 @@ E emende com a decisão, sem pedir desculpa por ela:
 
 > "Nesta fase roda fora do Fluig, e foi decisão. Integrar depende de mexer em processo de outra área, com TI e Suprimentos. Colocar isso no caminho crítico de 2026 seria trocar entrega por reunião."
 
-### 4. O que ainda não temos — você diz primeiro
+### 4. O primeiro dado real — e o que ainda falta
 
-Este é o movimento que decide a sua credibilidade na sala:
+Este é o movimento que decide a sua credibilidade na sala. E ele mudou de tom: **você já tem metade da conta.**
 
-> "Os dois números que mais interessam a vocês eu ainda não tenho. Zero equalização real rodou no sistema. Uma única avaliação registrada. O saving nunca foi somado, porque só entra compra homologada e ainda não houve. Prefiro dizer isso agora do que ser desmontado na terceira pergunta."
+> "Três equalizações foram feitas por duas pessoas que não sou eu, e o sistema cronometrou cada uma sozinho: 9 minutos e 10, 11 e 32, 13 e 35. Mediana de 11 minutos e meio.
+>
+> Faço questão de dizer que as **minhas** medições não entram nessa conta. Eu tenho dez delas, quase todas abaixo de dois minutos — mas eu testava com dado preparado e sei onde clicar. Usar isso seria enganar vocês e enganar a mim mesmo."
 
-E imediatamente mostre que está resolvido, não abandonado:
+Essa última frase vale mais que o número. Ela mostra que você sabe distinguir dado de propaganda.
 
-> "Dois analistas estão cronometrando as equalizações no Excel esta semana. É a única medição do projeto cuja janela fecha sozinha: depois que a operação migrar, ninguém volta ao Excel para cronometrar, e o 'antes' é perdido para sempre."
+Em seguida, o que falta, sem rodeio:
+
+> "Falta o outro lado: quanto a mesma coisa levava no Excel. Dois analistas estão cronometrando esta semana. É a única medição do projeto cuja janela fecha sozinha — depois que a operação migrar, ninguém volta ao Excel para cronometrar, e o 'antes' é perdido para sempre."
+
+E então o fato mais forte que você tem hoje, que não é sobre tempo:
+
+> "No dia 8, uma das analistas de apoio fez o ciclo inteiro sozinha, sem mim: criou a equalização, homologou o fornecedor, exportou o documento e **avaliou o prestador**. Nota 77,5. Foi a primeira vez que a promessa que fizemos ao comitê — a avaliação alimentando a decisão de compra — aconteceu em produção, na mão de quem opera."
+
+**Números do sistema, apurados na base em 09/09:** 26 equalizações criadas, 7 homologações, 3 avaliações, 4 usuários distintos, 13 medições automáticas de tempo.
+
+Uma ressalva que você deve dar antes que perguntem: **as 3 avaliações estão concentradas em 2 fornecedores.** O IQF continua preliminar, e a tela diz isso.
 
 ### 5. Os planos — e o pedido
 
@@ -80,13 +92,24 @@ Feche com os três pedidos, nesta ordem:
 
 ## As perguntas difíceis
 
-### "De onde vêm os R$ 5,1 milhões?" — a mais perigosa hoje
+### "De onde vêm esses números da base?"
 
-**Não cite esse número até confirmar na base.** Ele aparece nos documentos do projeto, mas nenhum dado do repositório o produz, e há contradição interna: o código do importador fala em **312 fornecedores** enquanto os documentos falam em **179**.
+**Resolvido em 09/09, lendo o log de auditoria do próprio sistema:**
 
-Se você já tiver confirmado na planilha antes da reunião, cite com a fonte: *"são as compras da plataforma dos últimos nove meses, importadas em tabela separada"*. Se não tiver confirmado:
+```
+08/09 18:24 · importacao_plataforma · 738 contratações, 165 fornecedores novos
+08/09 23:54 · importacao_plataforma ·   0 contratações, 136 fornecedores novos
+```
 
-> "O importador trouxe o histórico de compras da plataforma. O número exato eu confirmo e mando — não quero citar de cabeça."
+Verifiquei também a cronologia: o `zerar_base_operacional` foi em 06/09 e o último `desfazer_importacao` em 05/09 — **ambos antes** da importação. Nada desfez os 738.
+
+Então pode dizer, com fonte: **738 contratações** e **cerca de 312 fornecedores**, importados da plataforma de compras em 08/09. O número de **179** que circula em documentos antigos está errado — ignore.
+
+**O que ainda NÃO pode dizer: os R$ 5.105.991,36.** Esse total não foi conferido; para somá-lo seria preciso ler a aba inteira. Se perguntarem o valor:
+
+> "O volume financeiro eu confirmo e mando. Não quero citar de cabeça um número desse tamanho."
+
+**E guarde este argumento, que te protege:** essas 738 compras entraram numa tabela `Contratacoes`, **separada de `Equalizacoes`**, de propósito. Somadas, o número de equalizações declarado ao comitê saltaria de dezenas para centenas — e nenhuma delas foi equalizada aqui. Se perguntarem por que não contam como equalização, essa é a resposta, e ela mostra rigor em vez de fraqueza.
 
 **Ponto importante que protege você:** essas compras entraram numa tabela `Contratacoes`, **separada de `Equalizacoes`**, de propósito. Somadas, o número de equalizações declarado ao comitê saltaria de 4 para centenas — e nenhuma delas foi equalizada aqui. Se alguém perguntar por que não contam como equalização, essa é a resposta, e ela mostra rigor.
 
@@ -120,7 +143,11 @@ Isso parece um ponto contra. **Não é.** É a prova de que o processo funciona 
 
 ### "O sistema já está em produção?"
 
-> "Está publicado e implantado, e eu uso. O que ainda não aconteceu é compra real passando por ele — isso começa no piloto. E há uma pendência de configuração de acesso que estou fechando: hoje cada usuário autoriza individualmente, e vou mudar para execução centralizada, o que elimina a tela de permissão para todo mundo."
+> "Está publicado, implantado e em uso. Quatro pessoas já entraram, e não só eu: as analistas de apoio de Curitiba e Itajaí e o Wilson. Sete homologações já passaram por ele. O acesso é por conta corporativa, liberado para o domínio da companhia, e ninguém precisa instalar nada nem autorizar nada — abre o link e usa."
+
+**Base para essa resposta:** o log registra 4 usuários distintos e 7 homologações, e o manifesto publicado traz `executeAs: USER_DEPLOYING` com `access: DOMAIN` — ou seja, roda com a sua autorização e abre para qualquer pessoa em `capitalrealty.com.br`, sem tela de consentimento.
+
+**Um cuidado:** distribua sempre a URL terminada em `/exec`. A `/dev` executa no contexto de quem acessa, exige permissão de edição no script e pede consentimento — é a explicação mais provável para o pedido de permissão que apareceu num dos testes.
 
 ---
 
@@ -131,7 +158,8 @@ Quatro números apareceram em versões anteriores do material e **não têm last
 | Não diga | Por quê |
 |---|---|
 | *"90% das asserções verificam comportamento"* | Nenhum script calcula essa proporção. Era número inventado |
-| *"De 50 minutos para menos de 15"* | Nenhum dos dois lados foi cronometrado. É a medição que está em campo agora |
+| *"De 50 minutos para menos de 15"* | O lado do **sistema** já foi medido — 9min10, 11min32 e 13min35, de usuários reais. O lado do **Excel** ainda não. Sem os dois, não existe comparação, e afirmar redução percentual é inventar |
+| *"R$ 5.105.991,36 em compras"* | O volume não foi conferido. As 738 contratações, sim |
 | *"Saving de 11,8%"* / *"100% de taxa de resposta"* | Já removidos numa auditoria anterior. O segundo era 100% sobre zero convites |
 | *"Nota 8,95"* | Auto-atribuída |
 
