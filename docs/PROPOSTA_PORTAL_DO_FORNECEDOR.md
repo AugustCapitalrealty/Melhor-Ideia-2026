@@ -5,6 +5,12 @@
 **Quando:** depois do relatório final de 15/10 — ver a seção "Quando", que é
 parte da proposta e não um detalhe de cronograma.
 
+> **Pré-requisito registrado depois desta proposta:** o portal precisa de um
+> convite para existir — é o convite que gera o token, define o escopo que o
+> fornecedor enxerga e delimita o que ele pode responder. Ver
+> `PROPOSTA_CONVITE_COM_ESCOPO.md`, de 09/09/2026. Construir o portal antes do
+> convite seria construir a porta antes da casa.
+
 ---
 
 ## A ideia, em uma frase

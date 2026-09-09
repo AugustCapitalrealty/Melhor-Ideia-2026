@@ -88,6 +88,16 @@ Isso é dito aqui porque muda o desenho: a consulta externa é o **último** rec
 | [Resposta ao Comitê](docs/RESPOSTA_AO_COMITE.md) | Texto formal em resposta à devolutiva do comitê. |
 | [O Playbook da Vitória](docs/DEFESA_DA_MELHOR_IDEIA_MACBOOK.md) | Leitura dos critérios do concurso. |
 
+### Propostas — frentes registradas para depois de 15/10
+
+Nenhuma destas tem código escrito. Estão aqui para não se perderem, e porque cada uma foi verificada contra o que o schema já sustenta.
+
+| Proposta | A ideia |
+| :--- | :--- |
+| [Convite para Licitação, com Escopo](docs/PROPOSTA_CONVITE_COM_ESCOPO.md) | Montar o escopo no sistema e disparar o convite aos participantes. Move o início do processo da chegada das propostas para a definição do que se quer comprar. Pré-requisito do Portal. |
+| [Portal do Fornecedor](docs/PROPOSTA_PORTAL_DO_FORNECEDOR.md) | O fornecedor responde dentro do sistema, por token, sem ver o preço dos outros. A outra metade do convite. |
+| [O Custo Real da Contratação de MEI](docs/PROPOSTA_CUSTO_REAL_MEI.md) | Sinalizar o proponente MEI e o encargo patronal de 20% sobre a mão de obra nos seis serviços previstos em lei. `IS_MEI` já está na base e não é lido por ninguém. |
+
 ---
 
 ## 🏆 Alinhamento aos Critérios do Regulamento
