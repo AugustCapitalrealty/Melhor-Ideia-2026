@@ -46,6 +46,69 @@ function cfFornecedores_(categoria) {
 
   const porCnpj = {};
 
+  // 1. Inicializa todos os fornecedores da base cadastral
+  Object.keys(cadastro).forEach(function (cnpj) {
+    const cad = cadastro[cnpj];
+    const dataUltima = (cad.ULTIMA_CONTRATACAO instanceof Date)
+      ? cad.ULTIMA_CONTRATACAO
+      : (cad.ULTIMA_CONTRATACAO ? new Date(cad.ULTIMA_CONTRATACAO) : null);
+
+    porCnpj[cnpj] = {
+      cnpj: cnpj,
+      nome: cad.RAZAO_SOCIAL || cad.NOME_FANTASIA || '(sem identificação)',
+      disputas: 0,
+      vitorias: 0,
+      avulsos: 0,
+      contratacoesHistorico: cfNumero_(cad.CONTRATACOES_HISTORICO) || 0,
+      volumeHomologado: cfNumero_(cad.VALOR_TOTAL_HISTORICO) || 0,
+      megas: {},
+      categorias: {},
+      itens: {},
+      descricoes: [],
+      cnae: cad.CNAE_PRINCIPAL || '',
+      ultima: (dataUltima && !isNaN(dataUltima.getTime())) ? dataUltima : null
+    };
+  });
+
+  // 2. Incorpora contratações da plataforma de compras (Megas, naturezas e volume)
+  try {
+    const contratacoes = cfLerTudo_('Contratacoes') || [];
+    contratacoes.forEach(function (c) {
+      const cnpj = cfSoDigitos_(c.CNPJ);
+      if (!cnpj) return;
+      const f = porCnpj[cnpj] || (porCnpj[cnpj] = {
+        cnpj: cnpj,
+        nome: c.RAZAO_SOCIAL || '(sem identificação)',
+        disputas: 0,
+        vitorias: 0,
+        avulsos: 0,
+        contratacoesHistorico: 0,
+        volumeHomologado: 0,
+        megas: {},
+        categorias: {},
+        itens: {},
+        descricoes: [],
+        cnae: '',
+        ultima: null
+      });
+
+      if (c.EMPREENDIMENTO) f.megas[c.EMPREENDIMENTO] = true;
+      if (c.NATUREZA_ORCAMENTARIA) {
+        f.categorias[c.NATUREZA_ORCAMENTARIA] = (f.categorias[c.NATUREZA_ORCAMENTARIA] || 0) + 1;
+        f.descricoes.push(c.NATUREZA_ORCAMENTARIA);
+      }
+      const val = cfNumero_(c.VALOR);
+      if (!cadastro[cnpj] || !cadastro[cnpj].VALOR_TOTAL_HISTORICO) {
+        if (val !== null && val > 0) f.volumeHomologado = (f.volumeHomologado || 0) + val;
+      }
+      const data = c.DATA instanceof Date ? c.DATA : (c.DATA ? new Date(c.DATA) : null);
+      if (data && !isNaN(data.getTime()) && (!f.ultima || data > f.ultima)) {
+        f.ultima = data;
+      }
+    });
+  } catch (eContr) {}
+
+  // 3. Processa cotações e propostas registradas no app
   propostas.forEach(function (p) {
     const cnpj = cfSoDigitos_(p.CNPJ);
     if (!cnpj) return;
@@ -55,18 +118,14 @@ function cfFornecedores_(categoria) {
     const f = porCnpj[cnpj] || (porCnpj[cnpj] = {
       cnpj: cnpj,
       nome: '',
-      // Disputa e orçamento avulso são coisas diferentes e nunca se somam:
-      // uma tem concorrente, a outra não. Misturá-las inflaria a
-      // participação de quem só mandou orçamento solto.
       disputas: 0,
       vitorias: 0,
       avulsos: 0,
+      contratacoesHistorico: 0,
       volumeHomologado: 0,
       megas: {},
       categorias: {},
       itens: {},
-      // O que ele cotou, em texto: é daqui que sai a categoria de quem
-      // só tem orçamento avulso — a maioria.
       descricoes: [],
       cnae: '',
       ultima: null
@@ -74,7 +133,7 @@ function cfFornecedores_(categoria) {
 
     const cad = cadastro[cnpj];
     if (cad && !f.cnae) f.cnae = cad.CNAE_PRINCIPAL || '';
-    if (!f.nome) {
+    if (!f.nome || f.nome === '(sem identificação)') {
       f.nome = (cad && (cad.RAZAO_SOCIAL || cad.NOME_FANTASIA)) ||
                p.RAZAO_SOCIAL_INFORMADA || '(sem identificação)';
     }
@@ -86,9 +145,8 @@ function cfFornecedores_(categoria) {
         const vf = cfNumero_(eq.VALOR_FINAL);
         const vp = cfNumero_(p.VALOR_TOTAL_DECLARADO);
         const vc = cfNumero_(p.VALOR_TOTAL_CALCULADO);
-        // VALOR_FINAL é o homologado; sem ele, o que a proposta declarava.
         const valor = vf !== null ? vf : (vp !== null ? vp : vc);
-        if (valor !== null) f.volumeHomologado += valor;
+        if (valor !== null) f.volumeHomologado = (f.volumeHomologado || 0) + valor;
       }
       if (eq.ID_EMPREENDIMENTO) f.megas[eq.ID_EMPREENDIMENTO] = true;
       if (eq.CATEGORIA) f.categorias[eq.CATEGORIA] = (f.categorias[eq.CATEGORIA] || 0) + 1;
@@ -140,6 +198,7 @@ function cfFornecedores_(categoria) {
       disputas: f.disputas,
       vitorias: f.vitorias,
       avulsos: f.avulsos,
+      contratacoesHistorico: cfNumero_(cad.CONTRATACOES_HISTORICO) || f.contratacoesHistorico || 0,
       // Percentual só com amostra que o sustente. Abaixo disso a tela
       // mostra a fração crua, que é honesta e igualmente informativa.
       taxaVitoria: f.disputas >= 5 ? (f.vitorias / f.disputas) : null,
@@ -147,7 +206,7 @@ function cfFornecedores_(categoria) {
       // A nota do pós-serviço. Null enquanto ninguém avaliou — e a
       // tela precisa saber a diferença entre "nota zero" e "sem nota".
       iqf: iqfs[cnpj] || null,
-      volumeHomologado: f.volumeHomologado || null,
+      volumeHomologado: f.volumeHomologado || cfNumero_(cad.VALOR_TOTAL_HISTORICO) || null,
       megas: Object.keys(f.megas),
       categorias: cats,
       categoriaPrincipal: dedu.principal || '',
@@ -265,6 +324,31 @@ function cfFichaFornecedor_(cnpjBruto) {
     };
   }).sort(function (a, b) { return b.vezes - a.vezes; });
 
+  // Se o fornecedor não tem disputas de cotação no app, mas tem contratações da plataforma, inclui no histórico
+  if (disputas.length === 0) {
+    try {
+      const contrs = (cfLerTudo_('Contratacoes') || []).filter(function (c) {
+        return cfSoDigitos_(c.CNPJ) === cnpj;
+      });
+      contrs.forEach(function (c) {
+        const d = c.DATA instanceof Date ? c.DATA : (c.DATA ? new Date(c.DATA) : null);
+        disputas.push({
+          idEqualizacao: c.PROTOCOLO ? ('OC-' + c.PROTOCOLO) : 'OC-DIRETA',
+          projeto: c.NATUREZA_ORCAMENTARIA || 'Contratação Direta',
+          empreendimento: c.EMPREENDIMENTO || '',
+          categoria: c.NATUREZA_ORCAMENTARIA || '',
+          data: d ? cfDataTexto_(d) : '',
+          ordenacao: d ? d.getTime() : 0,
+          valor: cfNumero_(c.VALOR),
+          venceu: true,
+          decidida: true,
+          rodada: 'OC Direta'
+        });
+      });
+    } catch (eC) {}
+  }
+  disputas.sort(function (a, b) { return b.ordenacao - a.ordenacao; });
+
   const descricoes = itens.map(function (i) { return i.descricao; });
   const catsEq = {};
   disputas.forEach(function (d) { if (d.categoria) catsEq[d.categoria] = (catsEq[d.categoria] || 0) + 1; });
@@ -272,8 +356,12 @@ function cfFichaFornecedor_(cnpjBruto) {
 
   const ganhas = disputas.filter(function (d) { return d.venceu; });
   const decididas = disputas.filter(function (d) { return d.decidida; });
-  const volumeHomologado = ganhas.reduce(function (a, d) { return a + (d.valor || 0); }, 0) || null;
-  const ticketMedio = (ganhas.length > 0 && volumeHomologado) ? (volumeHomologado / ganhas.length) : null;
+  const volumeHomologado = (ganhas.reduce(function (a, d) { return a + (d.valor || 0); }, 0)) ||
+                           cfNumero_(cad.VALOR_TOTAL_HISTORICO) || null;
+  const contrHist = cfNumero_(cad.CONTRATACOES_HISTORICO) || 0;
+  const ticketMedio = (ganhas.length > 0 && volumeHomologado)
+    ? (volumeHomologado / ganhas.length)
+    : (contrHist > 0 && volumeHomologado ? (volumeHomologado / contrHist) : null);
 
   // ── Convites e Assiduidade (Frente 1)
   let convitesTotal = 0;
@@ -312,6 +400,7 @@ function cfFichaFornecedor_(cnpjBruto) {
     disputasDecididas: decididas.length,
     vitorias: ganhas.length,
     avulsos: minhas.filter(function (p) { return !p.ID_EQUALIZACAO; }).length,
+    contratacoesHistorico: contrHist,
     // O denominador honesto é o das disputas DECIDIDAS: uma equalização
     // em aberto não foi perdida, está em andamento.
     taxaVitoria: decididas.length >= 5 ? (ganhas.length / decididas.length) : null,

@@ -46,13 +46,27 @@ const CF_ORIGEM_PLATAFORMA = 'import_plataforma';
  * DENTRO do campo — e há campos assim, porque a descrição da compra é
  * digitada em várias linhas.
  */
+/**
+ * Extrai o ID de um arquivo do Google Drive, mesmo que seja passado o link completo.
+ */
+function cfExtrairIdDrive_(idOuUrl) {
+  if (!idOuUrl) return '';
+  const s = String(idOuUrl).trim();
+  const m = /\/d\/([a-zA-Z0-9_-]+)/.exec(s) || /[?&]id=([a-zA-Z0-9_-]+)/.exec(s);
+  return m ? m[1] : s;
+}
+
 function cfTabelaDoDrive_(idArquivo) {
-  const arquivo = DriveApp.getFileById(idArquivo);
+  const idReal = cfExtrairIdDrive_(idArquivo);
+  if (!idReal) {
+    throw new Error('ID ou link do arquivo no Google Drive não foi informado.');
+  }
+  const arquivo = DriveApp.getFileById(idReal);
   const tipo = arquivo.getMimeType();
 
   let matriz;
   if (tipo === 'application/vnd.google-apps.spreadsheet') {
-    const aba = SpreadsheetApp.openById(idArquivo).getSheets()[0];
+    const aba = SpreadsheetApp.openById(idReal).getSheets()[0];
     matriz = aba.getDataRange().getValues();
   } else {
     matriz = Utilities.parseCsv(arquivo.getBlob().getDataAsString('UTF-8'), ';');
@@ -448,16 +462,21 @@ function cfRecalcularRelevancia_(aplicar) {
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Simula tudo, sem escrever nada. Rode esta primeiro.
+ * Simula tudo, sem escrever nada. Pode ser executada direto no editor.
  *
- * @param {string} idFornecedores ID do CSV de fornecedores no Drive
- * @param {string} idContratacoes ID do CSV de detalhe de contratações
+ * @param {string} [idFornecedores] ID do arquivo de fornecedores no Drive
+ * @param {string} [idContratacoes] ID do arquivo de detalhe de contratações
  */
 function simularImportacaoDaPlataforma(idFornecedores, idContratacoes) {
+  const ID_PADRAO_FORN = '1Ugh0H_cJ4KbrNKc3CdgVx0_xVoyhYp94TnQEwnqqb8Q';
+  const ID_PADRAO_CONTR = '1Nt4w8c5I5UEStEU-61qOQWafKhbKU69gIBufwlMNPfA';
+  const idForn = cfExtrairIdDrive_(idFornecedores) || ID_PADRAO_FORN;
+  const idContr = cfExtrairIdDrive_(idContratacoes) || ID_PADRAO_CONTR;
+
   return {
     naturezas: cfSemearNaturezas_(false),
-    fornecedores: cfImportarFornecedores_(idFornecedores, false),
-    contratacoes: cfImportarContratacoes_(idContratacoes, false)
+    fornecedores: cfImportarFornecedores_(idForn, false),
+    contratacoes: cfImportarContratacoes_(idContr, false)
   };
 }
 
@@ -465,11 +484,34 @@ function simularImportacaoDaPlataforma(idFornecedores, idContratacoes) {
  * Executa na ordem que as dependências pedem: naturezas antes das
  * contratações, porque é delas que sai DISPUTAVEL; contratações antes da
  * relevância, porque é delas que sai a contagem.
+ * Se nenhum ID for passado, usa os IDs padrão da pasta oficial do Drive.
  */
 function importarDaPlataforma(idFornecedores, idContratacoes) {
+  // IDs padrão da pasta oficial do Drive (1O3ZhuqfzlHpnsrORdY9T3-w2Otb7aF2F)
+  const ID_PADRAO_FORN = '1Ugh0H_cJ4KbrNKc3CdgVx0_xVoyhYp94TnQEwnqqb8Q';
+  const ID_PADRAO_CONTR = '1Nt4w8c5I5UEStEU-61qOQWafKhbKU69gIBufwlMNPfA';
+
+  const propForn = (typeof PropertiesService !== 'undefined' && PropertiesService.getScriptProperties)
+    ? PropertiesService.getScriptProperties().getProperty('CF_ID_ARQUIVO_FORNECEDORES') : null;
+  const propContr = (typeof PropertiesService !== 'undefined' && PropertiesService.getScriptProperties)
+    ? PropertiesService.getScriptProperties().getProperty('CF_ID_ARQUIVO_CONTRATACOES') : null;
+
+  const idForn = cfExtrairIdDrive_(idFornecedores) || propForn || ID_PADRAO_FORN;
+  const idContr = cfExtrairIdDrive_(idContratacoes) || propContr || ID_PADRAO_CONTR;
+
+  if (!idForn || !idContr) {
+    const msg = 'A importação precisa dos arquivos da plataforma no Google Drive.\n\n' +
+      'Como executar:\n' +
+      '1. Selecione a função "executarImportacaoPlataformaManual" no topo do editor\n' +
+      '2. Cole o ID ou link dos arquivos nas variáveis idFornecedores e idContratacoes\n' +
+      '3. Ou chame: importarDaPlataforma("ID_OU_LINK_FORNECEDORES", "ID_OU_LINK_CONTRATACOES")';
+    Logger.log(msg);
+    throw new Error(msg);
+  }
+
   const naturezas = cfSemearNaturezas_(true);
-  const fornecedores = cfImportarFornecedores_(idFornecedores, true);
-  const contratacoes = cfImportarContratacoes_(idContratacoes, true);
+  const fornecedores = cfImportarFornecedores_(idForn, true);
+  const contratacoes = cfImportarContratacoes_(idContr, true);
   const relevancia = cfRecalcularRelevancia_(true);
 
   cfLog_('importacao_plataforma', 'Contratacoes', '',
@@ -481,4 +523,17 @@ function importarDaPlataforma(idFornecedores, idContratacoes) {
     contratacoes: contratacoes,
     relevancia: relevancia
   };
+}
+
+/**
+ * Função utilitária pronta para executar pelo editor do Apps Script com 1 clique.
+ * Os IDs já estão configurados com os arquivos encontrados na pasta oficial:
+ * - Fornecedores: contratacoes_por_fornecedor (1Ugh0H_cJ4KbrNKc3CdgVx0_xVoyhYp94TnQEwnqqb8Q)
+ * - Contratações: contratacoes_detalhe (1Nt4w8c5I5UEStEU-61qOQWafKhbKU69gIBufwlMNPfA)
+ */
+function executarImportacaoPlataformaManual() {
+  const idFornecedores = '1Ugh0H_cJ4KbrNKc3CdgVx0_xVoyhYp94TnQEwnqqb8Q';
+  const idContratacoes = '1Nt4w8c5I5UEStEU-61qOQWafKhbKU69gIBufwlMNPfA';
+
+  return importarDaPlataforma(idFornecedores, idContratacoes);
 }

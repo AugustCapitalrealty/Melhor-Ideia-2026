@@ -8986,7 +8986,7 @@ function atualizarKpisFornecedores() {
 
   elTotal.textContent = total;
   if (elAtivosSub) elAtivosSub.textContent = ativos + ' ativos no cadastro (' + Math.round((ativos / total) * 100) + '%)';
-  if (elVolume) elVolume.textContent = 'R$ ' + moeda(somaVol);
+  if (elVolume) elVolume.textContent = moeda(somaVol);
 
   if (elIqf) {
     if (mediaIqf !== null) {
@@ -9078,7 +9078,10 @@ function desenharPillsForn() {
 
   el.innerHTML = html;
   Array.prototype.forEach.call(el.querySelectorAll('.pill'), function (b) {
-    b.addEventListener('click', function () { escolherCategoriaForn(b.getAttribute('data-cat') || ''); });
+    b.addEventListener('click', function () {
+      var cat = b.getAttribute('data-cat') || '';
+      escolherCategoriaForn(cat);
+    });
   });
 }
 
@@ -9094,7 +9097,9 @@ function desenharSubPills(daCategoria) {
   var el = document.getElementById('subPillsForn');
   if (!el) return;
 
-  if (!categoriaForn || categoriaForn === '(sem)') {
+  // Sem categoria escolhida ou sem fornecedores, a barra de segundo
+  // nível fica escondida.
+  if (!categoriaForn || categoriaForn === '(sem)' || !daCategoria || !daCategoria.length) {
     el.hidden = true; el.innerHTML = ''; subcategoriaForn = ''; return;
   }
 
@@ -9198,28 +9203,37 @@ function carregarFilaAvaliacao() {
       if (!box || !r.ok) return;
       CRITERIOS_AVAL = r.criterios || [];
 
-      if (!r.pendentes || !r.pendentes.length) { box.hidden = true; return; }
+      var pendentes = r.pendentes || [];
+      if (!pendentes.length) {
+        box.hidden = true;
+        box.innerHTML = '';
+        return;
+      }
 
-      box.innerHTML =
-        '<div style="width:100%"><b>' + r.pendentes.length +
-        (r.pendentes.length === 1 ? ' compra homologada</b> ainda sem avaliação.'
-                                  : ' compras homologadas</b> ainda sem avaliação.') +
-        ' A nota do fornecedor só existe se alguém der.</div>' +
-        '<div class="fila-itens">' + r.pendentes.map(function (p) {
-          return '<button type="button" class="fila-item" onclick="abrirAvaliacao(' +
-            "'" + esc(p.cnpj) + "','" + esc(p.fornecedor) + "','" + esc(p.idEqualizacao) +
-            "','" + esc(p.empreendimento) + "','" + esc(p.numeroOc || '') +
-            "','" + esc(p.projeto || '') + "'" + ')">' +
-            '<b>' + esc(p.fornecedor) + '</b>' +
-            '<span>' + esc(p.projeto || p.idEqualizacao) +
-            (p.empreendimento ? ' · ' + esc(simplificarMega(p.empreendimento)) : '') + '</span>' +
-            '</button>';
-        }).join('') + '</div>';
       box.hidden = false;
+      box.innerHTML =
+        '<div class="fa-topo">' +
+          '<strong>Avaliações pós-serviço pendentes (' + pendentes.length + ')</strong>' +
+          '<span>Compras homologadas que ainda não receberam nota de entrega</span>' +
+        '</div>' +
+        '<div class="fa-itens">' +
+          pendentes.map(function (p) {
+            return '<div class="fa-item">' +
+              '<div class="fa-info">' +
+                '<b>' + esc(p.fornecedorNome) + '</b>' +
+                '<span>' + esc(p.projeto) + (p.empreendimento ? ' · ' + esc(p.empreendimento) : '') +
+                  (p.data ? ' · ' + esc(p.data) : '') +
+                  (p.valorFinal ? ' · <strong>' + moeda(p.valorFinal) + '</strong>' : '') + '</span>' +
+              '</div>' +
+              '<button type="button" class="btn btn-sm btn-primario" onclick="abrirAvaliacao(\'' +
+                esc(p.cnpj) + '\',\'' + esc(p.fornecedorNome) + '\',\'' + esc(p.idEqualizacao) + '\',\'' +
+                esc(p.empreendimento) + '\',\'' + esc(p.numeroOc) + '\',\'' + esc(p.projeto) + '\')">' +
+                'Avaliar entrega</button>' +
+            '</div>';
+          }).join('') +
+        '</div>';
     })
     .withFailureHandler(function () {
-      // A fila é um lembrete, não o conteúdo da tela: se ela falhar, a
-      // lista de fornecedores continua servindo. Some quieta.
       var box = document.getElementById('filaAvaliacao');
       if (box) box.hidden = true;
     })
@@ -9504,7 +9518,14 @@ function cartaoForn(f) {
 
   var desempenho;
   if (f.disputas === 0) {
-    desempenho = '<span class="d-nulo">só orçamentos avulsos (' + f.avulsos + ')</span>';
+    if (f.contratacoesHistorico > 0) {
+      desempenho = '<span style="color:var(--noturno);font-weight:600;"><b>' + f.contratacoesHistorico +
+        '</b> ' + (f.contratacoesHistorico === 1 ? 'contratação na rede' : 'contratações na rede') + '</span>';
+    } else if (f.avulsos > 0) {
+      desempenho = '<span class="d-nulo">só orçamentos avulsos (' + f.avulsos + ')</span>';
+    } else {
+      desempenho = '<span class="d-nulo">base homologada</span>';
+    }
   } else if (f.taxaVitoria !== null && f.taxaVitoria !== undefined) {
     desempenho = '<b>' + Math.round(f.taxaVitoria * 100) + '%</b> de aproveitamento · ' +
       f.vitorias + ' de ' + f.disputas;
@@ -9520,8 +9541,12 @@ function cartaoForn(f) {
       (f.cidade ? ' · ' + esc(f.cidade) + (f.uf ? '/' + esc(f.uf) : '') : '') + '</div>' +
     '<div class="forn-linha">' + desempenho + '</div>' +
     (f.volumeHomologado ? '<div class="forn-linha" style="font-size:12.5px;color:var(--royal);margin:3px 0;">contratado: <b style="font-weight:700;font-variant-numeric:tabular-nums;">' + moeda(f.volumeHomologado) + '</b></div>' : '') +
-    '<div class="forn-linha d-nulo">' + f.itensDistintos +
-      (f.itensDistintos === 1 ? ' item cotado' : ' itens cotados') +
+    '<div class="forn-linha d-nulo">' +
+      (f.itensDistintos > 0
+        ? (f.itensDistintos + (f.itensDistintos === 1 ? ' item cotado' : ' itens cotados'))
+        : (f.contratacoesHistorico > 0
+            ? (f.contratacoesHistorico + (f.contratacoesHistorico === 1 ? ' contratação histórica' : ' contratações históricas'))
+            : 'parceiro cadastrado')) +
       (f.ultimaProposta ? ' · última em ' + esc(f.ultimaProposta) : '') + '</div>' +
     ((f.categorias || []).length
       ? '<div class="cartao-etq">' +
