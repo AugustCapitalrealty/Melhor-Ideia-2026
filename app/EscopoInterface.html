@@ -1,0 +1,102 @@
+<style>
+#v-escopos{max-width:1120px;margin:auto;color:var(--noturno,#151e49)}
+.es-barra{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:16px 0}
+.es-barra select{flex:1;min-width:220px}.es-card{padding:24px;margin:18px 0;background:#fff;border:1px solid #dce2ec;border-radius:16px}
+.es-card h2{font-size:19px;margin:0 0 16px}.es-card p,.es-ajuda{color:#64748b;font-size:13px;line-height:1.5}
+.es-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.es-wide{grid-column:1/-1}
+#v-escopos label{display:block;font-size:13px;font-weight:600;margin:10px 0}
+#v-escopos input:not([type=checkbox]),#v-escopos textarea,#v-escopos select{display:block;width:100%;box-sizing:border-box;border:1px solid #ccd5e3;border-radius:8px;padding:10px;background:white;color:#17213a;font:inherit;margin-top:6px}
+#v-escopos textarea{min-height:100px;resize:vertical;line-height:1.5}#v-escopos button{border:1px solid #ccd5e3;border-radius:8px;background:#fff;padding:9px 14px;color:#173c70;cursor:pointer;font:inherit}
+#v-escopos button.es-primary{background:#065ca9;color:#fff;border-color:#065ca9}#v-escopos button:disabled{opacity:.5;cursor:wait}
+.es-linha{background:#f7f9fc;border:1px solid #e0e6ef;padding:16px;border-radius:10px;margin:12px 0}
+.es-acoes{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.es-foto{display:grid;grid-template-columns:180px 1fr;gap:18px}.es-preview{max-width:100%;height:160px;object-fit:contain;background:#eef2f7;border-radius:8px}
+.es-vinculos{display:flex;flex-wrap:wrap;gap:12px}.es-vinculos label{font-weight:400!important}.es-vinculos input{margin-right:6px}
+.es-status{white-space:pre-wrap;padding:12px 0;font-size:14px}.es-status.erro{color:#a32121}.es-fixed{position:sticky;bottom:12px;padding:16px;background:#f0f5fc;border:1px solid #cedaea;border-radius:12px;z-index:25}
+#es-editor[disabled]{opacity:.7}#es-editor{border:0;padding:0;min-width:0}.es-historico a{margin-right:15px}.es-historico li{margin:12px 0}
+@media(max-width:680px){.es-grid,.es-foto{grid-template-columns:1fr}.es-card{padding:16px}.es-fixed{position:static}}
+</style>
+<section id="v-escopos" hidden>
+  <div class="es-barra"><select id="es-lista" aria-label="Escopos salvos"><option value="">Selecione um escopo salvo</option></select><button onclick="esAbrirUI()">Abrir</button><button onclick="esNovoUI()">Novo escopo</button><button onclick="esCarregarUI(true)">Atualizar lista</button></div>
+  <div id="es-status" class="es-status" role="status" aria-live="polite"></div>
+  <fieldset id="es-editor" hidden>
+    <div class="es-card"><h2>1. Identificação e localização</h2><div class="es-grid">
+      <label class="es-wide">Título do escopo<input id="es-titulo" maxlength="180" placeholder="Ex.: Adequações elétricas dos quadros e shafts"></label>
+      <label>Empreendimento<select id="es-megaId" onchange="esMegaUI()"></select></label><label>Responsável / contato<input id="es-responsavel" maxlength="180"></label>
+      <label>Armazém<input id="es-armazem" maxlength="100" placeholder="Ex.: Armazém 1"></label><label>Módulos ou áreas<input id="es-modulos" maxlength="160" placeholder="Ex.: Módulos 01 e 02"></label>
+      <label class="es-wide">Endereço<input id="es-endereco" maxlength="400"></label>
+      <div><label>Imagem padrão do empreendimento<input type="file" accept="image/png,image/jpeg" onchange="esUploadLocalUI(this,'imagem')"></label><img id="es-img-mega" class="es-preview" hidden alt="Imagem do empreendimento"><p id="es-imagem-aviso" class="es-ajuda"></p><button onclick="esSalvarMegaUI()">Salvar imagem e endereço como padrão deste Mega</button></div>
+      <div><label>Detalhe da área de intervenção (opcional)<input type="file" accept="image/png,image/jpeg" onchange="esUploadLocalUI(this,'detalhe')"></label><img id="es-img-detalhe" class="es-preview" hidden alt="Detalhe da intervenção"><label>Legenda do detalhe<input id="es-detalheLegenda" maxlength="200"></label><button onclick="esRemoverDetalheUI()">Remover detalhe</button></div>
+    </div></div>
+    <div class="es-card"><h2>2. Objetivo e vistoria</h2><label>Objetivo<textarea id="es-objetivo" maxlength="6000" placeholder="O que deve ser realizado e qual o resultado esperado?"></textarea></label><label>Resumo da vistoria<textarea id="es-vistoria" maxlength="9000" placeholder="Descreva a situação encontrada."></textarea></label></div>
+    <div class="es-card"><h2>3. Serviços a executar</h2><p>Crie grupos por módulo, ambiente ou pavimento. Escreva uma atividade por linha.</p><div id="es-grupos"></div><button onclick="esAdicionarGrupoUI()">+ Grupo de serviços</button></div>
+    <div class="es-card"><h2>4. Registro fotográfico</h2><p>Envie PNG ou JPEG de até 5 MB. Fotos consecutivas com o mesmo título e os mesmos grupos ficam juntas, até quatro por página.</p><label>Adicionar fotografias<input type="file" accept="image/png,image/jpeg" multiple onchange="esUploadFotosUI(this)"></label><div id="es-fotos"></div></div>
+    <div class="es-card"><h2>5. Itens para cotação</h2><p>Vincule cada item aos grupos de serviços que ele cobre. Os preços ficam disponíveis para preenchimento pelo fornecedor.</p><div id="es-itens"></div><button onclick="esAdicionarItemUI()">+ Item para cotação</button><p id="es-cobertura" class="es-ajuda"></p></div>
+    <div class="es-card"><h2>6. Condições e prazos</h2><label>Considerações para execução<textarea id="es-consideracoes" maxlength="9000" placeholder="Materiais, documentação, condições de execução, limpeza e demais requisitos específicos."></textarea></label><label>Prazos para proposta, execução e visita<textarea id="es-prazo" maxlength="400"></textarea></label><label><input type="checkbox" id="es-visita"> Exigir visita técnica prévia para elaboração da proposta</label><label>Aviso final<textarea id="es-aviso" maxlength="3000"></textarea></label></div>
+    <div class="es-fixed es-acoes"><button class="es-primary" onclick="esSalvarUI()">Salvar rascunho</button><button class="es-primary" onclick="esGerarUI()">Gerar Slides e PDF</button><span id="es-revisao" class="es-ajuda"></span></div>
+  </fieldset>
+  <div id="es-historico" class="es-card es-historico" hidden></div>
+</section>
+<script>
+var esUI = { carregado:false, ocupado:false, sujo:false, id:'', revisao:0, megas:[], dados:null, imagens:{}, arquivos:[] };
+var esCamposUI = ['titulo','megaId','responsavel','armazem','modulos','endereco','detalheLegenda','objetivo','vistoria','consideracoes','prazo','aviso'];
+function esEl(id){return document.getElementById(id);}
+function esEscape(v){return String(v == null ? '' : v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function esMsg(texto,erro){esEl('es-status').textContent=texto;esEl('es-status').classList.toggle('erro',!!erro);if(erro)esEl('es-status').scrollIntoView({behavior:'smooth',block:'center'});}
+function esBusy(v){esUI.ocupado=v;esEl('es-editor').disabled=v;document.querySelectorAll('#v-escopos > .es-barra button').forEach(function(b){b.disabled=v;});}
+function esCall(nome,args){return new Promise(function(resolve,reject){var r=google.script.run.withSuccessHandler(function(x){if(!x||!x.ok)reject(new Error(x&&x.erro||'Resposta inválida do servidor.'));else resolve(x);}).withFailureHandler(reject);r[nome].apply(r,args||[]);});}
+async function esCarregarUI(forcar){
+  if(esUI.ocupado||esUI.carregado&&!forcar)return;
+  esBusy(true);esMsg('Carregando escopos…');
+  try{var r=await esCall('apiEscoposListar');esUI.megas=r.megas;esUI.carregado=true;
+    esEl('es-lista').innerHTML='<option value="">Selecione um escopo salvo</option>'+r.escopos.map(function(s){return '<option value="'+esEscape(s.id)+'">'+esEscape(s.titulo+' · '+s.mega+' · R'+s.revisao)+'</option>';}).join('');
+    esEl('es-lista').value=esUI.id;esOpcoesMegaUI();esMsg(r.escopos.length+' escopo(s) salvo(s).');
+  }catch(e){esMsg(e.message,true);}finally{esBusy(false);}
+}
+function esOpcoesMegaUI(){var id=esUI.dados?esUI.dados.megaId:'';esEl('es-megaId').innerHTML='<option value="">Selecione o empreendimento</option>'+esUI.megas.map(function(m){return '<option value="'+esEscape(m.id)+'">'+esEscape(m.nome)+'</option>';}).join('');esEl('es-megaId').value=id;}
+function esPodeTrocarUI(){return !esUI.ocupado&&(!esUI.sujo||window.confirm('Há alterações não salvas. Deseja descartá-las e continuar?'));}
+function esNovoUI(){if(!esPodeTrocarUI())return;esUI.id='';esUI.revisao=0;esUI.arquivos=[];esUI.dados={grupos:[],itens:[],fotos:[],imagem:'',detalhe:'',aviso:'Este escopo tem caráter orientativo e serve como base técnica para elaboração da proposta.'};esUI.sujo=false;esPreencherUI();esMsg('Preencha o escopo e salve para retomá-lo depois.');}
+async function esAbrirUI(){
+  var id=esEl('es-lista').value;if(!id||!esPodeTrocarUI())return;esBusy(true);esMsg('Abrindo escopo…');
+  try{var r=await esCall('apiEscopoAbrir',[id]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.dados=r.dados;esUI.arquivos=r.arquivos;esUI.sujo=false;esPreencherUI();esMsg('Escopo carregado.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}
+}
+function esPreencherUI(){esEl('es-editor').hidden=false;esOpcoesMegaUI();esCamposUI.forEach(function(k){esEl('es-'+k).value=esUI.dados[k]||'';});esEl('es-visita').checked=!!esUI.dados.visita;esRenderDinamicoUI();esPreviewUI(esEl('es-img-mega'),esUI.dados.imagem);esPreviewUI(esEl('es-img-detalhe'),esUI.dados.detalhe);esInfoUI();esHistoricoUI();}
+function esColetarUI(){if(!esUI.dados)return;esCamposUI.forEach(function(k){esUI.dados[k]=esEl('es-'+k).value;});esUI.dados.visita=esEl('es-visita').checked;var m=esUI.megas.find(function(m){return m.id===esUI.dados.megaId;});esUI.dados.megaNome=m?m.nome:'';}
+function esInfoUI(){esEl('es-revisao').textContent=(esUI.id?'Revisão '+esUI.revisao:'Novo escopo')+(esUI.sujo?' · alterações não salvas':'');esEl('es-imagem-aviso').textContent=esUI.dados&&esUI.dados.imagem?'Imagem definida para este escopo.':'Cadastre a imagem deste empreendimento antes de gerar.';}
+function esAlteradoUI(){esUI.sujo=true;esInfoUI();}
+function esMegaUI(){esColetarUI();var m=esUI.megas.find(function(m){return m.id===esUI.dados.megaId;});esUI.dados.imagem=m?m.imagem:'';esUI.dados.detalhe='';esUI.dados.detalheLegenda='';esEl('es-detalheLegenda').value='';esEl('es-endereco').value=m?m.endereco:'';esPreviewUI(esEl('es-img-mega'),esUI.dados.imagem);esPreviewUI(esEl('es-img-detalhe'),'');esAlteradoUI();}
+async function esPreviewUI(el,id){el.dataset.imagem=id||'';el.hidden=true;el.removeAttribute('src');if(!id)return;try{var url=esUI.imagens[id];if(!url){url=(await esCall('apiEscopoImagem',[id])).url;esUI.imagens[id]=url;}if(el.dataset.imagem===id){el.src=url;el.hidden=false;}}catch(e){esMsg('Não foi possível carregar uma imagem: '+e.message,true);}}
+async function esArquivoUI(file){
+  if(!file||['image/jpeg','image/png'].indexOf(file.type)<0||file.size>5*1024*1024)throw new Error('Envie PNG ou JPEG de até 5 MB.');
+  var url=await new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(){resolve(reader.result);};reader.onerror=function(){reject(new Error('Não foi possível ler '+file.name));};reader.readAsDataURL(file);});
+  var r=await esCall('apiEscopoEnviarImagem',[file.name,file.type,url.split(',')[1]]);esUI.imagens[r.imagem]=url;return r.imagem;
+}
+async function esUploadLocalUI(input,campo){if(esUI.ocupado||!input.files.length)return;var file=input.files[0];esBusy(true);esMsg('Enviando imagem…');try{esUI.dados[campo]=await esArquivoUI(file);esPreviewUI(esEl(campo==='imagem'?'es-img-mega':'es-img-detalhe'),esUI.dados[campo]);esAlteradoUI();esMsg('Imagem enviada. Salve o rascunho para registrar a alteração.');}catch(e){esMsg(e.message,true);}finally{input.value='';esBusy(false);}}
+function esRemoverDetalheUI(){esUI.dados.detalhe='';esUI.dados.detalheLegenda='';esEl('es-detalheLegenda').value='';esPreviewUI(esEl('es-img-detalhe'),'');esAlteradoUI();}
+async function esSalvarMegaUI(){if(esUI.ocupado)return;esColetarUI();esBusy(true);try{var r=await esCall('apiEscopoSalvarMega',[esUI.dados.megaId,esUI.dados.endereco,esUI.dados.imagem]);esUI.megas=r.megas;esMsg('Padrão do empreendimento salvo para os próximos escopos.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
+function esGrupoIdUI(){return 'g-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);}
+function esAdicionarGrupoUI(){esUI.dados.grupos.push({id:esGrupoIdUI(),titulo:'',servicos:''});esRenderDinamicoUI();esAlteradoUI();}
+function esAdicionarItemUI(){esUI.dados.itens.push({descricao:'',quantidade:'',unidade:'',referencia:'',grupos:[]});esRenderDinamicoUI();esAlteradoUI();}
+function esSetUI(tipo,i,campo,valor){esUI.dados[tipo][i][campo]=valor;esAlteradoUI();if(tipo==='grupos'&&campo==='titulo')esRenderVinculosUI();}
+function esVinculoUI(tipo,i,id,checked){var a=esUI.dados[tipo][i].grupos;a=a.filter(function(x){return x!==id;});if(checked)a.push(id);esUI.dados[tipo][i].grupos=a;esCoberturaUI();esAlteradoUI();}
+function esMoverUI(tipo,i,delta){var a=esUI.dados[tipo],j=i+delta;if(j<0||j>=a.length)return;var x=a[i];a[i]=a[j];a[j]=x;esRenderDinamicoUI();esAlteradoUI();}
+function esRemoverUI(tipo,i){var a=esUI.dados[tipo];if(tipo==='grupos'){var id=a[i].id;if(esUI.dados.itens.concat(esUI.dados.fotos).some(function(x){return x.grupos.indexOf(id)>=0;})){esMsg('Remova os vínculos de itens e fotos antes de excluir este grupo.',true);return;}}a.splice(i,1);esRenderDinamicoUI();esAlteradoUI();}
+function esDuplicarUI(i){var g=esUI.dados.grupos[i];esUI.dados.grupos.splice(i+1,0,{id:esGrupoIdUI(),titulo:g.titulo+' (cópia)',servicos:g.servicos});esRenderDinamicoUI();esAlteradoUI();}
+function esAcoesUI(tipo,i){return '<div class="es-acoes"><button onclick="esMoverUI(\''+tipo+'\','+i+',-1)" aria-label="Mover para cima">↑</button><button onclick="esMoverUI(\''+tipo+'\','+i+',1)" aria-label="Mover para baixo">↓</button><button onclick="esRemoverUI(\''+tipo+'\','+i+')">Remover</button>'+(tipo==='grupos'?'<button onclick="esDuplicarUI('+i+')">Duplicar grupo</button>':'')+'</div>';}
+function esInputUI(tipo,i,campo,titulo,multi,max){var v=esEscape(esUI.dados[tipo][i][campo]);var attrs=' maxlength="'+max+'" oninput="esSetUI(\''+tipo+'\','+i+',\''+campo+'\',this.value)"';return '<label>'+titulo+(multi?'<textarea'+attrs+'>'+v+'</textarea>':'<input'+attrs+' value="'+v+'">')+'</label>';}
+function esVinculosHtmlUI(tipo,i){var valores=esUI.dados[tipo][i].grupos;return esUI.dados.grupos.map(function(g){return '<label><input type="checkbox" '+(valores.indexOf(g.id)>=0?'checked':'')+' onchange="esVinculoUI(\''+tipo+'\','+i+',\''+esEscape(g.id)+'\',this.checked)">'+esEscape(g.titulo||'Grupo sem título')+'</label>';}).join('')||'<span class="es-ajuda">Cadastre os grupos de serviços primeiro.</span>';}
+function esRenderVinculosUI(){['itens','fotos'].forEach(function(tipo){esUI.dados[tipo].forEach(function(x,i){var el=esEl('es-vinc-'+tipo+'-'+i);if(el)el.innerHTML=esVinculosHtmlUI(tipo,i);});});esCoberturaUI();}
+function esRenderDinamicoUI(){
+  esEl('es-grupos').innerHTML=esUI.dados.grupos.map(function(g,i){return '<div class="es-linha">'+esAcoesUI('grupos',i)+esInputUI('grupos',i,'titulo','Local / módulo / ambiente / pavimento',false,160)+esInputUI('grupos',i,'servicos','Serviços — uma atividade por linha',true,9000)+'</div>';}).join('');
+  esEl('es-itens').innerHTML=esUI.dados.itens.map(function(it,i){return '<div class="es-linha">'+esAcoesUI('itens',i)+esInputUI('itens',i,'descricao','Item '+(i+1)+' — descrição',true,3500)+'<div class="es-grid">'+esInputUI('itens',i,'quantidade','Quantidade',false,30)+esInputUI('itens',i,'unidade','Unidade',false,20)+'</div>'+esInputUI('itens',i,'referencia','Marca ou referência (opcional)',false,200)+'<p>Serviços cobertos por este item</p><div class="es-vinculos" id="es-vinc-itens-'+i+'"></div></div>';}).join('');
+  esEl('es-fotos').innerHTML=esUI.dados.fotos.map(function(f,i){return '<div class="es-linha es-foto"><img class="es-preview" id="es-foto-'+i+'" alt="Fotografia '+(i+1)+'"><div>'+esAcoesUI('fotos',i)+esInputUI('fotos',i,'titulo','Título do conjunto fotográfico',false,140)+esInputUI('fotos',i,'legenda','Legenda (opcional)',false,180)+'<div class="es-vinculos" id="es-vinc-fotos-'+i+'"></div></div></div>';}).join('');
+  esUI.dados.fotos.forEach(function(f,i){esPreviewUI(esEl('es-foto-'+i),f.imagem);});esRenderVinculosUI();
+}
+function esCoberturaUI(){var sem=esUI.dados.grupos.filter(function(g){return !esUI.dados.itens.some(function(it){return it.grupos.indexOf(g.id)>=0;});});esEl('es-cobertura').textContent=sem.length?'Grupos ainda sem item para cotação: '+sem.map(function(g){return g.titulo||'Sem título';}).join(', '):'Todos os grupos estão vinculados a itens para cotação.';}
+async function esUploadFotosUI(input){if(esUI.ocupado)return;var files=Array.from(input.files);if(esUI.dados.fotos.length+files.length>40){esMsg('Limite de 40 fotos por escopo.',true);input.value='';return;}esBusy(true);try{for(var i=0;i<files.length;i++){esMsg('Enviando foto '+(i+1)+' de '+files.length+'…');var id=await esArquivoUI(files[i]);esUI.dados.fotos.push({imagem:id,titulo:'',legenda:'',grupos:[]});esAlteradoUI();}esMsg('Fotos enviadas. Informe os títulos e vincule aos grupos.');}catch(e){esMsg(e.message,true);}finally{input.value='';esRenderDinamicoUI();esBusy(false);}}
+async function esPersistirUI(){esColetarUI();var r=await esCall('apiEscopoSalvar',[esUI.id,esUI.revisao,esUI.dados]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.sujo=false;esInfoUI();}
+async function esSalvarUI(){if(esUI.ocupado)return;esBusy(true);esMsg('Salvando rascunho…');try{await esPersistirUI();esMsg('Rascunho salvo — revisão '+esUI.revisao+'.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
+async function esGerarUI(){if(esUI.ocupado)return;esBusy(true);esMsg('Salvando e gerando Slides e PDF. Isso pode levar alguns minutos…');try{await esPersistirUI();var r=await esCall('apiEscopoGerar',[esUI.id,esUI.revisao]);esUI.arquivos=esUI.arquivos.filter(function(a){return a.revisao!==r.revisao;});esUI.arquivos.push(r);esHistoricoUI();esMsg('Apresentação e PDF da revisão '+r.revisao+' prontos. Abra pelos links abaixo.');esEl('es-historico').scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
+function esHistoricoUI(){var el=esEl('es-historico');el.hidden=!esUI.arquivos.length;el.innerHTML='<h2>Apresentações geradas</h2><ul>'+esUI.arquivos.slice().sort(function(a,b){return b.revisao-a.revisao;}).map(function(a){return '<li>Revisão '+a.revisao+' · <a href="'+esEscape(a.slides)+'" target="_blank" rel="noopener">Abrir Slides</a><a href="'+esEscape(a.pdf)+'" target="_blank" rel="noopener">Abrir PDF</a></li>';}).join('')+'</ul>';}
+document.getElementById('es-editor').addEventListener('input',function(){if(esUI.dados)esAlteradoUI();});
+window.addEventListener('beforeunload',function(e){if(esUI.sujo||esUI.ocupado){e.preventDefault();e.returnValue='';}});
+</script>

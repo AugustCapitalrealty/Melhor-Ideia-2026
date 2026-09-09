@@ -1,5 +1,19 @@
 # app/ — Google Apps Script
 
+## Escopos e Google Slides
+
+A aba **Escopos** permite cadastrar o conteúdo antes da cotação e gerar uma apresentação e seu PDF. Fluxo: **Novo escopo → empreendimento/localização → objetivo/vistoria → grupos de serviços → fotos → itens para cotação → condições → Salvar rascunho / Gerar Slides e PDF**.
+
+Curitiba já possui imagem e endereço de referência. Para outro empreendimento, envie a imagem e preencha o endereço; o botão de salvar padrão permite reutilizá-los em novos escopos. Vincule os itens e as fotos aos grupos de serviços. As colunas de preço do documento ficam em branco.
+
+As quatro abas de armazenamento são criadas no primeiro acesso, sem apagar ou alterar as abas existentes. Cada alteração salva cria uma revisão; arquivos de revisões anteriores permanecem no histórico. Arquivos gerados e imagens ficam em `CF_PASTA_ID`, sem compartilhamento público automático.
+
+Os arquivos `EscopoInterface.html` e `EscopoAssets.html` precisam acompanhar os `.gs` na publicação. O recurso de imagens contém os bytes originais extraídos do exemplo, em JSON/base64; não é uma página de interface. O manifesto atual já declara os serviços de Drive, Sheets e Slides usados por esta entrega.
+
+Testes de servidor estão em `npm test`. O teste opcional `tests/teste-escopos-browser.cjs` usa Chrome e Playwright (instale separadamente ou informe `PLAYWRIGHT_MODULE`); os serviços do Google são simulados. Depois de publicar, confira no ambiente real um escopo com fotos, uma tabela longa e o PDF antes de utilizá-lo externamente.
+
+Especificação e limites: [modelo de escopo](../docs/MODELO_ESCOPO_GOOGLE_SLIDES.md).
+
 ## Deploy via Clasp (Novo fluxo automatizado)
 
 O envio do código local para o Google Apps Script agora é feito diretamente via **Clasp**, sem necessidade de copiar e colar arquivos manualmente:

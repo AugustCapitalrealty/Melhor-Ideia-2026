@@ -2927,6 +2927,7 @@ table.grade tbody tr.linha-grupo td {
     <div class="abas" role="tablist">
       <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
       <button id="ab-mapa"     role="tab" aria-selected="false" onclick="aba('mapa')">Equalizações</button>
+      <button id="ab-escopos" role="tab" aria-selected="false" onclick="aba('escopos')">Escopos</button>
       <button id="ab-fornecedores" role="tab" aria-selected="false" onclick="aba('fornecedores')">Fornecedores</button>
       <button id="ab-config"   role="tab" aria-selected="false" onclick="aba('config')">Configurações</button>
     </div>
@@ -3029,6 +3030,8 @@ table.grade tbody tr.linha-grupo td {
     <div id="listaEq"></div>
     <div id="mapa" style="display:none"></div>
   </section>
+
+  <?!= HtmlService.createHtmlOutputFromFile('EscopoInterface').getContent(); ?>
 
   <section id="v-fornecedores" hidden>
     <!-- Cockpit Executivo SRM & Governança de Fornecedores -->
@@ -5670,15 +5673,18 @@ var TITULOS = {
   mapa:     ['Equalizações', 'O comparativo lado a lado, item a item.'],
   fornecedores: ['Fornecedores', 'Quem atende cada categoria, e a que preço.'],
   config:   ['Configurações & Catálogo', 'Grupos Padronizados da EAP, Itens Canônicos e Governança de Marcas.'],
+  escopos:  ['Escopos de contratação', 'Defina os serviços, organize as fotos e gere a apresentação para cotação.'],
   nova:     ['Nova cotação', 'Uma linha por item, uma coluna por proponente.']
 };
 
 function aba(nome) {
-  ['consulta', 'mapa', 'fornecedores', 'config', 'nova'].forEach(function (n) {
+  ['consulta', 'mapa', 'fornecedores', 'config', 'nova', 'escopos'].forEach(function (n) {
     var el = document.getElementById('v-' + n);
     if (el) el.hidden = n !== nome;
   });
 
+  var abEscopos = document.getElementById('ab-escopos'); if (abEscopos) abEscopos.setAttribute('aria-selected', nome === 'escopos');
+  if (nome === 'escopos') esCarregarUI();
   var abConsulta = document.getElementById('ab-consulta'); if (abConsulta) abConsulta.setAttribute('aria-selected', nome === 'consulta');
   var abMapa = document.getElementById('ab-mapa'); if (abMapa) abMapa.setAttribute('aria-selected', nome === 'mapa');
   var abForn = document.getElementById('ab-fornecedores'); if (abForn) abForn.setAttribute('aria-selected', nome === 'fornecedores');
@@ -10023,7 +10029,9 @@ function abrirAvaliacaoDireta(cnpj, idEq) {
 // ─────────────────────────────────────────────────────────────
 //  Inicialização direta por ?page=
 // ─────────────────────────────────────────────────────────────
-if (PAGINA === 'nova') {
+if (PAGINA === 'escopos') {
+  aba('escopos');
+} else if (PAGINA === 'nova') {
   aba('nova');
   if (EDITAR_INICIAL) {
     editarEqualizacao(EDITAR_INICIAL);

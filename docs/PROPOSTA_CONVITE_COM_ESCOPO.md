@@ -1,6 +1,6 @@
 # Proposta — Convite para Licitação, com Escopo
 
-**Data:** 09/09/2026 · **Autor:** Guilherme Marques · **Estado:** ideia registrada, sem código escrito
+**Data:** 09/09/2026 · **Autor:** Guilherme Marques · **Estado:** cadastro de escopo e geração de Slides/PDF implementados localmente; convite e disparo ainda propostos
 
 > **Sobre a palavra "licitação".** Usada aqui no sentido corrente da companhia — concorrência privada entre fornecedores convidados. Nada nesta proposta implica rito, prazo ou publicidade da Lei 14.133; a Capital Realty e a Demercado não estão sujeitas a ela. Onde o texto diz "convite", leia-se o ato comercial de chamar fornecedores para cotar um escopo definido.
 
@@ -9,6 +9,53 @@
 ## A ideia, em uma frase
 
 **Montar o escopo dentro do sistema e disparar o convite para os participantes** — em vez de o processo começar quando as propostas já voltaram, ele passa a começar quando a Capital Realty define o que quer comprar.
+
+---
+
+## Decisão de produto — preencher no sistema e gerar Google Slides
+
+**Confirmado pelo usuário em 09/09/2026:** o escopo será preenchido no sistema, que gerará a apresentação em Google Slides. O cadastro no sistema é a fonte do conteúdo; alterações de conteúdo devem ser feitas nele e depois regeneradas na apresentação.
+
+**Referência real analisada:** o usuário forneceu uma apresentação de 24 páginas de adequações elétricas do Mega Curitiba. O [modelo detalhado de escopo em Google Slides](MODELO_ESCOPO_GOOGLE_SLIDES.md) registra a análise de todas as páginas, os padrões de imagens e tabelas, os campos do formulário e os critérios de aceite. Essa referência detalha e atualiza a estrutura genérica abaixo.
+
+### Fluxo proposto
+
+1. **Criar escopo:** informar projeto, Mega, responsável e objetivo da contratação, sem precisar cadastrar proponentes ou preços.
+2. **Preencher conteúdo:** montar a EAP com descrição, quantidade, unidade e marca ou padrão de referência; acrescentar requisitos técnicos, inclusões, exclusões, prazo e, opcionalmente, fotos com legenda.
+3. **Salvar rascunho:** permitir retomar o preenchimento e revisar o conteúdo antes de gerar o documento.
+4. **Gerar Slides:** o botão `Gerar apresentação do escopo` cria uma apresentação com a identidade visual da companhia e devolve o link para abrir o arquivo. Campos opcionais vazios não geram páginas vazias nem conteúdo inventado.
+5. **Revisar:** corrigir os dados no sistema e gerar novamente. Cada geração deve identificar a versão usada e preservar o documento já vinculado a um convite.
+6. **Preparar envio:** gerar o PDF da mesma versão do escopo. No primeiro disparo, congelar essa versão conforme a regra de integridade abaixo.
+
+### Estrutura sugerida da apresentação
+
+| Parte | Conteúdo vindo do sistema |
+|---|---|
+| Capa | Projeto, Mega, responsável, data e revisão |
+| Localização | Imagem e endereço padrão do empreendimento, com detalhe opcional da intervenção |
+| Objetivo | Necessidade da contratação e contexto informado |
+| Resumo da vistoria | Situação encontrada, em campo separado do objetivo |
+| Serviços a executar | Tópicos agrupados por módulo, ambiente e pavimento |
+| Registro fotográfico | Fotos agrupadas por local/serviço, com paginação e legendas opcionais |
+| Proposta / Escopo orientativo | Itens, quantidades, unidades e colunas para o fornecedor preencher preços; sem preço cadastrado nesta etapa |
+| Requisitos | Especificações, inclusões e exclusões informadas |
+| Prazos e contato | Prazo para proposta, execução, visita técnica quando aplicável e responsável |
+| Aviso final | Caráter orientativo e condições de visita, conforme o escopo |
+
+### Entregas e critérios de aceite
+
+A primeira entrega proposta é **cadastro de escopo + geração de Slides**, utilizável antes da implantação dos convites e do Portal do Fornecedor. Disparo de e-mail e acompanhamento de respostas são etapas seguintes.
+
+- Criar, salvar e reabrir um escopo sem fornecedores e sem preços.
+- Gerar a apresentação apenas com os dados preenchidos, sem valores ou informações de disputas anteriores.
+- Preservar a hierarquia dos itens, quantidades, unidades e referências; paginar textos e listas extensas sem cortar conteúdo.
+- Identificar o escopo e sua revisão no documento e registrar no sistema o arquivo gerado e a versão correspondente.
+- Exibir falhas de geração de forma clara, sem marcar como concluído um documento incompleto.
+- Manter uma versão enviada recuperável; uma alteração posterior exige nova revisão e novo documento.
+
+**Reuso técnico a avaliar na implementação:** `app/ExportarSlides.gs` já desenha a equalização em Slides. Reaproveitar identidade visual e auxiliares de desenho quando adequado, criando um gerador próprio para o escopo que funcione sem proponentes. Objetivo, requisitos, fotos e controle de revisões precisam ter sua persistência definida; a EAP existente cobre os itens, mas não todo esse conteúdo.
+
+**Estimativa:** as 16–23 horas registradas abaixo pertencem à proposta original de convite com PDF. Não incluem automaticamente a nova tela completa, fotos, geração de Slides e persistência de revisões; reestimar essas entregas antes de assumir prazo. A janela posterior a 15/10 descrita ao final refere-se à frente completa de convites; a data da primeira entrega de escopo e Slides ainda está em aberto.
 
 ---
 
@@ -42,7 +89,7 @@ A árvore `EAP` (`app/Config.gs`, schema v8) já carrega, por item:
 | `MARCA_REFERENCIA` | A marca ou padrão técnico exigido |
 | `ID_PAI` / `ORDEM` | A hierarquia, com o código derivado da posição |
 
-**O convite é essa árvore sem a coluna de preço.** É a mesma estrutura que a equalização já exporta em Sheets e PDF — o gerador de documento em `Exportar.gs` produz um retrato estático, sem fórmula, que é precisamente o que se manda para fora.
+**O convite usa essa árvore sem preços de propostas.** Na referência em Slides analisada posteriormente, há também textos de vistoria, serviços por local, fotos e tabelas com colunas destinadas ao preenchimento de preços pelo fornecedor. Portanto, a EAP sustenta os itens, mas a apresentação completa exige os dados adicionais descritos em [MODELO_ESCOPO_GOOGLE_SLIDES.md](MODELO_ESCOPO_GOOGLE_SLIDES.md). A exportação existente em Sheets e PDF serve de referência para os dados; não representa sozinha o novo documento.
 
 E a tabela `Convites` já existe, com os campos que o fluxo pede:
 
@@ -136,4 +183,4 @@ Pior: construir esta frente agora **consome as horas que o piloto precisa** e ad
 
 ---
 
-*Registrado em 09/09/2026. Nenhuma linha de código escrita para esta frente. Os campos e tabelas citados foram verificados no schema v8 em `app/Config.gs`.*
+*Registrado em 09/09/2026. A proposta original tomou como base o schema v8. A primeira entrega de escopo e Slides/PDF acrescenta quatro abas no schema v9; detalhes e validação em `MODELO_ESCOPO_GOOGLE_SLIDES.md`. Convites e envio externo ainda não foram implementados.*

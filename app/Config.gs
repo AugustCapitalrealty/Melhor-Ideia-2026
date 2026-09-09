@@ -18,7 +18,7 @@ const CF_PASTA_ID = '1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G';
 const CF_NOME_PLANILHA = 'Capital Fornecedores — Base';
 
 /** Sobe de 1 a cada mudança no schema. Gravado em Script Properties. */
-const CF_SCHEMA_VERSAO = 8;
+const CF_SCHEMA_VERSAO = 9;
 
 /** Versão do parser de importação. Gravada em cada linha importada,
  *  para dar para reprocessar o que veio de uma geração antiga. */
@@ -101,6 +101,33 @@ const CF_ENUM = {
 // ─────────────────────────────────────────────────────────────
 
 const CF_SCHEMA = [
+
+  { nome: 'Escopos', nota: 'Revisões imutáveis de escopos; JSON sem preços ou imagens embutidas.', colunas: [
+    { campo: 'ID', tipo: 'texto', largura: 240 },
+    { campo: 'REVISAO', tipo: 'inteiro', largura: 90 },
+    { campo: 'CONTEUDO', tipo: 'texto', largura: 400 },
+    { campo: 'CRIADO_EM', tipo: 'texto', largura: 180 }
+  ]},
+  { nome: 'EscopoArquivos', nota: 'Apresentação e PDF por revisão, com controle de geração.', colunas: [
+    { campo: 'ID', tipo: 'texto', largura: 240 },
+    { campo: 'ID_ESCOPO', tipo: 'texto', largura: 240 },
+    { campo: 'REVISAO', tipo: 'inteiro', largura: 90 },
+    { campo: 'STATUS', tipo: 'texto', largura: 120 },
+    { campo: 'SLIDES_ID', tipo: 'texto', largura: 240 },
+    { campo: 'PDF_ID', tipo: 'texto', largura: 240 },
+    { campo: 'CRIADO_EM', tipo: 'texto', largura: 180 }
+  ]},
+  { nome: 'EscopoImagens', nota: 'Registro dos uploads de escopo; acesso apenas a imagens cadastradas.', colunas: [
+    { campo: 'ID', tipo: 'texto', largura: 240 },
+    { campo: 'ARQUIVO_ID', tipo: 'texto', largura: 240 },
+    { campo: 'NOME', tipo: 'texto', largura: 240 },
+    { campo: 'MIME', tipo: 'texto', largura: 120 }
+  ]},
+  { nome: 'EscopoMegas', nota: 'Histórico de endereço e imagem padrão por empreendimento.', colunas: [
+    { campo: 'ID', tipo: 'texto', largura: 240 },
+    { campo: 'CONTEUDO', tipo: 'texto', largura: 400 },
+    { campo: 'CRIADO_EM', tipo: 'texto', largura: 180 }
+  ]},
 
   { nome: 'Config', nota: 'Chave/valor de configuração da instalação.', colunas: [
     { campo: 'CHAVE',      tipo: 'texto', largura: 220 },
