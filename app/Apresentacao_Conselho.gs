@@ -414,8 +414,8 @@ function _cnSlideProblema(deck) {
      'Faltam os itens 11, 15, 22, 24 e 26 na lista do contrato. Numeração mantida à mão apodrece, e duas planilhas do mesmo serviço deixam de conversar.'],
     ['A negociação vive fora da planilha',
      'Contratou-se por R$ 70.000 e a planilha mostra R$ 80.563,38. O valor real do contrato não está no arquivo que documenta a compra.'],
-    ['O mesmo fornecedor, cinco grafias',
-     'Cinco formas de escrever para dois CNPJs. Sem chave única não há como somar quanto se gastou com quem — e o Cód. Fornecedor veio vazio em 10 de 10 documentos.'],
+    ['A mesma empresa, cinco grafias',
+     'Cinco formas de escrever Demercado e Capital Realty, para dois CNPJs. Sem chave única não há como somar quanto se gastou com quem — e o Cód. Fornecedor veio vazio em 10 de 10 documentos.'],
     ['Cada arquivo é um retrato isolado',
      'O preço pago no mês passado, pelo mesmo item, no mesmo Mega, não está ao alcance de quem compra hoje.']
   ];
@@ -453,9 +453,9 @@ function _cnSlideFunciona(deck) {
   // KPIs de engenharia. Todos verificáveis: saem de contagem no repositório.
   const kw = (w - 3 * 10) / 4;
   const kpis = [
-    ['LINHAS EM PRODUÇÃO', '20.025', DS_CN.colors.brandMed, 'sistema completo, no ar'],
-    ['ASSERÇÕES DE TESTE', '1.044', DS_CN.colors.greenInk, '90% verificam comportamento'],
-    ['SUÍTES AUTOMÁTICAS', '25', DS_CN.colors.greenInk, 'bloqueiam a publicação se falharem'],
+    ['LINHAS EM PRODUÇÃO', '23.051', DS_CN.colors.brandMed, 'sistema completo, no ar'],
+    ['ASSERÇÕES DE TESTE', '1.157', DS_CN.colors.greenInk, 'e 27 scripts de mutação'],
+    ['SUÍTES AUTOMÁTICAS', '31', DS_CN.colors.greenInk, 'bloqueiam a publicação se falharem'],
     ['DOCUMENTOS DO ACERVO', '45', DS_CN.colors.brandMed, 'analisados; 21 já importados']
   ];
   kpis.forEach(function (k, i) {
@@ -512,7 +512,7 @@ function _cnSlideCiclo(deck) {
 
   // As cinco etapas do laço. A última fecha no primeiro, e é o ponto todo.
   const etapas = [
-    ['1', 'COTAR', 'Convite registrado:\nquem respondeu\ne quem não'],
+    ['1', 'COTAR', 'Convite registrado:\nquem apresentou\nproposta e quem não'],
     ['2', 'EQUALIZAR', 'Comparativo item\na item, com alerta\nde preço fora da faixa'],
     ['3', 'HOMOLOGAR', 'Exige justificativa\nfora do menor preço\ne abaixo da cotação mínima'],
     ['4', 'AVALIAR', 'Cinco critérios\nponderados,\nem um minuto'],
@@ -548,7 +548,7 @@ function _cnSlideCiclo(deck) {
     'Avaliar é um investimento: a nota volta para a mesa de quem compra, na cotação seguinte.');
 
   _cnRodape_(slide, W, H,
-    'O aviso ativo ao gestor — e-mail e chatbot — está mapeado para a versão seguinte.');
+    'O e-mail já dispara na homologação, com link direto para a avaliação. Falta rotear ao gestor do Mega e o canal de chatbot.');
 }
 
 
@@ -575,9 +575,9 @@ function _cnSlideAImplementar(deck) {
     ['ATÉ 20/09', 'Trava de cotação mínima ativada na base',
      'A regra existe e é configurável por faixa de valor. Enquanto a tabela não for preenchida, ela não bloqueia nada.'],
     ['ATÉ 30/09', 'Registro completo do comportamento de cotação',
-     'Hoje grava quem apresentou proposta. Falta validade, prazo declarado e agilidade na negociação — e quem foi convidado e não respondeu.'],
-    ['VERSÃO FUTURA', 'Aviso ativo ao gestor: e-mail e chatbot',
-     'A fila de pendências existe dentro do sistema. Falta ele ir atrás do gestor. Foi deixado para depois de propósito: notificação disparada antes de haver piloto ensina a equipe a ignorá-la.'],
+     'Hoje grava quem apresentou proposta, e grava "confirmou" e "visitou" com valor fixo, não medido. Falta validade, prazo declarado, agilidade na negociação — e quem foi convidado e não respondeu.'],
+    ['VERSÃO FUTURA', 'Roteamento do aviso e canal de chatbot',
+     'O e-mail já dispara na homologação. Falta endereçá-lo ao gestor do Mega, lembrar enquanto a avaliação estiver pendente, e o canal de chatbot para quem está no Mega e não abre e-mail.'],
     ['VERSÃO FUTURA', 'Catálogo com unidade base',
      'Para comparar "pacote de 500 g" com "quilo" é preciso um fator de conversão por item. Só se preenche com uso real.']
   ];
