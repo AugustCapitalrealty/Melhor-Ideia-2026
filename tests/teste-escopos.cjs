@@ -24,7 +24,8 @@ function ambiente() {
             const style = { setFontFamily(v) { e.font = v; return this; }, setFontSize(v) { e.fs = v; return this; }, setForegroundColor(v) { e.color = v; return this; }, setBold(v) { e.bold = v; return this; } };
             const par = { setParagraphAlignment() { return this; }, setLineSpacing() { return this; }, setSpaceAbove() { return this; }, setSpaceBelow() { return this; } };
             const t = { setText(v) { e.text = v; }, getTextStyle: () => style, getParagraphStyle: () => par };
-            return { getBorder: () => ({ setTransparent() {} }), getFill: () => ({ setSolidFill(v) { e.fill = v; }, setTransparent() {} }), setContentAlignment() {}, getText: () => t };
+            const border = { setTransparent() { return this; }, setWeight(w) { e.borderW = w; return this; }, getLineFill: () => ({ setSolidFill(c) { e.borderColor = c; return this; } }) };
+            return { getBorder: () => border, getFill: () => ({ setSolidFill(v) { e.fill = v; }, setTransparent() {} }), setContentAlignment() {}, getText: () => t };
           }
         }; d.pages.push(s); return s;
       }
@@ -92,7 +93,7 @@ const objetivo=plano.filter(p=>p.titulo==='Objetivo').flatMap(p=>Array.from(p.li
 assert.equal((objetivo.match(/PALAVRA/g)||[]).length,600,'paginação não perde texto');
 assert(plano.filter(p=>p.tipo==='tabela').length>1);
 assert.equal(plano.filter(p=>p.tipo==='tabela').flatMap(p=>Array.from(p.linhas)).filter(l=>l.quantidade).length,1,'continuação não duplica quantidade');
-const visual=a.ctx.SlidesApp.create('longo');c.esDesenharSlides_(visual,plano,{logo:{name:'logo'},fundo:{name:'fundo'},'padrao:curitiba':{name:'curitiba'},[imgId]:{name:'foto'}},{revisao:1,data:'2026-09-09'});
+const visual=a.ctx.SlidesApp.create('longo');c.esDesenharSlides_(visual,plano,{logo:{name:'logo'},logoPreta:{name:'logoPreta'},logoAbreviada:{name:'logoAbreviada'},fundo:{name:'fundo'},'padrao:curitiba':{name:'curitiba'},[imgId]:{name:'foto'}},{revisao:1,data:'2026-09-09'});
 for(const page of visual.pages)for(const e of page.elements){assert(e.y+e.h<=405.01,JSON.stringify(e));assert(e.x+e.w<=720.01);}
 assert.equal(c.apiEscopoEnviarImagem('x','text/html','AAAA').ok,false);
 assert.equal(c.apiEscopoImagem('private-file').ok,false,'API não lê arquivos arbitrários do Drive');

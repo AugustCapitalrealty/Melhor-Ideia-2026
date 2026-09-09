@@ -227,7 +227,11 @@ function apiEscopoGerar(id, revisao) {
       });
     }
     try {
-      const blobs = { logo: esAssetBlob_('logo') };
+      const blobs = {
+        logo: esAssetBlob_('logo'),
+        logoPreta: esAssetBlob_('logoPreta'),
+        logoAbreviada: esAssetBlob_('logoAbreviada')
+      };
       esReferencias_(d).forEach(function (ref) { if (!blobs[ref]) blobs[ref] = esImagemBlob_(ref); });
       const nome = 'Escopo - ' + d.titulo + ' - R' + revisao;
       const pasta = DriveApp.getFolderById(CF_PASTA_ID);
