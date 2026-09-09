@@ -2372,19 +2372,32 @@ table.tabela-executiva tbody tr:hover td {
 
 /* ── Avaliação pós-serviço e IQF ─────────────────────────────────── */
 .fila-avaliacao{
-  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  display:flex;flex-direction:column;gap:10px;
   background:#FFF8E1;border:1px solid #FDE68A;border-left:4px solid #F59E0B;
   border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13.5px;
 }
-.fila-avaliacao b{color:#92400E}
-.fila-itens{display:flex;gap:8px;flex-wrap:wrap;width:100%}
-.fila-item{
-  background:#fff;border:1px solid #FDE68A;border-radius:8px;padding:8px 12px;
-  font-size:12.5px;cursor:pointer;text-align:left;font-family:inherit;
+/* Cabeçalho e lista da fila. A caixa é um lembrete, não uma tela: cada
+   pendência mostra só o que identifica a compra e o botão que a resolve. */
+.fa-topo{display:flex;flex-direction:column;gap:2px}
+.fa-topo strong{color:#92400E;font-size:13.5px}
+.fa-topo span{color:#B45309;font-size:12px}
+.fa-itens{display:flex;flex-direction:column;gap:6px}
+.fa-item{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--superficie);border:1px solid #FDE68A;border-radius:8px;
+  padding:8px 10px 8px 12px;
 }
-.fila-item:hover{border-color:#D97706;background:#FFFBEB}
-.fila-item b{display:block;color:var(--noturno);font-size:13px}
-.fila-item span{color:var(--suave)}
+.fa-info{display:flex;flex-direction:column;gap:1px;min-width:0}
+.fa-info b{color:var(--noturno);font-size:13px;font-weight:600}
+.fa-info span{color:var(--suave);font-size:12px}
+.fa-info strong{color:var(--noturno);font-variant-numeric:tabular-nums}
+.fa-btn{
+  flex:0 0 auto;background:#D97706;color:#fff;border:1px solid #B45309;
+  border-radius:7px;padding:6px 12px;font-size:12.5px;font-weight:600;
+  font-family:inherit;cursor:pointer;
+}
+.fa-btn:hover{background:#B45309}
+.fila-avaliacao b{color:#92400E}
 
 .iqf{
   display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;
@@ -9218,16 +9231,20 @@ function carregarFilaAvaliacao() {
         '</div>' +
         '<div class="fa-itens">' +
           pendentes.map(function (p) {
+            // Os nomes dos campos são os que apiAvaliacoesPendentes devolve:
+            // 'fornecedor' e 'valor'. Chutar outro nome não quebra nada na
+            // hora — só escreve "undefined" no cartão.
             return '<div class="fa-item">' +
               '<div class="fa-info">' +
-                '<b>' + esc(p.fornecedorNome) + '</b>' +
-                '<span>' + esc(p.projeto) + (p.empreendimento ? ' · ' + esc(p.empreendimento) : '') +
+                '<b>' + esc(p.fornecedor) + '</b>' +
+                '<span>' + esc(p.projeto || p.idEqualizacao) +
+                  (p.empreendimento ? ' · ' + esc(simplificarMega(p.empreendimento)) : '') +
                   (p.data ? ' · ' + esc(p.data) : '') +
-                  (p.valorFinal ? ' · <strong>' + moeda(p.valorFinal) + '</strong>' : '') + '</span>' +
+                  (p.valor ? ' · <strong>' + moeda(p.valor) + '</strong>' : '') + '</span>' +
               '</div>' +
-              '<button type="button" class="btn btn-sm btn-primario" onclick="abrirAvaliacao(\'' +
-                esc(p.cnpj) + '\',\'' + esc(p.fornecedorNome) + '\',\'' + esc(p.idEqualizacao) + '\',\'' +
-                esc(p.empreendimento) + '\',\'' + esc(p.numeroOc) + '\',\'' + esc(p.projeto) + '\')">' +
+              '<button type="button" class="fa-btn" onclick="abrirAvaliacao(\'' +
+                esc(p.cnpj) + '\',\'' + esc(p.fornecedor) + '\',\'' + esc(p.idEqualizacao) + '\',\'' +
+                esc(p.empreendimento) + '\',\'' + esc(p.numeroOc || '') + '\',\'' + esc(p.projeto || '') + '\')">' +
                 'Avaliar entrega</button>' +
             '</div>';
           }).join('') +

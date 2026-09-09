@@ -31,6 +31,22 @@
 /** Tudo que entra por aqui fica marcado, para dar para desfazer e auditar. */
 const CF_ORIGEM_PLATAFORMA = 'import_plataforma';
 
+/**
+ * Os dois arquivos da pasta oficial no Drive
+ * (1O3ZhuqfzlHpnsrORdY9T3-w2Otb7aF2F).
+ *
+ * FORNECEDORES é o retrato cadastral: razão social, CNAE, cidade, porte,
+ * capital social. É esse que dá NOME ao fornecedor.
+ *
+ * Cuidado com o terceiro arquivo da pasta, "contratacoes_por_fornecedor":
+ * ele tem só CNPJ, quantidade, última data e valor total. Apontar a
+ * importação de fornecedores para ele cadastra centenas de CNPJs sem nome
+ * nenhum — e é desnecessário, porque esses três números o próprio sistema
+ * calcula em cfRecalcularRelevancia_, a partir de Contratacoes.
+ */
+const CF_ID_PADRAO_FORNECEDORES = '1vgTQww-cfCa82kzYwQAsYVa3MUreXHHNlAxOq9jBX6g';
+const CF_ID_PADRAO_CONTRATACOES = '1Nt4w8c5I5UEStEU-61qOQWafKhbKU69gIBufwlMNPfA';
+
 // ─────────────────────────────────────────────────────────────
 //  Leitura do CSV
 // ─────────────────────────────────────────────────────────────
@@ -200,6 +216,22 @@ const CF_CAMPOS_DA_PLATAFORMA = [
 function cfImportarFornecedores_(idArquivo, aplicar) {
   const linhas = cfTabelaDoDrive_(idArquivo);
   if (!linhas.length) return { ok: false, erro: 'Arquivo vazio ou ilegível.' };
+
+  // Sem RAZAO_SOCIAL o arquivo não é o retrato cadastral — é outro arquivo
+  // da mesma pasta, e importá-lo cadastraria centenas de CNPJs sem nome
+  // nenhum. Uma linha de guarda aqui é mais barata que limpar a base depois.
+  if (!Object.prototype.hasOwnProperty.call(linhas[0], 'RAZAO_SOCIAL')) {
+    return {
+      ok: false,
+      erro: 'Este arquivo não tem a coluna RAZAO_SOCIAL, então não é o ' +
+            'cadastro de fornecedores. Colunas encontradas: ' +
+            Object.keys(linhas[0]).join(', ') + '. ' +
+            'O arquivo certo é o retrato cadastral da plataforma ' +
+            '(CNPJ, RAZAO_SOCIAL, CNAE_PRINCIPAL, CIDADE, PORTE). ' +
+            'Não confunda com "contratacoes_por_fornecedor", que é só o ' +
+            'agregado — e esse o sistema já calcula sozinho.'
+    };
+  }
 
   const existentes = {};
   cfLerTudo_('Fornecedores').forEach(function (f) {
@@ -468,10 +500,8 @@ function cfRecalcularRelevancia_(aplicar) {
  * @param {string} [idContratacoes] ID do arquivo de detalhe de contratações
  */
 function simularImportacaoDaPlataforma(idFornecedores, idContratacoes) {
-  const ID_PADRAO_FORN = '1Ugh0H_cJ4KbrNKc3CdgVx0_xVoyhYp94TnQEwnqqb8Q';
-  const ID_PADRAO_CONTR = '1Nt4w8c5I5UEStEU-61qOQWafKhbKU69gIBufwlMNPfA';
-  const idForn = cfExtrairIdDrive_(idFornecedores) || ID_PADRAO_FORN;
-  const idContr = cfExtrairIdDrive_(idContratacoes) || ID_PADRAO_CONTR;
+  const idForn = cfExtrairIdDrive_(idFornecedores) || CF_ID_PADRAO_FORNECEDORES;
+  const idContr = cfExtrairIdDrive_(idContratacoes) || CF_ID_PADRAO_CONTRATACOES;
 
   return {
     naturezas: cfSemearNaturezas_(false),
@@ -487,30 +517,29 @@ function simularImportacaoDaPlataforma(idFornecedores, idContratacoes) {
  * Se nenhum ID for passado, usa os IDs padrão da pasta oficial do Drive.
  */
 function importarDaPlataforma(idFornecedores, idContratacoes) {
-  // IDs padrão da pasta oficial do Drive (1O3ZhuqfzlHpnsrORdY9T3-w2Otb7aF2F)
-  const ID_PADRAO_FORN = '1Ugh0H_cJ4KbrNKc3CdgVx0_xVoyhYp94TnQEwnqqb8Q';
-  const ID_PADRAO_CONTR = '1Nt4w8c5I5UEStEU-61qOQWafKhbKU69gIBufwlMNPfA';
+  // Ordem de preferência: o que veio na chamada, o que estiver configurado
+  // em Script Properties (para trocar o arquivo sem editar código), e por
+  // último a pasta oficial. O link inteiro colado também serve.
+  const props = (typeof PropertiesService !== 'undefined' && PropertiesService.getScriptProperties)
+    ? PropertiesService.getScriptProperties() : null;
+  const propForn = props ? props.getProperty('CF_ID_ARQUIVO_FORNECEDORES') : null;
+  const propContr = props ? props.getProperty('CF_ID_ARQUIVO_CONTRATACOES') : null;
 
-  const propForn = (typeof PropertiesService !== 'undefined' && PropertiesService.getScriptProperties)
-    ? PropertiesService.getScriptProperties().getProperty('CF_ID_ARQUIVO_FORNECEDORES') : null;
-  const propContr = (typeof PropertiesService !== 'undefined' && PropertiesService.getScriptProperties)
-    ? PropertiesService.getScriptProperties().getProperty('CF_ID_ARQUIVO_CONTRATACOES') : null;
-
-  const idForn = cfExtrairIdDrive_(idFornecedores) || propForn || ID_PADRAO_FORN;
-  const idContr = cfExtrairIdDrive_(idContratacoes) || propContr || ID_PADRAO_CONTR;
-
-  if (!idForn || !idContr) {
-    const msg = 'A importação precisa dos arquivos da plataforma no Google Drive.\n\n' +
-      'Como executar:\n' +
-      '1. Selecione a função "executarImportacaoPlataformaManual" no topo do editor\n' +
-      '2. Cole o ID ou link dos arquivos nas variáveis idFornecedores e idContratacoes\n' +
-      '3. Ou chame: importarDaPlataforma("ID_OU_LINK_FORNECEDORES", "ID_OU_LINK_CONTRATACOES")';
-    Logger.log(msg);
-    throw new Error(msg);
-  }
+  const idForn = cfExtrairIdDrive_(idFornecedores) ||
+                 cfExtrairIdDrive_(propForn) || CF_ID_PADRAO_FORNECEDORES;
+  const idContr = cfExtrairIdDrive_(idContratacoes) ||
+                  cfExtrairIdDrive_(propContr) || CF_ID_PADRAO_CONTRATACOES;
 
   const naturezas = cfSemearNaturezas_(true);
+
+  // Arquivo errado de fornecedores para o import inteiro: sem cadastro, as
+  // compras entrariam órfãs e o ranking sairia com CNPJ no lugar do nome.
   const fornecedores = cfImportarFornecedores_(idForn, true);
+  if (fornecedores.ok === false) {
+    throw new Error('Importação interrompida no arquivo de fornecedores (' +
+      idForn + '). ' + fornecedores.erro);
+  }
+
   const contratacoes = cfImportarContratacoes_(idContr, true);
   const relevancia = cfRecalcularRelevancia_(true);
 
@@ -526,14 +555,13 @@ function importarDaPlataforma(idFornecedores, idContratacoes) {
 }
 
 /**
- * Função utilitária pronta para executar pelo editor do Apps Script com 1 clique.
- * Os IDs já estão configurados com os arquivos encontrados na pasta oficial:
- * - Fornecedores: contratacoes_por_fornecedor (1Ugh0H_cJ4KbrNKc3CdgVx0_xVoyhYp94TnQEwnqqb8Q)
- * - Contratações: contratacoes_detalhe (1Nt4w8c5I5UEStEU-61qOQWafKhbKU69gIBufwlMNPfA)
+ * Pronta para rodar pelo editor do Apps Script, sem digitar parâmetro.
+ * Usa os arquivos da pasta oficial — ver CF_ID_PADRAO_FORNECEDORES.
+ *
+ * Rodar de novo não duplica nada: fornecedor casa por CNPJ e compra casa
+ * por protocolo. Se a base tiver ficado com CNPJ sem razão social, é esta
+ * função que preenche o nome.
  */
 function executarImportacaoPlataformaManual() {
-  const idFornecedores = '1Ugh0H_cJ4KbrNKc3CdgVx0_xVoyhYp94TnQEwnqqb8Q';
-  const idContratacoes = '1Nt4w8c5I5UEStEU-61qOQWafKhbKU69gIBufwlMNPfA';
-
-  return importarDaPlataforma(idFornecedores, idContratacoes);
+  return importarDaPlataforma(CF_ID_PADRAO_FORNECEDORES, CF_ID_PADRAO_CONTRATACOES);
 }

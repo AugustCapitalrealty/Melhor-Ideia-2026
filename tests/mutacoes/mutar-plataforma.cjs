@@ -3,7 +3,7 @@
  *
  *   node tests/mutacoes/mutar-plataforma.cjs
  *
- * Cinco quebras, todas em coisas que já custaram caro em outros lugares
+ * Dez quebras, todas em coisas que já custaram caro em outros lugares
  * deste projeto: um filtro que some, uma data que anda um dia, um campo
  * que sobrescreve o que não devia, e uma chave que deixa de barrar o
  * repetido.
@@ -73,6 +73,20 @@ const mutacoes = [
     de: "  if (tipo === 'application/vnd.google-apps.spreadsheet') {",
     para: '  if (false) {',
     custo: 'arquivo convertido pelo Drive volta a ser ilegível'
+  },
+  {
+    nome: 'o arquivo errado da pasta entra sem reclamar',
+    arquivo: IMPORT,
+    de: "  if (!Object.prototype.hasOwnProperty.call(linhas[0], 'RAZAO_SOCIAL')) {",
+    para: '  if (false) {',
+    custo: 'apontar para "contratacoes_por_fornecedor" cadastra 179 CNPJs sem nome nenhum'
+  },
+  {
+    nome: 'a importação completa segue mesmo sem cadastro',
+    arquivo: IMPORT,
+    de: '  if (fornecedores.ok === false) {',
+    para: '  if (false) {',
+    custo: 'as compras entram órfãs e o ranking sai com CNPJ no lugar do nome'
   }
 ];
 

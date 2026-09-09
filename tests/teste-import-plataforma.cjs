@@ -311,5 +311,36 @@ function ok(msg) { passos++; console.log('  ✓ ' + msg); }
   ok('a relevância conta só o que se disputa — a distribuidora de energia fica em zero');
 }
 
+// ── 12. o arquivo errado da mesma pasta ──
+// A pasta oficial tem três arquivos, e dois deles começam por CNPJ. Apontar
+// a importação de fornecedores para "contratacoes_por_fornecedor" — que só
+// tem CNPJ, quantidade, data e valor — cadastraria centenas de empresas sem
+// razão social nenhuma. Tem de parar antes de escrever a primeira linha.
+{
+  const CSV_AGREGADO =
+    'CNPJ;CONTRATACOES_HISTORICO;ULTIMA_CONTRATACAO;VALOR_TOTAL_HISTORICO\n' +
+    '57729039000161;59;2026-08-13;158665.59\n' +
+    '2016440000162;55;2026-08-07;62436.06\n';
+
+  const a = montarAmbiente({}, { agregado: { csv: CSV_AGREGADO } });
+  const r = a.ctx.cfImportarFornecedores_('agregado', true);
+
+  assert.strictEqual(r.ok, false, 'arquivo sem RAZAO_SOCIAL não é cadastro de fornecedor');
+  assert.strictEqual((a.inseridos.Fornecedores || []).length, 0,
+    'e sobretudo não cadastra ninguém: CNPJ sem nome é lixo que alguém tem de limpar depois');
+  assert.ok(/RAZAO_SOCIAL/.test(r.erro), 'o erro diz qual coluna falta');
+  assert.ok(/CONTRATACOES_HISTORICO/.test(r.erro),
+    'e mostra as colunas que achou, para quem lê saber qual arquivo pegou por engano');
+
+  // O agregado é dispensável: o sistema calcula esses três números sozinho.
+  let lancou = false;
+  try { a.ctx.importarDaPlataforma('agregado', 'agregado'); }
+  catch (e) { lancou = true; }
+  assert.ok(lancou, 'e a importação completa aborta em vez de seguir sem cadastro');
+
+  ok('o arquivo errado da pasta é recusado, e não vira base de CNPJs sem nome');
+}
+
 console.log('\nOK: ' + passos + ' verificações. A importação lê CSV e planilha, recupera o zero à');
-console.log('    esquerda do CNPJ, respeita o corte do disputável e é idempotente.');
+console.log('    esquerda do CNPJ, respeita o corte do disputável, recusa o arquivo errado');
+console.log('    e é idempotente.');
