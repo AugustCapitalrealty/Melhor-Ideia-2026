@@ -33,24 +33,54 @@ body{
    tela larga estava sendo desperdiçada nas laterais. */
 .wrap{max-width:1480px;margin:0 auto;padding:0 24px 80px}
 
-/* ── barra de navegação fixa FinTech Precision ── */
+/* ── barra de navegação fixa ── */
 .barra{
   position:sticky;top:0;z-index:50;margin-bottom:24px;
-  background:rgba(255,255,255,.94);
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
+  background:rgba(255,255,255,.97);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid var(--linha);
-  box-shadow:0 1px 2px rgba(15,23,42,.03);
+  box-shadow:0 1px 4px rgba(15,23,42,.06);
 }
 .barra-in{
-  max-width:1480px;margin:0 auto;padding:10px 24px;
-  display:flex;align-items:center;gap:20px;
+  max-width:1480px;margin:0 auto;padding:0 24px;
+  display:flex;align-items:stretch;gap:0;height:56px;
 }
-.marca-bloco{display:flex;flex-direction:column;gap:1px}
-.marca{font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--suave)}
-.marca-nome{font-size:16.5px;font-weight:700;letter-spacing:-.015em;color:var(--noturno);line-height:1.2}
-.barra .abas{margin:0}
-.barra #ab-nova{margin-left:auto;white-space:nowrap}
+.marca-bloco{display:flex;align-items:center;gap:10px;margin-right:28px;}
+.marca-icone{
+  width:38px;height:38px;border-radius:8px;flex-shrink:0;
+  background:var(--royal);display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1;
+}
+.marca-textos{display:flex;flex-direction:column;gap:0}
+.marca{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--suave);line-height:1.2}
+.marca-nome{font-size:14.5px;font-weight:700;letter-spacing:-.015em;color:var(--noturno);line-height:1.25}
+.barra .abas{
+  display:flex;align-items:stretch;gap:0;padding:0;margin:0;
+  background:transparent;border:none;border-radius:0;flex:1;
+}
+.barra .abas button{
+  position:relative;padding:0 16px;font-size:13.5px;font-weight:500;
+  border:0;border-radius:0;background:transparent;color:var(--suave);
+  cursor:pointer;transition:color .15s ease;font-family:inherit;white-space:nowrap;
+  display:flex;align-items:center;
+}
+.barra .abas button::after{
+  content:'';position:absolute;bottom:0;left:12px;right:12px;height:2.5px;
+  background:var(--royal);border-radius:2px 2px 0 0;
+  transform:scaleX(0);transition:transform .18s ease;
+}
+.barra .abas button:hover{color:var(--noturno);}
+.barra .abas button:hover::after{transform:scaleX(0.5);}
+.barra .abas button[aria-selected="true"]{color:var(--noturno);font-weight:700;}
+.barra .abas button[aria-selected="true"]::after{transform:scaleX(1);}
+.barra #ab-nova{
+  margin-left:auto;align-self:center;white-space:nowrap;
+  background:var(--royal);color:#fff;border:0;
+  border-radius:8px;padding:9px 18px;font-size:13.5px;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:background .15s ease;
+}
+.barra #ab-nova:hover{background:var(--noturno);}
+.barra #ab-nova:active{transform:scale(.97);}
 
 h1{margin:22px 0 0;font-size:27px;letter-spacing:-.022em;color:var(--noturno);font-weight:600;text-wrap:balance}
 .sub{margin:5px 0 0;color:var(--suave);font-size:15px}
@@ -2921,8 +2951,11 @@ table.grade tbody tr.linha-grupo td {
 <div class="barra">
   <div class="barra-in">
     <div class="marca-bloco">
-      <div class="marca">Capital Realty &amp; Demercado</div>
-      <div class="marca-nome">Capital Fornecedores</div>
+      <div class="marca-icone">CR</div>
+      <div class="marca-textos">
+        <div class="marca">Capital Realty &amp; Demercado</div>
+        <div class="marca-nome">Capital Fornecedores</div>
+      </div>
     </div>
     <div class="abas" role="tablist">
       <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
@@ -2931,7 +2964,7 @@ table.grade tbody tr.linha-grupo td {
       <button id="ab-fornecedores" role="tab" aria-selected="false" onclick="aba('fornecedores')">Base Fornecedores</button>
       <button id="ab-config"   role="tab" aria-selected="false" onclick="aba('config')">Configurações</button>
     </div>
-    <button id="ab-nova" class="bt primario" onclick="novaCotacao()" title="Abrir nova cotação em nova janela">+ Nova cotação</button>
+    <button id="ab-nova" onclick="novaCotacao()" title="Abrir nova cotação em nova janela">+ Nova cotação</button>
   </div>
 </div>
 
