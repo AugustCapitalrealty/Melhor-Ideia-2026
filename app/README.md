@@ -4,6 +4,8 @@
 
 Os **Itens para cotação** usam uma grade EAP com grupos, níveis e códigos automáticos, descrição, quantidade, unidade e marca de referência. Escopos anteriores continuam abrindo com os mesmos itens e vínculos. A grade não recebe preços.
 
+Na **Nova cotação**, use **Carregar escopos → selecione a revisão enviada ao fornecedor → Aplicar escopo na EAP**. A EAP é copiada com os preços vazios para cada proponente; projeto, empreendimento e condições acompanham os itens. O detalhamento registra o ID e a revisão de origem. Alterar o escopo depois não modifica a equalização. A opção se destina a novas cotações e pede confirmação antes de substituir conteúdo já preenchido.
+
 Use **Gerar planilha para fornecedor → Baixar Excel (.xlsx)** para obter o modelo preenchido com os itens da revisão salva e com marca ofertada, preços, totais e condições comerciais em branco. A planilha é criada na pasta do projeto; cada geração produz um arquivo independente, sem compartilhamento público automático. O comprador baixa o Excel e o envia ao fornecedor. A geração da planilha exige os itens completos e vinculados aos serviços; não exige as fotos necessárias para gerar Slides/PDF.
 
 A aba **Escopos** permite cadastrar o conteúdo antes da cotação e gerar uma apresentação e seu PDF. Fluxo: **Novo escopo → empreendimento/localização → objetivo/vistoria → grupos de serviços → fotos → itens para cotação → condições → Salvar rascunho / Gerar Slides e PDF**.

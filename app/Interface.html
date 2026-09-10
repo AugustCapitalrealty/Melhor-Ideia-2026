@@ -3147,6 +3147,14 @@ table.grade tbody tr.linha-grupo td {
     </div>
 
     <div class="bloco vidro">
+      <h2>Usar escopo salvo</h2>
+      <p class="dica">Selecione a mesma revisão enviada ao fornecedor. Os itens, quantidades, unidades e marcas entram na EAP com os preços em branco.</p>
+      <div class="campo"><label for="nEscopoOrigem">Escopo e revisão</label><select id="nEscopoOrigem"><option value="">Carregue a lista de escopos…</option></select></div>
+      <div class="acoes"><button type="button" class="bt" id="btListarEscopos" onclick="carregarEscoposCotacao()">Carregar escopos</button><button type="button" class="bt" id="btAplicarEscopo" onclick="aplicarEscopoCotacao()">Aplicar escopo na EAP</button></div>
+      <p class="dica" id="msgEscopoCotacao" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="bloco vidro">
       <h2>Proponentes</h2>
       <div id="props"></div>
       <div class="acoes">
@@ -6573,6 +6581,57 @@ var opcoesCarregadas = false;
 var proponentes = [];
 var itens = [];
 var jaGravada = false;     // a cotação da tela já foi salva?
+var escoposCotacao = [];
+var carregandoEscopoCotacao = false;
+
+function carregarEscoposCotacao() {
+  var bt=document.getElementById('btListarEscopos'),msg=document.getElementById('msgEscopoCotacao');
+  bt.disabled=true;msg.textContent='Carregando escopos e revisões…';
+  function falhaListaEscopos(e){bt.disabled=false;msg.textContent='Não foi possível carregar os escopos: '+(e.message||e)+'. Tente novamente.';}
+  google.script.run.withSuccessHandler(function(r){
+    if(!r||!r.ok){falhaListaEscopos(r&&r.erro||'Resposta inválida');return;}
+    escoposCotacao=r.escopos||[];
+    document.getElementById('nEscopoOrigem').innerHTML='<option value="">Selecione o escopo e a revisão…</option>'+escoposCotacao.map(function(e,i){return '<option value="'+i+'">'+esc(e.titulo+' · '+e.mega+' · R'+e.revisao)+'</option>';}).join('');
+    bt.disabled=false;msg.textContent=escoposCotacao.length?'Escolha a revisão que foi enviada para cotação.':'Nenhum escopo salvo. Cadastre um na aba Escopos.';
+  }).withFailureHandler(falhaListaEscopos).apiEscoposParaEqualizacao();
+}
+
+function aplicarEscopoCotacao() {
+  var msg=document.getElementById('msgEscopoCotacao'),valor=document.getElementById('nEscopoOrigem').value;
+  if(carregandoEscopoCotacao)return;
+  if(idEmEdicao||jaGravada){msg.textContent='Abra uma nova cotação para usar um escopo.';return;}
+  var origem=valor===''?null:escoposCotacao[Number(valor)];
+  if(!origem){msg.textContent='Selecione um escopo e sua revisão.';return;}
+  if(temConteudo(estadoAtual())&&!confirm('Aplicar este escopo substituirá a EAP, o projeto, o empreendimento e as condições. Os preços serão limpos. Deseja continuar?'))return;
+  carregandoEscopoCotacao=true;msg.textContent='Carregando os itens do escopo…';
+  var estado=JSON.stringify(estadoAtual()),edicao=idEmEdicao;
+  var controles=Array.from(document.querySelectorAll('#v-nova input,#v-nova select,#v-nova textarea,#v-nova button')).map(function(el){var x={el:el,disabled:el.disabled};el.disabled=true;return x;});
+  function liberar(){controles.forEach(function(x){x.el.disabled=x.disabled;});carregandoEscopoCotacao=false;}
+  function falhou(e){liberar();msg.textContent='Não foi possível aplicar o escopo: '+(e.message||e)+'. Seus dados foram mantidos.';}
+  google.script.run.withSuccessHandler(function(r){
+    if(!r||!r.ok){falhou(r&&r.erro||'Resposta inválida');return;}
+    // O relógio do rascunho muda; comparar só os campos, sem o timestamp.
+    var antes=JSON.parse(estado),agora=estadoAtual();delete antes.quando;delete agora.quando;
+    if(idEmEdicao!==edicao||jaGravada||JSON.stringify(antes)!==JSON.stringify(agora)){falhou('A cotação mudou durante a carga; tente novamente');return;}
+    try {
+      itens=r.itens.map(function(it){return Object.assign({},it,{quantidade:it.quantidade==null?'':String(it.quantidade),precos:proponentes.map(function(){return '';}),marcas:proponentes.map(function(){return '';})});});
+      proponentes.forEach(function(p){['totalDeclarado','propostaInicial','r01','r02','valorFaturamentoDireto'].forEach(function(k){p[k]='';});p.teveNegociacao=false;p.faturamentoDireto=false;});
+      Object.keys(debounceBuscaRef).forEach(function(k){clearTimeout(debounceBuscaRef[k]);});debounceBuscaRef={};cacheRefPrecos={};
+      var emp=document.getElementById('nEmp');
+      if(!Array.from(emp.options).some(function(op){return op.value===r.empreendimento;})){
+        var op=document.createElement('option');op.value=r.empreendimento;op.textContent=r.empreendimento;op.setAttribute('data-empresa',r.empresa);emp.appendChild(op);
+      }
+      emp.value=r.empreendimento;megaPendenteEdicao=r.empreendimento;mostrarEmpresa();
+      document.getElementById('nProjeto').value=r.titulo;projetoAutoGerado=false;
+      document.getElementById('nDetalhamento').value=r.detalhamento;
+      document.getElementById('nPremissas').value=r.premissas;
+      document.querySelector('input[name="baseValores"][value="unitario"]').checked=true;
+      modoMarcasAtivo=itens.some(function(it){return !!it.marcaReferencia;});document.getElementById('chkModoMarcas').checked=modoMarcasAtivo;
+      liberar();desenharProponentes();desenharGrade();salvarRascunho();carregarReferenciasEmLote(itens);
+      msg.textContent='Escopo “'+r.titulo+'” · R'+r.revisao+' carregado. Informe os fornecedores e os preços.';
+    }catch(e){liberar();msg.textContent='Erro ao preparar a grade: '+e.message;}
+  }).withFailureHandler(falhou).apiEscopoParaEqualizacao(origem.id,origem.revisao);
+}
 
 /**
  * "+ Nova cotação" abre uma nova janela/aba com a tela de cotação limpa,
@@ -6715,6 +6774,8 @@ function preencherExemplo() {
 var megaPendenteEdicao = null;
 
 function limparFormulario() {
+  var avisoEscopo=document.getElementById('msgEscopoCotacao');if(avisoEscopo)avisoEscopo.textContent='';
+  var seletorEscopo=document.getElementById('nEscopoOrigem');if(seletorEscopo)seletorEscopo.value='';
   // Nesta ordem: a chave do rascunho depende de idEmEdicao.
   descartarRascunho();
   idEmEdicao = null;

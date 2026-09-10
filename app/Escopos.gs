@@ -206,6 +206,37 @@ function esValidarGeracao_(d) {
   if (d.fotos.some(function (f) { return !f.titulo || !f.grupos.length; })) throw new Error('Informe título e grupo de serviços de cada foto.');
 }
 
+/** Todas as revisões: a cotação deve usar a mesma versão enviada ao fornecedor. */
+function apiEscoposParaEqualizacao() {
+  return esApi_(function () {
+    esPreparar_();
+    return { escopos: cfLerTudo_('Escopos').map(function (r) {
+      const d = JSON.parse(r.CONTEUDO);
+      return { id: r.ID, revisao: Number(r.REVISAO), titulo: d.titulo, mega: d.megaNome, data: r.CRIADO_EM };
+    }).sort(function (a, b) { return String(b.data).localeCompare(String(a.data)) || b.revisao - a.revisao; }) };
+  });
+}
+
+function apiEscopoParaEqualizacao(id, revisao) {
+  return esApi_(function () {
+    esPreparar_();
+    if (!Number.isInteger(Number(revisao)) || Number(revisao) < 1) throw new Error('Selecione a revisão do escopo enviada ao fornecedor.');
+    const r = esRevisao_(id, revisao), d = esNormalizar_(JSON.parse(r.CONTEUDO));
+    esValidarItensCotacao_(d);
+    const mega = esMegas_().filter(function (m) { return m.id === d.megaId; })[0];
+    if (!mega) throw new Error('O empreendimento deste escopo não está ativo.');
+    const origem = 'Escopo: ' + d.titulo + ' · Revisão ' + r.REVISAO + ' · ' + r.ID;
+    return { id: r.ID, revisao: Number(r.REVISAO), titulo: d.titulo,
+      empreendimento: mega.nome, empresa: cfEmpresaDoMega_(mega.nome).nome,
+      detalhamento: [origem, d.objetivo, [d.armazem, d.modulos].filter(Boolean).join(' · ')].filter(Boolean).join('\n'),
+      premissas: [d.consideracoes, d.prazo, d.visita ? 'Visita técnica prévia obrigatória.' : '', d.aviso].filter(Boolean).join('\n'),
+      itens: d.itens.map(function (it) {
+        return { tipo: it.tipo, nivel: it.nivel, codigo: it.codigo, descricao: it.descricao,
+          quantidade: it.quantidade, unidade: it.unidade, marcaReferencia: it.referencia };
+      }) };
+  });
+}
+
 /** Mesma numeração da equalização: 1.0, 1.1, 1.1.1, sem saltar níveis. */
 function esNumerarEap_(itens) {
   const contadores = [0, 0, 0, 0]; let anterior = -1;
