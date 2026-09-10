@@ -46,15 +46,15 @@ body{
   display:grid;grid-template-columns:auto 1fr auto;
   align-items:stretch;height:56px;
 }
-.marca-bloco{display:flex;align-items:center;gap:10px;padding-right:24px;}
+.marca-bloco{display:flex;align-items:center;gap:12px;padding-right:24px;}
+.marca-logo-img{height:30px;max-width:180px;object-fit:contain;display:block;}
+.marca-divisao{width:1px;height:22px;background:var(--linha2);}
 .marca-icone{
-  width:38px;height:38px;border-radius:8px;flex-shrink:0;
+  width:36px;height:36px;border-radius:8px;flex-shrink:0;
   background:var(--royal);display:flex;align-items:center;justify-content:center;
   font-size:13px;font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1;
 }
-.marca-textos{display:flex;flex-direction:column;gap:0}
-.marca{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--suave);line-height:1.2}
-.marca-nome{font-size:14.5px;font-weight:700;letter-spacing:-.015em;color:var(--noturno);line-height:1.25}
+.marca-nome{font-size:14.5px;font-weight:700;letter-spacing:-.015em;color:var(--noturno);line-height:1.25;white-space:nowrap;}
 .barra .abas{
   display:flex;align-items:stretch;justify-content:center;gap:0;padding:0;margin:0;
   background:transparent;border:none;border-radius:0;
@@ -2952,11 +2952,10 @@ table.grade tbody tr.linha-grupo td {
 <div class="barra">
   <div class="barra-in">
     <div class="marca-bloco">
-      <div class="marca-icone">CR</div>
-      <div class="marca-textos">
-        <div class="marca">Capital Realty &amp; Demercado</div>
-        <div class="marca-nome">Capital Fornecedores</div>
-      </div>
+      <img src="https://lh3.googleusercontent.com/d/1toRVfIgamy4CWBT2Gv2mGd6V_W0OGISS" alt="Capital Realty" class="marca-logo-img" onerror="this.style.display='none';document.getElementById('cr-fallback').style.display='flex';">
+      <div id="cr-fallback" class="marca-icone" style="display:none">CR</div>
+      <div class="marca-divisao"></div>
+      <div class="marca-nome">Capital Fornecedores</div>
     </div>
     <div class="abas" role="tablist">
       <button id="ab-consulta" role="tab" aria-selected="true"  onclick="aba('consulta')">Consulta de preço</button>
