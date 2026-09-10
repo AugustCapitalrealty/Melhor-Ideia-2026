@@ -12,10 +12,10 @@
 .es-acoes{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.es-foto{display:grid;grid-template-columns:180px 1fr;gap:18px}.es-preview{max-width:100%;height:160px;object-fit:contain;background:#eef2f7;border-radius:8px}
 .es-vinculos{display:flex;flex-wrap:wrap;gap:12px}.es-vinculos label{font-weight:400!important}.es-vinculos input{margin-right:6px}
 .es-eap-rolo{overflow-x:auto;margin:14px 0;border:1px solid #dce2ec;border-radius:10px}
-#es-eap{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
-#es-eap th{background:#eef3fa;color:#173c70;text-align:left;padding:8px 10px;white-space:nowrap}#es-eap td{padding:6px 7px;border-top:1px solid #dce2ec;vertical-align:top}
-#es-eap .es-eap-grupo td{background:#e8eef7;font-weight:600}#es-eap textarea{min-height:52px;margin:0;padding:6px 8px}#es-eap input,#es-eap select{margin:0;padding:5px 8px}
-#es-eap .es-acoes{gap:2px;flex-wrap:nowrap}#es-eap button{padding:3px 7px;font-size:12px}#es-eap .es-vinculos{display:block}#es-eap details{margin-top:4px}#es-eap summary{cursor:pointer;color:#173c70;font-size:12px}
+#es-eap{width:100%;min-width:680px;border-collapse:collapse;font-size:13px;table-layout:fixed}
+#es-eap th{background:#eef3fa;color:#173c70;text-align:left;padding:7px 8px;white-space:nowrap;font-size:12px}#es-eap td{padding:5px 6px;border-top:1px solid #dce2ec;vertical-align:top}
+#es-eap .es-eap-grupo td{background:#e8eef7;font-weight:600}#es-eap textarea{min-height:48px;margin:0;padding:5px 7px}#es-eap input,#es-eap select{margin:0;padding:4px 7px}
+#es-eap .es-acoes{gap:2px;flex-wrap:wrap;justify-content:flex-start}#es-eap button{padding:3px 6px;font-size:11.5px}#es-eap .es-vinculos{display:block}#es-eap details{margin-top:4px}#es-eap summary{cursor:pointer;color:#173c70;font-size:12px}
 .es-status{white-space:pre-wrap;padding:12px 0;font-size:14px}.es-status.erro{color:#a32121}.es-fixed{position:sticky;bottom:12px;padding:16px;background:#f0f5fc;border:1px solid #cedaea;border-radius:12px;z-index:25}
 #es-editor[disabled]{opacity:.7}#es-editor{border:0;padding:0;min-width:0}.es-historico a{margin-right:15px}.es-historico li{margin:12px 0}
 @media(max-width:680px){.es-grid,.es-foto{grid-template-columns:1fr}.es-card{padding:16px}.es-fixed{position:static}}
@@ -134,7 +134,7 @@ function esRenderEapUI(){
     var grupo=it.tipo==='grupo';
     return '<tr class="'+(grupo?'es-eap-grupo':'es-eap-item')+'"><td><strong>'+it.codigo+'</strong><div class="es-acoes"><button onclick="esNivelEapUI('+i+',-1)" aria-label="Recuar nível da linha '+it.codigo+'">‹</button><button onclick="esNivelEapUI('+i+',1)" aria-label="Avançar nível da linha '+it.codigo+'">›</button></div></td><td style="padding-left:'+(7+it.nivel*12)+'px">'+esCampoEapUI(it,i,'descricao',0,true)+(grupo?'':'<details><summary>Serviços vinculados ('+it.grupos.length+')</summary><div class="es-vinculos" id="es-vinc-itens-'+i+'"></div></details>')+'</td>'+(grupo?'<td colspan="3"><span class="es-ajuda">Grupo da EAP</span></td>':'<td>'+esCampoEapUI(it,i,'quantidade',1,false)+'</td><td>'+esCampoEapUI(it,i,'unidade',2,false)+'</td><td>'+esCampoEapUI(it,i,'referencia',3,false)+'</td>')+'<td>'+esAcoesUI('itens',i)+'</td></tr>';
   }).join('');
-  esEl('es-itens').innerHTML='<table id="es-eap"><colgroup><col style="width:70px"><col><col style="width:80px"><col style="width:100px"><col style="width:170px"><col style="width:90px"></colgroup><thead><tr><th>Código EAP</th><th>Descrição</th><th>Qtd</th><th>Unidade</th><th>Marca / referência</th><th>Ações</th></tr></thead><tbody>'+linhas+'</tbody></table>';
+  esEl('es-itens').innerHTML='<table id="es-eap"><colgroup><col style="width:85px"><col><col style="width:75px"><col style="width:95px"><col style="width:155px"><col style="width:100px"></colgroup><thead><tr><th>Código EAP</th><th>Descrição</th><th>Qtd</th><th>Unidade</th><th>Marca / referência</th><th>Ações</th></tr></thead><tbody>'+linhas+'</tbody></table>';
 }
 function esTeclaEapUI(e,el){
   if(e.key!=='Enter'||e.shiftKey||el.tagName==='SELECT')return;
