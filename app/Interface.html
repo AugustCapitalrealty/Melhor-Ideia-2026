@@ -43,9 +43,10 @@ body{
 }
 .barra-in{
   max-width:1480px;margin:0 auto;padding:0 24px;
-  display:flex;align-items:stretch;gap:0;height:56px;
+  display:grid;grid-template-columns:auto 1fr auto;
+  align-items:stretch;height:56px;
 }
-.marca-bloco{display:flex;align-items:center;gap:10px;margin-right:28px;}
+.marca-bloco{display:flex;align-items:center;gap:10px;padding-right:24px;}
 .marca-icone{
   width:38px;height:38px;border-radius:8px;flex-shrink:0;
   background:var(--royal);display:flex;align-items:center;justify-content:center;
@@ -55,8 +56,8 @@ body{
 .marca{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--suave);line-height:1.2}
 .marca-nome{font-size:14.5px;font-weight:700;letter-spacing:-.015em;color:var(--noturno);line-height:1.25}
 .barra .abas{
-  display:flex;align-items:stretch;gap:0;padding:0;margin:0;
-  background:transparent;border:none;border-radius:0;flex:1;
+  display:flex;align-items:stretch;justify-content:center;gap:0;padding:0;margin:0;
+  background:transparent;border:none;border-radius:0;
 }
 .barra .abas button{
   position:relative;padding:0 16px;font-size:13.5px;font-weight:500;
@@ -74,7 +75,7 @@ body{
 .barra .abas button[aria-selected="true"]{color:var(--noturno);font-weight:700;}
 .barra .abas button[aria-selected="true"]::after{transform:scaleX(1);}
 .barra #ab-nova{
-  margin-left:auto;align-self:center;white-space:nowrap;
+  align-self:center;justify-self:end;white-space:nowrap;
   background:var(--royal);color:#fff;border:0;
   border-radius:8px;padding:9px 18px;font-size:13.5px;font-weight:600;
   cursor:pointer;font-family:inherit;transition:background .15s ease;
