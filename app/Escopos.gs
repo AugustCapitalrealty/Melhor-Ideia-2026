@@ -53,12 +53,18 @@ function esNormalizar_(d) {
     }).filter(function (id, i, a) { return a.indexOf(id) === i; });
   }
   n.itens = esLista_(d.itens || [], 100, 'Itens').map(function (it) {
+    const tipo = it.tipo || 'item';
+    if (['item', 'grupo'].indexOf(tipo) < 0) throw new Error('Tipo de linha da EAP inválido.');
+    const nivel = it.nivel == null ? 0 : Number(it.nivel);
+    if (!Number.isInteger(nivel) || nivel < 0 || nivel > 3) throw new Error('Nível da EAP inválido.');
+    if (tipo === 'grupo') return { tipo: tipo, nivel: nivel, descricao: esTexto_(it.descricao, 3500), quantidade: null, unidade: '', referencia: '', grupos: [] };
     const q = it.quantidade === '' || it.quantidade == null ? null : cfNumero_(it.quantidade);
     if (q !== null && (!isFinite(q) || q <= 0)) throw new Error('Quantidade deve ser maior que zero.');
     if (q === null && it.quantidade !== '' && it.quantidade != null) throw new Error('Quantidade inválida.');
-    return { descricao: esTexto_(it.descricao, 3500), quantidade: q,
+    return { tipo: tipo, nivel: nivel, descricao: esTexto_(it.descricao, 3500), quantidade: q,
       unidade: esTexto_(it.unidade, 20), referencia: esTexto_(it.referencia, 200), grupos: vinculos(it.grupos) };
   });
+  n.itens = esNumerarEap_(n.itens);
   n.fotos = esLista_(d.fotos || [], 40, 'Fotos').map(function (f) {
     const imagem = esImagemId_(f.imagem);
     if (!imagem) throw new Error('Foto sem arquivo.');
@@ -196,10 +202,27 @@ function apiEscopoImagem(id) {
 function esValidarGeracao_(d) {
   if (!d.objetivo || !d.endereco || !d.imagem) throw new Error('Preencha objetivo, endereço e imagem do empreendimento antes de gerar.');
   if (!d.grupos.length || d.grupos.some(function (g) { return !g.titulo || !g.servicos; })) throw new Error('Cadastre grupos com título e serviços a executar.');
-  if (!d.itens.length || d.itens.some(function (i) { return !i.descricao || !i.unidade || i.quantidade == null || !i.grupos.length; })) throw new Error('Cada item precisa de descrição, quantidade, unidade e vínculo com os serviços.');
-  const sem = d.grupos.filter(function (g) { return !d.itens.some(function (i) { return i.grupos.indexOf(g.id) >= 0; }); });
-  if (sem.length) throw new Error('Vincule itens de cotação aos grupos: ' + sem.map(function (g) { return g.titulo; }).join(', '));
+  esValidarItensCotacao_(d);
   if (d.fotos.some(function (f) { return !f.titulo || !f.grupos.length; })) throw new Error('Informe título e grupo de serviços de cada foto.');
+}
+
+/** Mesma numeração da equalização: 1.0, 1.1, 1.1.1, sem saltar níveis. */
+function esNumerarEap_(itens) {
+  const contadores = [0, 0, 0, 0]; let anterior = -1;
+  return itens.map(function (it) {
+    const nivel = Math.min(Math.max(0, Math.min(3, Number(it.nivel) || 0)), anterior + 1);
+    anterior = nivel; contadores[nivel]++;
+    for (let k = nivel + 1; k < 4; k++) contadores[k] = 0;
+    return Object.assign({}, it, { nivel: nivel, codigo: nivel === 0 ? contadores[0] + '.0' : contadores.slice(0, nivel + 1).join('.') });
+  });
+}
+
+function esValidarItensCotacao_(d) {
+  const itens = d.itens.filter(function (it) { return it.tipo !== 'grupo'; });
+  if (d.itens.some(function (it) { return !it.descricao; })) throw new Error('Preencha a descrição de todas as linhas da EAP.');
+  if (!itens.length || itens.some(function (it) { return !it.unidade || it.quantidade == null || !it.grupos.length; })) throw new Error('Cada item precisa de descrição, quantidade, unidade e vínculo com os serviços.');
+  const sem = d.grupos.filter(function (g) { return !itens.some(function (it) { return it.grupos.indexOf(g.id) >= 0; }); });
+  if (sem.length) throw new Error('Vincule itens de cotação aos grupos: ' + sem.map(function (g) { return g.titulo; }).join(', '));
 }
 
 function apiEscopoGerar(id, revisao) {

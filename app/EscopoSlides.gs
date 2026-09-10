@@ -188,13 +188,13 @@ function esPlanejarSlides_(d) {
 
   // 9. Tabelas Comerciais (Colunas Calibradas)
   let tabela = null, altura = 0;
-  d.itens.forEach(function (it, idx) {
+  esNumerarEap_(d.itens).forEach(function (it, idx) {
     const grupos = d.grupos.filter(function (g) { return it.grupos.indexOf(g.id) >= 0; }).map(function (g) { return g.titulo; }).join(' / ');
-    const linhas = esQuebrar_((idx + 1) + '. ' + it.descricao + (it.referencia ? '\nRef. Técnica: ' + it.referencia : '') + (grupos ? '\nLocal: ' + grupos : ''), 315, 10.5);
+    const linhas = esQuebrar_(it.codigo + ' ' + it.descricao + (it.referencia ? '\nRef. Técnica: ' + it.referencia : '') + (grupos ? '\nLocal: ' + grupos : ''), 315, 10.5);
     
     for (let i = 0; i < linhas.length; i += 12) {
       const trecho = linhas.slice(i, i + 12);
-      if (i) trecho.unshift('(continuação do item ' + (idx + 1) + ')');
+      if (i) trecho.unshift('(continuação da linha ' + it.codigo + ')');
       const quantidade = i ? '' : String(it.quantidade == null ? '' : it.quantidade);
       const unidade = i ? '' : it.unidade;
       const h = Math.max(46, trecho.length * 13 + 18);

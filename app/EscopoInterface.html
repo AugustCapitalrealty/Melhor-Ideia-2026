@@ -11,6 +11,11 @@
 .es-linha{background:#f7f9fc;border:1px solid #e0e6ef;padding:16px;border-radius:10px;margin:12px 0}
 .es-acoes{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.es-foto{display:grid;grid-template-columns:180px 1fr;gap:18px}.es-preview{max-width:100%;height:160px;object-fit:contain;background:#eef2f7;border-radius:8px}
 .es-vinculos{display:flex;flex-wrap:wrap;gap:12px}.es-vinculos label{font-weight:400!important}.es-vinculos input{margin-right:6px}
+.es-eap-rolo{overflow-x:auto;margin:14px 0;border:1px solid #dce2ec;border-radius:10px}
+#es-eap{width:100%;min-width:980px;border-collapse:collapse;font-size:13px;table-layout:fixed}
+#es-eap th{background:#eef3fa;color:#173c70;text-align:left;padding:10px}#es-eap td{padding:7px;border-top:1px solid #dce2ec;vertical-align:top}
+#es-eap .es-eap-grupo td{background:#e8eef7;font-weight:600}#es-eap textarea{min-height:64px;margin:0}#es-eap input,#es-eap select{margin:0;padding:8px}
+#es-eap .es-acoes{gap:3px}#es-eap button{padding:4px 7px}#es-eap .es-vinculos{display:block}#es-eap details{margin-top:6px}#es-eap summary{cursor:pointer;color:#173c70;font-size:12px}
 .es-status{white-space:pre-wrap;padding:12px 0;font-size:14px}.es-status.erro{color:#a32121}.es-fixed{position:sticky;bottom:12px;padding:16px;background:#f0f5fc;border:1px solid #cedaea;border-radius:12px;z-index:25}
 #es-editor[disabled]{opacity:.7}#es-editor{border:0;padding:0;min-width:0}.es-historico a{margin-right:15px}.es-historico li{margin:12px 0}
 @media(max-width:680px){.es-grid,.es-foto{grid-template-columns:1fr}.es-card{padding:16px}.es-fixed{position:static}}
@@ -30,9 +35,10 @@
     <div class="es-card"><h2>2. Objetivo e vistoria</h2><label>Objetivo<textarea id="es-objetivo" maxlength="6000" placeholder="O que deve ser realizado e qual o resultado esperado?"></textarea></label><label>Resumo da vistoria<textarea id="es-vistoria" maxlength="9000" placeholder="Descreva a situação encontrada."></textarea></label></div>
     <div class="es-card"><h2>3. Serviços a executar</h2><p>Crie grupos por módulo, ambiente ou pavimento. Escreva uma atividade por linha.</p><div id="es-grupos"></div><button onclick="esAdicionarGrupoUI()">+ Grupo de serviços</button></div>
     <div class="es-card" id="es-fotos-pendentes" hidden><h2>Fotos sem grupo</h2><p>Vincule estas fotos a um grupo de serviços para que apareçam junto dele.</p><div id="es-fotos"></div></div>
-    <div class="es-card"><h2>4. Itens para cotação</h2><p>Vincule cada item aos grupos de serviços que ele cobre. Os preços ficam disponíveis para preenchimento pelo fornecedor.</p><div id="es-itens"></div><button onclick="esAdicionarItemUI()">+ Item para cotação</button><p id="es-cobertura" class="es-ajuda"></p></div>
+    <div class="es-card"><h2>4. Itens para cotação — EAP</h2><p>Organize grupos e itens como na equalização. Informe quantidade, unidade e marca de referência. O fornecedor preencherá os preços na planilha Excel.</p><div class="es-acoes"><button onclick="esAdicionarItemUI('grupo')">+ Grupo na EAP</button><button onclick="esAdicionarItemUI()">+ Item para cotação</button></div><div id="es-itens" class="es-eap-rolo"></div><p class="es-ajuda">Use ‹ e › para ajustar o nível. Você pode colar do Excel: descrição, quantidade, unidade e marca.</p><p id="es-cobertura" class="es-ajuda"></p></div>
     <div class="es-card"><h2>5. Condições e prazos</h2><label>Considerações para execução<textarea id="es-consideracoes" maxlength="9000" placeholder="Materiais, documentação, condições de execução, limpeza e demais requisitos específicos."></textarea></label><label>Prazos para proposta, execução e visita<textarea id="es-prazo" maxlength="400"></textarea></label><label><input type="checkbox" id="es-visita"> Exigir visita técnica prévia para elaboração da proposta</label><label>Aviso final<textarea id="es-aviso" maxlength="3000"></textarea></label></div>
-    <div class="es-fixed es-acoes"><button class="es-primary" onclick="esSalvarUI()">Salvar rascunho</button><button class="es-primary" onclick="esGerarUI()">Gerar Slides e PDF</button><span id="es-revisao" class="es-ajuda"></span></div>
+    <div class="es-fixed es-acoes"><button class="es-primary" onclick="esSalvarUI()">Salvar rascunho</button><button class="es-primary" onclick="esGerarUI()">Gerar Slides e PDF</button><button onclick="esGerarPlanilhaUI()">Gerar planilha para fornecedor</button><span id="es-revisao" class="es-ajuda"></span></div>
+    <div id="es-planilha" class="es-card" hidden></div>
   </fieldset>
   <div id="es-historico" class="es-card es-historico" hidden></div>
 </section>
@@ -59,10 +65,10 @@ async function esAbrirUI(){
   var id=esEl('es-lista').value;if(!id||!esPodeTrocarUI())return;esBusy(true);esMsg('Abrindo escopo…');
   try{var r=await esCall('apiEscopoAbrir',[id]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.dados=r.dados;esUI.arquivos=r.arquivos;esUI.sujo=false;esPreencherUI();esMsg('Escopo carregado.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}
 }
-function esPreencherUI(){esEl('es-editor').hidden=false;esOpcoesMegaUI();esCamposUI.forEach(function(k){esEl('es-'+k).value=esUI.dados[k]||'';});esEl('es-visita').checked=!!esUI.dados.visita;esRenderDinamicoUI();esPreviewUI(esEl('es-img-mega'),esUI.dados.imagem);esPreviewUI(esEl('es-img-detalhe'),esUI.dados.detalhe);esInfoUI();esHistoricoUI();}
+function esPreencherUI(){esEl('es-editor').hidden=false;esEl('es-planilha').hidden=true;esOpcoesMegaUI();esCamposUI.forEach(function(k){esEl('es-'+k).value=esUI.dados[k]||'';});esEl('es-visita').checked=!!esUI.dados.visita;esRenderDinamicoUI();esPreviewUI(esEl('es-img-mega'),esUI.dados.imagem);esPreviewUI(esEl('es-img-detalhe'),esUI.dados.detalhe);esInfoUI();esHistoricoUI();}
 function esColetarUI(){if(!esUI.dados)return;esCamposUI.forEach(function(k){esUI.dados[k]=esEl('es-'+k).value;});esUI.dados.visita=esEl('es-visita').checked;var m=esUI.megas.find(function(m){return m.id===esUI.dados.megaId;});esUI.dados.megaNome=m?m.nome:'';}
 function esInfoUI(){esEl('es-revisao').textContent=(esUI.id?'Revisão '+esUI.revisao:'Novo escopo')+(esUI.sujo?' · alterações não salvas':'');esEl('es-imagem-aviso').textContent=esUI.dados&&esUI.dados.imagem?'Imagem definida para este escopo.':'Cadastre a imagem deste empreendimento antes de gerar.';}
-function esAlteradoUI(){esUI.sujo=true;esInfoUI();}
+function esAlteradoUI(){esUI.sujo=true;esEl('es-planilha').hidden=true;esInfoUI();}
 function esMegaUI(){esColetarUI();var m=esUI.megas.find(function(m){return m.id===esUI.dados.megaId;});esUI.dados.imagem=m?m.imagem:'';esUI.dados.detalhe='';esUI.dados.detalheLegenda='';esEl('es-detalheLegenda').value='';esEl('es-endereco').value=m?m.endereco:'';esPreviewUI(esEl('es-img-mega'),esUI.dados.imagem);esPreviewUI(esEl('es-img-detalhe'),'');esAlteradoUI();}
 async function esPreviewUI(el,id){el.dataset.imagem=id||'';el.hidden=true;el.removeAttribute('src');if(!id)return;try{var url=esUI.imagens[id];if(!url){url=(await esCall('apiEscopoImagem',[id])).url;esUI.imagens[id]=url;}if(el.dataset.imagem===id){el.src=url;el.hidden=false;}}catch(e){esMsg('Não foi possível carregar uma imagem: '+e.message,true);}}
 async function esArquivoUI(file){
@@ -75,7 +81,7 @@ function esRemoverDetalheUI(){esUI.dados.detalhe='';esUI.dados.detalheLegenda=''
 async function esSalvarMegaUI(){if(esUI.ocupado)return;esColetarUI();esBusy(true);try{var r=await esCall('apiEscopoSalvarMega',[esUI.dados.megaId,esUI.dados.endereco,esUI.dados.imagem]);esUI.megas=r.megas;esMsg('Padrão do empreendimento salvo para os próximos escopos.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
 function esGrupoIdUI(){return 'g-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);}
 function esAdicionarGrupoUI(){esUI.dados.grupos.push({id:esGrupoIdUI(),titulo:'',servicos:''});esRenderDinamicoUI();esAlteradoUI();}
-function esAdicionarItemUI(){esUI.dados.itens.push({descricao:'',quantidade:'',unidade:'',referencia:'',grupos:[]});esRenderDinamicoUI();esAlteradoUI();}
+function esAdicionarItemUI(tipo){if(esUI.dados.itens.length>=100){esMsg('Limite de 100 linhas na EAP.',true);return;}var a=esUI.dados.itens,ultimo=a[a.length-1];tipo=tipo||'item';a.push({tipo:tipo,nivel:tipo==='grupo'?0:(ultimo?Math.min(3,(ultimo.nivel||0)+(ultimo.tipo==='grupo'?1:0)):0),descricao:'',quantidade:'',unidade:tipo==='grupo'?'':'un',referencia:'',grupos:tipo==='grupo'?[]:(esUI.dados.grupos.length===1?[esUI.dados.grupos[0].id]:[])});esRenderDinamicoUI();esAlteradoUI();var campo=esEl('es-eap').querySelector('[data-eap-l="'+(a.length-1)+'"][data-eap-c="0"]');if(campo)campo.focus();}
 function esSetUI(tipo,i,campo,valor){esUI.dados[tipo][i][campo]=valor;esAlteradoUI();if(tipo==='grupos'&&campo==='titulo')esRenderVinculosUI();}
 function esVinculoUI(tipo,i,id,checked){var a=esUI.dados[tipo][i].grupos;a=a.filter(function(x){return x!==id;});if(checked)a.push(id);esUI.dados[tipo][i].grupos=a;if(tipo==='fotos')esRenderDinamicoUI();esCoberturaUI();esAlteradoUI();}
 function esMoverUI(tipo,i,delta){var a=esUI.dados[tipo],j=i+delta;if(j<0||j>=a.length)return;var x=a[i];a[i]=a[j];a[j]=x;esRenderDinamicoUI();esAlteradoUI();}
@@ -87,18 +93,78 @@ function esVinculosHtmlUI(tipo,i){var valores=esUI.dados[tipo][i].grupos;return 
 function esRenderVinculosUI(){['itens','fotos'].forEach(function(tipo){esUI.dados[tipo].forEach(function(x,i){var el=esEl('es-vinc-'+tipo+'-'+i);if(el)el.innerHTML=esVinculosHtmlUI(tipo,i);});});esCoberturaUI();}
 function esRenderDinamicoUI(){
   esEl('es-grupos').innerHTML=esUI.dados.grupos.map(function(g,i){return '<div class="es-linha es-grupo">'+esAcoesUI('grupos',i)+esInputUI('grupos',i,'titulo','Local / módulo / ambiente / pavimento',false,160)+esInputUI('grupos',i,'servicos','Serviços — uma atividade por linha',true,9000)+'<label>Adicionar fotos deste grupo<input type="file" accept="image/png,image/jpeg" multiple onchange="esUploadFotosUI(this,'+i+')"></label><p class="es-ajuda">PNG ou JPEG de até 5 MB. As fotos ficam vinculadas automaticamente a este grupo.</p><div id="es-fotos-grupo-'+i+'"></div></div>';}).join('');
-  esEl('es-itens').innerHTML=esUI.dados.itens.map(function(it,i){return '<div class="es-linha">'+esAcoesUI('itens',i)+esInputUI('itens',i,'descricao','Item '+(i+1)+' — descrição',true,3500)+'<div class="es-grid">'+esInputUI('itens',i,'quantidade','Quantidade',false,30)+esInputUI('itens',i,'unidade','Unidade',false,20)+'</div>'+esInputUI('itens',i,'referencia','Marca ou referência (opcional)',false,200)+'<p>Serviços cobertos por este item</p><div class="es-vinculos" id="es-vinc-itens-'+i+'"></div></div>';}).join('');
+  esRenderEapUI();
   esEl('es-fotos').innerHTML='';
   esUI.dados.fotos.forEach(function(f,i){var grupo=esUI.dados.grupos.findIndex(function(g){return f.grupos.indexOf(g.id)>=0;});var destino=esEl(grupo<0?'es-fotos':'es-fotos-grupo-'+grupo);destino.insertAdjacentHTML('beforeend','<div class="es-linha es-foto"><img class="es-preview" id="es-foto-'+i+'" alt="Fotografia '+(i+1)+'"><div>'+esAcoesUI('fotos',i)+esInputUI('fotos',i,'titulo','Título do conjunto fotográfico',false,140)+esInputUI('fotos',i,'legenda','Legenda (opcional)',false,180)+'<div class="es-vinculos" id="es-vinc-fotos-'+i+'"></div></div></div>');});
   esEl('es-fotos-pendentes').hidden=!esEl('es-fotos').children.length;
   esUI.dados.fotos.forEach(function(f,i){esPreviewUI(esEl('es-foto-'+i),f.imagem);});esRenderVinculosUI();
 }
-function esCoberturaUI(){var sem=esUI.dados.grupos.filter(function(g){return !esUI.dados.itens.some(function(it){return it.grupos.indexOf(g.id)>=0;});});esEl('es-cobertura').textContent=sem.length?'Grupos ainda sem item para cotação: '+sem.map(function(g){return g.titulo||'Sem título';}).join(', '):'Todos os grupos estão vinculados a itens para cotação.';}
+function esCoberturaUI(){var sem=esUI.dados.grupos.filter(function(g){return !esUI.dados.itens.some(function(it){return it.tipo!=='grupo'&&it.grupos.indexOf(g.id)>=0;});});esEl('es-cobertura').textContent=sem.length?'Grupos ainda sem item para cotação: '+sem.map(function(g){return g.titulo||'Sem título';}).join(', '):'Todos os grupos estão vinculados a itens para cotação.';}
 async function esUploadFotosUI(input,grupoIndice){if(esUI.ocupado)return;var grupo=esUI.dados.grupos[grupoIndice];if(!grupo)return;var files=Array.from(input.files);if(!files.length)return;if(esUI.dados.fotos.length+files.length>40){esMsg('Limite de 40 fotos por escopo.',true);input.value='';return;}esBusy(true);try{for(var i=0;i<files.length;i++){esMsg('Enviando foto '+(i+1)+' de '+files.length+'…');var id=await esArquivoUI(files[i]);esUI.dados.fotos.push({imagem:id,titulo:(grupo.titulo||'Registro fotográfico').slice(0,140),legenda:'',grupos:[grupo.id]});esAlteradoUI();}esMsg('Fotos anexadas ao grupo. Salve o rascunho para registrar a alteração.');}catch(e){esMsg(e.message,true);}finally{input.value='';esRenderDinamicoUI();esBusy(false);}}
 async function esPersistirUI(){esColetarUI();var r=await esCall('apiEscopoSalvar',[esUI.id,esUI.revisao,esUI.dados]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.sujo=false;esInfoUI();}
 async function esSalvarUI(){if(esUI.ocupado)return;esBusy(true);esMsg('Salvando rascunho…');try{await esPersistirUI();esMsg('Rascunho salvo — revisão '+esUI.revisao+'.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
 async function esGerarUI(){if(esUI.ocupado)return;esBusy(true);esMsg('Salvando e gerando Slides e PDF. Isso pode levar alguns minutos…');try{await esPersistirUI();var r=await esCall('apiEscopoGerar',[esUI.id,esUI.revisao]);esUI.arquivos=esUI.arquivos.filter(function(a){return a.revisao!==r.revisao;});esUI.arquivos.push(r);esHistoricoUI();esMsg('Apresentação e PDF da revisão '+r.revisao+' prontos. Abra pelos links abaixo.');esEl('es-historico').scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
 function esHistoricoUI(){var el=esEl('es-historico');el.hidden=!esUI.arquivos.length;el.innerHTML='<h2>Apresentações geradas</h2><ul>'+esUI.arquivos.slice().sort(function(a,b){return b.revisao-a.revisao;}).map(function(a){return '<li>Revisão '+a.revisao+' · <a href="'+esEscape(a.slides)+'" target="_blank" rel="noopener">Abrir Slides</a><a href="'+esEscape(a.pdf)+'" target="_blank" rel="noopener">Abrir PDF</a></li>';}).join('')+'</ul>';}
+function esNumerarEapUI(){
+  var contadores=[0,0,0,0],anterior=-1;
+  esUI.dados.itens.forEach(function(it){
+    it.tipo=it.tipo||'item';
+    var nivel=Math.min(Math.max(0,Math.min(3,Number(it.nivel)||0)),anterior+1);
+    it.nivel=nivel;anterior=nivel;contadores[nivel]++;
+    for(var k=nivel+1;k<4;k++)contadores[k]=0;
+    it.codigo=nivel===0?contadores[0]+'.0':contadores.slice(0,nivel+1).join('.');
+  });
+}
+function esNivelEapUI(i,passo){esUI.dados.itens[i].nivel=Math.max(0,Math.min(3,(esUI.dados.itens[i].nivel||0)+passo));esRenderEapUI();esRenderVinculosUI();esAlteradoUI();}
+function esCampoEapUI(it,i,campo,coluna,multi){
+  var rotulos={descricao:'Descrição',quantidade:'Quantidade',unidade:'Unidade',referencia:'Marca ou referência'};
+  var max={descricao:3500,quantidade:30,unidade:20,referencia:200};
+  var attrs=' data-eap-l="'+i+'" data-eap-c="'+coluna+'" aria-label="'+rotulos[campo]+' da linha '+it.codigo+'" maxlength="'+max[campo]+'" oninput="esSetUI(\'itens\','+i+',\''+campo+'\',this.value)" onkeydown="esTeclaEapUI(event,this)" onpaste="esColarEapUI(event,this)"';
+  if(campo==='quantidade')attrs+=' inputmode="decimal"';
+  if(campo==='unidade'){
+    var unidades=(typeof UNIDADES!=='undefined'?UNIDADES:['un','cx','pct','fardo','kg','g','l','ml','m','m²','m³','h','mês','diária','visita','serviço','verba']).slice();
+    if(unidades.indexOf(it.unidade||'')<0)unidades.unshift(it.unidade||'');
+    return '<select'+attrs+' onchange="esSetUI(\'itens\','+i+',\'unidade\',this.value)">'+unidades.map(function(u){return '<option value="'+esEscape(u)+'"'+(u===(it.unidade||'')?' selected':'')+'>'+esEscape(u||'Selecione')+'</option>';}).join('')+'</select>';
+  }
+  return multi?'<textarea'+attrs+'>'+esEscape(it[campo])+'</textarea>':'<input'+attrs+' value="'+esEscape(it[campo])+'">';
+}
+function esRenderEapUI(){
+  esNumerarEapUI();
+  var linhas=esUI.dados.itens.map(function(it,i){
+    var grupo=it.tipo==='grupo';
+    return '<tr class="'+(grupo?'es-eap-grupo':'es-eap-item')+'"><td><strong>'+it.codigo+'</strong><div class="es-acoes"><button onclick="esNivelEapUI('+i+',-1)" aria-label="Recuar nível da linha '+it.codigo+'">‹</button><button onclick="esNivelEapUI('+i+',1)" aria-label="Avançar nível da linha '+it.codigo+'">›</button></div></td><td style="padding-left:'+(7+it.nivel*12)+'px">'+esCampoEapUI(it,i,'descricao',0,true)+(grupo?'':'<details><summary>Serviços vinculados ('+it.grupos.length+')</summary><div class="es-vinculos" id="es-vinc-itens-'+i+'"></div></details>')+'</td>'+(grupo?'<td colspan="3"><span class="es-ajuda">Grupo da EAP</span></td>':'<td>'+esCampoEapUI(it,i,'quantidade',1,false)+'</td><td>'+esCampoEapUI(it,i,'unidade',2,false)+'</td><td>'+esCampoEapUI(it,i,'referencia',3,false)+'</td>')+'<td>'+esAcoesUI('itens',i)+'</td></tr>';
+  }).join('');
+  esEl('es-itens').innerHTML='<table id="es-eap"><colgroup><col style="width:80px"><col><col style="width:95px"><col style="width:110px"><col style="width:180px"><col style="width:105px"></colgroup><thead><tr><th>Código EAP</th><th>Descrição</th><th>Qtd</th><th>Unidade</th><th>Marca / referência</th><th>Ações</th></tr></thead><tbody>'+linhas+'</tbody></table>';
+}
+function esTeclaEapUI(e,el){
+  if(e.key!=='Enter'||e.shiftKey||el.tagName==='SELECT')return;
+  e.preventDefault();
+  var campos=Array.from(esEl('es-eap').querySelectorAll('[data-eap-l]')),i=campos.indexOf(el);
+  if(campos[i+1])campos[i+1].focus();
+  else esAdicionarItemUI();
+}
+function esColarEapUI(e,el){
+  var texto=e.clipboardData.getData('text/plain');
+  if(texto.indexOf('\t')<0)return;
+  e.preventDefault();
+  var linhas=texto.replace(/\r/g,'').replace(/\n$/,'').split('\n').map(function(l){return l.split('\t');});
+  var inicio=Number(el.dataset.eapL),col=Number(el.dataset.eapC),campos=['descricao','quantidade','unidade','referencia'];
+  if(inicio+linhas.length>100||linhas.some(function(l){return l.length>4-col;})){esMsg('Cole até 100 linhas, nas colunas descrição, quantidade, unidade e marca.',true);return;}
+  if(linhas.some(function(l,j){return esUI.dados.itens[inicio+j]&&esUI.dados.itens[inicio+j].tipo==='grupo'&&(col!==0||l.length>1);})){esMsg('Cole os dados em linhas de item, sem atravessar grupos da EAP.',true);return;}
+  var nivel=esUI.dados.itens[inicio].nivel,vinculos=esUI.dados.itens[inicio].grupos.slice();
+  linhas.forEach(function(l,j){var pos=inicio+j;if(!esUI.dados.itens[pos])esUI.dados.itens.push({tipo:'item',nivel:nivel,descricao:'',quantidade:'',unidade:'un',referencia:'',grupos:vinculos.slice()});l.forEach(function(v,k){esUI.dados.itens[pos][campos[col+k]]=v;});});
+  esRenderEapUI();esRenderVinculosUI();esAlteradoUI();
+}
+async function esGerarPlanilhaUI(){
+  if(esUI.ocupado)return;esBusy(true);esMsg('Salvando e gerando a planilha para o fornecedor…');
+  try{
+    await esPersistirUI();
+    var r=await esCall('apiEscopoGerarPlanilha',[esUI.id,esUI.revisao]);
+    var el=esEl('es-planilha');el.hidden=false;
+    el.innerHTML='<h2>Planilha de cotação · Revisão '+Number(r.revisao)+'</h2><p>Itens e quantidades preenchidos. Preços em branco para o fornecedor.</p><div class="es-acoes"><a href="'+esEscape(r.download)+'" target="_blank" rel="noopener">Baixar Excel (.xlsx)</a><a href="'+esEscape(r.planilha)+'" target="_blank" rel="noopener">Abrir planilha</a></div>';
+    esMsg('Planilha pronta. Baixe o Excel e envie ao fornecedor.');el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){esMsg(e.message,true);}finally{esBusy(false);}
+}
 document.getElementById('es-editor').addEventListener('input',function(){if(esUI.dados)esAlteradoUI();});
 window.addEventListener('beforeunload',function(e){if(esUI.sujo||esUI.ocupado){e.preventDefault();e.returnValue='';}});
 </script>

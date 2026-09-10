@@ -5,7 +5,21 @@ function ambiente() {
   const db = { Escopos: [], EscopoArquivos: [], EscopoImagens: [], EscopoMegas: [], Empreendimentos: [
     { ID: 'ctba', NOME: 'Mega Curitiba', ATIVO: true }, { ID: 'esteio', NOME: 'Mega Esteio', ATIVO: true }
   ] };
-  const arquivos = {}, decks = []; let seq = 0, falharPdf = false, falharRender = false;
+  const arquivos = {}, decks = [], planilhas = []; let seq = 0, falharPdf = false, falharRender = false;
+  function planilha(nome) {
+    const celulas = {}, estilos = [];
+    const aba = { setName() {}, setColumnWidth() {}, setFrozenRows() {}, getRange(l,c,n=1,m=1) {
+      const faixa = {
+        setValues(valores) { assert.equal(valores.length,n);valores.forEach((row,i)=>{assert.equal(row.length,m);row.forEach((v,j)=>{celulas[(l+i)+','+(c+j)]=v;});});return this; },
+        setValue(v) {celulas[l+','+c]=v;return this;},
+        merge() {for(let i=0;i<n;i++)for(let j=0;j<m;j++)if(i||j)delete celulas[(l+i)+','+(c+j)];return this;}
+      };
+      for(const metodo of ['setFontFamily','setFontSize','setWrap','setVerticalAlignment','setBackground','setFontColor','setFontWeight','setNumberFormat'])faixa[metodo]=function(v){estilos.push({metodo,v,l,c,n,m});return this;};
+      return faixa;
+    }};
+    const p = {id:'sheet-'+(++seq),nome,celulas,estilos,getId(){return this.id;},getUrl(){return 'https://docs.google.com/spreadsheets/d/'+this.id+'/edit';},getSheets:()=>[aba],setSpreadsheetLocale(){}};
+    file(p.id);planilhas.push(p);return p;
+  }
   const blob = name => ({ name, getBytes: () => new Array(4000).fill(1), getContentType: () => 'image/png', setName() { return this; } });
   function file(id) {
     return arquivos[id] || (arquivos[id] = { id, trashed: false, getId: () => id, getBlob: () => blob(id),
@@ -37,14 +51,16 @@ function ambiente() {
     HtmlService: { createHtmlOutputFromFile: () => ({ getContent: () => fs.readFileSync(path.join(root,'app/EscopoAssets.html'),'utf8') }) },
     DriveApp: { getFileById: file, getFolderById: () => ({ createFile: () => file('file-' + (++seq)) }) },
     SlidesApp: { create: deck, ShapeType: { RECTANGLE: 'rect' }, ContentAlignment: { TOP: 'top' }, ParagraphAlignment: { START: 'start' }, PredefinedLayout: { BLANK: 'blank' } },
+    SpreadsheetApp: { create: planilha, flush() {} },
   });
-  for (const name of ['Util.gs','Apresentacao_Conselho.gs','Escopos.gs','EscopoSlides.gs']) vm.runInContext(fs.readFileSync(path.join(root,'app',name),'utf8'),ctx);
+  for (const name of ['Util.gs','Apresentacao_Conselho.gs','Escopos.gs','EscopoSlides.gs','EscopoPlanilha.gs']) vm.runInContext(fs.readFileSync(path.join(root,'app',name),'utf8'),ctx);
+  ctx.cfExigeAutorizacao_ = () => 'teste@capitalrealty.com.br';
   ctx.esPreparar_ = () => {};
   ctx.cfComTrava_ = fn => fn();
   ctx.cfLerTudo_ = name => clone(db[name]).map((x,i) => ({...x, _linha: i+2}));
   ctx.cfInserir_ = (name, rows) => db[name].push(...clone(rows));
   ctx.cfAtualizarLinha_ = (name, line, fields) => Object.assign(db[name][line-2],clone(fields));
-  return { ctx, db, arquivos, decks, falharPdf: v => falharPdf=v, falharRender: v => falharRender=v };
+  return { ctx, db, arquivos, decks, planilhas, falharPdf: v => falharPdf=v, falharRender: v => falharRender=v };
 }
 function exemplo() { return { titulo: 'Adequações elétricas', megaId: 'ctba', megaNome: 'Mega Curitiba', imagem: 'padrao:curitiba', endereco: 'Endereço de referência',
   objetivo: 'Corrigir instalações existentes.', vistoria: 'Fiações expostas.', responsavel:'Comprador', visita:true,
@@ -100,4 +116,33 @@ assert.equal(c.apiEscopoImagem('private-file').ok,false,'API não lê arquivos a
 // Render de todas as amostras para inspeção visual opcional em ferramentas locais.
 if(process.env.ESCOPO_RENDER_JSON)fs.writeFileSync(process.env.ESCOPO_RENDER_JSON,JSON.stringify({normal:a.decks[0].pages,longo:visual.pages}));
 console.log('Escopos: revisões, concorrência, imagens, cobertura, paginação, Slides/PDF e recuperação de falhas OK.');
+// EAP antiga e hierarquia nova sobrevivem à gravação e geram preços vazios.
+const b=ambiente(), antigo=b.ctx.esNormalizar_(exemplo());
+assert.equal(antigo.itens[0].tipo,'item');assert.equal(antigo.itens[0].unidade,'vb');
+const eap={...exemplo(),itens:[
+  {tipo:'grupo',nivel:0,descricao:'Elétrica'},
+  {...exemplo().itens[0],tipo:'item',nivel:1,referencia:'Tigre',preco:980,valor:1470},
+  {tipo:'grupo',nivel:1,descricao:'Subgrupo'},
+  {...exemplo().itens[0],tipo:'item',nivel:3,descricao:'=HYPERLINK("https://example.com")'}
+]};
+const eb=b.ctx.apiEscopoSalvar('',0,eap);assert(eb.ok,eb.erro);
+const reaberto=b.ctx.apiEscopoAbrir(eb.id).dados;
+assert.deepEqual(Array.from(reaberto.itens,it=>it.codigo),['1.0','1.1','1.2','1.2.1']);
+assert.equal(reaberto.itens[3].nivel,2);assert(!('preco' in reaberto.itens[1]));
+assert.throws(()=>b.ctx.esValidarItensCotacao_(b.ctx.esNormalizar_({...exemplo(),itens:[eap.itens[0]]})),/Cada item/);
+const excel=b.ctx.apiEscopoGerarPlanilha(eb.id,1);assert(excel.ok,excel.erro);assert.match(excel.download,/\/export\?format=xlsx$/);
+const sheet=b.planilhas[0],v=sheet.celulas;
+assert.equal(v['10,1'],'1.0');assert.equal(v['11,1'],'1.1');assert.equal(v['11,3'],1.5);assert.equal(v['11,4'],'vb');assert.equal(v['11,5'],'Tigre');
+assert(v['13,2'].startsWith("'=HYPERLINK(\"https://example.com\")"),'texto não vira fórmula');
+assert(v['11,2'].includes('Local: Módulo 01 — térreo'),'planilha preserva o local de execução');
+for(let linha=10;linha<=13;linha++)for(let coluna=6;coluna<=9;coluna++)assert.equal(v[linha+','+coluna],'','campos do fornecedor em branco');
+assert.equal(v['14,1'],'TOTAL DA PROPOSTA (R$)');assert.equal(v['14,8'],'');
+assert.equal(v['10,3'],'','grupo não recebe quantidade');
+assert(sheet.estilos.some(s=>s.metodo==='setBackground'&&s.v==='#fff2cc'),'campos de resposta destacados');
+assert(!Object.values(v).some(x=>typeof x==='string'&&x.startsWith('=')),'sem fórmulas nem valores calculados na proposta vazia');
+const previa=b.planilhas.length;
+b.ctx.cfExigeAutorizacao_=()=>{throw Error('Não autorizado');};assert(!b.ctx.apiEscopoGerarPlanilha(eb.id,1).ok);assert.equal(b.planilhas.length,previa);
+b.ctx.cfExigeAutorizacao_=()=>{};b.ctx.SpreadsheetApp.flush=()=>{throw Error('Falha simulada');};
+assert(!b.ctx.apiEscopoGerarPlanilha(eb.id,1).ok);assert(b.arquivos[b.planilhas.at(-1).id].trashed,'falha remove só o arquivo incompleto');assert(!b.arquivos[sheet.id].trashed);
+console.log('EAP e Excel: hierarquia, legado, revisão, preços vazios, autorização e recuperação OK.');
 module.exports={ambiente,exemplo};
