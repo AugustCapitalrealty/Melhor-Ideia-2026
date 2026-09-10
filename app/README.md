@@ -2,6 +2,8 @@
 
 ## Escopos e Google Slides
 
+A apresentação e o PDF de escopo trazem os serviços, fotos e condições, sem a tabela comercial. Os itens para cotação ficam na planilha Excel. Para atualizar um documento gerado no modelo antigo, abra o escopo e clique em **Gerar Slides e PDF**; o arquivo anterior permanece no histórico.
+
 Os **Itens para cotação** usam uma grade EAP com grupos, níveis e códigos automáticos, descrição, quantidade, unidade e marca de referência. Escopos anteriores continuam abrindo com os mesmos itens e vínculos. A grade não recebe preços.
 
 Na **Nova cotação**, use **Carregar escopos → selecione a revisão enviada ao fornecedor → Aplicar escopo na EAP**. A EAP é copiada com os preços vazios para cada proponente; projeto, empreendimento e condições acompanham os itens. O detalhamento registra o ID e a revisão de origem. Alterar o escopo depois não modifica a equalização. A opção se destina a novas cotações e pede confirmação antes de substituir conteúdo já preenchido.

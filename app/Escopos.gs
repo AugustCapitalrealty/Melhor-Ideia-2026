@@ -265,10 +265,11 @@ function apiEscopoGerar(id, revisao) {
     if (paginas.length > 45) throw new Error('O escopo ultrapassa 45 páginas. Divida-o em solicitações menores.');
     const reserva = cfComTrava_(function () {
       const anteriores = cfLerTudo_('EscopoArquivos').filter(function (f) { return f.ID_ESCOPO === id && Number(f.REVISAO) === Number(revisao); });
-      const pronto = anteriores.filter(function (f) { return f.STATUS === 'concluido'; })[0];
+      // Reutiliza apenas o modelo sem tabela; arquivos antigos ficam no histórico.
+      const pronto = anteriores.filter(function (f) { return f.STATUS === 'concluido' && String(f.ID).indexOf('ESL2-') === 0; })[0];
       if (pronto) return { pronto: pronto };
       if (anteriores.some(function (f) { return f.STATUS === 'gerando' && Date.now() - new Date(f.CRIADO_EM).getTime() < 10 * 60 * 1000; })) throw new Error('Esta revisão já está sendo gerada. Aguarde e tente novamente.');
-      const token = Utilities.getUuid();
+      const token = 'ESL2-' + Utilities.getUuid();
       cfInserir_('EscopoArquivos', [{ ID: token, ID_ESCOPO: id, REVISAO: revisao, STATUS: 'gerando', CRIADO_EM: new Date().toISOString() }]);
       return { token: token };
     });

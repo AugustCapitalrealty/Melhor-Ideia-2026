@@ -181,37 +181,9 @@ function esPlanejarSlides_(d) {
     }
   });
 
-  // 8. Divisória de Proposta Comercial
-  if (d.itens.length) {
-    p.push({ tipo: 'capa-secao', numero: '03', titulo: 'Proposta', subtitulo: 'Planilha orientativa de quantitativos e serviços para cotação' });
-  }
-
-  // 9. Tabelas Comerciais (Colunas Calibradas)
-  let tabela = null, altura = 0;
-  esNumerarEap_(d.itens).forEach(function (it, idx) {
-    const grupos = d.grupos.filter(function (g) { return it.grupos.indexOf(g.id) >= 0; }).map(function (g) { return g.titulo; }).join(' / ');
-    const linhas = esQuebrar_(it.codigo + ' ' + it.descricao + (it.referencia ? '\nRef. Técnica: ' + it.referencia : '') + (grupos ? '\nLocal: ' + grupos : ''), 315, 10.5);
-    
-    for (let i = 0; i < linhas.length; i += 12) {
-      const trecho = linhas.slice(i, i + 12);
-      if (i) trecho.unshift('(continuação da linha ' + it.codigo + ')');
-      const quantidade = i ? '' : String(it.quantidade == null ? '' : it.quantidade);
-      const unidade = i ? '' : it.unidade;
-      const h = Math.max(46, trecho.length * 13 + 18);
-
-      if (!tabela || altura + h > 260) {
-        tabela = { tipo: 'tabela', titulo: 'Escopo — Orientativo', linhas: [] };
-        p.push(tabela);
-        altura = 0;
-      }
-      tabela.linhas.push({ texto: trecho.join('\n'), altura: h, quantidade: quantidade, unidade: unidade });
-      altura += h;
-    }
-  });
-
   // 10. Divisória de Diretrizes e Condições
   if (d.consideracoes || d.prazo || d.aviso || d.visita) {
-    p.push({ tipo: 'capa-secao', numero: '04', titulo: 'Considerações', subtitulo: 'Requisitos técnicos, prazos, visitas e diretrizes para elaboração da proposta' });
+    p.push({ tipo: 'capa-secao', numero: '03', titulo: 'Considerações', subtitulo: 'Requisitos técnicos, prazos, visitas e diretrizes para elaboração da proposta' });
   }
 
   // 11. Considerações Técnicas com Anti-Órfão
@@ -417,32 +389,6 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
         imagem(s, blobs[f.imagem], x + 2, 68, wFoto - 4, 245);
         caixa(s, x, 316, wFoto, 24, 'REGISTRO FOTOGRÁFICO ' + (i + 1), 8.5, cores.brandMed, cores.brandSoft, true, fontes.titles);
       });
-    }
-
-    // F) Tabela Comercial ("Escopo — Orientativo")
-    else if (p.tipo === 'tabela') {
-      const xs = [24, 360, 408, 470, 580];
-      const ws = [335, 47, 61, 109, 116];
-      const headers = ['Item / Descrição do Serviço', 'Qtde', 'Unidade', 'Valor unitário', 'Valor total'];
-
-      // Cabeçalho da Tabela
-      headers.forEach(function (t, i) {
-        caixa(s, xs[i], 66, ws[i] - 1, 28, t, 9.5, cores.white, cores.brandDark, true, fontes.titles);
-      });
-
-      let y = 95;
-      p.linhas.forEach(function (l, linha) {
-        caixa(s, 24, y, 672, l.altura, '', 10, null, cores.line);
-        const bg = linha % 2 ? cores.bgSlide : cores.white;
-        [l.texto, l.quantidade, l.unidade, '', ''].forEach(function (t, i) {
-          const isNum = i === 1 || i === 2;
-          caixa(s, xs[i] + 1, y + 1, ws[i] - 2, l.altura - 2, t, isNum ? 10 : 10, cores.textMain, bg);
-        });
-        y += l.altura;
-      });
-
-      // Rodapé da Tabela
-      caixa(s, 24, y, 672, 22, 'Valores a preencher pelo fornecedor', 9, cores.brandMed, cores.brandSoft, true);
     }
 
     // G) Encerramento: Prazos, Contato & Instruções

@@ -93,7 +93,7 @@ assert(escritos.some(e=>e.font==='Montserrat'&&e.bold),'títulos com a fonte ins
 assert(escritos.some(e=>e.font==='Open Sans'),'corpo com a fonte institucional');
 assert(!escritos.some(e=>e.font==='Arial'),'sem tipografia paralela à identidade compartilhada');
 assert(textos.some(t=>t.includes('Corrigir instalações')));assert(!textos.some(t=>t.includes('Novo objetivo')));
-assert(textos.some(t=>t.includes('Valores a preencher pelo fornecedor')));assert(!textos.some(t=>t.includes('R$ 0')));
+assert(!textos.some(t=>t.includes('Valores a preencher pelo fornecedor')));assert(!textos.some(t=>t.includes('R$ 0')));
 assert.equal(c.apiEscopoAbrir(salvo.id).arquivos.length,1);
 a.falharPdf(true);const falha=c.apiEscopoGerar(salvo.id,2);assert(!falha.ok);assert.equal(a.db.EscopoArquivos[1].STATUS,'falhou');assert(a.arquivos[a.decks[1].id].trashed);
 assert(!a.arquivos[a.decks[0].id].trashed,'documento anterior preservado');
@@ -108,8 +108,8 @@ const plano=c.esPlanejarSlides_(longo);
 assert.deepEqual(Array.from(plano.filter(p=>p.tipo==='fotos'),p=>p.fotos.length),[4,4,1]);
 const objetivo=plano.filter(p=>p.titulo==='Objetivo').flatMap(p=>Array.from(p.linhas)).join(' ');
 assert.equal((objetivo.match(/PALAVRA/g)||[]).length,600,'paginação não perde texto');
-assert(plano.filter(p=>p.tipo==='tabela').length>1);
-assert.equal(plano.filter(p=>p.tipo==='tabela').flatMap(p=>Array.from(p.linhas)).filter(l=>l.quantidade).length,1,'continuação não duplica quantidade');
+assert.equal(plano.filter(p=>p.tipo==='tabela').length,0,'itens para cotação ficam só no Excel');
+assert(!plano.some(p=>p.tipo==='capa-secao'&&p.titulo==='Proposta'),'sem divisória vazia de proposta');
 const visual=a.ctx.SlidesApp.create('longo');c.esDesenharSlides_(visual,plano,{logo:{name:'logo'},logoPreta:{name:'logoPreta'},logoAbreviada:{name:'logoAbreviada'},fundo:{name:'fundo'},'padrao:curitiba':{name:'curitiba'},[imgId]:{name:'foto'}},{revisao:1,data:'2026-09-09'});
 for(const page of visual.pages)for(const e of page.elements){assert(e.y+e.h<=405.01,JSON.stringify(e));assert(e.x+e.w<=720.01);}
 assert.equal(c.apiEscopoEnviarImagem('x','text/html','AAAA').ok,false);
@@ -154,4 +154,10 @@ b.ctx.cfExigeAutorizacao_=()=>{throw Error('Não autorizado');};assert(!b.ctx.ap
 b.ctx.cfExigeAutorizacao_=()=>{};b.ctx.SpreadsheetApp.flush=()=>{throw Error('Falha simulada');};
 assert(!b.ctx.apiEscopoGerarPlanilha(eb.id,1).ok);assert(b.arquivos[b.planilhas.at(-1).id].trashed,'falha remove só o arquivo incompleto');assert(!b.arquivos[sheet.id].trashed);
 console.log('EAP e Excel: hierarquia, legado, revisão, preços vazios, autorização e recuperação OK.');
+const legado=ambiente(),rl=legado.ctx.apiEscopoSalvar('',0,exemplo());
+legado.db.EscopoArquivos.push({ID:'modelo-antigo',ID_ESCOPO:rl.id,REVISAO:1,STATUS:'concluido',SLIDES_ID:'slides-antigo',PDF_ID:'pdf-antigo'});
+const atualizado=legado.ctx.apiEscopoGerar(rl.id,1);assert(atualizado.ok,atualizado.erro);
+assert.equal(legado.decks.length,1,'modelo antigo é regenerado mesmo sem alteração no escopo');
+assert.equal(legado.db.EscopoArquivos[0].SLIDES_ID,'slides-antigo','histórico anterior preservado');
+legado.ctx.apiEscopoGerar(rl.id,1);assert.equal(legado.decks.length,1,'modelo novo é reutilizado');
 module.exports={ambiente,exemplo};
