@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict');
+const {montar}=require('../tools/gerar-apresentacao-conselho.cjs');
+const {paginas,roteiro,context}=montar();
+assert.equal(paginas.length,11);
+const conteudo=paginas.flatMap(p=>p.elementos.map(e=>e.text||'')).join('\n');
+assert(conteudo.includes('Gestão de Contratações'));
+assert(conteudo.includes('O retrabalho começa antes da equalização'));
+assert(!conteudo.includes('cinco grafias'));
+assert(conteudo.includes('Importação automática das respostas.'));
+assert(roteiro.find(p=>p.titulo==='Entregas atuais e próximas evoluções').cards[1][1].includes('Importação automática'));
+context.gerarApresentacaoConselho();
+assert.equal(paginas.length,11,'regerar substitui slides, sem duplicar');
+const ids=paginas.map(p=>p.getObjectId()),render=context._cnRenderNarrativa_;
+context._cnRenderNarrativa_=(deck,p,i)=>{render(deck,p,i);if(i===2)throw Error('Falha simulada');};
+assert.throws(()=>context.gerarApresentacaoConselho(),/Falha simulada/);
+assert.deepEqual(paginas.map(p=>p.getObjectId()),ids,'falha preserva a apresentação anterior');
+console.log('Apresentação: narrativa, notas, dimensões, regeneração e recuperação OK.');

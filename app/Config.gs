@@ -1,5 +1,5 @@
 /**
- * Capital Fornecedores — Configuração e declaração do schema
+ * Gestão de Contratações — Configuração e declaração do schema
  *
  * Este arquivo é a ÚNICA fonte da verdade da estrutura de dados.
  * Schema.gs lê daqui para criar e migrar as abas.
@@ -15,7 +15,7 @@
 /** Pasta no Drive compartilhado onde a base e os arquivos gerados vivem. */
 const CF_PASTA_ID = '1iIxcbBjlvpbGyUP6Ir7NSvpxBvXZSM9G';
 
-const CF_NOME_PLANILHA = 'Capital Fornecedores — Base';
+const CF_NOME_PLANILHA = 'Gestão de Contratações — Base';
 
 /** Sobe de 1 a cada mudança no schema. Gravado em Script Properties. */
 const CF_SCHEMA_VERSAO = 9;

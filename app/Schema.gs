@@ -1,5 +1,5 @@
 /**
- * Capital Fornecedores — criação e migração da base
+ * Gestão de Contratações — criação e migração da base
  *
  * setupBaseDeDados() é seguro rodar em produção, quantas vezes quiser:
  *   idempotente  — rodar 10x é igual a rodar 1x
@@ -258,7 +258,7 @@ function verificarConfiguracao() {
   const props = PropertiesService.getScriptProperties().getProperties();
   const ss = cfPlanilha_();
 
-  Logger.log('── Capital Fornecedores ──');
+  Logger.log('── Gestão de Contratações ──');
   Logger.log('Planilha:        ' + ss.getName());
   Logger.log('URL:             ' + ss.getUrl());
   Logger.log('Schema no código:  v' + CF_SCHEMA_VERSAO);

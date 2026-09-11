@@ -1,5 +1,5 @@
 /**
- * Capital Fornecedores — Motor de Geração de Slides Executivos de Escopo
+ * Gestão de Contratações — Motor de Geração de Slides Executivos de Escopo
  * Padrão Corporativo Internacional (16:9 - 720 x 405 pt)
  * Paleta e Identidade Visual: DS_CN (Montserrat + Open Sans)
  */
@@ -257,7 +257,7 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
       imagem(s, blobs.logo, 36, 32, 160, 35);
       
       // Badge Institucional
-      caixa(s, 36, 78, 290, 18, 'CAPITAL FORNECEDORES · ESCOPO DE CONTRATAÇÃO', 8.5, cores.brandSoft, '#1E295B', true);
+      caixa(s, 36, 78, 290, 18, 'GESTÃO DE CONTRATAÇÕES · ESCOPO DE CONTRATAÇÃO', 8.5, cores.brandSoft, '#1E295B', true);
 
       // Título Principal
       let fsTit = 26, lTit = esQuebrar_(p.titulo, 640, fsTit);

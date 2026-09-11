@@ -1,5 +1,5 @@
 /**
- * Capital Fornecedores — web app
+ * Gestão de Contratações — web app
  *
  * Uma URL, uma tela. O cálculo é o mesmo que a consulta do Logger usa —
  * se a tela e o relatório recalculassem por conta própria, um dia
@@ -26,7 +26,7 @@ function doGet(e) {
   // servidor sabe qual é; o navegador dentro do iframe do Apps Script, não.
   t.urlBase = cfUrlPublicada_();
   return t.evaluate()
-    .setTitle('Capital Fornecedores')
+    .setTitle('Gestão de Contratações')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }

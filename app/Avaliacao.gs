@@ -396,7 +396,7 @@ function cfDispararNotificacaoAvaliacao_(idEq, escolhida, eq, emailManual) {
   const corpoHtml = [
     '<div style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:24px;border:1px solid #E2E8F0;border-radius:12px;background:#FFFFFF">',
     '  <div style="border-bottom:2px solid #065CA9;padding-bottom:12px;margin-bottom:16px">',
-    '    <h2 style="margin:0;font-size:18px;color:#0F172A">Capital Fornecedores · Avaliação Pós-Serviço</h2>',
+    '    <h2 style="margin:0;font-size:18px;color:#0F172A">Gestão de Contratações · Avaliação Pós-Serviço</h2>',
     '  </div>',
     '  <p style="font-size:14px;color:#334155;line-height:1.5">',
     '    A equalização <b>' + cfEscapeHtml_(projeto) + '</b> (' + cfEscapeHtml_(empreendimento) + ') foi homologada.',

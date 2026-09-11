@@ -6,7 +6,7 @@ function esTextoPlanilha_(valor) {
 
 function esModeloPlanilha_(d, id, revisao) {
   const linhas = [
-    ['CAPITAL FORNECEDORES — SOLICITAÇÃO DE COTAÇÃO', '', '', '', '', '', '', '', ''],
+    ['GESTÃO DE CONTRATAÇÕES — SOLICITAÇÃO DE COTAÇÃO', '', '', '', '', '', '', '', ''],
     [esTextoPlanilha_(d.titulo), '', '', '', '', '', '', '', ''],
     [esTextoPlanilha_(d.megaNome + ' · ' + [d.armazem, d.modulos].filter(Boolean).join(' · ')), '', '', '', '', '', '', '', ''],
     ['Escopo ' + id + ' · Revisão ' + revisao, '', '', '', '', '', '', '', ''],

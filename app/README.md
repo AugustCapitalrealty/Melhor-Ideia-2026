@@ -1,5 +1,13 @@
 # app/ — Google Apps Script
 
+## Apresentação ao Conselho
+
+O nome atual do sistema é **Gestão de Contratações**. A apresentação parte da produtividade na contratação e da definição do escopo, seguindo o roteiro de [10/09/2026](../docs/ROTEIRO_CONSELHO_2026-09-10.md).
+
+Execute `gerarApresentacaoConselho()` no editor do Apps Script. O destino fixo é a [apresentação indicada pelo usuário](https://docs.google.com/presentation/d/12mfzC9cx86QOmeJFLW8ZmB4crj6fkfSJyiEhP7bbJBg/edit). A função usa `ConselhoNarrativa.gs` e `Apresentacao_Conselho.gs`; gera os novos slides antes de remover os anteriores e inclui as falas nas notas do apresentador.
+
+Para gerar uma cópia local em PowerPoint e uma prévia HTML: `node tools/gerar-apresentacao-conselho.cjs`, com `pptxgenjs` disponível ou `PPTXGENJS_MODULE` apontando para a instalação. A publicação direta pelo Drive exige permissão de conteúdo sobre o arquivo; a credencial padrão do Clasp pode permitir apenas seus metadados.
+
 ## Escopos e Google Slides
 
 A apresentação e o PDF de escopo trazem os serviços, fotos e condições, sem a tabela comercial. Os itens para cotação ficam na planilha Excel. Para atualizar um documento gerado no modelo antigo, abra o escopo e clique em **Gerar Slides e PDF**; o arquivo anterior permanece no histórico.

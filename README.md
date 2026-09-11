@@ -1,5 +1,8 @@
-# Capital Fornecedores
-### Sistema de Equalização Inteligente e Avaliação Contínua de Prestadores de Serviço
+# Gestão de Contratações
+### Produtividade no processo de contratação, desde o escopo
+
+Apresentação e posicionamento atuais: [roteiro de 10/09/2026](docs/ROTEIRO_CONSELHO_2026-09-10.md). O projeto passou a se chamar **Gestão de Contratações**. Os registros históricos abaixo mantêm o nome anterior.
+
 **Projeto Inscrito no Concurso da Melhor Ideia 2026 — Capital Realty & Demercado**
 
 ![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-065CA9)
