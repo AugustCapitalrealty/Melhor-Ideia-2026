@@ -1,73 +1,106 @@
-/** Dor, consequências, atuação e benefícios. Detalhes nas notas. */
+/**
+ * ROTEIRO E NARRATIVA — Apresentação ao Conselho
+ * Concurso Melhor Ideia 2026 · Capital Realty & Demercado
+ * Foco: Demonstração prática dos módulos, visão de negócio e possibilidades.
+ */
 const CN_ROTEIRO = [
   {
-    "titulo": "Gestão de Contratações",
-    "chamada": "Por que uma contratação exige tantas idas e vindas?",
-    "rodape": "Produtividade no processo de contratação · Melhor Ideia 2026",
-    "fala": "Quero começar pela dor do processo de contratação. Não é apenas o tempo para preencher uma planilha: é o esforço para entender propostas, esclarecer diferenças e refazer o trabalho quando a aprovação devolve dúvidas. Vamos olhar primeiro como esse retrabalho aparece, depois onde podemos atuar e quais benefícios buscamos.",
+    "titulo": "Gestão Inteligente de Contratações",
+    "chamada": "Da especificação à aprovação: um ecossistema conectado para Facilities e Engenharia.",
+    "rodape": "Concurso Melhor Ideia 2026 · Capital Realty & Demercado",
+    "fala": "Boa tarde a todos os membros do Conselho. Hoje apresento o projeto de Gestão Inteligente de Contratações. O objetivo deste projeto não é simplesmente digitalizar uma planilha: é transformar a forma como a Capital Realty contrata serviços e materiais em todos os seus condomínios logísticos, eliminando retrabalho, blindando a governança e construindo uma memória institucional de preços e parceiros que hoje se perde a cada compra.",
     "tipo": "capa"
   },
   {
-    "titulo": "Hoje, arquivos e conferência manual",
-    "chamada": "Escopo no Google Slides ou PowerPoint. EAP em uma planilha separada.",
-    "rodape": "Facilities e Propriedades · Curitiba, Esteio e Itajaí",
-    "fala": "Hoje, conforme o fluxo das equipes, o escopo é elaborado no Google Slides ou PowerPoint e a EAP é montada em uma planilha separada. Nos três Megas, o detalhamento varia na combinação de texto e fotos. A planilha desse fluxo não tem validadores nem conexão com uma base de dados. Copiar e colar pode trocar quantidades ou unidades; linhas e fórmulas podem ser alteradas; um item pode ficar de fora. Também é necessário conferir manualmente se a versão do escopo corresponde à cotada. A consistência depende da atenção e do conhecimento de quem monta os arquivos."
+    "titulo": "O Desafio Atual: Arquivos e Conferência Manual",
+    "chamada": "Escopo no PowerPoint. EAP em planilha solta. Propostas dispersas por e-mail e WhatsApp.",
+    "rodape": "Facilities e Engenharia · Curitiba, Esteio e Itajaí",
+    "fala": "Hoje, o nosso fluxo de contratação envolve múltiplos arquivos desconectados. O memorial do serviço nasce em uma apresentação de slides; a lista de itens é montada em uma planilha avulsa; e as propostas dos fornecedores chegam por e-mail ou aplicativo de mensagem. Esse modelo descentralizado gera uma sobrecarga imensa de conferência manual: fórmulas podem quebrar, linhas podem ser esquecidas, unidades divergem e a validação depende exclusivamente da memória de quem está conduzindo o processo."
   },
   {
-    "titulo": "O mesmo pedido. Respostas diferentes.",
-    "chamada": "Um fornecedor detalha. Outro omite. Outro apresenta só o total.",
-    "rodape": "Antes de comparar preços, é preciso descobrir o que cada proposta inclui.",
-    "fala": "Quando o pedido deixa margem para interpretação, cada fornecedor considera uma coisa. Um separa materiais e mão de obra; outro deixa serviços de fora; outro retorna apenas um preço global. Uma proposta de vinte mil reais não diz, sozinha, o que será entregue. Esse valor é apenas um exemplo. A equipe precisa explorar as composições, confirmar quantidades, marcas, inclusões e exclusões, e pedir esclarecimentos. A dor é reconstruir a informação antes de conseguir comparar propostas equivalentes."
+    "titulo": "O Mesmo Pedido. Respostas Incompatíveis.",
+    "chamada": "Um fornecedor detalha. Outro omite etapas. Outro envia apenas um preço global.",
+    "rodape": "Antes de conseguir comparar preços, o comprador perde dias decifrando escopos.",
+    "fala": "Quando enviamos um pedido sem uma estrutura rígida e padronizada, cada fornecedor responde da forma que lhe convém. Um separa materiais e mão de obra; outro deixa serviços essenciais de fora; outro apresenta apenas um valor fechado. Como consequência, antes de sequer começar a negociar preços, a nossa equipe gasta horas preciosas investigando o que está incluso em cada proposta para tentar torná-las comparáveis. É um esforço invisível que consome tempo e abre margem para aditivos contratuais futuros."
   },
   {
-    "titulo": "Na aprovação, a dúvida faz tudo voltar",
-    "chamada": "Quem cotou precisa reabrir propostas, esclarecer diferenças e refazer a comparação.",
-    "rodape": "Esclarecer → revisar → remontar → reenviar para aprovação.",
-    "fala": "O problema pode aparecer só na aprovação. O avaliador pergunta se todos consideraram o mesmo serviço, por que as quantidades diferem ou o que está dentro do preço global. Se a resposta não está clara, o processo retorna para quem cotou. Essa pessoa volta aos arquivos, fala novamente com os fornecedores, explora as propostas, revisa os dados e remonta a equalização. Depois, reenvia para aprovação. Além do tempo de correção, há espera por respostas e repetição da conferência. É esse ciclo de retorno que queremos reduzir."
+    "titulo": "Na Aprovação, a Dúvida Faz Tudo Voltar",
+    "chamada": "Falta de contexto na alçada executiva gera devoluções e atrasa o início das obras.",
+    "rodape": "Dúvida do gestor → reabrir propostas → consultar fornecedores → remontar a planilha.",
+    "fala": "O impacto dessa falta de padronização atinge o seu ápice no momento da aprovação. Quando a diretoria ou gerência recebe a equalização, surgem dúvidas legítimas: 'Todos os fornecedores cotaram a mesma especificação?', 'Por que a proposta vencedora tem uma marca diferente?', 'O que já pagamos por esse mesmo serviço antes?'. Sem respostas imediatas no arquivo, o processo é devolvido. Quem cotou precisa reabrir propostas, contatar fornecedores novamente e remontar a planilha, gerando atrasos que afetam o cliente do parque logístico."
   },
   {
-    "titulo": "Onde podemos atacar o retrabalho",
-    "chamada": "Na definição do pedido, na resposta do fornecedor e na conferência para aprovação.",
-    "rodape": "Benefícios buscados: menos omissões, redigitação e devoluções.",
-    "fala": "Agora que vimos a dor, podemos localizar os pontos de atuação. Primeiro, definir melhor o pedido antes de solicitar preços: serviços, fotos, quantidades, unidades e condições. Segundo, dar ao fornecedor uma estrutura comum para responder, sem reconstruir a lista depois. Terceiro, apoiar a conferência e a aprovação com a informação conectada. A ideia é investir atenção onde o erro nasce, para reduzir o esforço que provoca nas etapas seguintes. São benefícios esperados; a qualidade técnica ainda depende da revisão do responsável."
+    "titulo": "A Solução: Um Processo Único e Conectado",
+    "chamada": "Centralizar desde a vistoria técnica inicial até a qualificação pós-serviço.",
+    "rodape": "Conectar pessoas, dados e decisões em uma plataforma institucional integrada.",
+    "fala": "A nossa solução ataca a raiz do problema: integrar todas as etapas da contratação em uma plataforma única. Em vez de documentos soltos, criamos um fio condutor que começa no escopo detalhado com fotos, desdobra automaticamente na EAP para cotação, equaliza as propostas do mercado lado a lado, registra o histórico de preços por parque logístico e qualifica o fornecedor após a entrega. A partir de agora, quero demonstrar na prática como cada uma dessas telas funciona."
   },
   {
-    "titulo": "Do trabalho manual ao processo centralizado",
-    "chamada": "Hoje: arquivos separados. Com a solução: informações conectadas desde o escopo.",
-    "rodape": "Centralizar para conferir melhor e reaproveitar o trabalho.",
-    "fala": "Hoje precisamos manter alinhados uma apresentação, uma planilha e as respostas dos fornecedores. Além da redigitação, há riscos de fórmulas alteradas, itens esquecidos, unidades inconsistentes, versões diferentes e perda de rastreabilidade. Sem validadores e conexão com os cadastros e o histórico, a pesquisa e a conferência também ficam manuais. A solução conecta escopo, EAP, cadastro, preços e equalização. Campos e validações ajudam a identificar inconsistências; o reaproveitamento evita reconstruir a mesma lista. Isso não elimina toda possibilidade de erro nem substitui a análise técnica. O ganho buscado é concentrar o trabalho em uma base comum e tornar a conferência mais simples."
+    "titulo": "Módulo 1: Escopo Técnico com Fotos e Memorial",
+    "chamada": "A vistoria de campo transformada em especificação técnica à prova de dúvidas.",
+    "rodape": "Demonstração da Tela · Registro fotográfico e memorial de execução integrados",
+    "fala": "Este é o primeiro módulo da plataforma: o Escopo Técnico. Quem está no parque logístico registra a necessidade com fotos reais da vistoria técnica anexadas aos grupos de serviço, orientações de segurança e o memorial descritivo. O fornecedor enxerga com precisão cirúrgica o local de trabalho, o estado do piso, da doca ou da cobertura antes de dar o preço. Isso elimina de saída o argumento de 'não sabia que as condições eram essas', reduzindo drasticamente pleitos de aditivos contratuais durante a execução da obra.",
+    "tipo": "demo_escopo"
   },
   {
-    "titulo": "A mesma EAP, do escopo à equalização",
-    "chamada": "Definir uma vez. Enviar os mesmos itens. Acrescentar os preços.",
-    "rodape": "Envio e retorno do Excel são externos; a equipe informa ou cola os preços.",
-    "fala": "O responsável monta o escopo com fotos junto aos grupos e define a EAP com descrição, quantidade, unidade e marca de referência. A numeração é automática. O sistema gera o Excel com os itens preenchidos e os preços em branco. O fornecedor preenche essa estrutura. Ao montar a equalização, a equipe seleciona a revisão do escopo enviada e carrega a mesma lista, depois informa ou cola os preços. Ainda é necessário conferir omissões, marcas alternativas e condições. A vantagem é uma referência comum desde o começo, sem redigitar os itens."
+    "titulo": "Módulo 2: EAP Estruturada & Cotação Padronizada",
+    "chamada": "A árvore técnica de serviços gera automaticamente o modelo para o mercado responder.",
+    "rodape": "Demonstração da Tela · Numeração hierárquica automática e exportação Excel padronizada",
+    "fala": "Aqui temos a EAP — Estrutura Analítica do Projeto. O sistema estrutura os itens em níveis hierárquicos com numeração automática — 1.0, 1.1, 2.0 —, quantidades, unidades e marcas de referência. O grande diferencial está no botão de exportação: com um clique, o sistema gera a planilha oficial de cotação em Excel, já formatada e protegida, pronta para envio aos concorrentes. Todos os fornecedores são obrigados a preencher exatamente as mesmas linhas e unidades. O mercado passa a responder na nossa régua técnica.",
+    "tipo": "demo_eap"
   },
   {
-    "titulo": "Mais contexto para analisar e aprovar",
-    "chamada": "O avaliador precisa entender o que está comparando, além do preço.",
-    "rodape": "Indicadores, referências e justificativa apoiam a decisão.",
-    "fala": "A equalização mais inteligente é um apoio adicional ao processo. O avaliador encontra itens e marcas organizados, referências de preços anteriores, indicadores e o registro da justificativa e da negociação. Os indicadores de avaliação dos fornecedores acrescentam contexto sobre entregas anteriores, respeitando a quantidade de avaliações disponível. Esses recursos ajudam a localizar diferenças e fundamentar a aprovação. A decisão continua sendo das pessoas, e a negociação acontece entre comprador e fornecedor. O benefício buscado é reduzir dúvidas evitáveis na aprovação."
+    "titulo": "Módulo 3: Cockpit de Equalização Inteligente",
+    "chamada": "Comparativo item a item multiproponentes com destaque de distorções e alçadas.",
+    "rodape": "Demonstração da Tela · Menores preços por item, marcas alternativas e governança executiva",
+    "fala": "Esta é a tela de Equalização, o coração do sistema. As propostas dos fornecedores entram lado a lado, item a item. O sistema identifica instantaneamente o menor preço de cada linha em verde, alerta desvios ou preços discrepantes e destaca se algum fornecedor ofereceu uma marca alternativa à pedida. No rodapé, o painel consolida o saving identificado, o total por concorrente e calcula automaticamente a alçada de aprovação necessária — Gerência, Diretoria ou Presidência. O decisor enxerga a realidade da compra em segundos.",
+    "tipo": "demo_equalizacao"
   },
   {
-    "titulo": "Um histórico para a próxima contratação",
-    "chamada": "Escopos, equalizações, preços e fornecedores em uma base comum.",
-    "rodape": "Menos busca em arquivos. Mais reaproveitamento e rastreabilidade.",
-    "fala": "O trabalho de uma contratação alimenta um histórico compartilhado. Podemos consultar o escopo e sua revisão, as equalizações anteriores, os preços e os fornecedores identificados por CNPJ. Isso facilita localizar a referência e entender de onde veio a informação. A consulta cadastral pública usa a BrasilAPI, e não uma integração direta com a Receita Federal. O cadastro interno e o preenchimento manual continuam disponíveis. O benefício é reaproveitar o trabalho e apoiar a próxima contratação sem depender apenas de arquivos espalhados ou de quem participou da compra anterior."
+    "titulo": "Módulo 4: Inteligência de Preços & Memória de Custos",
+    "chamada": "A memória institucional que impede a empresa de pagar mais caro por desconhecimento.",
+    "rodape": "Demonstração da Tela · Consulta canônica de preços praticados por condomínio logístico",
+    "fala": "Este módulo resolve uma das maiores perdas corporativas: a falta de memória histórica. Na tela de Inteligência de Preços, o comprador pesquisa qualquer serviço ou material e visualiza imediatamente quanto a Capital Realty pagou por aquele item nos últimos meses em Curitiba, Esteio ou Itajaí. Criamos um radar de preços que estabelece faixas de referência e tetos aceitáveis. O comprador entra na negociação municiado de dados concretos do próprio portfólio, aumentando o poder de barganha da companhia.",
+    "tipo": "demo_precos"
   },
   {
-    "titulo": "O benefício está no esforço total",
-    "chamada": "Menos reconstrução da informação. Mais tempo para analisar e negociar.",
-    "rodape": "Ganhos esperados: acompanhar tempo, revisões e retornos da aprovação.",
-    "fala": "Buscamos reduzir o esforço total da contratação. Um escopo pode exigir mais atenção no início e ainda assim economizar trabalho no restante do processo. Queremos menos idas e vindas com fornecedores, menos remontagem da equalização e menos devoluções por falta de clareza. O tempo liberado pode ser usado na análise e na negociação. Precisamos verificar isso em contratações comparáveis, acompanhando tempo ativo, espera, revisões e retornos da aprovação. Não estamos apresentando um percentual de economia já comprovado."
+    "titulo": "Módulo 5: Base de Fornecedores & SRM (IQF Vivo)",
+    "chamada": "Cadastro com validação fiscal e avaliação de desempenho que volta para quem compra.",
+    "rodape": "Demonstração da Tela · Consulta automatizada de CNPJ e Índice de Qualificação do Fornecedor",
+    "fala": "A gestão de fornecedores ganha vida nesta tela. O cadastro é integrado a consultas de CNPJ para validação fiscal imediata. Mais do que isso: criamos o IQF — Índice de Qualificação do Fornecedor. Após o término da obra, o gestor do parque avalia em menos de um minuto os critérios de qualidade, prazo, segurança e postura. Essa nota não fica engavetada: ela aparece em destaque na tela de equalização da próxima compra. Fornecedores que entregam com excelência ganham prioridade; fornecedores com histórico ruim são barrados.",
+    "tipo": "demo_fornecedores"
   },
   {
-    "titulo": "Começar melhor. Contratar melhor.",
-    "chamada": "Clareza para quem prepara, cota e aprova.",
-    "rodape": "Gestão de Contratações · Facilities e Propriedades",
-    "fala": "A proposta conecta as atividades das pessoas. Quem prepara deixa clara a necessidade. Quem cota trabalha com uma base comum e concentra a atenção nas diferenças e na negociação. Quem aprova recebe contexto para decidir. Ao centralizar essas informações desde o escopo, buscamos reduzir o ruído que hoje volta como retrabalho. Esse é o sentido de Gestão de Contratações: melhorar o processo completo, desde o pedido até a aprovação e o histórico da compra."
+    "titulo": "O Ecossistema Conectado na Prática",
+    "chamada": "Como cada etapa alimenta a próxima em um ciclo virtuoso de inteligência operacional.",
+    "rodape": "Fluxo Integrado · Do levantamento no parque ao enriquecimento da base corporativa",
+    "fala": "Vejam como essas informações se conectam na prática: o escopo com fotos alimenta a EAP; a EAP gera a cotação padronizada; as propostas alimentam a equalização; a compra aprovada registra o novo preço de referência; e a entrega do serviço qualifica o fornecedor para as próximas rodadas. Nenhuma informação é digitada duas vezes. É um sistema vivo que se torna mais inteligente e mais preciso a cada compra realizada em qualquer parque do grupo.",
+    "tipo": "demo_conexao"
+  },
+  {
+    "titulo": "O Impacto Estratégico para a Capital Realty",
+    "chamada": "Mais agilidade operacional, governança blindada e economia de escala sustentável.",
+    "rodape": "Benefícios corporativos diretos para a operação de Facilities e Engenharia",
+    "fala": "Os impactos para a Capital Realty são diretos em três pilares. Primeiro, Agilidade: redução drástica no tempo de ciclo de contratação, diminuindo idas e vindas entre compras e aprovação. Segundo, Governança: conformidade rigorosa com alçadas executivas, rastreabilidade total de propostas e auditoria transparente para o Conselho. Terceiro, Saving Sustentável: economia real obtida não pelo achatamento forçado de margem, mas por concorrência técnica justa, paridade de escopo e poder de negociação ancorado em dados.",
+    "tipo": "beneficios"
+  },
+  {
+    "titulo": "Visão de Futuro e Escalabilidade",
+    "chamada": "Mobilidade no canteiro, automação de ponta e integração com o ecossistema corporativo.",
+    "rodape": "Próximas fronteiras tecnológicas para os parques logísticos",
+    "fala": "A arquitetura do sistema foi projetada para escalar com facilidade. No roadmap futuro, vislumbramos a integração com canais móveis e chatbot no WhatsApp para que o gestor realize o aceite e a avaliação da obra diretamente do celular, na doca. Também está prevista a integração nativa com o ERP da companhia para geração automatizada da Ordem de Compra e contrato, criando um fluxo 'zero papel' de ponta a ponta.",
+    "tipo": "futuro"
+  },
+  {
+    "titulo": "Começar Melhor. Contratar Melhor.",
+    "chamada": "Clareza para quem prepara, precisão para quem cota e segurança para quem aprova.",
+    "rodape": "Gestão Inteligente de Contratações · Concurso Melhor Ideia 2026",
+    "fala": "Para concluir: o que estamos propondo ao Conselho não é uma aposta teórica, mas uma solução construída para a realidade dos nossos parques logísticos. Quando começamos melhor na especificação técnica, contratamos melhor na equalização e garantimos resultados superiores para a Capital Realty e seus clientes. Peço o apoio do Conselho para a homologação do piloto oficial em Facilities nos Megas Curitiba e Esteio. Muito obrigado, e fico à disposição para as perguntas.",
+    "tipo": "conclusao"
   }
 ];
-function _cnRenderNarrativa_(deck,pagina,indice) {
-  return _cnRenderVisual_(deck,pagina,indice);
+
+function _cnRenderNarrativa_(deck, pagina, indice) {
+  return _cnRenderVisual_(deck, pagina, indice);
 }
+
