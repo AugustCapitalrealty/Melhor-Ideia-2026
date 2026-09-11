@@ -24,7 +24,7 @@ function montar() {
     };paginas.push(p);return p;
   }};
   const context=vm.createContext({console,Logger:{log(){}},DriveApp:{getFileById:()=>({getBlob:()=> 'logoPreta'})},SlidesApp:{openById:()=>deck,LineCategory:{STRAIGHT:'straight'},ShapeType:{TEXT_BOX:'text',RECTANGLE:'rect',ROUND_RECTANGLE:'roundRect',ELLIPSE:'ellipse',RIGHT_ARROW:'rightArrow'},ContentAlignment:{MIDDLE:'middle'},ParagraphAlignment:{CENTER:'center',START:'start'},PredefinedLayout:{BLANK:'blank'}}});
-  for(const f of ['Apresentacao_Conselho.gs','ConselhoNarrativa.gs'])vm.runInContext(fs.readFileSync(path.join(root,'app',f),'utf8'),context);
+  for(const f of ['Apresentacao_Conselho.gs','ConselhoNarrativa.gs','ConselhoVisual.gs'])vm.runInContext(fs.readFileSync(path.join(root,'app',f),'utf8'),context);
   context.gerarApresentacaoConselho();
   const roteiro=vm.runInContext('CN_ROTEIRO',context);
   assert.equal(paginas.length,roteiro.length);
@@ -56,7 +56,7 @@ async function gerar(destino) {
         preview.push('<div class="texto" style="'+css+'padding:0 7px;white-space:pre-wrap;font-family:'+e.font+',Arial;font-size:'+e.fs+'px;font-weight:'+(e.bold?700:400)+';font-style:'+(e.italic?'italic':'normal')+';color:'+e.color+';text-align:'+(e.align==='center'?'center':'left')+';line-height:'+(e.spacing/100)+';'+(e.vertical==='middle'?'display:flex;align-items:center;justify-content:'+(e.align==='center'?'center':'flex-start')+';':'')+'">'+escape(e.text)+'</div>');
       }else{
         slide.addShape(pptx.ShapeType[e.type]||pptx.ShapeType.rect,{...pos,rectRadius:.1,fill:e.fill?{color:e.fill.replace('#','')}:{color:'FFFFFF',transparency:100},line:e.border?{color:e.border.replace('#',''),width:e.borderWidth||1}:{color:'FFFFFF',transparency:100}});
-        preview.push('<div style="'+css+'background:'+(e.fill||'transparent')+';border:'+(e.border?'1px solid '+e.border:'0')+';border-radius:'+(e.type==='roundRect'?'8px':e.type==='ellipse'?'50%':'0')+'"></div>');
+        preview.push('<div style="'+css+'background:'+(e.fill||'transparent')+';border:'+(e.border?'1px solid '+e.border:'0')+';border-radius:'+(e.type==='roundRect'?'8px':e.type==='ellipse'?'50%':'0')+(e.type==='rightArrow'?';clip-path:polygon(0 25%,60% 25%,60% 0,100% 50%,60% 100%,60% 75%,0 75%)':'')+'"></div>');
       }
     }
     html.push('<section class="slide" id="slide-'+(i+1)+'" style="background:'+p.background+'">'+preview.join('')+'</section>');

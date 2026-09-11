@@ -30,10 +30,10 @@ Quando o escopo é ambíguo, cada fornecedor responde a uma pergunta diferente.
 As características locais mudam. As informações necessárias para cotar precisam seguir um padrão.
 
 - **Realidades diferentes:** Curitiba, Esteio e Itajaí têm necessidades próprias. Hoje, os escopos variam na quantidade de texto, fotos e detalhamento.
-- **Referência interna:** A Engenharia já tem experiência na elaboração de escopos e equalizações. Essa prática pode orientar um método comum.
+- **Método comum:** Uma estrutura compartilhada orienta a preparação do escopo, preservando as necessidades de cada empreendimento.
 - **Apoio às equipes:** Facilities e Propriedades ganham uma sequência de preparação e conferência para estruturar a contratação.
 
-**Fala sugerida:** Nos três Megas, algumas pessoas usam mais fotos e menos texto; outras fazem o contrário. O objetivo não é impor a mesma quantidade de fotos ou apagar as diferenças locais. É garantir que todos respondam às mesmas perguntas: onde, o quê, quanto, com qual referência e em quais condições. A experiência da Engenharia é uma referência interna para apoiar Facilities e Propriedades, que precisam de um método mais guiado.
+**Fala sugerida:** Nos três Megas, algumas pessoas usam mais fotos e menos texto; outras fazem o contrário. O objetivo não é impor a mesma quantidade de fotos ou apagar as diferenças locais. É garantir que todos respondam às mesmas perguntas: onde, o quê, quanto, com qual referência e em quais condições. Facilities e Propriedades passam a contar com uma estrutura comum para preparar e conferir as solicitações.
 
 **Observação do slide:** Padrão comum de informação, com espaço para a necessidade específica de cada empreendimento.
 

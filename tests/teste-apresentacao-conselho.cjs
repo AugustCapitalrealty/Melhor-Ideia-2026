@@ -3,10 +3,15 @@ const {montar}=require('../tools/gerar-apresentacao-conselho.cjs');
 const {paginas,roteiro,context}=montar();
 assert.equal(paginas.length,11);
 const conteudo=paginas.flatMap(p=>p.elementos.map(e=>e.text||'')).join('\n');
-assert(conteudo.includes('Gestão de Contratações'));
-assert(conteudo.includes('O retrabalho começa antes da equalização'));
+assert(conteudo.replace(/\s+/g,' ').includes('Gestão de Contratações'));
+assert(conteudo.includes('O retrabalho começa antes'));
 assert(!conteudo.includes('cinco grafias'));
-assert(conteudo.includes('Importação automática das respostas.'));
+assert(conteudo.includes('Importação automática'));
+assert(!/engenharia/i.test(conteudo+paginas.map(p=>p.notas).join(' ')));
+for(const p of paginas) {
+  const palavras=p.elementos.map(e=>e.text||'').join(' ').trim().split(/\s+/).length;
+  assert(palavras<=55,'slide visual tem no máximo 55 palavras; detalhes ficam nas notas');
+}
 assert(roteiro.find(p=>p.titulo==='Entregas atuais e próximas evoluções').cards[1][1].includes('Importação automática'));
 context.gerarApresentacaoConselho();
 assert.equal(paginas.length,11,'regerar substitui slides, sem duplicar');

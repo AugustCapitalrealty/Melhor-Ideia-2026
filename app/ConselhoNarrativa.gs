@@ -23,11 +23,11 @@ const CN_ROTEIRO = [
     chamada: 'As características locais mudam. As informações necessárias para cotar precisam seguir um padrão.',
     cards: [
       ['Realidades diferentes', 'Curitiba, Esteio e Itajaí têm necessidades próprias. Hoje, os escopos variam na quantidade de texto, fotos e detalhamento.'],
-      ['Referência interna', 'A Engenharia já tem experiência na elaboração de escopos e equalizações. Essa prática pode orientar um método comum.'],
+      ['Método comum', 'Uma estrutura compartilhada orienta a preparação do escopo, preservando as necessidades de cada empreendimento.'],
       ['Apoio às equipes', 'Facilities e Propriedades ganham uma sequência de preparação e conferência para estruturar a contratação.']
     ],
     rodape: 'Padrão comum de informação, com espaço para a necessidade específica de cada empreendimento.',
-    fala: 'Nos três Megas, algumas pessoas usam mais fotos e menos texto; outras fazem o contrário. O objetivo não é impor a mesma quantidade de fotos ou apagar as diferenças locais. É garantir que todos respondam às mesmas perguntas: onde, o quê, quanto, com qual referência e em quais condições. A experiência da Engenharia é uma referência interna para apoiar Facilities e Propriedades, que precisam de um método mais guiado.'
+    fala: 'Nos três Megas, algumas pessoas usam mais fotos e menos texto; outras fazem o contrário. O objetivo não é impor a mesma quantidade de fotos ou apagar as diferenças locais. É garantir que todos respondam às mesmas perguntas: onde, o quê, quanto, com qual referência e em quais condições. Facilities e Propriedades passam a contar com uma estrutura comum para preparar e conferir as solicitações.'
   },
   {
     titulo: 'O escopo nasce com uma estrutura comum', selo: 'FUNCIONA HOJE',
@@ -122,33 +122,7 @@ const CN_ROTEIRO = [
   }
 ];
 
-/** Mesmo conteúdo é usado no Google Slides e no PowerPoint gerado localmente. */
+/** O roteiro completo fica nas notas; o desenho usa ilustrações editáveis. */
 function _cnRenderNarrativa_(deck, pagina, indice) {
-  const W = deck.getPageWidth(), H = deck.getPageHeight();
-  const slide = _cnNovoSlide_(deck), capa = pagina.tipo === 'capa';
-  if (capa) {
-    slide.getBackground().setSolidFill(DS_CN.colors.brandDark);
-    _cnUmaLinha_(slide, 40, 43, W - 90, 25, pagina.chamada, {fs:16,fsMin:14,align:'L',cor:DS_CN.colors.brandSoft});
-    _cnParagrafo_(slide, 40, 104, W - 80, 100, pagina.titulo, {fs:38,fsMin:32,bold:true,cor:'#FFFFFF',fonte:DS_CN.typography.titles});
-    _cnParagrafo_(slide, 40, 223, W - 130, 72, pagina.tese, {fs:20,fsMin:17,cor:'#FFFFFF'});
-    _cnUmaLinha_(slide, 40, H - 65, W - 90, 22, 'Guilherme Marques · Suprimentos / Facilities', {fs:11,fsMin:10,align:'L',cor:DS_CN.colors.brandSoft});
-    _cnUmaLinha_(slide, 40, H - 37, W - 90, 18, pagina.rodape, {fs:9,fsMin:8,align:'L',cor:DS_CN.colors.brandSoft});
-  } else {
-    _cnHeader_(slide, W, pagina.titulo, [pagina.selo]);
-    _cnParagrafo_(slide, CN_MX, 76, W - 2 * CN_MX, 49, pagina.chamada, {fs:15,fsMin:13,bold:true});
-    const cards = pagina.cards, colunas = cards.length === 4 ? 2 : (cards.length === 2 ? 2 : 3);
-    const linhas = Math.ceil(cards.length / colunas), espaco = 12;
-    const largura = (W - 2 * CN_MX - espaco * (colunas - 1)) / colunas;
-    const altura = (H - 190 - espaco * (linhas - 1)) / linhas;
-    cards.forEach(function (card, i) {
-      const x = CN_MX + (i % colunas) * (largura + espaco), y = 132 + Math.floor(i / colunas) * (altura + espaco);
-      _cnCartao_(slide, x, y, largura, altura, DS_CN.colors.brandLight);
-      _cnParagrafo_(slide, x + 13, y + 10, largura - 26, linhas > 1 ? 26 : 46, card[0], {fs:linhas > 1 ? 13 : 16,fsMin:11,bold:true,cor:DS_CN.colors.brandMed,fonte:DS_CN.typography.titles});
-      const topo = linhas > 1 ? 36 : 61;
-      _cnParagrafo_(slide, x + 13, y + topo, largura - 26, altura - topo - 12, card[1], {fs:linhas > 1 ? 11 : 13,fsMin:9.5});
-    });
-    _cnRodape_(slide, W, H, pagina.rodape);
-    _cnUmaLinha_(slide, W - 56, H - 19, 24, 14, String(indice + 1).padStart(2,'0'), {fs:8,fsMin:8,cor:DS_CN.colors.textMuted,folga:0});
-  }
-  slide.getNotesPage().getSpeakerNotesShape().getText().setText(pagina.fala);
+  return _cnRenderVisual_(deck, pagina, indice);
 }
