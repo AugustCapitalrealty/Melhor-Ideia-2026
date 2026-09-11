@@ -63,119 +63,147 @@ function _cvIcone_(s,t,x,y,cor) {
   _cvDoc_(s,x+12,y,.65,cor);
 }
 
+
+/** Frase de apoio sem competir com a ilustração. */
+function _cvApoio_(s,x,y,w,t,cor) {
+  _cnParagrafo_(s,x,y,w,Math.min(44,398-y),t,{fs:13,fsMin:13,cor:cor||DS_CN.colors.textBody,align:'C',espac:110});
+}
 function _cnRenderVisual_(deck,p,indice) {
-  const c=DS_CN.colors, s=_cnNovoSlide_(deck);
-  const titulos=['Gestão de Contratações','O retrabalho começa antes','Três Megas. Uma base comum.','O escopo dá clareza ao pedido','Do escopo à próxima contratação','A mesma EAP, do início ao fim','Mais contexto para decidir','Cada contratação deixa memória','O que já temos. O que vem depois.','O ganho está no processo inteiro','Começar melhor. Contratar melhor.'];
-  if(indice===0||indice===10) {
+  const c=DS_CN.colors,s=_cnNovoSlide_(deck),escuro=indice===0||indice===10;
+  if(escuro) {
     s.getBackground().setSolidFill(c.brandDark);
-    _cvTexto_(s,32,28,620,26,indice===0?'PRODUTIVIDADE NO PROCESSO DE CONTRATAÇÃO':'GESTÃO DE CONTRATAÇÕES',12,c.brandSoft);
-  } else {
-    _cnHeader_(s,720,titulos[indice],[]);
-  }
+    _cvTexto_(s,32,28,640,26,'PRODUTIVIDADE NO PROCESSO DE CONTRATAÇÃO',12,c.brandSoft);
+  } else _cnHeader_(s,720,p.titulo,[]);
   if(indice===0) {
-    _cvTexto_(s,32,94,430,116,'Gestão de\nContratações',36,c.white);
-    _cvTexto_(s,34,228,375,66,'Um bom processo começa\ncom um escopo claro.',21,c.brandSoft);
+    _cvTexto_(s,32,92,430,116,'Gestão de\nContratações',36,c.white);
+    _cvTexto_(s,34,225,390,90,'Por que uma contratação\nexige tantas idas e vindas?',22,c.brandSoft);
     _cvForma_(s,'ELLIPSE',460,99,205,205,c.brandMed);
     _cvDoc_(s,510,126,1.12,c.brandLight);
-    _cvForma_(s,'ELLIPSE',584,233,57,57,c.greenSolid);
-    _cvTexto_(s,589,243,47,39,'✓',26,c.white,true);
-    _cvTexto_(s,34,349,620,22,'Guilherme Marques · Melhor Ideia 2026',11,c.brandSoft);
+    _cvForma_(s,'ELLIPSE',584,233,57,57,c.amberSolid);
+    _cvTexto_(s,589,243,47,39,'?',26,c.brandDark,true);
+    _cvTexto_(s,34,354,620,22,'Guilherme Marques · Melhor Ideia 2026',11,c.brandSoft);
   }
   if(indice===1) {
-    _cvDoc_(s,66,115,1.08,c.brandLight,'irregular');
-    _cvDoc_(s,258,115,1.08,c.amberSolid,'omissao');
-    _cvDoc_(s,450,115,1.08,c.redSolid,'preco');
-    ['Detalhado','Item faltando','Preço global'].forEach(function(t,i){_cvTexto_(s,38+i*192,258,163,30,t,17,null,true);});
-    _cvTexto_(s,583,151,84,65,'?',45,c.redSolid,true);
-    _cvTexto_(s,60,323,600,40,'O mesmo pedido. Três interpretações.',24,c.brandMed,true);
+    ['Curitiba','Esteio','Itajaí'].forEach(function(t,i){
+      _cvPredio_(s,65+i*232,89,c.brandMed);
+      _cvTexto_(s,40+i*232,166,160,26,t,16,null,true);
+    });
+    _cvApoio_(s,60,202,600,'O detalhamento varia entre texto, fotos e quem prepara.');
+    _cvDoc_(s,88,253,.65,c.brandLight,'irregular');
+    _cvTexto_(s,163,258,190,28,'Slides / PowerPoint',16,c.brandMed);
+    _cvApoio_(s,153,289,195,'Escopo em apresentação');
+    _cvDoc_(s,408,253,.65,c.amberSolid);
+    _cvTexto_(s,483,258,197,28,'EAP em planilha',16,c.brandMed);
+    _cvApoio_(s,469,289,215,'Sem validadores ou conexão\ncom a base de dados');
+    _cvTexto_(s,55,362,610,24,'Arquivos separados. Conferência manual.',17,c.brandMed,true);
   }
   if(indice===2) {
-    ['Curitiba','Esteio','Itajaí'].forEach(function(t,i){
-      _cvPredio_(s,65+i*232,107,[c.brandLight,c.brandMed,c.brandLight][i]);
-      _cvTexto_(s,40+i*232,191,160,26,t,16,null,true);
-      _cvForma_(s,'RECTANGLE',118+i*232,227,3,29,c.lineStrong);
+    [c.brandLight,c.amberSolid,c.redSolid].forEach(function(cor,i){
+      _cvDoc_(s,89+i*223,98,.92,cor,['irregular','omissao','preco'][i]);
     });
-    _cvForma_(s,'ROUND_RECTANGLE',65,261,590,66,c.brandSoft);
-    _cvTexto_(s,80,280,560,35,'Local  +  serviços  +  fotos  +  itens',23,c.brandMed,true);
-    _cvTexto_(s,65,352,590,24,'Facilities e Propriedades',12,c.textBody,true);
+    ['Detalhado','Item faltando','Preço global'].forEach(function(t,i){
+      _cvTexto_(s,40+i*223,223,193,28,t,18,null,true);
+    });
+    ['O que está incluído?','A quantidade é a mesma?','Material e instalação?'].forEach(function(t,i){
+      _cvApoio_(s,38+i*223,262,196,t);
+    });
+    _cvTexto_(s,50,328,620,32,'Antes de comparar, é preciso investigar.',23,c.brandMed,true);
+    _cvApoio_(s,50,365,620,'Quem cotou precisa abrir cada proposta e esclarecer as diferenças.');
   }
   if(indice===3) {
-    _cvDoc_(s,306,153,1.15,c.brandLight);
-    const a=[['foto','Fotos',73,114],['doc','Itens / EAP',540,114],['pessoa','Local e serviços',73,251],['check','Condições',540,251]];
-    a.forEach(function(v){_cvIcone_(s,v[0],v[2]+15,v[3],c.brandMed);_cvTexto_(s,v[2]-40,v[3]+81,190,27,v[1],16,null,true);});
-    _cvSeta_(s,224,168,56);_cvSeta_(s,440,168,56);
-    _cvTexto_(s,267,302,190,28,'ESCOPO CLARO',16,c.brandMed,true);
+    const itens=[['doc','Cotação'],['historico','Equalização'],['pessoa','Aprovação']];
+    itens.forEach(function(v,i){
+      _cvIcone_(s,v[0],98+i*229,119,i===2?c.redSolid:c.brandMed);
+      _cvTexto_(s,45+i*229,208,190,27,v[1],18,null,true);
+      if(i<2)_cvSeta_(s,223+i*229,154,57,c.lineStrong);
+    });
+    _cvForma_(s,'RECTANGLE',131,255,463,3,c.redSolid);
+    _cvForma_(s,'RECTANGLE',592,241,3,17,c.redSolid);
+    _cvTexto_(s,90,244,58,32,'←',23,c.redSolid,true);
+    _cvTexto_(s,192,270,376,32,'Dúvidas na aprovação → devolução',18,c.redInk,true);
+    _cvApoio_(s,48,316,624,'Quem cotou volta aos fornecedores, explora as propostas,\nrevisa a equalização e reenvia para aprovação.');
+    _cvTexto_(s,57,372,606,21,'Mais correção + mais espera + nova conferência',14,c.redInk,true);
   }
   if(indice===4) {
-    const nomes=['Escopo','Cotação','Resposta','Equalização','Decisão','Memória'];
-    nomes.forEach(function(t,i){
-      const x=35+i*113;
-      _cvForma_(s,'ELLIPSE',x+7,153,82,82,i===0?c.brandLight:c.brandSoft);
-      if(i===0)_cvDoc_(s,x+29,167,.43,c.brandLight);
-      else _cvIcone_(s,['doc','doc','doc','historico','check','base'][i],x+10,156,c.brandMed);
-      _cvTexto_(s,x-10,252,116,30,t,13,null,true);
-      if(i<5)_cvSeta_(s,x+94,187,19,c.lineStrong);
+    const dados=[['doc','1. Definir o pedido','Serviços, fotos, quantidades\ne condições claras.','Menos omissões'],
+      ['doc','2. Padronizar retorno','Os mesmos itens para\ntodos os fornecedores.','Menos redigitação'],
+      ['check','3. Apoiar a aprovação','Comparação com referências\ne justificativa.','Menos devoluções']];
+    dados.forEach(function(v,i){
+      const x=38+i*223;
+      _cvForma_(s,'ELLIPSE',x+48,106,100,100,c.brandSoft);
+      _cvIcone_(s,v[0],x+60,116,c.brandMed);
+      _cvTexto_(s,x,221,198,29,v[1],17,c.brandMed,true);
+      _cvApoio_(s,x,264,198,v[2]);
+      _cvTexto_(s,x,335,198,29,v[3],16,c.brandMed,true);
     });
-    _cvTexto_(s,50,91,620,34,'Uma estrutura acompanha todo o ciclo',25,c.brandMed,true);
-    _cvTexto_(s,50,337,620,30,'Excel: envio e retorno externos · Preços inseridos pela equipe',12,c.textBody,true);
   }
   if(indice===5) {
-    const rotulos=['Escopo','Fornecedor','Equalização'];
-    rotulos.forEach(function(t,i){
-      _cvDoc_(s,88+i*226,133,1.28,c.brandLight,i===0?'padrao':'preco');
-      _cvTexto_(s,48+i*226, 90,190,28,t,19,c.brandMed,true);
-      if(i<2)_cvSeta_(s,233+i*226,190,49);
-    });
-    _cvTexto_(s,72,321,576,39,'Os itens seguem. Os preços entram.',26,c.brandMed,true);
+    _cvForma_(s,'ROUND_RECTANGLE',32,86,318,277,'#FFF4ED');
+    _cvForma_(s,'ROUND_RECTANGLE',370,86,318,277,c.brandSoft);
+    _cvDoc_(s,52,105,.56,c.amberSolid,'irregular');
+    _cvIcone_(s,'base',389,104,c.brandMed);
+    _cvTexto_(s,120,115,213,32,'Hoje na empresa',20,c.textMain);
+    _cvTexto_(s,477,115,194,32,'Com a solução',20,c.brandMed);
+    _cnParagrafo_(s,45,187,291,164,'Slides / PowerPoint + planilha\nSem validadores ou base conectada\nCópia, redigitação e conferência\nRisco em fórmulas, itens e unidades\nVersões e histórico dispersos',
+      {fs:14,fsMin:14,cor:c.textBody,espac:140});
+    _cnParagrafo_(s,383,187,291,164,'Escopo e EAP conectados\nCampos e validações\nItens reaproveitados na equalização\nCadastros e histórico centralizados\nInformação para analisar e aprovar',
+      {fs:14,fsMin:14,cor:c.brandMed,espac:140});
+    _cvApoio_(s,35,372,650,'Centralizar para reduzir retrabalho e facilitar a conferência.');
   }
   if(indice===6) {
-    _cvPessoa_(s,322,185,1.15,c.brandMed);
-    [['doc','EAP e marcas',89,107],['historico','Preços anteriores',531,107],['check','IQF',89,260],['doc','Parecer e negociação',531,260]].forEach(function(v){
+    ['Escopo','Fornecedor','Equalização'].forEach(function(t,i){
+      _cvDoc_(s,91+i*223,125,1.05,c.brandLight,i===0?'padrao':'preco');
+      _cvTexto_(s,45+i*223,84,190,28,t,19,c.brandMed,true);
+      if(i<2)_cvSeta_(s,229+i*223,172,48);
+    });
+    ['Itens, unidades e marcas','Excel com preços em branco','Mesma revisão + preços'].forEach(function(t,i){
+      _cvApoio_(s,38+i*223,267,198,t);
+    });
+    _cvTexto_(s,52,326,616,30,'A lista nasce uma vez e acompanha a cotação.',22,c.brandMed,true);
+    _cvApoio_(s,42,368,636,'Excel enviado externamente; a equipe informa ou cola os preços.');
+  }
+  if(indice===7) {
+    _cvPessoa_(s,322,174,1.1,c.brandMed);
+    [['doc','EAP e marcas',89,92],['historico','Preços anteriores',531,92],
+      ['check','Indicadores',89,242],['doc','Parecer e negociação',531,242]].forEach(function(v){
       _cvIcone_(s,v[0],v[2],v[3],c.brandLight);
       _cvTexto_(s,v[2]-56,v[3]+81,192,25,v[1],14,null,true);
     });
-    _cvTexto_(s,257,126,210,35,'Quem avalia',22,c.brandMed,true);
-    _cvSeta_(s,228,218,48,c.lineStrong);_cvSeta_(s,443,218,48,c.lineStrong);
+    _cvTexto_(s,257,121,210,30,'Quem aprova',22,c.brandMed,true);
+    _cvApoio_(s,231,302,260,'O que inclui?\nPor que esta proposta?');
+    _cvApoio_(s,40,371,640,'Mais contexto para decidir e menos dúvidas evitáveis na aprovação.');
   }
-  if(indice===7) {
-    _cvForma_(s,'ROUND_RECTANGLE',254,143,212,163,c.brandSoft);
-    _cvIcone_(s,'base',320,173,c.brandMed);
-    _cvTexto_(s,268,260,185,26,'Memória comum',18,c.brandMed,true);
-    [['Escopos',65,132],['Equalizações',505,132],['Preços',65,274],['Fornecedores / CNPJ',480,274]].forEach(function(v){
+  if(indice===8) {
+    _cvForma_(s,'ROUND_RECTANGLE',254,129,212,171,c.brandSoft);
+    _cvIcone_(s,'base',320,158,c.brandMed);
+    _cvTexto_(s,267,249,187,30,'Histórico comum',18,c.brandMed,true);
+    [['Escopos',65,119],['Equalizações',505,119],['Preços',65,263],['Fornecedores / CNPJ',480,263]].forEach(function(v){
       _cvDoc_(s,v[1]+31,v[2]-21,.55,c.brandLight);
       _cvTexto_(s,v[1]-18,v[2]+52,192,25,v[0],14,null,true);
     });
-    _cvTexto_(s,70,348,580,29,'O próximo projeto aproveita o que já aprendemos.',21,c.brandMed,true);
-  }
-  if(indice===8) {
-    _cvForma_(s,'ROUND_RECTANGLE',38,97,311,256,c.brandSoft);
-    _cvForma_(s,'ROUND_RECTANGLE',371,97,311,256,c.white,c.lineStrong);
-    _cvTexto_(s,57,116,270,34,'Hoje',27,c.brandMed);
-    _cvTexto_(s,390,116,270,34,'Próximos passos',25,c.textBody);
-    _cvIcone_(s,'check',150,168,c.brandLight);_cvIcone_(s,'doc',485,168,c.textMuted);
-    _cvTexto_(s,51,266,285,69,'Escopo → Excel → Equalização\nHistórico · CNPJ · IQF',16,c.brandMed,true);
-    _cvTexto_(s,380,266,295,69,'Convites · Portal\nImportação automática',17,c.textBody,true);
-    _cvTexto_(s,48,367,624,22,'Evoluções a priorizar e validar com as equipes',11,c.textBody,true);
+    _cvApoio_(s,44,358,632,'Localizar a revisão, consultar referências e reaproveitar o trabalho.\nMenos dependência de arquivos espalhados.');
   }
   if(indice===9) {
-    [['tempo','Tempo total'],['doc','Revisões'],['pessoa','Uso pelas equipes']].forEach(function(v,i){
-      _cvForma_(s,'ELLIPSE',69+i*223,135,135,135,c.brandSoft);
-      _cvIcone_(s,v[0],96+i*223,164,c.brandMed);
-      _cvTexto_(s,37+i*223,284,200,33,v[1],19,c.brandMed,true);
+    [['tempo','Menos tempo gasto','Menos espera e reconstrução\nda informação.'],
+      ['doc','Menos retrabalho','Menos revisões e retornos\nda aprovação.'],
+      ['pessoa','Mais análise','Mais atenção às diferenças\ne à negociação.']].forEach(function(v,i){
+      _cvForma_(s,'ELLIPSE',69+i*223,105,135,135,c.brandSoft);
+      _cvIcone_(s,v[0],96+i*223,134,c.brandMed);
+      _cvTexto_(s,37+i*223,255,200,30,v[1],18,c.brandMed,true);
+      _cvApoio_(s,37+i*223,296,200,v[2]);
     });
-    _cvTexto_(s,52, 90,616,30,'Mais atenção no início. Menos retrabalho depois.',22,c.brandMed,true);
-    _cvTexto_(s,70,354,580,24,'Hipótese a validar em contratações comparáveis',13,c.textBody,true);
+    _cvApoio_(s,45,365,630,'Benefícios esperados: medir tempo, revisões e devoluções em casos comparáveis.');
   }
   if(indice===10) {
-    _cvTexto_(s,35,83,650,94,'Começar melhor.\nContratar melhor.',34,c.white);
-    ['Preparar','Comprar','Decidir'].forEach(function(t,i){
-      _cvPessoa_(s,100+i*235,213,.8,i===1?c.brandLight:c.brandSoft);
-      _cvTexto_(s,46+i*235,315,166,30,t,20,c.white,true);
-      if(i<2)_cvSeta_(s,195+i*235,251,54,c.brandLight);
+    _cvTexto_(s,35,82,650,94,'Começar melhor.\nContratar melhor.',34,c.white);
+    ['Preparar','Cotar','Aprovar'].forEach(function(t,i){
+      _cvPessoa_(s,100+i*235,206,.75,i===1?c.brandLight:c.brandSoft);
+      _cvTexto_(s,46+i*235,296,166,28,t,20,c.white,true);
+      if(i<2)_cvSeta_(s,195+i*235,244,54,c.brandLight);
     });
-    _cvTexto_(s,38,373,640,20,'Próximo passo: aplicar nos três Megas e medir o retrabalho',11,c.brandSoft);
+    _cvApoio_(s,40,345,640,'Clareza no pedido, consistência na comparação e contexto na decisão.',c.brandSoft);
   }
-  if(indice!==0&&indice!==10)_cvTexto_(s,666,382,35,15,String(indice+1).padStart(2,'0'),9,c.textMuted,true);
+  if(!escuro)_cvTexto_(s,666,390,35,13,String(indice+1).padStart(2,'0'),8,c.textMuted,true);
   s.getNotesPage().getSpeakerNotesShape().getText().setText(p.fala+'\n\nApoio à fala: '+p.chamada+'\n'+p.rodape);
   return s;
 }

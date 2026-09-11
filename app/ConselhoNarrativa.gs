@@ -1,128 +1,73 @@
-/** Conteúdo atual da apresentação: produtividade desde a definição do escopo. */
+/** Dor, consequências, atuação e benefícios. Detalhes nas notas. */
 const CN_ROTEIRO = [
   {
-    tipo: 'capa', titulo: 'Gestão de Contratações',
-    chamada: 'Produtividade no processo de contratação',
-    tese: 'Definir melhor o escopo para reduzir revisões e facilitar a contratação.',
-    rodape: 'Concurso da Melhor Ideia 2026 · Capital Realty & Demercado',
-    fala: 'O problema que queremos resolver é a produtividade no processo de contratação. Parte do tempo gasto na equalização é usada para descobrir o que cada fornecedor considerou. A proposta é organizar esse trabalho desde o escopo: definir o que precisamos, pedir a mesma estrutura de resposta e levar esses itens para a comparação. Gestão de Contratações é o novo nome porque o projeto acompanha esse ciclo completo.'
+    "titulo": "Gestão de Contratações",
+    "chamada": "Por que uma contratação exige tantas idas e vindas?",
+    "rodape": "Produtividade no processo de contratação · Melhor Ideia 2026",
+    "fala": "Quero começar pela dor do processo de contratação. Não é apenas o tempo para preencher uma planilha: é o esforço para entender propostas, esclarecer diferenças e refazer o trabalho quando a aprovação devolve dúvidas. Vamos olhar primeiro como esse retrabalho aparece, depois onde podemos atuar e quais benefícios buscamos.",
+    "tipo": "capa"
   },
   {
-    titulo: 'O retrabalho começa antes da equalização', selo: 'A DOR DO PROCESSO',
-    chamada: 'Quando o escopo é ambíguo, cada fornecedor responde a uma pergunta diferente.',
-    cards: [
-      ['Propostas diferentes', 'Um fornecedor detalha os serviços. Outro apresenta um preço global. Um terceiro deixa itens de fora.'],
-      ['Comparação difícil', 'Uma proposta de R$ 20 mil pode parecer atrativa, mas o valor sozinho não revela o que está incluído.'],
-      ['Mais idas e vindas', 'A equipe precisa esclarecer inclusões, pedir revisões e reorganizar os dados antes de comparar os preços.']
-    ],
-    rodape: 'Exemplo ilustrativo: preço comparável exige escopo, quantidade e condições equivalentes.',
-    fala: 'Imagine uma proposta de vinte mil reais sem detalhamento. Ela inclui materiais? Instalação? Testes? Limpeza? Outro fornecedor pode ter considerado tudo isso. Comparar apenas o total mistura propostas diferentes. Antes de negociar, a equipe precisa abrir as composições e pedir revisões. É nesse trabalho de esclarecimento e conferência que o processo perde tempo. O valor é um exemplo, não uma compra ou economia apurada.'
+    "titulo": "Hoje, arquivos e conferência manual",
+    "chamada": "Escopo no Google Slides ou PowerPoint. EAP em uma planilha separada.",
+    "rodape": "Facilities e Propriedades · Curitiba, Esteio e Itajaí",
+    "fala": "Hoje, conforme o fluxo das equipes, o escopo é elaborado no Google Slides ou PowerPoint e a EAP é montada em uma planilha separada. Nos três Megas, o detalhamento varia na combinação de texto e fotos. A planilha desse fluxo não tem validadores nem conexão com uma base de dados. Copiar e colar pode trocar quantidades ou unidades; linhas e fórmulas podem ser alteradas; um item pode ficar de fora. Também é necessário conferir manualmente se a versão do escopo corresponde à cotada. A consistência depende da atenção e do conhecimento de quem monta os arquivos."
   },
   {
-    titulo: 'Uma mesma base para os três Megas', selo: 'FACILITIES E PROPRIEDADES',
-    chamada: 'As características locais mudam. As informações necessárias para cotar precisam seguir um padrão.',
-    cards: [
-      ['Realidades diferentes', 'Curitiba, Esteio e Itajaí têm necessidades próprias. Hoje, os escopos variam na quantidade de texto, fotos e detalhamento.'],
-      ['Método comum', 'Uma estrutura compartilhada orienta a preparação do escopo, preservando as necessidades de cada empreendimento.'],
-      ['Apoio às equipes', 'Facilities e Propriedades ganham uma sequência de preparação e conferência para estruturar a contratação.']
-    ],
-    rodape: 'Padrão comum de informação, com espaço para a necessidade específica de cada empreendimento.',
-    fala: 'Nos três Megas, algumas pessoas usam mais fotos e menos texto; outras fazem o contrário. O objetivo não é impor a mesma quantidade de fotos ou apagar as diferenças locais. É garantir que todos respondam às mesmas perguntas: onde, o quê, quanto, com qual referência e em quais condições. Facilities e Propriedades passam a contar com uma estrutura comum para preparar e conferir as solicitações.'
+    "titulo": "O mesmo pedido. Respostas diferentes.",
+    "chamada": "Um fornecedor detalha. Outro omite. Outro apresenta só o total.",
+    "rodape": "Antes de comparar preços, é preciso descobrir o que cada proposta inclui.",
+    "fala": "Quando o pedido deixa margem para interpretação, cada fornecedor considera uma coisa. Um separa materiais e mão de obra; outro deixa serviços de fora; outro retorna apenas um preço global. Uma proposta de vinte mil reais não diz, sozinha, o que será entregue. Esse valor é apenas um exemplo. A equipe precisa explorar as composições, confirmar quantidades, marcas, inclusões e exclusões, e pedir esclarecimentos. A dor é reconstruir a informação antes de conseguir comparar propostas equivalentes."
   },
   {
-    titulo: 'O escopo nasce com uma estrutura comum', selo: 'FUNCIONA HOJE',
-    chamada: 'Preparar melhor a solicitação de cotação torna explícito o que o fornecedor deve considerar.',
-    cards: [
-      ['Contexto e evidência', 'Local, objetivo, vistoria e fotos junto aos grupos de serviços. O fornecedor entende o problema e onde vai atuar.'],
-      ['Itens bem definidos', 'EAP com grupos, descrição, quantidade, unidade e marca de referência. A numeração é automática.'],
-      ['Condições claras', 'Prazos, visita técnica, materiais, documentação, responsabilidades e demais requisitos registrados no escopo.']
-    ],
-    rodape: 'A ferramenta organiza o preenchimento; a qualidade técnica depende da revisão do responsável.',
-    fala: 'A melhora começa antes de recebermos qualquer preço. Montamos o escopo por local e serviço, anexamos as fotos ao grupo e estruturamos os itens na EAP. As condições completam a solicitação ou edital de cotação. A ferramenta ajuda a lembrar e organizar os campos, mas não substitui a revisão técnica. Um formulário preenchido não garante, sozinho, que o escopo esteja correto.'
+    "titulo": "Na aprovação, a dúvida faz tudo voltar",
+    "chamada": "Quem cotou precisa reabrir propostas, esclarecer diferenças e refazer a comparação.",
+    "rodape": "Esclarecer → revisar → remontar → reenviar para aprovação.",
+    "fala": "O problema pode aparecer só na aprovação. O avaliador pergunta se todos consideraram o mesmo serviço, por que as quantidades diferem ou o que está dentro do preço global. Se a resposta não está clara, o processo retorna para quem cotou. Essa pessoa volta aos arquivos, fala novamente com os fornecedores, explora as propostas, revisa os dados e remonta a equalização. Depois, reenvia para aprovação. Além do tempo de correção, há espera por respostas e repetição da conferência. É esse ciclo de retorno que queremos reduzir."
   },
   {
-    tipo: 'fluxo', titulo: 'O ciclo começa no escopo', selo: 'FLUXO ATUAL',
-    chamada: 'A estrutura preparada no início acompanha a cotação e a decisão.',
-    cards: [
-      ['1. Escopo', 'Definir serviços, fotos, itens e condições.'],
-      ['2. Cotação', 'Baixar o Excel e enviar aos fornecedores.'],
-      ['3. Resposta', 'Receber o Excel preenchido na estrutura solicitada.'],
-      ['4. Equalização', 'Carregar o escopo e informar os preços de cada proponente.'],
-      ['5. Decisão', 'Analisar propostas, negociar e registrar a homologação.'],
-      ['6. Memória', 'Avaliar a entrega e consultar o histórico na próxima compra.']
-    ],
-    rodape: 'Envio e retorno do Excel são externos ao sistema. Os preços são inseridos ou colados pela equipe.',
-    fala: 'O ciclo não começa na equalização. Começa no escopo. Da EAP sai uma planilha Excel com os itens preenchidos e os campos de preço em branco. Enviamos esse arquivo aos fornecedores, que o devolvem preenchido. Na nova cotação, escolhemos a mesma revisão do escopo e carregamos os itens. A equipe informa ou cola os preços. Depois vêm a análise, a negociação e a decisão. Após a entrega, a avaliação alimenta as próximas contratações. O envio e a leitura automática das respostas ainda não fazem parte desse fluxo.'
+    "titulo": "Onde podemos atacar o retrabalho",
+    "chamada": "Na definição do pedido, na resposta do fornecedor e na conferência para aprovação.",
+    "rodape": "Benefícios buscados: menos omissões, redigitação e devoluções.",
+    "fala": "Agora que vimos a dor, podemos localizar os pontos de atuação. Primeiro, definir melhor o pedido antes de solicitar preços: serviços, fotos, quantidades, unidades e condições. Segundo, dar ao fornecedor uma estrutura comum para responder, sem reconstruir a lista depois. Terceiro, apoiar a conferência e a aprovação com a informação conectada. A ideia é investir atenção onde o erro nasce, para reduzir o esforço que provoca nas etapas seguintes. São benefícios esperados; a qualidade técnica ainda depende da revisão do responsável."
   },
   {
-    titulo: 'A equalização aproveita o trabalho já feito', selo: 'FUNCIONA HOJE',
-    chamada: 'Os itens solicitados ao fornecedor são a base que o comprador carrega para comparar.',
-    cards: [
-      ['Antes da resposta', 'Todos recebem os mesmos itens, quantidades, unidades e referências, com os preços a preencher.'],
-      ['Na montagem', 'O comprador escolhe o escopo e a revisão enviada. A EAP entra pronta, com os campos de preço vazios.'],
-      ['Na conferência', 'A equipe verifica omissões, marcas e condições antes de comparar os valores e solicitar a aprovação.']
-    ],
-    rodape: 'Menos redigitação e uma base comum de comparação. A resposta do fornecedor ainda precisa ser conferida.',
-    fala: 'A equalização nasce estruturada junto com o escopo. Assim, não precisamos reconstruir a lista inteira depois de receber propostas em formatos diferentes. A mesma revisão enviada ao fornecedor alimenta a EAP da compra. Ainda é necessário conferir a resposta: um fornecedor pode omitir um item ou propor outra marca. A vantagem é termos uma referência clara para identificar e resolver essas diferenças.'
+    "titulo": "Do trabalho manual ao processo centralizado",
+    "chamada": "Hoje: arquivos separados. Com a solução: informações conectadas desde o escopo.",
+    "rodape": "Centralizar para conferir melhor e reaproveitar o trabalho.",
+    "fala": "Hoje precisamos manter alinhados uma apresentação, uma planilha e as respostas dos fornecedores. Além da redigitação, há riscos de fórmulas alteradas, itens esquecidos, unidades inconsistentes, versões diferentes e perda de rastreabilidade. Sem validadores e conexão com os cadastros e o histórico, a pesquisa e a conferência também ficam manuais. A solução conecta escopo, EAP, cadastro, preços e equalização. Campos e validações ajudam a identificar inconsistências; o reaproveitamento evita reconstruir a mesma lista. Isso não elimina toda possibilidade de erro nem substitui a análise técnica. O ganho buscado é concentrar o trabalho em uma base comum e tornar a conferência mais simples."
   },
   {
-    titulo: 'Um apoio adicional para quem avalia', selo: 'EQUALIZAÇÃO MAIS INTELIGENTE',
-    chamada: 'A padronização organiza a entrada. Os recursos de análise ajudam na decisão.',
-    cards: [
-      ['EAP e marcas', 'Numeração automática, quantidades visíveis e marca de referência junto aos itens.'],
-      ['Preços anteriores', 'Consulta e alertas históricos ajudam a identificar variações que merecem explicação.'],
-      ['Qualidade da entrega', 'O IQF traz avaliações do fornecedor para a próxima compra e sinaliza quando a amostra é preliminar.'],
-      ['Registro da decisão', 'Comparativo exportável, parecer, homologação e registro dos valores negociados.']
-    ],
-    rodape: 'A negociação ocorre entre as pessoas. O sistema registra e organiza o resultado para análise.',
-    fala: 'Esses recursos são um ganho adicional à melhora do processo. A numeração automática evita manutenção manual da EAP. O histórico ajuda o comprador a questionar um preço. O IQF acrescenta informação sobre a entrega, com indicação de amostra preliminar. O avaliador recebe um comparativo mais organizado, com condições e justificativa. O sistema não negocia pelo comprador e o menor preço não substitui a avaliação do escopo.'
+    "titulo": "A mesma EAP, do escopo à equalização",
+    "chamada": "Definir uma vez. Enviar os mesmos itens. Acrescentar os preços.",
+    "rodape": "Envio e retorno do Excel são externos; a equipe informa ou cola os preços.",
+    "fala": "O responsável monta o escopo com fotos junto aos grupos e define a EAP com descrição, quantidade, unidade e marca de referência. A numeração é automática. O sistema gera o Excel com os itens preenchidos e os preços em branco. O fornecedor preenche essa estrutura. Ao montar a equalização, a equipe seleciona a revisão do escopo enviada e carrega a mesma lista, depois informa ou cola os preços. Ainda é necessário conferir omissões, marcas alternativas e condições. A vantagem é uma referência comum desde o começo, sem redigitar os itens."
   },
   {
-    titulo: 'Um repositório para a próxima contratação', selo: 'MEMÓRIA COMPARTILHADA',
-    chamada: 'Escopos, equalizações e preços deixam de depender de arquivos isolados.',
-    cards: [
-      ['Escopos e revisões', 'Consultar o que foi definido e recuperar a versão usada em cada solicitação.'],
-      ['Equalizações e preços', 'Reaproveitar o histórico de comparação e pesquisar referências por item e empreendimento.'],
-      ['Base de fornecedores', 'Identificação por CNPJ, consulta cadastral, contatos e histórico de participação e avaliação.']
-    ],
-    rodape: 'Consulta pública de CNPJ via BrasilAPI, com prioridade ao cadastro interno e preenchimento manual se necessário.',
-    fala: 'O repositório guarda a memória do trabalho. O próximo responsável pode consultar um escopo anterior, uma equalização e os preços registrados. A base de fornecedores usa o CNPJ como referência e consulta dados cadastrais públicos. A consulta externa é feita pela BrasilAPI, que republica dados públicos; não é uma integração direta com a Receita Federal. O cadastro interno vem primeiro e uma indisponibilidade não impede continuar manualmente.'
+    "titulo": "Mais contexto para analisar e aprovar",
+    "chamada": "O avaliador precisa entender o que está comparando, além do preço.",
+    "rodape": "Indicadores, referências e justificativa apoiam a decisão.",
+    "fala": "A equalização mais inteligente é um apoio adicional ao processo. O avaliador encontra itens e marcas organizados, referências de preços anteriores, indicadores e o registro da justificativa e da negociação. Os indicadores de avaliação dos fornecedores acrescentam contexto sobre entregas anteriores, respeitando a quantidade de avaliações disponível. Esses recursos ajudam a localizar diferenças e fundamentar a aprovação. A decisão continua sendo das pessoas, e a negociação acontece entre comprador e fornecedor. O benefício buscado é reduzir dúvidas evitáveis na aprovação."
   },
   {
-    titulo: 'Entregas atuais e próximas evoluções', selo: 'ESCOPO DA SOLUÇÃO',
-    chamada: 'O fluxo já conecta a preparação do escopo à montagem da equalização.',
-    cards: [
-      ['Já disponível', 'Escopos com fotos e revisões.\nEAP e Excel para cotação.\nCarga do escopo na equalização.\nHistórico de preços, cadastro e IQF.\nExportação e registro da decisão.'],
-      ['Evoluções futuras', 'Convite com envio pelo sistema.\nPortal de resposta do fornecedor.\nImportação automática das respostas.\nIntegrações com sistemas corporativos.\nModelos refinados com o uso das equipes.']
-    ],
-    rodape: 'Evoluções dependem de priorização e validação. Funcionalidade entregue não equivale a ganho já medido.',
-    fala: 'Hoje já temos o escopo com fotos, a EAP, a planilha em branco para o fornecedor e a carga desses itens na equalização. Também temos o histórico de preços, o cadastro por CNPJ, a avaliação e os documentos de apoio à decisão. O envio de convites, o portal e a importação automática das respostas são próximos passos. Precisamos consolidar o uso e medir o resultado antes de ampliar o processo.'
+    "titulo": "Um histórico para a próxima contratação",
+    "chamada": "Escopos, equalizações, preços e fornecedores em uma base comum.",
+    "rodape": "Menos busca em arquivos. Mais reaproveitamento e rastreabilidade.",
+    "fala": "O trabalho de uma contratação alimenta um histórico compartilhado. Podemos consultar o escopo e sua revisão, as equalizações anteriores, os preços e os fornecedores identificados por CNPJ. Isso facilita localizar a referência e entender de onde veio a informação. A consulta cadastral pública usa a BrasilAPI, e não uma integração direta com a Receita Federal. O cadastro interno e o preenchimento manual continuam disponíveis. O benefício é reaproveitar o trabalho e apoiar a próxima contratação sem depender apenas de arquivos espalhados ou de quem participou da compra anterior."
   },
   {
-    titulo: 'Medir o processo completo', selo: 'COMO VALIDAR O GANHO',
-    chamada: 'Investir mais atenção no escopo faz sentido se reduzir o esforço total da contratação.',
-    cards: [
-      ['Tempo por etapa', 'Preparação do escopo, montagem da equalização e duração até a decisão.'],
-      ['Retrabalho', 'Dúvidas dos fornecedores, itens omitidos e rodadas de correção ou revisão.'],
-      ['Uso pelas equipes', 'Contratações realizadas, reaproveitamento de escopos e dificuldades de Facilities e Propriedades.']
-    ],
-    rodape: 'Comparar casos equivalentes antes e depois. O ganho de tempo ainda precisa ser demonstrado.',
-    fala: 'O indicador não pode olhar apenas os minutos gastos para montar a tabela. Se dedicarmos mais tempo a elaborar um escopo e reduzirmos revisões, esclarecimentos e correções, o ganho pode estar no processo completo. Precisamos acompanhar o tempo por etapa, o número de devoluções e a duração até a decisão. A comparação deve considerar compras semelhantes e separar tempo ativo de trabalho de tempo de espera. Não vou afirmar um percentual de redução sem essa comparação.'
+    "titulo": "O benefício está no esforço total",
+    "chamada": "Menos reconstrução da informação. Mais tempo para analisar e negociar.",
+    "rodape": "Ganhos esperados: acompanhar tempo, revisões e retornos da aprovação.",
+    "fala": "Buscamos reduzir o esforço total da contratação. Um escopo pode exigir mais atenção no início e ainda assim economizar trabalho no restante do processo. Queremos menos idas e vindas com fornecedores, menos remontagem da equalização e menos devoluções por falta de clareza. O tempo liberado pode ser usado na análise e na negociação. Precisamos verificar isso em contratações comparáveis, acompanhando tempo ativo, espera, revisões e retornos da aprovação. Não estamos apresentando um percentual de economia já comprovado."
   },
   {
-    titulo: 'Começar melhor para contratar melhor', selo: 'GESTÃO DE CONTRATAÇÕES',
-    chamada: 'Um escopo claro dá uma base comum ao fornecedor, ao comprador e ao avaliador.',
-    cards: [
-      ['Quem prepara', 'Define a necessidade e revisa os requisitos antes de pedir preço.'],
-      ['Quem compra', 'Recebe respostas na estrutura solicitada, confere diferenças e conduz a negociação.'],
-      ['Quem decide', 'Analisa propostas com mais contexto e registra uma decisão fundamentada.']
-    ],
-    rodape: 'Próximo passo: aplicar o padrão em contratações reais dos três Megas e acompanhar o retrabalho.',
-    fala: 'A proposta é melhorar as atividades das pessoas em cada momento da contratação. Quem prepara dá clareza ao pedido. Quem compra concentra energia na conferência e na negociação. Quem decide recebe um comparativo mais compreensível. A hipótese é simples: um escopo bem elaborado reduz o ruído que se espalharia pelas etapas seguintes. O próximo passo é usar esse padrão nas contratações reais e medir o resultado com as equipes.'
+    "titulo": "Começar melhor. Contratar melhor.",
+    "chamada": "Clareza para quem prepara, cota e aprova.",
+    "rodape": "Gestão de Contratações · Facilities e Propriedades",
+    "fala": "A proposta conecta as atividades das pessoas. Quem prepara deixa clara a necessidade. Quem cota trabalha com uma base comum e concentra a atenção nas diferenças e na negociação. Quem aprova recebe contexto para decidir. Ao centralizar essas informações desde o escopo, buscamos reduzir o ruído que hoje volta como retrabalho. Esse é o sentido de Gestão de Contratações: melhorar o processo completo, desde o pedido até a aprovação e o histórico da compra."
   }
 ];
-
-/** O roteiro completo fica nas notas; o desenho usa ilustrações editáveis. */
-function _cnRenderNarrativa_(deck, pagina, indice) {
-  return _cnRenderVisual_(deck, pagina, indice);
+function _cnRenderNarrativa_(deck,pagina,indice) {
+  return _cnRenderVisual_(deck,pagina,indice);
 }

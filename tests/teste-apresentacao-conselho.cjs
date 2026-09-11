@@ -4,15 +4,18 @@ const {paginas,roteiro,context}=montar();
 assert.equal(paginas.length,11);
 const conteudo=paginas.flatMap(p=>p.elementos.map(e=>e.text||'')).join('\n');
 assert(conteudo.replace(/\s+/g,' ').includes('Gestão de Contratações'));
-assert(conteudo.includes('O retrabalho começa antes'));
+assert(conteudo.includes('Na aprovação, a dúvida faz tudo voltar'));
 assert(!conteudo.includes('cinco grafias'));
-assert(conteudo.includes('Importação automática'));
-assert(!/engenharia/i.test(conteudo+paginas.map(p=>p.notas).join(' ')));
+assert(conteudo.includes('Hoje na empresa'));
+assert(conteudo.includes('Indicadores'));
+assert(conteudo.includes('Histórico comum'));
+assert(!/engenharia|\bIQF\b|memória|próximos passos|importação automática/i.test(conteudo+paginas.map(p=>p.notas).join(' ')));
 for(const p of paginas) {
   const palavras=p.elementos.map(e=>e.text||'').join(' ').trim().split(/\s+/).length;
-  assert(palavras<=55,'slide visual tem no máximo 55 palavras; detalhes ficam nas notas');
+  assert(palavras<=85,'slide visual mantém texto breve e detalhes nas notas');
 }
-assert(roteiro.find(p=>p.titulo==='Entregas atuais e próximas evoluções').cards[1][1].includes('Importação automática'));
+assert(roteiro[3].fala.includes('processo retorna para quem cotou'));
+assert(roteiro[4].titulo.includes('Onde podemos atacar'));
 context.gerarApresentacaoConselho();
 assert.equal(paginas.length,11,'regerar substitui slides, sem duplicar');
 const ids=paginas.map(p=>p.getObjectId()),render=context._cnRenderNarrativa_;
