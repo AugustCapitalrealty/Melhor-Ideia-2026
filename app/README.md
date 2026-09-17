@@ -10,17 +10,17 @@ Para gerar uma cópia local em PowerPoint e uma prévia HTML: `node tools/gerar-
 
 ## Escopos e Google Slides
 
-A apresentação e o PDF de escopo trazem os serviços, fotos e condições, sem a tabela comercial. Os itens para cotação ficam na planilha Excel. Para atualizar um documento gerado no modelo antigo, abra o escopo e clique em **Gerar Slides e PDF**; o arquivo anterior permanece no histórico.
+A apresentação e o PDF de escopo trazem serviços, fotos, condições e uma EAP resumida com códigos, descrições, quantidades, unidades e referências. As colunas comerciais destinadas à resposta do fornecedor ficam somente na planilha Excel. Para atualizar um documento gerado no modelo antigo, abra o escopo e clique em **Gerar Slides e PDF**; o arquivo anterior permanece no histórico.
 
-Os **Itens para cotação** usam uma grade EAP com grupos, níveis e códigos automáticos, descrição, quantidade, unidade e marca de referência. Escopos anteriores continuam abrindo com os mesmos itens e vínculos. A grade não recebe preços.
+Os **Itens para cotação** usam uma grade EAP com grupos, níveis e códigos automáticos, descrição, quantidade, unidade e marca de referência. Escopos anteriores continuam abrindo com os mesmos itens e vínculos. A grade não recebe preços. O formulário também orienta inclusões, exclusões e critérios de aceite e mostra um diagnóstico de pendências antes da emissão.
 
 Na **Nova cotação**, use **Carregar escopos → selecione a revisão enviada ao fornecedor → Aplicar escopo na EAP**. A EAP é copiada com os preços vazios para cada proponente; projeto, empreendimento e condições acompanham os itens. O detalhamento registra o ID e a revisão de origem. Alterar o escopo depois não modifica a equalização. A opção se destina a novas cotações e pede confirmação antes de substituir conteúdo já preenchido.
 
-Use **Gerar planilha para fornecedor → Baixar Excel (.xlsx)** para obter o modelo preenchido com os itens da revisão salva e com marca ofertada, preços, totais e condições comerciais em branco. A planilha é criada na pasta do projeto; cada geração produz um arquivo independente, sem compartilhamento público automático. O comprador baixa o Excel e o envia ao fornecedor. A geração da planilha exige os itens completos e vinculados aos serviços; não exige as fotos necessárias para gerar Slides/PDF.
+Use **Gerar planilha para fornecedor → Baixar Excel (.xlsx)** para obter o modelo preenchido com os itens da revisão salva e com marca ofertada, preços, totais e condições comerciais em branco. A planilha é criada na pasta do projeto; cada geração produz um arquivo independente, sem compartilhamento público automático. O comprador baixa o Excel e o envia ao fornecedor. A geração da planilha exige os itens completos e vinculados aos serviços; não exige as fotos necessárias para gerar Slides/PDF. Apresentações, PDFs e planilhas emitidos continuam disponíveis no histórico quando o escopo é reaberto.
 
 A aba **Escopos** permite cadastrar o conteúdo antes da cotação e gerar uma apresentação e seu PDF. Fluxo: **Novo escopo → empreendimento/localização → objetivo/vistoria → grupos de serviços → fotos → itens para cotação → condições → Salvar rascunho / Gerar Slides e PDF**.
 
-Curitiba já possui imagem e endereço de referência. Para outro empreendimento, envie a imagem e preencha o endereço; o botão de salvar padrão permite reutilizá-los em novos escopos. Vincule os itens e as fotos aos grupos de serviços. As colunas de preço do documento ficam em branco.
+Curitiba já possui imagem e endereço de referência. Para outro empreendimento, envie a imagem e preencha o endereço; o botão de salvar padrão permite reutilizá-los em novos escopos. Vincule os itens e as fotos aos grupos de serviços. As colunas de preço da planilha de resposta ficam em branco.
 
 As quatro abas de armazenamento são criadas no primeiro acesso, sem apagar ou alterar as abas existentes. Cada alteração salva cria uma revisão; arquivos de revisões anteriores permanecem no histórico. Arquivos gerados e imagens ficam em `CF_PASTA_ID`, sem compartilhamento público automático.
 

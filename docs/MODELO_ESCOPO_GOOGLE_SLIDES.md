@@ -4,13 +4,15 @@ Análise em 09/09/2026. Estado: primeira implementação local concluída; publi
 
 ## Implementação entregue em 09/09/2026
 
-**Ajuste de identidade solicitado pelo usuário:** o gerador passou a consumir `DS_CN`, a mesma paleta e tipografia usadas em `ExportarSlides.gs` e `Apresentacao_Conselho.gs`. Títulos em Montserrat, corpo em Open Sans, capa azul noturna com linha de destaque, cabeçalhos claros com acento azul e tabelas com cabeçalho institucional, linhas alternadas e rodapé suave. O exemplo fornecido continua orientando o conteúdo, as fotos e as seções; o fundo gráfico extraído permanece como referência, mas não é aplicado pelo gerador atual.
+**Ajuste de identidade solicitado pelo usuário:** o gerador passou a consumir `DS_CN`, a mesma paleta e tipografia usadas em `ExportarSlides.gs` e `Apresentacao_Conselho.gs`. Títulos em Montserrat, corpo em Open Sans, capa azul noturna com linha de destaque, cabeçalhos claros com acento azul e EAP resumida com cabeçalho institucional, linhas alternadas e rodapé suave. O exemplo fornecido continua orientando o conteúdo, as fotos e as seções; o fundo gráfico extraído permanece como referência, mas não é aplicado pelo gerador atual.
+
+**Revisão de experiência em 17/09/2026:** o formulário ganhou orientação por resultado, indicação dos campos obrigatórios, diagnóstico de pendências e campos próprios para inclusões, exclusões e critérios de aceite. O deck passou a incluir a EAP técnica, sem colunas de preço, e a paginar textos longos de prazos e diretrizes. O histórico passou a recuperar também as planilhas já emitidas.
 
 - Aba **Escopos**, também acessível por `?page=escopos`, com identificação, localização, objetivo, vistoria, grupos de serviços, fotos, itens para cotação e condições.
 - Rascunhos salvos em revisões imutáveis; salvamento concorrente de uma versão antiga é recusado. Geração repetida da mesma revisão retorna os arquivos já registrados.
 - Imagem e endereço padrão de Curitiba extraídos da referência. Os demais Megas recebem seu padrão pelo próprio formulário; nenhum endereço ou imagem foi inventado para eles.
 - Upload de PNG/JPEG, associação a grupos, ordenação de fotos/serviços/itens e duplicação de grupos. Uma linha comercial pode cobrir vários grupos de serviços.
-- Slides e PDF com a marca original, paginação de textos e tabelas, fotos agrupadas e identificação de revisão. Preços ficam em branco para preenchimento pelo fornecedor.
+- Slides e PDF com a marca original, paginação de textos e EAP técnica, fotos agrupadas e identificação de revisão. A planilha separada contém as colunas comerciais em branco para preenchimento pelo fornecedor.
 - Quatro abas novas, declaradas no schema v9: `Escopos`, `EscopoArquivos`, `EscopoImagens` e `EscopoMegas`. São criadas de forma aditiva ao primeiro acesso à funcionalidade; `setupBaseDeDados()` continua disponível para migração integral.
 - Limites explícitos desta entrega: 30 grupos, 100 itens, 40 fotos, 5 MB por imagem, 45 mil caracteres no conteúdo serializado e 45 páginas por apresentação. Escopos que excedam esses limites são recusados com mensagem, sem truncamento.
 
@@ -18,7 +20,7 @@ Arquivos: `app/Escopos.gs` (persistência e API), `app/EscopoSlides.gs` (pagina�
 
 Validação local: suíte `npm test`, testes de persistência/concorrência/recuperação de falhas/paginação, Chrome com os serviços do Google simulados e inspeção visual de renderização local. A execução real, permissões de Drive e fidelidade final do PDF no serviço do Google precisam ser conferidas após publicação.
 
-Diferenças deliberadas da referência: detalhes opcionais aparecem ao lado da imagem geral sem editor de setas; legendas individuais recebem páginas de texto adicionais para manter as fotos grandes; as colunas de preço ficam vazias; o rodapé identifica escopo e revisão. Textos das condições são preenchidos pelo responsável, sem inserir requisitos elétricos em outras contratações. O vínculo com a equalização, o disparo de convites e o portal continuam posteriores.
+Diferenças deliberadas da referência: detalhes opcionais aparecem ao lado da imagem geral sem editor de setas; legendas individuais ficam junto às fotos; o deck mostra a EAP técnica, mas as colunas de preço e resposta ficam na planilha Excel da mesma revisão; o rodapé identifica escopo e revisão. Textos das condições são preenchidos pelo responsável, sem inserir requisitos elétricos em outras contratações. O vínculo com a equalização, o disparo de convites e o portal continuam posteriores.
 
 ### Origem dos recursos visuais
 

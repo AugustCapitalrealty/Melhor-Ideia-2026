@@ -66,7 +66,8 @@ function ambiente() {
 function exemplo() { return { titulo: 'Adequações elétricas', megaId: 'ctba', megaNome: 'Mega Curitiba', imagem: 'padrao:curitiba', endereco: 'Endereço de referência',
   objetivo: 'Corrigir instalações existentes.', vistoria: 'Fiações expostas.', responsavel:'Comprador', visita:true,
   grupos: [{id:'g1',titulo:'Módulo 01 — térreo',servicos:'Instalar diagrama unifilar\nOrganizar fios\nTestar circuitos'}],
-  itens: [{descricao:'Organização do quadro, identificação e testes',quantidade:'1,5',unidade:'vb',referencia:'',grupos:['g1']}], fotos: [], consideracoes:'Limpeza final.' }; }
+  itens: [{descricao:'Organização do quadro, identificação e testes',quantidade:'1,5',unidade:'vb',referencia:'',grupos:['g1']}], fotos: [],
+  inclusoes:'Materiais, testes e limpeza.',exclusoes:'Obras civis.',criteriosAceite:'Testes aprovados e relatório entregue.',consideracoes:'Limpeza final.' }; }
 const a = ambiente(), c = a.ctx;
 assert.equal(c.apiEscoposListar().megas[1].imagem,'');
 const n = c.esNormalizar_({...exemplo(), preco: 900, itens:[{...exemplo().itens[0],valor:900}]});
@@ -133,8 +134,10 @@ const plano=c.esPlanejarSlides_(longo);
 assert.deepEqual(Array.from(plano.filter(p=>p.tipo==='fotos'),p=>p.fotos.length),[4,4,1]);
 const objetivo=plano.filter(p=>p.titulo==='Objetivo').flatMap(p=>Array.from(p.linhas)).join(' ');
 assert.equal((objetivo.match(/PALAVRA/g)||[]).length,600,'paginação não perde texto');
-assert.equal(plano.filter(p=>p.tipo==='tabela').length,0,'itens para cotação ficam só no Excel');
+assert(plano.some(p=>p.tipo==='eap'),'EAP resumida também orienta quem lê o deck');
+assert.equal(plano.filter(p=>p.tipo==='tabela').length,0,'sem tabela comercial com preços no deck');
 assert(!plano.some(p=>p.tipo==='capa-secao'&&p.titulo==='Proposta'),'sem divisória vazia de proposta');
+assert(plano.some(p=>p.tipo==='limites-aceite'),'inclusões, exclusões e aceite recebem página própria');
 const visual=a.ctx.SlidesApp.create('longo');c.esDesenharSlides_(visual,plano,{logo:{name:'logo'},logoPreta:{name:'logoPreta'},logoAbreviada:{name:'logoAbreviada'},fundo:{name:'fundo'},'padrao:curitiba':{name:'curitiba'},[imgId]:{name:'foto'}},{revisao:1,data:'2026-09-09'});
 for(const page of visual.pages)for(const e of page.elements){assert(e.y+e.h<=405.01,JSON.stringify(e));assert(e.x+e.w<=720.01);}
 // A descrição da foto sai no mesmo slide da foto, logo abaixo dela — nunca num slide separado.
@@ -147,6 +150,9 @@ const legendasLongas=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),fotos:Arr
 const visualLeg=a.ctx.SlidesApp.create('legendas');c.esDesenharSlides_(visualLeg,legendasLongas,{logo:{name:'logo'},logoPreta:{name:'logoPreta'},'padrao:curitiba':{name:'curitiba'},[imgId]:{name:'foto'}},{revisao:1,data:'2026-09-09'});
 for(const page of visualLeg.pages)for(const e of page.elements.filter(e=>e.y<382)){assert(e.y+e.h<=382,'legenda máxima não invade o rodapé: '+JSON.stringify(e));}
 assert.equal(legendasLongas.filter(p=>p.tipo==='fotos').reduce((n,p)=>n+p.fotos.length,0),4,'nenhuma foto perdida');
+const textosLongos=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),prazo:'Prazo detalhado '.repeat(24),aviso:'Diretriz importante '.repeat(120)}));
+assert(textosLongos.some(p=>p.tipo==='card-texto'&&p.titulo==='Prazos'),'prazo longo recebe paginação própria');
+assert(textosLongos.some(p=>p.tipo==='card-texto'&&p.titulo==='Diretrizes para cotação'),'aviso longo recebe paginação própria');
 assert.equal(c.apiEscopoEnviarImagem('x','text/html','AAAA').ok,false);
 assert.equal(c.apiEscopoImagem('private-file').ok,false,'API não lê arquivos arbitrários do Drive');
 // Render de todas as amostras para inspeção visual opcional em ferramentas locais.
@@ -176,6 +182,7 @@ assert.equal(b.ctx.apiEscoposParaEqualizacao().escopos.length,2);
 assert.equal(b.ctx.apiEscopoParaEqualizacao(eb.id,1).titulo,eap.titulo,'importa a versão enviada, não a última');
 assert.throws(()=>b.ctx.esValidarItensCotacao_(b.ctx.esNormalizar_({...exemplo(),itens:[eap.itens[0]]})),/Cada item/);
 const excel=b.ctx.apiEscopoGerarPlanilha(eb.id,1);assert(excel.ok,excel.erro);assert.match(excel.download,/\/export\?format=xlsx$/);
+assert.equal(b.ctx.apiEscopoAbrir(eb.id).planilhas.length,2,'planilhas emitidas continuam visíveis ao reabrir');
 const sheet=b.planilhas[0],v=sheet.celulas;
 assert.equal(v['10,1'],'1.0');assert.equal(v['11,1'],'1.1');assert.equal(v['11,3'],1.5);assert.equal(v['11,4'],'vb');assert.equal(v['11,5'],'Tigre');
 assert(v['13,2'].startsWith("'=HYPERLINK(\"https://example.com\")"),'texto não vira fórmula');

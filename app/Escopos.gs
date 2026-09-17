@@ -33,10 +33,11 @@ function esNormalizar_(d) {
   const n = {};
   const limites = { titulo: 180, megaId: 100, megaNome: 160, armazem: 100, modulos: 160,
     responsavel: 180, endereco: 400, objetivo: 6000, vistoria: 9000, consideracoes: 9000,
+    inclusoes: 6000, exclusoes: 6000, criteriosAceite: 6000,
     aviso: 3000, prazo: 400, detalheLegenda: 200 };
   Object.keys(limites).forEach(function (k) {
     n[k] = esTexto_(d[k], limites[k], k);
-    if (['objetivo','vistoria','consideracoes','aviso','prazo'].indexOf(k) < 0) n[k] = n[k].replace(/\s+/g, ' ');
+    if (['objetivo','vistoria','consideracoes','inclusoes','exclusoes','criteriosAceite','aviso','prazo'].indexOf(k) < 0) n[k] = n[k].replace(/\s+/g, ' ');
   });
   if (!n.titulo || !n.megaId) throw new Error('Informe o título e selecione o empreendimento.');
   n.imagem = esImagemId_(d.imagem); n.detalhe = esImagemId_(d.detalhe);
@@ -109,11 +110,18 @@ function esArquivoLinks_(r) {
     slides: 'https://docs.google.com/presentation/d/' + r.SLIDES_ID + '/edit',
     pdf: 'https://drive.google.com/file/d/' + r.PDF_ID + '/view' };
 }
+function esPlanilhaLinks_(r) {
+  return { revisao: Number(r.REVISAO), data: r.CRIADO_EM,
+    planilha: 'https://docs.google.com/spreadsheets/d/' + r.SLIDES_ID + '/edit',
+    download: 'https://docs.google.com/spreadsheets/d/' + r.SLIDES_ID + '/export?format=xlsx' };
+}
 function apiEscopoAbrir(id) {
   return esApi_(function () {
     esPreparar_(); const r = esRevisao_(id);
+    const artefatos = cfLerTudo_('EscopoArquivos').filter(function (f) { return f.ID_ESCOPO === id; });
     return { id: r.ID, revisao: Number(r.REVISAO), carimbo: esCarimbo_(String(r.CONTEUDO)), dados: JSON.parse(r.CONTEUDO),
-      arquivos: cfLerTudo_('EscopoArquivos').filter(function (f) { return f.ID_ESCOPO === id && f.STATUS === 'concluido'; }).map(esArquivoLinks_) };
+      arquivos: artefatos.filter(function (f) { return f.STATUS === 'concluido'; }).map(esArquivoLinks_),
+      planilhas: artefatos.filter(function (f) { return f.STATUS === 'planilha'; }).map(esPlanilhaLinks_) };
   });
 }
 function esReferencias_(n) {
@@ -278,7 +286,11 @@ function apiEscopoParaEqualizacao(id, revisao) {
     return { id: r.ID, revisao: Number(r.REVISAO), titulo: d.titulo,
       empreendimento: mega.nome, empresa: cfEmpresaDoMega_(mega.nome).nome,
       detalhamento: [origem, d.objetivo, [d.armazem, d.modulos].filter(Boolean).join(' · ')].filter(Boolean).join('\n'),
-      premissas: [d.consideracoes, d.prazo, d.visita ? 'Visita técnica prévia obrigatória.' : '', d.aviso].filter(Boolean).join('\n'),
+      premissas: [d.consideracoes,
+        d.inclusoes ? 'Inclusões:\n' + d.inclusoes : '',
+        d.exclusoes ? 'Exclusões:\n' + d.exclusoes : '',
+        d.criteriosAceite ? 'Critérios de aceite:\n' + d.criteriosAceite : '',
+        d.prazo, d.visita ? 'Visita técnica prévia obrigatória.' : '', d.aviso].filter(Boolean).join('\n'),
       itens: d.itens.map(function (it) {
         return { tipo: it.tipo, nivel: it.nivel, codigo: it.codigo, descricao: it.descricao,
           quantidade: it.quantidade, unidade: it.unidade, marcaReferencia: it.referencia };
@@ -315,20 +327,20 @@ function apiEscopoGerar(id, revisao) {
     if (paginas.length > 45) throw new Error('O escopo ultrapassa 45 páginas. Divida-o em solicitações menores.');
     const reserva = cfComTrava_(function () {
       const anteriores = cfLerTudo_('EscopoArquivos').filter(function (f) { return f.ID_ESCOPO === id && Number(f.REVISAO) === Number(revisao); });
-      // Reutiliza apenas o modelo sem tabela; arquivos antigos ficam no histórico.
-      const pronto = anteriores.filter(function (f) { return f.STATUS === 'concluido' && String(f.ID).indexOf('ESL2-') === 0; })[0];
+      // Reutiliza apenas a versão visual atual; arquivos antigos ficam no histórico.
+      const pronto = anteriores.filter(function (f) { return f.STATUS === 'concluido' && String(f.ID).indexOf('ESL3-') === 0; })[0];
       if (pronto) return { pronto: pronto };
       if (anteriores.some(esGerandoAtivo_)) throw new Error('Esta revisão já está sendo gerada. Aguarde alguns minutos e reabra o escopo.');
-      const token = 'ESL2-' + Utilities.getUuid(), agora = new Date().toISOString();
+      const token = 'ESL3-' + Utilities.getUuid(), agora = new Date().toISOString();
       // Tentativa que falhou ou morreu no limite de tempo: a mesma linha é reaproveitada,
       // e os arquivos incompletos que ela deixou vão para a lixeira.
       const refazer = anteriores.filter(function (f) { return f.STATUS === 'falhou' || f.STATUS === 'gerando'; })[0];
       if (refazer) {
         cfAtualizarLinha_('EscopoArquivos', refazer._linha, { ID: token, STATUS: 'gerando', SLIDES_ID: '', PDF_ID: '', CRIADO_EM: agora });
-        return { token: token, orfaos: [refazer.SLIDES_ID, refazer.PDF_ID].filter(Boolean) };
+        return { token: token, emitidoEm: agora, orfaos: [refazer.SLIDES_ID, refazer.PDF_ID].filter(Boolean) };
       }
       cfInserir_('EscopoArquivos', [{ ID: token, ID_ESCOPO: id, REVISAO: revisao, STATUS: 'gerando', CRIADO_EM: agora }]);
-      return { token: token, orfaos: [] };
+      return { token: token, emitidoEm: agora, orfaos: [] };
     });
     if (reserva.pronto) return esArquivoLinks_(reserva.pronto);
     reserva.orfaos.forEach(function (arquivo) { try { DriveApp.getFileById(arquivo).setTrashed(true); } catch (_) { /* já removido */ } });
@@ -351,13 +363,13 @@ function apiEscopoGerar(id, revisao) {
       deck = SlidesApp.create(nome);
       DriveApp.getFileById(deck.getId()).moveTo(pasta);
       registrar({ SLIDES_ID: deck.getId() });
-      esDesenharSlides_(deck, paginas, blobs, { id: id, revisao: revisao, data: r.CRIADO_EM, limite: inicio + ES_GERACAO_ORCAMENTO_MS });
+      esDesenharSlides_(deck, paginas, blobs, { id: id, revisao: revisao, data: reserva.emitidoEm, limite: inicio + ES_GERACAO_ORCAMENTO_MS });
       deck.saveAndClose();
       const blob = DriveApp.getFileById(deck.getId()).getAs('application/pdf').setName(nome + '.pdf');
       if (blob.getBytes().length < 3000) throw new Error('O PDF ainda não está completo. Tente gerar novamente.');
       pdf = pasta.createFile(blob);
       registrar({ PDF_ID: pdf.getId(), STATUS: 'concluido' });
-      return esArquivoLinks_({ REVISAO: revisao, CRIADO_EM: r.CRIADO_EM, SLIDES_ID: deck.getId(), PDF_ID: pdf.getId() });
+      return esArquivoLinks_({ REVISAO: revisao, CRIADO_EM: reserva.emitidoEm, SLIDES_ID: deck.getId(), PDF_ID: pdf.getId() });
     } catch (e) {
       // Só arquivos criados nesta tentativa; revisões anteriores nunca são alteradas.
       try { if (deck) DriveApp.getFileById(deck.getId()).setTrashed(true); if (pdf) pdf.setTrashed(true); } catch (_) { /* registrar falha mesmo se a limpeza falhar */ }

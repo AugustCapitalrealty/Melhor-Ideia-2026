@@ -65,6 +65,11 @@ function esLayoutFotos_(fotos) {
 function esPlanejarSlides_(d) {
   const identificacao = [d.megaNome, d.armazem, d.modulos].filter(Boolean).join(' · ');
   const identificacaoLonga = esQuebrar_(identificacao, 620, 13).length > 3;
+  let numeroSecao = 0;
+  function secao(titulo, subtitulo) {
+    numeroSecao++;
+    p.push({ tipo: 'capa-secao', numero: String(numeroSecao).padStart(2, '0'), titulo: titulo, subtitulo: subtitulo });
+  }
   
   // 1. Capa Executiva com Metadados
   const p = [{
@@ -74,7 +79,7 @@ function esPlanejarSlides_(d) {
     meta: {
       mega: d.megaNome,
       local: [d.armazem, d.modulos].filter(Boolean).join(' · ') || 'Área Operacional',
-      responsavel: d.responsavel || 'Equipe de Facilities'
+      responsavel: d.responsavel || 'A definir pelo solicitante'
     }
   }];
 
@@ -101,7 +106,7 @@ function esPlanejarSlides_(d) {
   const linhasVist = esQuebrar_(d.vistoria || '', 630, 12);
   const totalLinhasContexto = (d.objetivo ? linhasObj.length + 3 : 0) + (d.vistoria ? linhasVist.length + 3 : 0);
 
-  if (d.objetivo && d.vistoria && totalLinhasContexto <= 18) {
+  if (d.objetivo && d.vistoria && totalLinhasContexto <= 18 && linhasObj.length <= 8 && linhasVist.length <= 9) {
     // Ambos cabem perfeitamente em um slide executivo duplo!
     p.push({
       tipo: 'contexto-duplo',
@@ -128,7 +133,7 @@ function esPlanejarSlides_(d) {
 
   // 4. Divisória de Serviços a Executar
   if (d.grupos.length) {
-    p.push({ tipo: 'capa-secao', numero: '01', titulo: 'Serviços a Executar', subtitulo: 'Detalhamento das atividades e escopo técnico por ambiente' });
+    secao('Serviços a Executar', 'Detalhamento das atividades e escopo técnico por ambiente');
   }
 
   // 5. Grupos de Serviços com Prevenção de Órfãos
@@ -164,9 +169,27 @@ function esPlanejarSlides_(d) {
     }
   });
 
-  // 6. Divisória de Registro Fotográfico
+  // 6. EAP resumida no próprio deck: o destinatário entende quantidades e referências sem depender do Excel.
+  if (d.itens.length) {
+    secao('Escopo para Cotação', 'Itens, quantidades e referências que compõem esta revisão');
+    const linhasEap = [];
+    d.itens.forEach(function (it) {
+      const grupo = it.tipo === 'grupo';
+      const partes = esQuebrar_(it.descricao, grupo ? 570 : 365, grupo ? 9.5 : 8.5);
+      for (let i = 0; i < partes.length; i += 2) {
+        linhasEap.push({ grupo: grupo, codigo: i ? '' : it.codigo, descricao: partes.slice(i, i + 2).join('\n'),
+          quantidade: i || grupo ? '' : String(it.quantidade).replace('.', ','), unidade: i || grupo ? '' : it.unidade,
+          referencia: i || grupo ? '' : it.referencia, continuacao: i > 0 });
+      }
+    });
+    for (let i = 0; i < linhasEap.length; i += 7) {
+      p.push({ tipo: 'eap', titulo: 'Escopo para Cotação', subtitulo: i ? 'Itens e quantidades (continuação)' : 'Itens e quantidades da revisão', linhas: linhasEap.slice(i, i + 7) });
+    }
+  }
+
+  // 7. Divisória de Registro Fotográfico
   if (d.fotos.length) {
-    p.push({ tipo: 'capa-secao', numero: '02', titulo: 'Registro Fotográfico', subtitulo: 'Evidências visuais levantadas na vistoria técnica de campo' });
+    secao('Registro Fotográfico', 'Evidências visuais levantadas na vistoria técnica de campo');
   }
 
   // 7. Fotografias Agrupadas (até 4 por slide, cada uma com sua descrição logo abaixo)
@@ -189,7 +212,7 @@ function esPlanejarSlides_(d) {
 
   // 10. Divisória de Diretrizes e Condições
   if (d.consideracoes || d.prazo || d.aviso || d.visita) {
-    p.push({ tipo: 'capa-secao', numero: '03', titulo: 'Considerações', subtitulo: 'Requisitos técnicos, prazos, visitas e diretrizes para elaboração da proposta' });
+    secao('Considerações', 'Requisitos técnicos, prazos, visitas e diretrizes para elaboração da proposta');
   }
 
   // 11. Considerações Técnicas com Anti-Órfão
@@ -205,17 +228,51 @@ function esPlanejarSlides_(d) {
     }
   }
 
-  // 12. Prazos, Contato e Aviso Final (Consolidado em Cards Executivos)
+  // 12. Limites e aceite: reduz ambiguidades para quem prepara a proposta e para quem recebe o serviço.
+  const blocosLimites = [
+    { titulo: 'INCLUSÕES', texto: d.inclusoes, cor: 'azul' },
+    { titulo: 'EXCLUSÕES', texto: d.exclusoes, cor: 'ambar' },
+    { titulo: 'CRITÉRIOS DE ACEITE', texto: d.criteriosAceite, cor: 'verde' }
+  ].filter(function (b) { return b.texto; }).map(function (b) {
+    return Object.assign({}, b, { linhas: esQuebrar_(b.texto, 190, 10.5) });
+  });
+  if (blocosLimites.length) {
+    const total = blocosLimites.reduce(function (n, b) { return n + b.linhas.length; }, 0);
+    const cabeEmResumo = total <= 22 && blocosLimites.every(function (b) { return b.linhas.length <= 10; });
+    if (cabeEmResumo) {
+      p.push({ tipo: 'limites-aceite', titulo: 'Limites e critérios de aceite', subtitulo: 'Referência objetiva para proposta, execução e recebimento', blocos: blocosLimites });
+    } else {
+      blocosLimites.forEach(function (b) {
+        esFatiarLinhas_(b.linhas, 16).forEach(function (q, idx) {
+          const titulo = b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase();
+          p.push({ tipo: 'card-texto', titulo: titulo, subtitulo: idx ? '(continuação)' : 'Limites e critérios de aceite', badge: b.titulo, linhas: q });
+        });
+      });
+    }
+  }
+
+  // 13. Prazos, Contato e Aviso Final (Consolidado em Cards Executivos)
   if (d.prazo || d.responsavel || d.aviso || d.visita) {
     const linhasAviso = esQuebrar_(d.aviso || 'Este escopo tem caráter orientativo e serve como base técnica para cotação.', 300, 11);
+    const linhasPrazo = esQuebrar_(d.prazo || '', 290, 11);
+    if (linhasPrazo.length > 6) {
+      esFatiarLinhas_(linhasPrazo, 16).forEach(function (q, idx) {
+        p.push({ tipo: 'card-texto', titulo: 'Prazos', subtitulo: idx ? '(continuação)' : 'Proposta, visita e execução', badge: 'CRONOGRAMA', linhas: q });
+      });
+    }
+    if (linhasAviso.length > 12) {
+      esFatiarLinhas_(linhasAviso, 16).forEach(function (q, idx) {
+        p.push({ tipo: 'card-texto', titulo: 'Diretrizes para cotação', subtitulo: idx ? '(continuação)' : d.megaNome, badge: 'AVISO AO PROPONENTE', linhas: q });
+      });
+    }
     p.push({
       tipo: 'encerramento',
       titulo: 'Prazos e contato',
       subtitulo: d.megaNome,
-      responsavel: d.responsavel || 'Equipe de Facilities',
-      prazo: d.prazo || 'Conforme alinhamento comercial com a equipe de compras',
+      responsavel: d.responsavel || 'A definir pelo solicitante',
+      prazo: !d.prazo ? 'A definir pelo solicitante' : linhasPrazo.length > 6 ? 'Consulte a página de prazos desta revisão.' : d.prazo,
       visita: !!d.visita,
-      aviso: linhasAviso
+      aviso: linhasAviso.length > 12 ? ['Consulte as diretrizes para cotação nas páginas anteriores.'] : linhasAviso
     });
   }
 
@@ -265,7 +322,7 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
       imagem(s, blobs.logo, 36, 32, 160, 35);
       
       // Badge Institucional
-      caixa(s, 36, 78, 290, 18, 'GESTÃO DE CONTRATAÇÕES · ESCOPO DE CONTRATAÇÃO', 8.5, cores.brandSoft, '#1E295B', true);
+      caixa(s, 36, 78, 290, 18, 'GESTÃO DE CONTRATAÇÕES · ESCOPO DE CONTRATAÇÃO', 8.5, cores.white, '#1E295B', true);
 
       // Título Principal
       let fsTit = 26, lTit = esQuebrar_(p.titulo, 640, fsTit);
@@ -307,7 +364,7 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
       imagem(s, blobs.logo, 545, 20, 140, 30);
 
       // Número da Seção Editorial
-      caixa(s, 45, 130, 200, 20, 'SEÇÃO ' + p.numero, 11, cores.brandLight, null, true, fontes.titles);
+      caixa(s, 45, 130, 200, 20, 'SEÇÃO ' + p.numero, 11, cores.brandSoft, null, true, fontes.titles);
       caixa(s, 45, 154, 40, 3, '', 10, null, cores.brandLight);
 
       // Título da Seção
@@ -325,10 +382,11 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     // ──────────────────────────────────────────
     caixa(s, 24, 13, 4, 34, '', 10, null, cores.brandLight);
 
-    const titFormatado = esQuebrar_(p.titulo, 490, 16).join('\n');
-    caixa(s, 34, 11, 500, 22, titFormatado, 16, cores.textMain, null, true, fontes.titles);
+    const linhasTitulo = esQuebrar_(p.titulo, 490, 16), tituloDuplo = linhasTitulo.length > 1;
+    const titFormatado = linhasTitulo.slice(0, 2).join('\n');
+    caixa(s, 34, 11, 500, tituloDuplo ? 34 : 22, titFormatado, tituloDuplo ? 14 : 16, cores.textMain, null, true, fontes.titles);
     if (p.subtitulo) {
-      caixa(s, 34, 32, 500, 16, esQuebrar_(p.subtitulo, 490, 10).join('\n'), 10, cores.brandMed, null, false);
+      caixa(s, 34, tituloDuplo ? 43 : 32, 500, 14, esQuebrar_(p.subtitulo, 490, 10).slice(0, 1).join('\n'), 10, cores.brandMed, null, false);
     }
 
     // LOGO PRETA OFICIAL À DIREITA (Transparente e limpa)
@@ -362,12 +420,12 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     else if (p.tipo === 'contexto-duplo') {
       // Card 1: Objetivo
       caixa(s, 24, 66, 672, 138, '', 10, null, cores.bgSlide, false, null, cores.line);
-      caixa(s, 38, 76, 200, 16, '🎯 OBJETIVO DA INTERVENÇÃO', 9, cores.brandLight, null, true, fontes.titles);
+      caixa(s, 38, 76, 200, 16, 'OBJETIVO DA INTERVENÇÃO', 9, cores.brandLight, null, true, fontes.titles);
       caixa(s, 38, 96, 644, 98, p.objetivo.join('\n'), 11.5, cores.textBody);
 
       // Card 2: Vistoria Técnica
       caixa(s, 24, 218, 672, 154, '', 10, null, cores.bgSlide, false, null, cores.line);
-      caixa(s, 38, 228, 240, 16, '🔍 DIAGNÓSTICO DA VISTORIA TÉCNICA', 9, cores.brandMed, null, true, fontes.titles);
+      caixa(s, 38, 228, 240, 16, 'DIAGNÓSTICO DA VISTORIA TÉCNICA', 9, cores.brandMed, null, true, fontes.titles);
       caixa(s, 38, 248, 644, 114, p.vistoria.join('\n'), 11.5, cores.textBody);
     }
 
@@ -388,7 +446,28 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
       caixa(s, 38, 100, 644, 260, p.linhas.join('\n'), fs, cores.textMain, null, false);
     }
 
-    // E) Registro Fotográfico (Cards e Molduras)
+    // E) EAP resumida — dados técnicos no deck; preços permanecem na planilha de resposta.
+    else if (p.tipo === 'eap') {
+      const x = [24, 80, 455, 515, 565, 696], yCab = 72, hCab = 24;
+      caixa(s, 24, 66, 672, 305, '', 10, null, cores.white, false, null, cores.line);
+      caixa(s, x[0], yCab, x[1]-x[0], hCab, 'CÓD.', 8, cores.white, cores.brandMed, true, fontes.titles);
+      caixa(s, x[1], yCab, x[2]-x[1], hCab, 'DESCRIÇÃO / SERVIÇO', 8, cores.white, cores.brandMed, true, fontes.titles);
+      caixa(s, x[2], yCab, x[3]-x[2], hCab, 'QTD.', 8, cores.white, cores.brandMed, true, fontes.titles);
+      caixa(s, x[3], yCab, x[4]-x[3], hCab, 'UN.', 8, cores.white, cores.brandMed, true, fontes.titles);
+      caixa(s, x[4], yCab, x[5]-x[4], hCab, 'REFERÊNCIA', 8, cores.white, cores.brandMed, true, fontes.titles);
+      p.linhas.forEach(function (r, i) {
+        const y = yCab + hCab + i * 35, fundo = r.grupo ? cores.brandSoft : (i % 2 ? cores.bgSlide : cores.white);
+        const tinta = r.grupo ? cores.brandDark : cores.textBody;
+        caixa(s, x[0], y, x[1]-x[0], 35, r.codigo, 8.5, tinta, fundo, r.grupo);
+        caixa(s, x[1], y, x[2]-x[1], 35, r.descricao, r.grupo ? 9 : 8.5, tinta, fundo, r.grupo);
+        caixa(s, x[2], y, x[3]-x[2], 35, r.quantidade, 8.5, tinta, fundo, false);
+        caixa(s, x[3], y, x[4]-x[3], 35, r.unidade, 8.5, tinta, fundo, false);
+        caixa(s, x[4], y, x[5]-x[4], 35, r.referencia, 8.5, tinta, fundo, false);
+      });
+      caixa(s, 34, 349, 650, 16, 'Valores e condições comerciais são preenchidos na planilha da mesma revisão.', 8, cores.textBody, null, false);
+    }
+
+    // F) Registro Fotográfico (Cards e Molduras)
     else if (p.tipo === 'fotos') {
       const layout = esLayoutFotos_(p.fotos), wFoto = layout.wFoto, hLeg = layout.hLegenda;
       const hCard = hLeg ? 305 : 275, hImg = hCard - 30 - hLeg, yRotulo = 68 + hImg + 3;
@@ -403,10 +482,27 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
       });
     }
 
-    // G) Encerramento: Prazos, Contato & Instruções
+    // G) Limites e critérios de aceite em cards de leitura rápida
+    else if (p.tipo === 'limites-aceite') {
+      const gap = 14, w = (672 - gap * (p.blocos.length - 1)) / p.blocos.length;
+      const estilos = {
+        azul: { fundo: cores.brandSoft, tinta: cores.brandMed, acento: cores.brandLight },
+        ambar: { fundo: cores.amberBg, tinta: cores.amberInk, acento: cores.amberSolid },
+        verde: { fundo: cores.greenBg, tinta: cores.greenInk, acento: cores.greenSolid }
+      };
+      p.blocos.forEach(function (b, i) {
+        const x = 24 + i * (w + gap), estilo = estilos[b.cor] || estilos.azul;
+        caixa(s, x, 66, w, 305, '', 10, null, cores.white, false, null, cores.line);
+        caixa(s, x, 66, w, 5, '', 10, null, estilo.acento);
+        caixa(s, x + 14, 84, w - 28, 20, b.titulo, 8.5, estilo.tinta, estilo.fundo, true, fontes.titles);
+        caixa(s, x + 14, 118, w - 28, 235, b.linhas.join('\n'), 10.5, cores.textBody);
+      });
+    }
+
+    // H) Encerramento: Prazos, Contato & Instruções
     else if (p.tipo === 'encerramento') {
       caixa(s, 24, 66, 326, 305, '', 10, null, cores.bgSlide, false, null, cores.line);
-      caixa(s, 38, 80, 290, 16, '📅 CRONOGRAMA & CONTATO', 9, cores.brandLight, null, true, fontes.titles);
+      caixa(s, 38, 80, 290, 16, 'CRONOGRAMA & CONTATO', 9, cores.brandLight, null, true, fontes.titles);
       
       caixa(s, 38, 106, 290, 14, 'RESPONSÁVEL TÉCNICO', 8, cores.textMuted, null, true);
       caixa(s, 38, 122, 290, 26, p.responsavel, 12, cores.textMain, null, true);
@@ -415,7 +511,7 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
       caixa(s, 38, 178, 290, 80, p.prazo, 11, cores.textBody);
 
       caixa(s, 368, 66, 328, 305, '', 10, null, cores.bgSlide, false, null, cores.line);
-      caixa(s, 382, 80, 290, 16, '⚠️ DIRETRIZES PARA COTAÇÃO', 9, cores.brandMed, null, true, fontes.titles);
+      caixa(s, 382, 80, 290, 16, 'DIRETRIZES PARA COTAÇÃO', 9, cores.brandMed, null, true, fontes.titles);
 
       if (p.visita) {
         caixa(s, 382, 106, 300, 36, 'OBRIGATÓRIA VISITA TÉCNICA PRÉVIA\nPara validação das condições locais antes da proposta.', 9, '#7A5B00', '#FDF1D2', true, null, '#E5A417');
@@ -430,7 +526,7 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     // ──────────────────────────────────────────
     caixa(s, 24, 382, 672, .75, '', 10, null, cores.line);
     const metaTexto = 'CAPITAL REALTY · ' + (meta.id || '') + ' · R' + meta.revisao + ' · ' + String(meta.data).slice(0, 10);
-    caixa(s, 24, 385, 450, 16, metaTexto, 7.5, cores.textMuted);
+    caixa(s, 24, 385, 450, 16, metaTexto, 7.5, cores.textBody);
     caixa(s, 540, 385, 156, 16, 'PÁGINA ' + (idx + 1) + ' / ' + paginas.length, 8, cores.brandMed, null, true, fontes.titles);
   });
 }

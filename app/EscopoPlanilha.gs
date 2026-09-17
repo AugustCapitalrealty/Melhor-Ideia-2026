@@ -27,7 +27,10 @@ function esModeloPlanilha_(d, id, revisao) {
   linhas.push(['', 'TOTAL DA PROPOSTA (R$)', '', '', '', '', '', '', '']);
   const totalLinha = linhas.length;
   linhas.push(['CONDIÇÕES DO ESCOPO', '', '', '', '', '', '', '', '']);
-  [d.responsavel ? 'Responsável / contato: ' + d.responsavel : '', d.endereco, d.objetivo, d.consideracoes, d.prazo, d.visita ? 'Visita técnica prévia obrigatória.' : '', d.aviso].filter(Boolean).forEach(function (s) {
+  [d.responsavel ? 'Responsável / contato: ' + d.responsavel : '', d.endereco, d.objetivo,
+    d.inclusoes ? 'INCLUSÕES\n' + d.inclusoes : '', d.exclusoes ? 'EXCLUSÕES\n' + d.exclusoes : '',
+    d.criteriosAceite ? 'CRITÉRIOS DE ACEITE\n' + d.criteriosAceite : '',
+    d.consideracoes, d.prazo, d.visita ? 'Visita técnica prévia obrigatória.' : '', d.aviso].filter(Boolean).forEach(function (s) {
     linhas.push([esTextoPlanilha_(s), '', '', '', '', '', '', '', '']);
   });
   return { linhas: linhas, grupos: grupos, inicioItens: 10, fimItens: fimItens, totalLinha: totalLinha };
@@ -70,10 +73,11 @@ function apiEscopoGerarPlanilha(id, revisao) {
       aba.setFrozenRows(9);
       SpreadsheetApp.flush();
       // Planilha entregue congela a revisão: o fornecedor cota exatamente este conteúdo.
+      const emitidoEm = new Date().toISOString();
       cfComTrava_(function () {
-        cfInserir_('EscopoArquivos', [{ ID: 'PLN-' + Utilities.getUuid(), ID_ESCOPO: id, REVISAO: Number(r.REVISAO), STATUS: 'planilha', SLIDES_ID: ss.getId(), CRIADO_EM: new Date().toISOString() }]);
+        cfInserir_('EscopoArquivos', [{ ID: 'PLN-' + Utilities.getUuid(), ID_ESCOPO: id, REVISAO: Number(r.REVISAO), STATUS: 'planilha', SLIDES_ID: ss.getId(), CRIADO_EM: emitidoEm }]);
       });
-      return { revisao: Number(r.REVISAO), planilha: ss.getUrl(), download: 'https://docs.google.com/spreadsheets/d/' + ss.getId() + '/export?format=xlsx' };
+      return { revisao: Number(r.REVISAO), data: emitidoEm, planilha: ss.getUrl(), download: 'https://docs.google.com/spreadsheets/d/' + ss.getId() + '/export?format=xlsx' };
     } catch (e) {
       if (ss) { try { DriveApp.getFileById(ss.getId()).setTrashed(true); } catch (_) {} }
       throw e;
