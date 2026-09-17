@@ -60,10 +60,10 @@ async function esCarregarUI(forcar){
 }
 function esOpcoesMegaUI(){var id=esUI.dados?esUI.dados.megaId:'';esEl('es-megaId').innerHTML='<option value="">Selecione o empreendimento</option>'+esUI.megas.map(function(m){return '<option value="'+esEscape(m.id)+'">'+esEscape(m.nome)+'</option>';}).join('');esEl('es-megaId').value=id;}
 function esPodeTrocarUI(){return !esUI.ocupado&&(!esUI.sujo||window.confirm('Há alterações não salvas. Deseja descartá-las e continuar?'));}
-function esNovoUI(){if(!esPodeTrocarUI())return;esUI.id='';esUI.revisao=0;esUI.arquivos=[];esUI.dados={grupos:[],itens:[],fotos:[],imagem:'',detalhe:'',aviso:'Este escopo tem caráter orientativo e serve como base técnica para elaboração da proposta.'};esUI.sujo=false;esPreencherUI();esMsg('Preencha o escopo e salve para retomá-lo depois.');}
+function esNovoUI(){if(!esPodeTrocarUI())return;esUI.id='';esUI.revisao=0;esUI.carimbo=null;esUI.arquivos=[];esUI.dados={grupos:[],itens:[],fotos:[],imagem:'',detalhe:'',aviso:'Este escopo tem caráter orientativo e serve como base técnica para elaboração da proposta.'};esUI.sujo=false;esPreencherUI();esMsg('Preencha o escopo e salve para retomá-lo depois.');}
 async function esAbrirUI(){
   var id=esEl('es-lista').value;if(!id||!esPodeTrocarUI())return;esBusy(true);esMsg('Abrindo escopo…');
-  try{var r=await esCall('apiEscopoAbrir',[id]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.dados=r.dados;esUI.arquivos=r.arquivos;esUI.sujo=false;esPreencherUI();esMsg('Escopo carregado.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}
+  try{var r=await esCall('apiEscopoAbrir',[id]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.carimbo=r.carimbo;esUI.dados=r.dados;esUI.arquivos=r.arquivos;esUI.sujo=false;esPreencherUI();esMsg('Escopo carregado.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}
 }
 function esPreencherUI(){esEl('es-editor').hidden=false;esEl('es-planilha').hidden=true;esOpcoesMegaUI();esCamposUI.forEach(function(k){esEl('es-'+k).value=esUI.dados[k]||'';});esEl('es-visita').checked=!!esUI.dados.visita;esRenderDinamicoUI();esPreviewUI(esEl('es-img-mega'),esUI.dados.imagem);esPreviewUI(esEl('es-img-detalhe'),esUI.dados.detalhe);esInfoUI();esHistoricoUI();}
 function esColetarUI(){if(!esUI.dados)return;esCamposUI.forEach(function(k){esUI.dados[k]=esEl('es-'+k).value;});esUI.dados.visita=esEl('es-visita').checked;var m=esUI.megas.find(function(m){return m.id===esUI.dados.megaId;});esUI.dados.megaNome=m?m.nome:'';}
@@ -101,9 +101,9 @@ function esRenderDinamicoUI(){
 }
 function esCoberturaUI(){var sem=esUI.dados.grupos.filter(function(g){return !esUI.dados.itens.some(function(it){return it.tipo!=='grupo'&&it.grupos.indexOf(g.id)>=0;});});esEl('es-cobertura').textContent=sem.length?'Grupos ainda sem item para cotação: '+sem.map(function(g){return g.titulo||'Sem título';}).join(', '):'Todos os grupos estão vinculados a itens para cotação.';}
 async function esUploadFotosUI(input,grupoIndice){if(esUI.ocupado)return;var grupo=esUI.dados.grupos[grupoIndice];if(!grupo)return;var files=Array.from(input.files);if(!files.length)return;if(esUI.dados.fotos.length+files.length>40){esMsg('Limite de 40 fotos por escopo.',true);input.value='';return;}esBusy(true);try{for(var i=0;i<files.length;i++){esMsg('Enviando foto '+(i+1)+' de '+files.length+'…');var id=await esArquivoUI(files[i]);esUI.dados.fotos.push({imagem:id,titulo:(grupo.titulo||'Registro fotográfico').slice(0,140),legenda:'',grupos:[grupo.id]});esAlteradoUI();}esMsg('Fotos anexadas ao grupo. Salve o rascunho para registrar a alteração.');}catch(e){esMsg(e.message,true);}finally{input.value='';esRenderDinamicoUI();esBusy(false);}}
-async function esPersistirUI(){esColetarUI();var r=await esCall('apiEscopoSalvar',[esUI.id,esUI.revisao,esUI.dados]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.sujo=false;esInfoUI();}
+async function esPersistirUI(){esColetarUI();var r=await esCall('apiEscopoSalvar',[esUI.id,esUI.revisao,esUI.dados,esUI.carimbo]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.carimbo=r.carimbo;esUI.sujo=false;esInfoUI();}
 async function esSalvarUI(){if(esUI.ocupado)return;esBusy(true);esMsg('Salvando rascunho…');try{await esPersistirUI();esMsg('Rascunho salvo — revisão '+esUI.revisao+'.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
-async function esGerarUI(){if(esUI.ocupado)return;esBusy(true);esMsg('Salvando e gerando Slides e PDF. Isso pode levar alguns minutos…');try{await esPersistirUI();var r=await esCall('apiEscopoGerar',[esUI.id,esUI.revisao]);esUI.arquivos=esUI.arquivos.filter(function(a){return a.revisao!==r.revisao;});esUI.arquivos.push(r);esHistoricoUI();esMsg('Apresentação e PDF da revisão '+r.revisao+' prontos. Abra pelos links abaixo.');esEl('es-historico').scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
+async function esGerarUI(){if(esUI.ocupado)return;esBusy(true);esMsg('Conferindo o preenchimento…');try{esColetarUI();await esCall('apiEscopoValidar',[esUI.dados]);esMsg('Salvando e gerando Slides e PDF. Isso pode levar alguns minutos…');await esPersistirUI();var r=await esCall('apiEscopoGerar',[esUI.id,esUI.revisao]);esUI.arquivos=esUI.arquivos.filter(function(a){return a.revisao!==r.revisao;});esUI.arquivos.push(r);esHistoricoUI();esMsg('Apresentação e PDF da revisão '+r.revisao+' prontos. Abra pelos links abaixo.');esEl('es-historico').scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
 function esHistoricoUI(){var el=esEl('es-historico');el.hidden=!esUI.arquivos.length;el.innerHTML='<h2>Apresentações geradas</h2><ul>'+esUI.arquivos.slice().sort(function(a,b){return b.revisao-a.revisao;}).map(function(a){return '<li>Revisão '+a.revisao+' · <a href="'+esEscape(a.slides)+'" target="_blank" rel="noopener">Abrir Slides</a><a href="'+esEscape(a.pdf)+'" target="_blank" rel="noopener">Abrir PDF</a></li>';}).join('')+'</ul>';}
 function esNumerarEapUI(){
   var contadores=[0,0,0,0],anterior=-1;
@@ -156,8 +156,10 @@ function esColarEapUI(e,el){
   esRenderEapUI();esRenderVinculosUI();esAlteradoUI();
 }
 async function esGerarPlanilhaUI(){
-  if(esUI.ocupado)return;esBusy(true);esMsg('Salvando e gerando a planilha para o fornecedor…');
+  if(esUI.ocupado)return;esBusy(true);esMsg('Conferindo os itens da EAP…');
   try{
+    esColetarUI();await esCall('apiEscopoValidar',[esUI.dados,'planilha']);
+    esMsg('Salvando e gerando a planilha para o fornecedor…');
     await esPersistirUI();
     var r=await esCall('apiEscopoGerarPlanilha',[esUI.id,esUI.revisao]);
     var el=esEl('es-planilha');el.hidden=false;

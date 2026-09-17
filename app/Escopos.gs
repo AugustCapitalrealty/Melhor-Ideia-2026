@@ -112,7 +112,7 @@ function esArquivoLinks_(r) {
 function apiEscopoAbrir(id) {
   return esApi_(function () {
     esPreparar_(); const r = esRevisao_(id);
-    return { id: r.ID, revisao: Number(r.REVISAO), dados: JSON.parse(r.CONTEUDO),
+    return { id: r.ID, revisao: Number(r.REVISAO), carimbo: esCarimbo_(String(r.CONTEUDO)), dados: JSON.parse(r.CONTEUDO),
       arquivos: cfLerTudo_('EscopoArquivos').filter(function (f) { return f.ID_ESCOPO === id && f.STATUS === 'concluido'; }).map(esArquivoLinks_) };
   });
 }
@@ -125,25 +125,74 @@ function esConferirImagens_(refs) {
     if (id !== 'padrao:curitiba' && !cadastradas.some(function (r) { return r.ID === id; })) throw new Error('Imagem não cadastrada: ' + id);
   });
 }
-function apiEscopoSalvar(id, revisao, dados) {
+function esDadosDoFormulario_(dados) {
+  const d = esNormalizar_(dados);
+  const mega = esMegas_().filter(function (m) { return m.id === d.megaId; })[0];
+  if (!mega) throw new Error('Empreendimento não encontrado.');
+  d.megaNome = mega.nome;
+  if (d.imagem === 'padrao:curitiba' && !/curitiba/i.test(mega.nome)) throw new Error('A imagem de Curitiba não pertence a este empreendimento.');
+  esConferirImagens_(esReferencias_(d));
+  return d;
+}
+
+/** Impressão digital do conteúdo gravado: detecta edição em outra janela mesmo quando o rascunho é regravado na mesma revisão. */
+function esCarimbo_(json) {
+  let h = 0;
+  for (let i = 0; i < json.length; i++) h = (h * 31 + json.charCodeAt(i)) | 0;
+  return json.length + '-' + (h >>> 0).toString(36);
+}
+
+// O Apps Script encerra execuções em 6 minutos; passado isso, 'gerando' é resto de uma execução morta.
+const ES_GERACAO_EXPIRA_MS = 7 * 60 * 1000;
+const ES_GERACAO_ORCAMENTO_MS = 4.5 * 60 * 1000;
+function esGerandoAtivo_(f) {
+  return f.STATUS === 'gerando' && Date.now() - new Date(f.CRIADO_EM).getTime() < ES_GERACAO_EXPIRA_MS;
+}
+
+/**
+ * A revisão só fica congelada depois que algo saiu dela (PDF concluído, planilha
+ * entregue ou geração em andamento). Antes disso é rascunho e é regravada no lugar,
+ * para que tentativas corrigidas não virem R2, R3, R4 sem documento.
+ */
+function esRevisaoEmitida_(id, rev) {
+  return cfLerTudo_('EscopoArquivos').some(function (f) {
+    return f.ID_ESCOPO === id && Number(f.REVISAO) === Number(rev) &&
+      (f.STATUS === 'concluido' || f.STATUS === 'planilha' || esGerandoAtivo_(f));
+  });
+}
+
+function apiEscopoSalvar(id, revisao, dados, carimbo) {
   return esApi_(function () {
-    esPreparar_(); const d = esNormalizar_(dados);
-    const mega = esMegas_().filter(function (m) { return m.id === d.megaId; })[0];
-    if (!mega) throw new Error('Empreendimento não encontrado.');
-    d.megaNome = mega.nome;
-    if (d.imagem === 'padrao:curitiba' && !/curitiba/i.test(mega.nome)) throw new Error('A imagem de Curitiba não pertence a este empreendimento.');
-    esConferirImagens_(esReferencias_(d));
+    esPreparar_(); const d = esDadosDoFormulario_(dados);
     return cfComTrava_(function () {
       let atual = null;
       if (id) atual = esRevisao_(id);
-      if (atual && Number(atual.REVISAO) !== Number(revisao)) throw new Error('Este escopo foi alterado em outra janela. Guarde suas alterações e reabra a versão atual antes de salvar.');
+      if (atual && (Number(atual.REVISAO) !== Number(revisao) || (carimbo != null && carimbo !== esCarimbo_(String(atual.CONTEUDO)))))
+        throw new Error('Este escopo foi alterado em outra janela. Guarde suas alterações e reabra a versão atual antes de salvar.');
       const json = JSON.stringify(d);
-      if (atual && atual.CONTEUDO === json) return { id: id, revisao: Number(atual.REVISAO) };
+      if (atual && atual.CONTEUDO === json) return { id: id, revisao: Number(atual.REVISAO), carimbo: esCarimbo_(json) };
+      const agora = new Date().toISOString();
+      if (atual && !esRevisaoEmitida_(id, atual.REVISAO)) {
+        cfAtualizarLinha_('Escopos', atual._linha, { CONTEUDO: json, CRIADO_EM: agora });
+        return { id: id, revisao: Number(atual.REVISAO), carimbo: esCarimbo_(json) };
+      }
       const novoId = id || 'ESC-' + Utilities.getUuid();
       const rev = atual ? Number(atual.REVISAO) + 1 : 1;
-      cfInserir_('Escopos', [{ ID: novoId, REVISAO: rev, CONTEUDO: json, CRIADO_EM: new Date().toISOString() }]);
-      return { id: novoId, revisao: rev };
+      cfInserir_('Escopos', [{ ID: novoId, REVISAO: rev, CONTEUDO: json, CRIADO_EM: agora }]);
+      return { id: novoId, revisao: rev, carimbo: esCarimbo_(json) };
     });
+  });
+}
+
+/** Confere se o formulário gera sem gravar nada: erro de preenchimento não pode custar revisão. */
+function apiEscopoValidar(dados, alvo) {
+  return esApi_(function () {
+    esPreparar_(); const d = esDadosDoFormulario_(dados);
+    if (alvo === 'planilha') { esValidarItensCotacao_(d); return {}; }
+    esValidarGeracao_(d);
+    const paginas = esPlanejarSlides_(d).length;
+    if (paginas > 45) throw new Error('O escopo ultrapassa 45 páginas. Divida-o em solicitações menores.');
+    return { paginas: paginas };
   });
 }
 function apiEscopoSalvarMega(id, endereco, imagem) {
@@ -258,6 +307,7 @@ function esValidarItensCotacao_(d) {
 
 function apiEscopoGerar(id, revisao) {
   return esApi_(function () {
+    const inicio = Date.now();
     esPreparar_();
     const r = esRevisao_(id, revisao), d = esNormalizar_(JSON.parse(r.CONTEUDO));
     esValidarGeracao_(d);
@@ -268,17 +318,25 @@ function apiEscopoGerar(id, revisao) {
       // Reutiliza apenas o modelo sem tabela; arquivos antigos ficam no histórico.
       const pronto = anteriores.filter(function (f) { return f.STATUS === 'concluido' && String(f.ID).indexOf('ESL2-') === 0; })[0];
       if (pronto) return { pronto: pronto };
-      if (anteriores.some(function (f) { return f.STATUS === 'gerando' && Date.now() - new Date(f.CRIADO_EM).getTime() < 10 * 60 * 1000; })) throw new Error('Esta revisão já está sendo gerada. Aguarde e tente novamente.');
-      const token = 'ESL2-' + Utilities.getUuid();
-      cfInserir_('EscopoArquivos', [{ ID: token, ID_ESCOPO: id, REVISAO: revisao, STATUS: 'gerando', CRIADO_EM: new Date().toISOString() }]);
-      return { token: token };
+      if (anteriores.some(esGerandoAtivo_)) throw new Error('Esta revisão já está sendo gerada. Aguarde alguns minutos e reabra o escopo.');
+      const token = 'ESL2-' + Utilities.getUuid(), agora = new Date().toISOString();
+      // Tentativa que falhou ou morreu no limite de tempo: a mesma linha é reaproveitada,
+      // e os arquivos incompletos que ela deixou vão para a lixeira.
+      const refazer = anteriores.filter(function (f) { return f.STATUS === 'falhou' || f.STATUS === 'gerando'; })[0];
+      if (refazer) {
+        cfAtualizarLinha_('EscopoArquivos', refazer._linha, { ID: token, STATUS: 'gerando', SLIDES_ID: '', PDF_ID: '', CRIADO_EM: agora });
+        return { token: token, orfaos: [refazer.SLIDES_ID, refazer.PDF_ID].filter(Boolean) };
+      }
+      cfInserir_('EscopoArquivos', [{ ID: token, ID_ESCOPO: id, REVISAO: revisao, STATUS: 'gerando', CRIADO_EM: agora }]);
+      return { token: token, orfaos: [] };
     });
     if (reserva.pronto) return esArquivoLinks_(reserva.pronto);
+    reserva.orfaos.forEach(function (arquivo) { try { DriveApp.getFileById(arquivo).setTrashed(true); } catch (_) { /* já removido */ } });
     let deck, pdf;
     function registrar(campos) {
       cfComTrava_(function () {
         const f = cfLerTudo_('EscopoArquivos').filter(function (x) { return x.ID === reserva.token; })[0];
-        cfAtualizarLinha_('EscopoArquivos', f._linha, campos);
+        if (f) cfAtualizarLinha_('EscopoArquivos', f._linha, campos);
       });
     }
     try {
@@ -293,7 +351,7 @@ function apiEscopoGerar(id, revisao) {
       deck = SlidesApp.create(nome);
       DriveApp.getFileById(deck.getId()).moveTo(pasta);
       registrar({ SLIDES_ID: deck.getId() });
-      esDesenharSlides_(deck, paginas, blobs, { id: id, revisao: revisao, data: r.CRIADO_EM });
+      esDesenharSlides_(deck, paginas, blobs, { id: id, revisao: revisao, data: r.CRIADO_EM, limite: inicio + ES_GERACAO_ORCAMENTO_MS });
       deck.saveAndClose();
       const blob = DriveApp.getFileById(deck.getId()).getAs('application/pdf').setName(nome + '.pdf');
       if (blob.getBytes().length < 3000) throw new Error('O PDF ainda não está completo. Tente gerar novamente.');
@@ -303,7 +361,8 @@ function apiEscopoGerar(id, revisao) {
     } catch (e) {
       // Só arquivos criados nesta tentativa; revisões anteriores nunca são alteradas.
       try { if (deck) DriveApp.getFileById(deck.getId()).setTrashed(true); if (pdf) pdf.setTrashed(true); } catch (_) { /* registrar falha mesmo se a limpeza falhar */ }
-      registrar({ STATUS: 'falhou' });
+      // Se nem o registro da falha passar, o erro original ainda chega ao usuário.
+      try { registrar({ STATUS: 'falhou' }); } catch (_) { /* a linha expira sozinha */ }
       throw e;
     }
   });

@@ -76,17 +76,27 @@ assert.throws(() => c.esNormalizar_({...exemplo(),grupos:[{id:"x');alert(1)//",t
 assert.throws(() => c.esNormalizar_({...exemplo(),fotos:[{imagem:'private-drive-id',grupos:['g1']}]}));
 assert.throws(() => c.esNormalizar_({...exemplo(),itens:[{...exemplo().itens[0],grupos:['ausente']}]}));
 assert.equal(c.apiEscopoSalvar('',0,{...exemplo(),megaId:'esteio'}).ok,false);
-let salvo=c.apiEscopoSalvar('',0,exemplo()); assert(salvo.ok); assert.equal(salvo.revisao,1);
-assert.equal(c.apiEscopoSalvar(salvo.id,1,exemplo()).revisao,1,'mesmo conteúdo não cria revisão');
+let salvo=c.apiEscopoSalvar('',0,exemplo()); assert(salvo.ok); assert.equal(salvo.revisao,1); assert(salvo.carimbo);
+assert.equal(c.apiEscopoSalvar(salvo.id,1,exemplo(),salvo.carimbo).revisao,1,'mesmo conteúdo não cria revisão');
 let alterado={...exemplo(),objetivo:'Novo objetivo'};
-assert.equal(c.apiEscopoSalvar(salvo.id,1,alterado).revisao,2);
-assert.equal(c.apiEscopoSalvar(salvo.id,1,exemplo()).ok,false,'concorrência não sobrescreve');
-assert.equal(JSON.parse(a.db.Escopos[0].CONTEUDO).objetivo,exemplo().objetivo);
+// Rascunho nunca emitido é regravado na mesma revisão: tentativas corrigidas não viram R2, R3, R4.
+const rascunho=c.apiEscopoSalvar(salvo.id,1,alterado,salvo.carimbo);assert.equal(rascunho.revisao,1);
+assert.equal(a.db.Escopos.length,1,'rascunho não cria linha nova');assert.equal(JSON.parse(a.db.Escopos[0].CONTEUDO).objetivo,'Novo objetivo');
+assert.equal(c.apiEscopoSalvar(salvo.id,1,exemplo(),salvo.carimbo).ok,false,'concorrência não sobrescreve rascunho');
+assert.equal(JSON.parse(a.db.Escopos[0].CONTEUDO).objetivo,'Novo objetivo');
+salvo=c.apiEscopoSalvar(salvo.id,1,exemplo(),rascunho.carimbo);assert.equal(salvo.revisao,1);
+// Validação antes de salvar: erro de preenchimento não grava nada.
+const invalido=c.apiEscopoValidar({...exemplo(),objetivo:''});assert(!invalido.ok);assert.match(invalido.erro,/objetivo/);
+assert.equal(a.db.Escopos.length,1);assert(c.apiEscopoValidar(exemplo()).ok);
+assert(!c.apiEscopoValidar({...exemplo(),itens:[]},'planilha').ok);
 assert(c.apiEscopoSalvarMega('ctba','Novo endereço','padrao:curitiba').ok);
 assert.equal(JSON.parse(a.db.Escopos[0].CONTEUDO).endereco,exemplo().endereco,'cadastro não altera snapshots');
 const result=c.apiEscopoGerar(salvo.id,1); assert(result.ok,result.erro);
 assert.equal(a.decks.length,1); assert.equal(a.db.EscopoArquivos[0].STATUS,'concluido');
 assert(c.apiEscopoGerar(salvo.id,1).ok);assert.equal(a.decks.length,1,'geração repetida reutiliza documento');
+// Revisão emitida fica congelada: a próxima alteração abre R2.
+salvo=c.apiEscopoSalvar(salvo.id,1,alterado,salvo.carimbo);assert.equal(salvo.revisao,2);
+assert.equal(JSON.parse(a.db.Escopos[0].CONTEUDO).objetivo,exemplo().objetivo,'revisão emitida não muda');
 const textos=a.decks[0].pages.flatMap(s=>s.elements.map(e=>e.text||''));
 const escritos=a.decks[0].pages.flatMap(s=>s.elements).filter(e=>e.text);
 assert(escritos.some(e=>e.font==='Montserrat'&&e.bold),'títulos com a fonte institucional');
@@ -97,7 +107,22 @@ assert(!textos.some(t=>t.includes('Valores a preencher pelo fornecedor')));asser
 assert.equal(c.apiEscopoAbrir(salvo.id).arquivos.length,1);
 a.falharPdf(true);const falha=c.apiEscopoGerar(salvo.id,2);assert(!falha.ok);assert.equal(a.db.EscopoArquivos[1].STATUS,'falhou');assert(a.arquivos[a.decks[1].id].trashed);
 assert(!a.arquivos[a.decks[0].id].trashed,'documento anterior preservado');
+// Falha não congela: corrigir e salvar continua na R2.
+salvo=c.apiEscopoSalvar(salvo.id,2,{...alterado,prazo:'30 dias'},salvo.carimbo);assert.equal(salvo.revisao,2,'geração que falhou não gera nova revisão');
 a.falharPdf(false);assert(c.apiEscopoGerar(salvo.id,2).ok,'nova tentativa após falha');
+assert.equal(a.db.EscopoArquivos.length,2,'nova tentativa reaproveita o registro da falha');assert.equal(a.db.EscopoArquivos[1].STATUS,'concluido');
+// Execução morta no limite de 6 min: 'gerando' recente bloqueia; expirado é reaproveitado e o deck parcial vai para a lixeira.
+salvo=c.apiEscopoSalvar(salvo.id,2,{...alterado,prazo:'45 dias'},salvo.carimbo);assert.equal(salvo.revisao,3);
+const parcial=a.ctx.SlidesApp.create('parcial');
+a.db.EscopoArquivos.push({ID:'ESL2-morto',ID_ESCOPO:salvo.id,REVISAO:3,STATUS:'gerando',SLIDES_ID:parcial.id,PDF_ID:'',CRIADO_EM:new Date().toISOString()});
+assert.match(c.apiEscopoGerar(salvo.id,3).erro,/sendo gerada/);
+a.db.EscopoArquivos.at(-1).CRIADO_EM=new Date(Date.now()-8*60*1000).toISOString();
+const qtdArquivos=a.db.EscopoArquivos.length;
+assert(c.apiEscopoGerar(salvo.id,3).ok,'geração presa expira');
+assert.equal(a.db.EscopoArquivos.length,qtdArquivos,'sem registro duplicado');assert(a.arquivos[parcial.id].trashed,'deck órfão removido');
+// Estouro de tempo vira falha controlada, registrada e limpa.
+const lento=a.ctx.SlidesApp.create('lento');
+assert.throws(()=>c.esDesenharSlides_(lento,c.esPlanejarSlides_(c.esNormalizar_(exemplo())),{},{revisao:1,data:'x',limite:Date.now()-1}),/tempo/);
 assert.throws(()=>c.esValidarGeracao_(c.esNormalizar_({...exemplo(),grupos:[...exemplo().grupos,{id:'g2',titulo:'Outro',servicos:'Outro'}]})),/Vincule/);
 assert.throws(()=>c.esValidarGeracao_(c.esNormalizar_({...exemplo(),imagem:''})),/imagem/);
 assert.throws(()=>c.esValidarGeracao_(c.esNormalizar_({...exemplo(),itens:[{...exemplo().itens[0],quantidade:''}]})),/quantidade/);
@@ -112,6 +137,16 @@ assert.equal(plano.filter(p=>p.tipo==='tabela').length,0,'itens para cotação f
 assert(!plano.some(p=>p.tipo==='capa-secao'&&p.titulo==='Proposta'),'sem divisória vazia de proposta');
 const visual=a.ctx.SlidesApp.create('longo');c.esDesenharSlides_(visual,plano,{logo:{name:'logo'},logoPreta:{name:'logoPreta'},logoAbreviada:{name:'logoAbreviada'},fundo:{name:'fundo'},'padrao:curitiba':{name:'curitiba'},[imgId]:{name:'foto'}},{revisao:1,data:'2026-09-09'});
 for(const page of visual.pages)for(const e of page.elements){assert(e.y+e.h<=405.01,JSON.stringify(e));assert(e.x+e.w<=720.01);}
+// A descrição da foto sai no mesmo slide da foto, logo abaixo dela — nunca num slide separado.
+assert(!plano.some(p=>/Legendas/.test(p.titulo)),'sem slide separado de legendas');
+const idxFotos=plano.findIndex(p=>p.tipo==='fotos'),slideFoto=visual.pages[idxFotos].elements;
+const imgFoto=slideFoto.find(e=>e.image==='foto'),legFoto=slideFoto.find(e=>(e.text||'').includes('Legenda extensa'));
+assert(legFoto,'legenda renderizada junto da foto');assert(legFoto.y>=imgFoto.y+imgFoto.h,'legenda abaixo da foto');
+assert(Math.abs(legFoto.x-imgFoto.x)<12,'legenda alinhada à própria foto');
+const legendasLongas=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),fotos:Array.from({length:4},()=>({imagem:imgId,titulo:'QD',legenda:'MWMWMWMWM '.repeat(18).trim(),grupos:['g1']}))}));
+const visualLeg=a.ctx.SlidesApp.create('legendas');c.esDesenharSlides_(visualLeg,legendasLongas,{logo:{name:'logo'},logoPreta:{name:'logoPreta'},'padrao:curitiba':{name:'curitiba'},[imgId]:{name:'foto'}},{revisao:1,data:'2026-09-09'});
+for(const page of visualLeg.pages)for(const e of page.elements.filter(e=>e.y<382)){assert(e.y+e.h<=382,'legenda máxima não invade o rodapé: '+JSON.stringify(e));}
+assert.equal(legendasLongas.filter(p=>p.tipo==='fotos').reduce((n,p)=>n+p.fotos.length,0),4,'nenhuma foto perdida');
 assert.equal(c.apiEscopoEnviarImagem('x','text/html','AAAA').ok,false);
 assert.equal(c.apiEscopoImagem('private-file').ok,false,'API não lê arquivos arbitrários do Drive');
 // Render de todas as amostras para inspeção visual opcional em ferramentas locais.
@@ -135,6 +170,7 @@ assert.equal(importado.itens[1].marcaReferencia,'Tigre');assert.equal(importado.
 assert.equal(importado.itens[3].codigo,'1.2.1');assert(!('precos' in importado.itens[1]));
 assert(importado.detalhamento.includes(eb.id)&&importado.detalhamento.includes('Revisão 1'));
 assert(!b.ctx.apiEscopoParaEqualizacao(eb.id,999).ok);assert(!b.ctx.apiEscopoParaEqualizacao(eb.id,null).ok);
+assert(b.ctx.apiEscopoGerarPlanilha(eb.id,1).ok,'planilha entregue congela a revisão');
 const eb2=b.ctx.apiEscopoSalvar(eb.id,1,{...eap,titulo:'Escopo revisado'});assert.equal(eb2.revisao,2);
 assert.equal(b.ctx.apiEscoposParaEqualizacao().escopos.length,2);
 assert.equal(b.ctx.apiEscopoParaEqualizacao(eb.id,1).titulo,eap.titulo,'importa a versão enviada, não a última');

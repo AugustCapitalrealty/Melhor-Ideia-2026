@@ -47,6 +47,17 @@ function esFatiarLinhas_(linhas, tamanhoMax) {
   return resultado;
 }
 
+const ES_FOTO_LEGENDA_FS = 9;
+const ES_FOTO_LEGENDA_MAX = 120;
+
+/** Largura de cada foto no slide e altura reservada para as descrições abaixo delas. */
+function esLayoutFotos_(fotos) {
+  const n = fotos.length, gap = 16, wFoto = (672 - gap * (n - 1)) / n;
+  const legendas = fotos.map(function (f) { return f.legenda ? esQuebrar_(f.legenda, wFoto - 16, ES_FOTO_LEGENDA_FS) : []; });
+  const maxLinhas = Math.max.apply(null, legendas.map(function (l) { return l.length; }));
+  return { wFoto: wFoto, gap: gap, legendas: legendas, hLegenda: maxLinhas ? Math.ceil(maxLinhas * ES_FOTO_LEGENDA_FS * 1.3 + 12) : 0 };
+}
+
 /**
  * Planejador de slides com eliminação de linhas órfãs (widows/orphans),
  * combinação de blocos de contexto e ajuste tipográfico adaptativo.
@@ -158,12 +169,13 @@ function esPlanejarSlides_(d) {
     p.push({ tipo: 'capa-secao', numero: '02', titulo: 'Registro Fotográfico', subtitulo: 'Evidências visuais levantadas na vistoria técnica de campo' });
   }
 
-  // 7. Fotografias Agrupadas (Até 4 fotos por slide)
+  // 7. Fotografias Agrupadas (até 4 por slide, cada uma com sua descrição logo abaixo)
   const conjuntos = [];
   d.fotos.forEach(function (f) {
     const chave = JSON.stringify([f.titulo, f.grupos]);
     let ultimo = conjuntos[conjuntos.length - 1];
-    if (!ultimo || ultimo.chave !== chave || ultimo.fotos.length === 4) {
+    if (!ultimo || ultimo.chave !== chave || ultimo.fotos.length === 4 ||
+        esLayoutFotos_(ultimo.fotos.concat([f])).hLegenda > ES_FOTO_LEGENDA_MAX) {
       ultimo = { chave: chave, fotos: [], titulo: f.titulo };
       conjuntos.push(ultimo);
     }
@@ -173,12 +185,6 @@ function esPlanejarSlides_(d) {
   conjuntos.forEach(function (g) {
     const sub = g.titulo ? g.titulo.replace(/^Registro\s+Fotogr[aá]fico\s*[-–—:]*\s*/i, '') : 'Instalações Inspecionadas';
     p.push({ tipo: 'fotos', titulo: 'Registro Fotográfico', subtitulo: sub, fotos: g.fotos });
-    
-    // Legendas individuais, se existirem
-    const legendas = g.fotos.map(function (f, i) { return f.legenda ? 'Foto ' + (i + 1) + ': ' + f.legenda : ''; }).filter(Boolean);
-    if (legendas.length) {
-      p.push({ tipo: 'card-texto', titulo: 'Legendas do registro fotográfico', subtitulo: sub, badge: 'NOTAS TÉCNICAS', linhas: esQuebrar_(legendas.join('\n\n'), 640, 12) });
-    }
   });
 
   // 10. Divisória de Diretrizes e Condições
@@ -246,6 +252,8 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
   }
 
   paginas.forEach(function (p, idx) {
+    // Parar antes do corte de 6 minutos do Google, para a falha ser registrada e os arquivos limpos.
+    if (meta.limite && Date.now() > meta.limite) throw new Error('A geração passou do tempo permitido pelo Google. Reduza a quantidade de fotos ou divida o escopo e tente novamente.');
     const s = deck.appendSlide(SlidesApp.PredefinedLayout.BLANK);
     s.getBackground().setSolidFill(cores.white);
 
@@ -382,12 +390,16 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
 
     // E) Registro Fotográfico (Cards e Molduras)
     else if (p.tipo === 'fotos') {
-      const n = p.fotos.length, gap = 16, wFoto = (672 - gap * (n - 1)) / n;
+      const layout = esLayoutFotos_(p.fotos), wFoto = layout.wFoto, hLeg = layout.hLegenda;
+      const hCard = hLeg ? 305 : 275, hImg = hCard - 30 - hLeg, yRotulo = 68 + hImg + 3;
       p.fotos.forEach(function (f, i) {
-        const x = 24 + i * (wFoto + gap);
-        caixa(s, x, 66, wFoto, 275, '', 10, null, cores.bgSlide, false, null, cores.line);
-        imagem(s, blobs[f.imagem], x + 2, 68, wFoto - 4, 245);
-        caixa(s, x, 316, wFoto, 24, 'REGISTRO FOTOGRÁFICO ' + (i + 1), 8.5, cores.brandMed, cores.brandSoft, true, fontes.titles);
+        const x = 24 + i * (wFoto + layout.gap);
+        caixa(s, x, 66, wFoto, hCard, '', 10, null, cores.bgSlide, false, null, cores.line);
+        imagem(s, blobs[f.imagem], x + 2, 68, wFoto - 4, hImg);
+        caixa(s, x, yRotulo, wFoto, 24, 'REGISTRO FOTOGRÁFICO ' + (i + 1), 8.5, cores.brandMed, cores.brandSoft, true, fontes.titles);
+        if (layout.legendas[i].length) {
+          caixa(s, x + 8, yRotulo + 30, wFoto - 16, hLeg - 8, layout.legendas[i].join('\n'), ES_FOTO_LEGENDA_FS, cores.textBody);
+        }
       });
     }
 

@@ -69,6 +69,10 @@ function apiEscopoGerarPlanilha(id, revisao) {
       [85, 440, 90, 90, 180, 170, 130, 130, 240].forEach(function (largura, i) { aba.setColumnWidth(i + 1, largura); });
       aba.setFrozenRows(9);
       SpreadsheetApp.flush();
+      // Planilha entregue congela a revisão: o fornecedor cota exatamente este conteúdo.
+      cfComTrava_(function () {
+        cfInserir_('EscopoArquivos', [{ ID: 'PLN-' + Utilities.getUuid(), ID_ESCOPO: id, REVISAO: Number(r.REVISAO), STATUS: 'planilha', SLIDES_ID: ss.getId(), CRIADO_EM: new Date().toISOString() }]);
+      });
       return { revisao: Number(r.REVISAO), planilha: ss.getUrl(), download: 'https://docs.google.com/spreadsheets/d/' + ss.getId() + '/export?format=xlsx' };
     } catch (e) {
       if (ss) { try { DriveApp.getFileById(ss.getId()).setTrashed(true); } catch (_) {} }
