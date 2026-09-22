@@ -153,6 +153,31 @@ assert.equal(legendasLongas.filter(p=>p.tipo==='fotos').reduce((n,p)=>n+p.fotos.
 const textosLongos=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),prazo:'Prazo detalhado '.repeat(24),aviso:'Diretriz importante '.repeat(120)}));
 assert(textosLongos.some(p=>p.tipo==='card-texto'&&p.titulo==='Prazos'),'prazo longo recebe paginação própria');
 assert(textosLongos.some(p=>p.tipo==='card-texto'&&p.titulo==='Diretrizes para cotação'),'aviso longo recebe paginação própria');
+const textoScreenshot = [
+  'A proposta deverá contemplar todos os custos envolvidos, incluindo fornecimento, transporte, instalação e eventuais acessórios necessários para pleno funcionamento dos equipamentos.',
+  '',
+  'Os equipamentos deverão ser entregues prontos para operação.',
+  '',
+  'Considerar equipamento com proteção IP 65',
+  '',
+  'Equipamento deve ser Bivolt com tecnologia LED para cancelas de alto fluxo.',
+  '',
+  'Condição de pagamento:',
+  'Pagamento integral em até 28 dias após a entrega dos materiais'
+].join('\n');
+const planoScreenshot = c.esPlanejarSlides_(c.esNormalizar_({...exemplo(), inclusoes: textoScreenshot, exclusoes: '', criteriosAceite: ''}));
+const slidesInclusoes = planoScreenshot.filter(p => p.titulo === 'Inclusões');
+assert.equal(slidesInclusoes.length, 1, 'inclusões moderadas cabem em 1 slide único sem cisão');
+assert(!planoScreenshot.some(p => p.titulo === 'Inclusões' && (p.subtitulo||'').includes('continuação')), 'sem slide órfão de continuação');
+assert(slidesInclusoes[0].linhas[0].length > 60, 'linha de texto ocupa largura cheia do slide (>60 chars), sem estresse de 190pt');
+const itensLongos = Array.from({length: 14}, (_, i) => `Item ${i + 1}: Descrição detalhada do fornecimento com especificação técnica completa.`);
+const planoQuebraSemantica = c.esPlanejarSlides_(c.esNormalizar_({...exemplo(), inclusoes: itensLongos.join('\n\n')}));
+const slidesQuebra = planoQuebraSemantica.filter(p => p.titulo === 'Inclusões');
+assert(slidesQuebra.length > 1, 'texto extenso pagina corretamente');
+slidesQuebra.forEach(s => {
+  const ultimaLinha = s.linhas[s.linhas.length - 1];
+  assert(/[.!?:]$/.test(ultimaLinha.trim()), 'slide nunca termina no meio de uma frase: ' + ultimaLinha);
+});
 assert.equal(c.apiEscopoEnviarImagem('x','text/html','AAAA').ok,false);
 assert.equal(c.apiEscopoImagem('private-file').ok,false,'API não lê arquivos arbitrários do Drive');
 // Render de todas as amostras para inspeção visual opcional em ferramentas locais.

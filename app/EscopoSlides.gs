@@ -13,22 +13,31 @@ function esLarguraTexto_(texto, fonte) {
 function esQuebrar_(texto, largura, fonte) {
   const linhas = [];
   String(texto || '').split('\n').forEach(function (paragrafo) {
-    if (!paragrafo.trim()) { linhas.push(''); return; }
+    const raw = paragrafo.trim();
+    if (!raw) { linhas.push(''); return; }
+    const ehBullet = /^[•●\-*]|\d+[\.\)]\s/.test(raw);
+    const indent = ehBullet ? '  ' : '';
     let linha = '';
-    paragrafo.trim().split(/\s+/).forEach(function (palavra) {
-      if (linha && esLarguraTexto_(linha + ' ' + palavra, fonte) > largura) { linhas.push(linha); linha = ''; }
+    raw.split(/\s+/).forEach(function (palavra) {
+      if (linha && esLarguraTexto_(linha + ' ' + palavra, fonte) > largura) {
+        linhas.push(linha);
+        linha = indent;
+      }
       Array.from(palavra).forEach(function (c, i) {
-        if (i === 0 && linha) linha += ' ';
-        if (esLarguraTexto_(linha + c, fonte) > largura) { linhas.push(linha); linha = ''; }
+        if (i === 0 && linha && linha !== indent) linha += ' ';
+        if (esLarguraTexto_(linha + c, fonte) > largura) {
+          linhas.push(linha);
+          linha = indent;
+        }
         linha += c;
       });
     });
-    linhas.push(linha);
+    if (linha) linhas.push(linha);
   });
   return linhas;
 }
 
-/** Divide linhas balanceando o final para nunca deixar órfãos (menos de 4 linhas no fim). */
+/** Divide linhas balanceando o final e respeitando quebras de parágrafo, marcadores e sentenças. */
 function esFatiarLinhas_(linhas, tamanhoMax) {
   if (linhas.length <= tamanhoMax) return [linhas];
   const resultado = [];
@@ -40,11 +49,57 @@ function esFatiarLinhas_(linhas, tamanhoMax) {
       break;
     }
     let fatia = tamanhoMax;
-    if (restante - fatia < 4) fatia = restante - 4;
-    resultado.push(linhas.slice(i, i + fatia));
+    // Se sobrar muito pouco no final (< 3), tenta equilibrar
+    if (restante - fatia < 3) {
+      fatia = Math.ceil(restante / 2);
+    } else {
+      // Procura o melhor ponto de quebra semântica entre (fatia - 5) e fatia
+      const minBusca = Math.max(4, fatia - 5);
+      let melhorCorte = -1;
+      
+      // Prioridade 1: Quebra em linha vazia (espaço entre parágrafos)
+      for (let j = fatia; j >= minBusca; j--) {
+        if (linhas[i + j - 1] === '' || linhas[i + j] === '') {
+          melhorCorte = j;
+          break;
+        }
+      }
+      
+      // Prioridade 2: Quebra antes de um novo marcador de lista (bullet)
+      if (melhorCorte === -1) {
+        for (let j = fatia; j >= minBusca; j--) {
+          if (/^\s*[•●\-*]|\d+[\.\)]\s/.test(linhas[i + j] || '')) {
+            melhorCorte = j;
+            break;
+          }
+        }
+      }
+      
+      // Prioridade 3: Quebra em final de sentença (. ! ? :)
+      if (melhorCorte === -1) {
+        for (let j = fatia; j >= minBusca; j--) {
+          if (/[.!?:]\s*$/.test(linhas[i + j - 1] || '')) {
+            melhorCorte = j;
+            break;
+          }
+        }
+      }
+      
+      if (melhorCorte !== -1 && restante - melhorCorte >= 3) {
+        fatia = melhorCorte;
+      }
+    }
+    
+    // Limpeza de linhas vazias no início e fim da fatia
+    let fatiaLinhas = linhas.slice(i, i + fatia);
+    while (fatiaLinhas.length && fatiaLinhas[0] === '') fatiaLinhas.shift();
+    while (fatiaLinhas.length && fatiaLinhas[fatiaLinhas.length - 1] === '') fatiaLinhas.pop();
+    
+    if (fatiaLinhas.length) resultado.push(fatiaLinhas);
     i += fatia;
+    while (i < linhas.length && linhas[i] === '') i++;
   }
-  return resultado;
+  return resultado.length ? resultado : [linhas];
 }
 
 const ES_FOTO_LEGENDA_FS = 9;
@@ -229,26 +284,87 @@ function esPlanejarSlides_(d) {
   }
 
   // 12. Limites e aceite: reduz ambiguidades para quem prepara a proposta e para quem recebe o serviço.
-  const blocosLimites = [
-    { titulo: 'INCLUSÕES', texto: d.inclusoes, cor: 'azul' },
-    { titulo: 'EXCLUSÕES', texto: d.exclusoes, cor: 'ambar' },
-    { titulo: 'CRITÉRIOS DE ACEITE', texto: d.criteriosAceite, cor: 'verde' }
-  ].filter(function (b) { return b.texto; }).map(function (b) {
-    return Object.assign({}, b, { linhas: esQuebrar_(b.texto, 190, 10.5) });
-  });
-  if (blocosLimites.length) {
-    const total = blocosLimites.reduce(function (n, b) { return n + b.linhas.length; }, 0);
-    const cabeEmResumo = total <= 22 && blocosLimites.every(function (b) { return b.linhas.length <= 10; });
-    if (cabeEmResumo) {
-      p.push({ tipo: 'limites-aceite', titulo: 'Limites e critérios de aceite', subtitulo: 'Referência objetiva para proposta, execução e recebimento', blocos: blocosLimites });
+  const blocosEntrada = [
+    { titulo: 'INCLUSÕES', texto: (d.inclusoes || '').trim(), cor: 'azul' },
+    { titulo: 'EXCLUSÕES', texto: (d.exclusoes || '').trim(), cor: 'ambar' },
+    { titulo: 'CRITÉRIOS DE ACEITE', texto: (d.criteriosAceite || '').trim(), cor: 'verde' }
+  ].filter(function (b) { return b.texto; });
+
+  if (blocosEntrada.length === 3) {
+    // 3 blocos: layout em 3 colunas de ~186pt
+    const blocos186 = blocosEntrada.map(function (b) {
+      return Object.assign({}, b, { linhas: esQuebrar_(b.texto, 186, 10) });
+    });
+    const totalLinhas = blocos186.reduce(function (n, b) { return n + b.linhas.length; }, 0);
+    const cabemJuntos = totalLinhas <= 24 && blocos186.every(function (b) { return b.linhas.length <= 11; });
+
+    if (cabemJuntos) {
+      p.push({
+        tipo: 'limites-aceite',
+        titulo: 'Limites e critérios de aceite',
+        subtitulo: 'Referência objetiva para proposta, execução e recebimento',
+        blocos: blocos186
+      });
     } else {
-      blocosLimites.forEach(function (b) {
-        esFatiarLinhas_(b.linhas, 16).forEach(function (q, idx) {
-          const titulo = b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase();
-          p.push({ tipo: 'card-texto', titulo: titulo, subtitulo: idx ? '(continuação)' : 'Limites e critérios de aceite', badge: b.titulo, linhas: q });
+      // Quando não couberem no slide triplo, cada bloco recebe slide(s) executivo(s) de largura total (640pt)
+      blocosEntrada.forEach(function (b) {
+        const linhasFull = esQuebrar_(b.texto, 640, 12);
+        esFatiarLinhas_(linhasFull, 16).forEach(function (q, idx) {
+          const titFormatado = b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase();
+          p.push({
+            tipo: 'card-texto',
+            titulo: titFormatado,
+            subtitulo: idx ? '(continuação)' : 'Limites e critérios de aceite',
+            badge: b.titulo,
+            linhas: q
+          });
         });
       });
     }
+  } else if (blocosEntrada.length === 2) {
+    // 2 blocos: layout em 2 colunas amplas de ~295pt
+    const blocos295 = blocosEntrada.map(function (b) {
+      return Object.assign({}, b, { linhas: esQuebrar_(b.texto, 295, 10.5) });
+    });
+    const cabemJuntos = blocos295.every(function (b) { return b.linhas.length <= 14; });
+
+    if (cabemJuntos) {
+      p.push({
+        tipo: 'limites-aceite',
+        titulo: 'Limites e critérios de aceite',
+        subtitulo: 'Referência objetiva para proposta, execução e recebimento',
+        blocos: blocos295
+      });
+    } else {
+      blocosEntrada.forEach(function (b) {
+        const linhasFull = esQuebrar_(b.texto, 640, 12);
+        esFatiarLinhas_(linhasFull, 16).forEach(function (q, idx) {
+          const titFormatado = b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase();
+          p.push({
+            tipo: 'card-texto',
+            titulo: titFormatado,
+            subtitulo: idx ? '(continuação)' : 'Limites e critérios de aceite',
+            badge: b.titulo,
+            linhas: q
+          });
+        });
+      });
+    }
+  } else if (blocosEntrada.length === 1) {
+    // 1 único bloco: renderizado diretamente em slide de largura total (640pt)
+    const b = blocosEntrada[0];
+    const titFormatado = b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase();
+    const linhasFull = esQuebrar_(b.texto, 640, 12);
+
+    esFatiarLinhas_(linhasFull, 16).forEach(function (q, idx) {
+      p.push({
+        tipo: 'card-texto',
+        titulo: titFormatado,
+        subtitulo: idx ? '(continuação)' : 'Limites e critérios de aceite',
+        badge: b.titulo,
+        linhas: q
+      });
+    });
   }
 
   // 13. Prazos, Contato e Aviso Final (Consolidado em Cards Executivos)
@@ -256,12 +372,14 @@ function esPlanejarSlides_(d) {
     const linhasAviso = esQuebrar_(d.aviso || 'Este escopo tem caráter orientativo e serve como base técnica para cotação.', 300, 11);
     const linhasPrazo = esQuebrar_(d.prazo || '', 290, 11);
     if (linhasPrazo.length > 6) {
-      esFatiarLinhas_(linhasPrazo, 16).forEach(function (q, idx) {
+      const linhasPrazoFull = esQuebrar_(d.prazo, 640, 12);
+      esFatiarLinhas_(linhasPrazoFull, 16).forEach(function (q, idx) {
         p.push({ tipo: 'card-texto', titulo: 'Prazos', subtitulo: idx ? '(continuação)' : 'Proposta, visita e execução', badge: 'CRONOGRAMA', linhas: q });
       });
     }
     if (linhasAviso.length > 12) {
-      esFatiarLinhas_(linhasAviso, 16).forEach(function (q, idx) {
+      const linhasAvisoFull = esQuebrar_(d.aviso, 640, 12);
+      esFatiarLinhas_(linhasAvisoFull, 16).forEach(function (q, idx) {
         p.push({ tipo: 'card-texto', titulo: 'Diretrizes para cotação', subtitulo: idx ? '(continuação)' : d.megaNome, badge: 'AVISO AO PROPONENTE', linhas: q });
       });
     }
@@ -429,13 +547,18 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
       caixa(s, 38, 248, 644, 114, p.vistoria.join('\n'), 11.5, cores.textBody);
     }
 
-    // C) Card Destaque (Objetivo ou Vistoria isolados)
+    // C) Card Destaque (Texto amplo e executivo)
     else if (p.tipo === 'card-texto') {
       caixa(s, 24, 66, 672, 305, '', 10, null, cores.bgSlide, false, null, cores.line);
-      if (p.badge) {
-        caixa(s, 38, 78, 240, 18, p.badge, 9, cores.brandLight, null, true, fontes.titles);
+      const titNorm = (p.titulo || '').trim().toUpperCase();
+      const badgeNorm = (p.badge || '').trim().toUpperCase();
+      const mostrarBadge = p.badge && badgeNorm !== titNorm;
+      if (mostrarBadge) {
+        caixa(s, 38, 78, 280, 18, p.badge, 9, cores.brandLight, null, true, fontes.titles);
       }
-      caixa(s, 38, p.badge ? 104 : 82, 644, 255, p.linhas.join('\n'), 12, cores.textBody);
+      const yTexto = mostrarBadge ? 104 : 80;
+      const hTexto = mostrarBadge ? 255 : 280;
+      caixa(s, 38, yTexto, 644, hTexto, p.linhas.join('\n'), 12, cores.textBody);
     }
 
     // D) Serviços a Executar
@@ -490,12 +613,13 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
         ambar: { fundo: cores.amberBg, tinta: cores.amberInk, acento: cores.amberSolid },
         verde: { fundo: cores.greenBg, tinta: cores.greenInk, acento: cores.greenSolid }
       };
+      const fs = p.blocos.length <= 2 ? 11 : 10;
       p.blocos.forEach(function (b, i) {
         const x = 24 + i * (w + gap), estilo = estilos[b.cor] || estilos.azul;
         caixa(s, x, 66, w, 305, '', 10, null, cores.white, false, null, cores.line);
         caixa(s, x, 66, w, 5, '', 10, null, estilo.acento);
         caixa(s, x + 14, 84, w - 28, 20, b.titulo, 8.5, estilo.tinta, estilo.fundo, true, fontes.titles);
-        caixa(s, x + 14, 118, w - 28, 235, b.linhas.join('\n'), 10.5, cores.textBody);
+        caixa(s, x + 14, 118, w - 28, 235, b.linhas.join('\n'), fs, cores.textBody);
       });
     }
 
