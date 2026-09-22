@@ -4,10 +4,31 @@
  * Paleta e Identidade Visual: DS_CN (Montserrat + Open Sans)
  */
 
+/** Recuo interno que o Google Slides reserva dentro de qualquer caixa de texto. */
+const ES_RECUO_TEXTBOX = 14;
+
+/** Largura de fato disponível para o texto dentro de uma caixa de `largura` pontos. */
+function esLarguraUtil_(largura) {
+  return Math.max(12, largura - ES_RECUO_TEXTBOX);
+}
+
+/** Largura aproximada do texto, calibrada pelas métricas reais do Open Sans. */
 function esLarguraTexto_(texto, fonte) {
   return Array.from(texto).reduce(function (n, c) {
-    return n + (/\s/.test(c) ? .3 : /[ilIjtfr.,:;!'|]/.test(c) ? .38 : /[MW@%mw]/.test(c) ? 1 : /[A-ZÁÉÍÓÚÃÕÇ]/.test(c) ? .78 : .65) * fonte;
+    return n + (
+      /\s/.test(c) ? .27 :
+      /[ilIj.,:;!'|()[\]\/-]/.test(c) ? .29 :
+      /[tfr]/.test(c) ? .39 :
+      /[MWmw@%]/.test(c) ? .90 :
+      /[A-ZÁÉÍÓÚÃÕÇÂÊÔÀÜ]/.test(c) ? .69 :
+      .58
+    ) * fonte;
   }, 0);
+}
+
+/** Marcador de lista no início da linha: "• ", "- ", "1. " ou "1) ". */
+function esEhMarcador_(texto) {
+  return /^\s*(?:[•●\-*]|\d+[.)]\s)/.test(texto);
 }
 
 function esQuebrar_(texto, largura, fonte) {
@@ -15,7 +36,7 @@ function esQuebrar_(texto, largura, fonte) {
   String(texto || '').split('\n').forEach(function (paragrafo) {
     const raw = paragrafo.trim();
     if (!raw) { linhas.push(''); return; }
-    const ehBullet = /^[•●\-*]|\d+[\.\)]\s/.test(raw);
+    const ehBullet = esEhMarcador_(raw);
     const indent = ehBullet ? '  ' : '';
     let linha = '';
     raw.split(/\s+/).forEach(function (palavra) {
@@ -68,7 +89,7 @@ function esFatiarLinhas_(linhas, tamanhoMax) {
       // Prioridade 2: Quebra antes de um novo marcador de lista (bullet)
       if (melhorCorte === -1) {
         for (let j = fatia; j >= minBusca; j--) {
-          if (/^\s*[•●\-*]|\d+[\.\)]\s/.test(linhas[i + j] || '')) {
+          if (esEhMarcador_(linhas[i + j] || '')) {
             melhorCorte = j;
             break;
           }
@@ -102,13 +123,104 @@ function esFatiarLinhas_(linhas, tamanhoMax) {
   return resultado.length ? resultado : [linhas];
 }
 
+const ES_CARD_W = 644;          // largura da caixa de texto dos cards de largura cheia
+const ES_CARD_H = 280;          // altura útil do card sem badge
+const ES_CARD_H_BADGE = 255;    // altura útil quando o badge ocupa o topo
+// Corpos candidatos: o texto cresce quando sobra espaço, mas para em 14 para não
+// destoar dos slides vizinhos (serviços a 12,5pt e contexto duplo a 11,5pt).
+const ES_CARD_FS = [14, 13, 12];
+const ES_CARD_MAX = 16;         // linhas por página quando é preciso paginar a 12pt
+const ES_ENTRELINHA = 1.15;     // altura de linha efetiva (espaçamento de 110% + folga)
+
+/** O badge só aparece quando acrescenta informação ao título da página. */
+function esMostrarBadge_(titulo, badge) {
+  return !!badge && String(badge).trim().toUpperCase() !== String(titulo || '').trim().toUpperCase();
+}
+
+/** Remove linhas em branco nas pontas, que só empurrariam o texto dentro do card. */
+function esAparar_(linhas) {
+  const out = linhas.slice();
+  while (out.length && out[0] === '') out.shift();
+  while (out.length && out[out.length - 1] === '') out.pop();
+  return out;
+}
+
+/**
+ * Card de texto de largura cheia: usa o maior corpo em que o conteúdo inteiro cabe
+ * em uma página só — e, quando não couber de jeito nenhum, pagina a 12pt.
+ * Página única sai centralizada na vertical para não deixar o card oco embaixo.
+ */
+function esPaginarCard_(texto, base) {
+  const largura = esLarguraUtil_(ES_CARD_W);
+  const altura = esMostrarBadge_(base.titulo, base.badge) ? ES_CARD_H_BADGE : ES_CARD_H;
+  function pagina(linhas, fs, idx, unica) {
+    return {
+      tipo: 'card-texto', titulo: base.titulo, badge: base.badge,
+      subtitulo: idx ? '(continuação)' : base.subtitulo,
+      linhas: linhas, fs: fs, centralizar: !!unica
+    };
+  }
+  for (let i = 0; i < ES_CARD_FS.length; i++) {
+    const fs = ES_CARD_FS[i], linhas = esAparar_(esQuebrar_(texto, largura, fs));
+    if (linhas.length <= ES_CARD_MAX && linhas.length * fs * ES_ENTRELINHA <= altura) {
+      return [pagina(linhas, fs, 0, true)];
+    }
+  }
+  return esFatiarLinhas_(esQuebrar_(texto, largura, 12), ES_CARD_MAX).map(function (q, idx) {
+    return pagina(q, 12, idx, false);
+  });
+}
+
+const ES_LIMITES_H = 235;   // altura da área de texto dentro de cada card colorido
+const ES_LIMITES_GAP = 14;  // respiro entre as colunas
+
+/** Geometria de uma coluna de limites: corpo, largura útil e linhas que cabem. */
+function esColunaLimites_(n) {
+  const w = (672 - ES_LIMITES_GAP * (n - 1)) / n, fs = n <= 2 ? 11 : 10;
+  return { fs: fs, largura: esLarguraUtil_(w - 28), max: Math.floor((ES_LIMITES_H - 24) / (fs * ES_ENTRELINHA)) };
+}
+
+/** Quebra os blocos na largura da coluna; devolve null quando algum não couber. */
+function esBlocosCabem_(blocos) {
+  const col = esColunaLimites_(blocos.length);
+  const comLinhas = blocos.map(function (b) {
+    return Object.assign({}, b, { linhas: esAparar_(esQuebrar_(b.texto, col.largura, col.fs)) });
+  });
+  const cabem = comLinhas.every(function (b) { return b.linhas.length <= col.max; });
+  return cabem ? { blocos: comLinhas, fs: col.fs } : null;
+}
+
+/**
+ * Maior arranjo que couber, nesta ordem: os blocos todos lado a lado; senão dois
+ * juntos e o terceiro em card próprio; senão cada um em seu card de largura cheia.
+ */
+function esArranjarLimites_(blocos) {
+  if (blocos.length < 2) return blocos.map(function (b) { return { blocos: [b] }; });
+  const todos = esBlocosCabem_(blocos);
+  if (todos) return [todos];
+  if (blocos.length === 3) {
+    const particoes = [[[0, 1], [2]], [[0], [1, 2]]];
+    for (let i = 0; i < particoes.length; i++) {
+      const grupos = particoes[i].map(function (idx) {
+        return idx.map(function (j) { return blocos[j]; });
+      });
+      const par = grupos.filter(function (g) { return g.length > 1; })[0];
+      const ajustado = esBlocosCabem_(par);
+      if (ajustado) {
+        return grupos.map(function (g) { return g.length > 1 ? ajustado : { blocos: g }; });
+      }
+    }
+  }
+  return blocos.map(function (b) { return { blocos: [b] }; });
+}
+
 const ES_FOTO_LEGENDA_FS = 9;
 const ES_FOTO_LEGENDA_MAX = 120;
 
 /** Largura de cada foto no slide e altura reservada para as descrições abaixo delas. */
 function esLayoutFotos_(fotos) {
   const n = fotos.length, gap = 16, wFoto = (672 - gap * (n - 1)) / n;
-  const legendas = fotos.map(function (f) { return f.legenda ? esQuebrar_(f.legenda, wFoto - 16, ES_FOTO_LEGENDA_FS) : []; });
+  const legendas = fotos.map(function (f) { return f.legenda ? esQuebrar_(f.legenda, esLarguraUtil_(wFoto - 16), ES_FOTO_LEGENDA_FS) : []; });
   const maxLinhas = Math.max.apply(null, legendas.map(function (l) { return l.length; }));
   return { wFoto: wFoto, gap: gap, legendas: legendas, hLegenda: maxLinhas ? Math.ceil(maxLinhas * ES_FOTO_LEGENDA_FS * 1.3 + 12) : 0 };
 }
@@ -150,18 +262,21 @@ function esPlanejarSlides_(d) {
     texto: enderecoLongo ? d.megaNome : d.megaNome + '\n' + d.endereco
   });
   if (identificacaoLonga) {
-    p.push({ tipo: 'card-texto', titulo: 'Identificação', subtitulo: d.megaNome, badge: 'IDENTIFICAÇÃO', linhas: esQuebrar_(identificacao, 640, 12) });
+    esPaginarCard_(identificacao, { titulo: 'Identificação', subtitulo: d.megaNome, badge: 'IDENTIFICAÇÃO' })
+      .forEach(function (pag) { p.push(pag); });
   }
   if (enderecoLongo) {
-    p.push({ tipo: 'card-texto', titulo: 'Localização — endereço', subtitulo: d.megaNome, badge: 'ENDEREÇO', linhas: esQuebrar_(d.endereco, 640, 12) });
+    esPaginarCard_(d.endereco, { titulo: 'Localização — endereço', subtitulo: d.megaNome, badge: 'ENDEREÇO' })
+      .forEach(function (pag) { p.push(pag); });
   }
 
   // 3. Contexto: Objetivo & Resumo da Vistoria
-  const linhasObj = esQuebrar_(d.objetivo || '', 630, 12);
-  const linhasVist = esQuebrar_(d.vistoria || '', 630, 12);
+  // Os dois cards do slide duplo têm 644pt de caixa e corpo 11,5 — quebrar com outra medida estouraria a moldura.
+  const linhasObj = esQuebrar_(d.objetivo || '', esLarguraUtil_(ES_CARD_W), 11.5);
+  const linhasVist = esQuebrar_(d.vistoria || '', esLarguraUtil_(ES_CARD_W), 11.5);
   const totalLinhasContexto = (d.objetivo ? linhasObj.length + 3 : 0) + (d.vistoria ? linhasVist.length + 3 : 0);
 
-  if (d.objetivo && d.vistoria && totalLinhasContexto <= 18 && linhasObj.length <= 8 && linhasVist.length <= 9) {
+  if (d.objetivo && d.vistoria && totalLinhasContexto <= 18 && linhasObj.length <= 7 && linhasVist.length <= 8) {
     // Ambos cabem perfeitamente em um slide executivo duplo!
     p.push({
       tipo: 'contexto-duplo',
@@ -173,16 +288,12 @@ function esPlanejarSlides_(d) {
   } else {
     // Se muito longos, divide em cards dedicados com paginação anti-órfão
     if (d.objetivo) {
-      const quebras = esFatiarLinhas_(linhasObj, 16);
-      quebras.forEach(function (q, idx) {
-        p.push({ tipo: 'card-texto', titulo: 'Objetivo', subtitulo: idx ? '(continuação)' : d.megaNome, badge: 'OBJETIVO', linhas: q });
-      });
+      esPaginarCard_(d.objetivo, { titulo: 'Objetivo', subtitulo: d.megaNome, badge: 'OBJETIVO' })
+        .forEach(function (pag) { p.push(pag); });
     }
     if (d.vistoria) {
-      const quebras = esFatiarLinhas_(linhasVist, 16);
-      quebras.forEach(function (q, idx) {
-        p.push({ tipo: 'card-texto', titulo: 'Resumo da vistoria', subtitulo: idx ? '(continuação)' : d.megaNome, badge: 'VISTORIA TÉCNICA', linhas: q });
-      });
+      esPaginarCard_(d.vistoria, { titulo: 'Resumo da vistoria', subtitulo: d.megaNome, badge: 'VISTORIA TÉCNICA' })
+        .forEach(function (pag) { p.push(pag); });
     }
   }
 
@@ -198,7 +309,13 @@ function esPlanejarSlides_(d) {
       .map(function (s) { return '• ' + s.replace(/^[•●\-*]\s*/, ''); });
 
     const textoCompleto = topicos.join('\n');
-    const linhasServicos = esQuebrar_(textoCompleto, 640, 12);
+    // A quebra usa o mesmo corpo em que o texto será desenhado, senão a linha estoura a caixa.
+    const larguraServ = esLarguraUtil_(ES_CARD_W);
+    let fsServ = 12.5, linhasServicos = esQuebrar_(textoCompleto, larguraServ, fsServ);
+    if (linhasServicos.length > 13) {
+      fsServ = 11;
+      linhasServicos = esQuebrar_(textoCompleto, larguraServ, fsServ);
+    }
 
     // Se tiver até 20 linhas, mantém no mesmo slide com layout compacto
     if (linhasServicos.length <= 20) {
@@ -207,7 +324,8 @@ function esPlanejarSlides_(d) {
         titulo: 'Serviços a Executar',
         subtitulo: g.titulo,
         linhas: linhasServicos,
-        compacto: linhasServicos.length > 13
+        fs: fsServ,
+        compacto: fsServ === 11
       });
     } else {
       // Divide de forma balanceada sem deixar 1 ou 2 linhas órfãs
@@ -218,7 +336,8 @@ function esPlanejarSlides_(d) {
           titulo: 'Serviços a Executar',
           subtitulo: g.titulo + (idx ? ' (continuação)' : ''),
           linhas: q,
-          compacto: q.length > 13
+          fs: fsServ,
+          compacto: fsServ === 11
         });
       });
     }
@@ -230,7 +349,8 @@ function esPlanejarSlides_(d) {
     const linhasEap = [];
     d.itens.forEach(function (it) {
       const grupo = it.tipo === 'grupo';
-      const partes = esQuebrar_(it.descricao, grupo ? 570 : 365, grupo ? 9.5 : 8.5);
+      // Grupo e item dividem a mesma coluna de descrição (375pt) na tabela renderizada.
+      const partes = esQuebrar_(it.descricao, esLarguraUtil_(375), grupo ? 9 : 8.5);
       for (let i = 0; i < partes.length; i += 2) {
         linhasEap.push({ grupo: grupo, codigo: i ? '' : it.codigo, descricao: partes.slice(i, i + 2).join('\n'),
           quantidade: i || grupo ? '' : String(it.quantidade).replace('.', ','), unidade: i || grupo ? '' : it.unidade,
@@ -272,15 +392,8 @@ function esPlanejarSlides_(d) {
 
   // 11. Considerações Técnicas com Anti-Órfão
   if (d.consideracoes) {
-    const linhasCons = esQuebrar_(d.consideracoes, 640, 12);
-    if (linhasCons.length <= 18) {
-      p.push({ tipo: 'card-texto', titulo: 'Considerações', subtitulo: 'Requisitos técnicos e operacionais', badge: 'DIRETRIZES', linhas: linhasCons });
-    } else {
-      const quebras = esFatiarLinhas_(linhasCons, 15);
-      quebras.forEach(function (q, idx) {
-        p.push({ tipo: 'card-texto', titulo: 'Considerações', subtitulo: idx ? '(continuação)' : 'Requisitos técnicos e operacionais', badge: 'DIRETRIZES', linhas: q });
-      });
-    }
+    esPaginarCard_(d.consideracoes, { titulo: 'Considerações', subtitulo: 'Requisitos técnicos e operacionais', badge: 'DIRETRIZES' })
+      .forEach(function (pag) { p.push(pag); });
   }
 
   // 12. Limites e aceite: reduz ambiguidades para quem prepara a proposta e para quem recebe o serviço.
@@ -290,98 +403,37 @@ function esPlanejarSlides_(d) {
     { titulo: 'CRITÉRIOS DE ACEITE', texto: (d.criteriosAceite || '').trim(), cor: 'verde' }
   ].filter(function (b) { return b.texto; });
 
-  if (blocosEntrada.length === 3) {
-    // 3 blocos: layout em 3 colunas de ~186pt
-    const blocos186 = blocosEntrada.map(function (b) {
-      return Object.assign({}, b, { linhas: esQuebrar_(b.texto, 186, 10) });
-    });
-    const totalLinhas = blocos186.reduce(function (n, b) { return n + b.linhas.length; }, 0);
-    const cabemJuntos = totalLinhas <= 24 && blocos186.every(function (b) { return b.linhas.length <= 11; });
-
-    if (cabemJuntos) {
+  esArranjarLimites_(blocosEntrada).forEach(function (grupo) {
+    if (grupo.blocos.length > 1) {
       p.push({
         tipo: 'limites-aceite',
         titulo: 'Limites e critérios de aceite',
         subtitulo: 'Referência objetiva para proposta, execução e recebimento',
-        blocos: blocos186
+        blocos: grupo.blocos,
+        fs: grupo.fs
       });
     } else {
-      // Quando não couberem no slide triplo, cada bloco recebe slide(s) executivo(s) de largura total (640pt)
-      blocosEntrada.forEach(function (b) {
-        const linhasFull = esQuebrar_(b.texto, 640, 12);
-        esFatiarLinhas_(linhasFull, 16).forEach(function (q, idx) {
-          const titFormatado = b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase();
-          p.push({
-            tipo: 'card-texto',
-            titulo: titFormatado,
-            subtitulo: idx ? '(continuação)' : 'Limites e critérios de aceite',
-            badge: b.titulo,
-            linhas: q
-          });
-        });
-      });
+      const b = grupo.blocos[0];
+      esPaginarCard_(b.texto, {
+        titulo: b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase(),
+        subtitulo: 'Limites e critérios de aceite',
+        badge: b.titulo
+      }).forEach(function (pag) { p.push(pag); });
     }
-  } else if (blocosEntrada.length === 2) {
-    // 2 blocos: layout em 2 colunas amplas de ~295pt
-    const blocos295 = blocosEntrada.map(function (b) {
-      return Object.assign({}, b, { linhas: esQuebrar_(b.texto, 295, 10.5) });
-    });
-    const cabemJuntos = blocos295.every(function (b) { return b.linhas.length <= 14; });
-
-    if (cabemJuntos) {
-      p.push({
-        tipo: 'limites-aceite',
-        titulo: 'Limites e critérios de aceite',
-        subtitulo: 'Referência objetiva para proposta, execução e recebimento',
-        blocos: blocos295
-      });
-    } else {
-      blocosEntrada.forEach(function (b) {
-        const linhasFull = esQuebrar_(b.texto, 640, 12);
-        esFatiarLinhas_(linhasFull, 16).forEach(function (q, idx) {
-          const titFormatado = b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase();
-          p.push({
-            tipo: 'card-texto',
-            titulo: titFormatado,
-            subtitulo: idx ? '(continuação)' : 'Limites e critérios de aceite',
-            badge: b.titulo,
-            linhas: q
-          });
-        });
-      });
-    }
-  } else if (blocosEntrada.length === 1) {
-    // 1 único bloco: renderizado diretamente em slide de largura total (640pt)
-    const b = blocosEntrada[0];
-    const titFormatado = b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase();
-    const linhasFull = esQuebrar_(b.texto, 640, 12);
-
-    esFatiarLinhas_(linhasFull, 16).forEach(function (q, idx) {
-      p.push({
-        tipo: 'card-texto',
-        titulo: titFormatado,
-        subtitulo: idx ? '(continuação)' : 'Limites e critérios de aceite',
-        badge: b.titulo,
-        linhas: q
-      });
-    });
-  }
+  });
 
   // 13. Prazos, Contato e Aviso Final (Consolidado em Cards Executivos)
   if (d.prazo || d.responsavel || d.aviso || d.visita) {
-    const linhasAviso = esQuebrar_(d.aviso || 'Este escopo tem caráter orientativo e serve como base técnica para cotação.', 300, 11);
-    const linhasPrazo = esQuebrar_(d.prazo || '', 290, 11);
+    // Quebra nas larguras úteis das duas colunas do slide de encerramento.
+    const linhasAviso = esQuebrar_(d.aviso || 'Este escopo tem caráter orientativo e serve como base técnica para cotação.', esLarguraUtil_(300), 10.5);
+    const linhasPrazo = esQuebrar_(d.prazo || '', esLarguraUtil_(290), 11);
     if (linhasPrazo.length > 6) {
-      const linhasPrazoFull = esQuebrar_(d.prazo, 640, 12);
-      esFatiarLinhas_(linhasPrazoFull, 16).forEach(function (q, idx) {
-        p.push({ tipo: 'card-texto', titulo: 'Prazos', subtitulo: idx ? '(continuação)' : 'Proposta, visita e execução', badge: 'CRONOGRAMA', linhas: q });
-      });
+      esPaginarCard_(d.prazo, { titulo: 'Prazos', subtitulo: 'Proposta, visita e execução', badge: 'CRONOGRAMA' })
+        .forEach(function (pag) { p.push(pag); });
     }
     if (linhasAviso.length > 12) {
-      const linhasAvisoFull = esQuebrar_(d.aviso, 640, 12);
-      esFatiarLinhas_(linhasAvisoFull, 16).forEach(function (q, idx) {
-        p.push({ tipo: 'card-texto', titulo: 'Diretrizes para cotação', subtitulo: idx ? '(continuação)' : d.megaNome, badge: 'AVISO AO PROPONENTE', linhas: q });
-      });
+      esPaginarCard_(d.aviso, { titulo: 'Diretrizes para cotação', subtitulo: d.megaNome, badge: 'AVISO AO PROPONENTE' })
+        .forEach(function (pag) { p.push(pag); });
     }
     p.push({
       tipo: 'encerramento',
@@ -443,9 +495,9 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
       caixa(s, 36, 78, 290, 18, 'GESTÃO DE CONTRATAÇÕES · ESCOPO DE CONTRATAÇÃO', 8.5, cores.white, '#1E295B', true);
 
       // Título Principal
-      let fsTit = 26, lTit = esQuebrar_(p.titulo, 640, fsTit);
+      let fsTit = 26, lTit = esQuebrar_(p.titulo, esLarguraUtil_(648), fsTit);
       while (lTit.length * fsTit * 1.2 > 120 && fsTit > 16) {
-        fsTit -= 2; lTit = esQuebrar_(p.titulo, 640, fsTit);
+        fsTit -= 2; lTit = esQuebrar_(p.titulo, esLarguraUtil_(648), fsTit);
       }
       caixa(s, 36, 106, 648, 120, lTit.join('\n'), fsTit, cores.white, null, true, fontes.titles);
       
@@ -500,11 +552,11 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     // ──────────────────────────────────────────
     caixa(s, 24, 13, 4, 34, '', 10, null, cores.brandLight);
 
-    const linhasTitulo = esQuebrar_(p.titulo, 490, 16), tituloDuplo = linhasTitulo.length > 1;
+    const linhasTitulo = esQuebrar_(p.titulo, esLarguraUtil_(500), 16), tituloDuplo = linhasTitulo.length > 1;
     const titFormatado = linhasTitulo.slice(0, 2).join('\n');
     caixa(s, 34, 11, 500, tituloDuplo ? 34 : 22, titFormatado, tituloDuplo ? 14 : 16, cores.textMain, null, true, fontes.titles);
     if (p.subtitulo) {
-      caixa(s, 34, tituloDuplo ? 43 : 32, 500, 14, esQuebrar_(p.subtitulo, 490, 10).slice(0, 1).join('\n'), 10, cores.brandMed, null, false);
+      caixa(s, 34, tituloDuplo ? 43 : 32, 500, 14, esQuebrar_(p.subtitulo, esLarguraUtil_(500), 10).slice(0, 1).join('\n'), 10, cores.brandMed, null, false);
     }
 
     // LOGO PRETA OFICIAL À DIREITA (Transparente e limpa)
@@ -550,23 +602,23 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     // C) Card Destaque (Texto amplo e executivo)
     else if (p.tipo === 'card-texto') {
       caixa(s, 24, 66, 672, 305, '', 10, null, cores.bgSlide, false, null, cores.line);
-      const titNorm = (p.titulo || '').trim().toUpperCase();
-      const badgeNorm = (p.badge || '').trim().toUpperCase();
-      const mostrarBadge = p.badge && badgeNorm !== titNorm;
+      const mostrarBadge = esMostrarBadge_(p.titulo, p.badge);
       if (mostrarBadge) {
         caixa(s, 38, 78, 280, 18, p.badge, 9, cores.brandLight, null, true, fontes.titles);
       }
       const yTexto = mostrarBadge ? 104 : 80;
-      const hTexto = mostrarBadge ? 255 : 280;
-      caixa(s, 38, yTexto, 644, hTexto, p.linhas.join('\n'), 12, cores.textBody);
+      const hTexto = mostrarBadge ? ES_CARD_H_BADGE : ES_CARD_H;
+      const corpo = caixa(s, 38, yTexto, ES_CARD_W, hTexto, p.linhas.join('\n'), p.fs || 12, cores.textBody);
+      // Página única fica centralizada: sem isso o texto curto deixa o card oco embaixo.
+      if (p.centralizar) corpo.setContentAlignment(SlidesApp.ContentAlignment.MIDDLE);
     }
 
     // D) Serviços a Executar
     else if (p.tipo === 'servicos') {
-      const fs = p.compacto ? 11 : 12.5;
+      const fs = p.fs || (p.compacto ? 11 : 12.5);
       caixa(s, 24, 66, 672, 305, '', 10, null, cores.bgSlide, false, null, cores.line);
       caixa(s, 38, 76, 644, 18, 'LISTA DE ATIVIDADES A EXECUTAR', 8.5, cores.brandLight, null, true, fontes.titles);
-      caixa(s, 38, 100, 644, 260, p.linhas.join('\n'), fs, cores.textMain, null, false);
+      caixa(s, 38, 100, ES_CARD_W, 260, p.linhas.join('\n'), fs, cores.textMain, null, false);
     }
 
     // E) EAP resumida — dados técnicos no deck; preços permanecem na planilha de resposta.
@@ -607,19 +659,19 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
 
     // G) Limites e critérios de aceite em cards de leitura rápida
     else if (p.tipo === 'limites-aceite') {
-      const gap = 14, w = (672 - gap * (p.blocos.length - 1)) / p.blocos.length;
+      const gap = ES_LIMITES_GAP, w = (672 - gap * (p.blocos.length - 1)) / p.blocos.length;
       const estilos = {
         azul: { fundo: cores.brandSoft, tinta: cores.brandMed, acento: cores.brandLight },
         ambar: { fundo: cores.amberBg, tinta: cores.amberInk, acento: cores.amberSolid },
         verde: { fundo: cores.greenBg, tinta: cores.greenInk, acento: cores.greenSolid }
       };
-      const fs = p.blocos.length <= 2 ? 11 : 10;
+      const fs = p.fs || (p.blocos.length <= 2 ? 11 : 10);
       p.blocos.forEach(function (b, i) {
         const x = 24 + i * (w + gap), estilo = estilos[b.cor] || estilos.azul;
         caixa(s, x, 66, w, 305, '', 10, null, cores.white, false, null, cores.line);
         caixa(s, x, 66, w, 5, '', 10, null, estilo.acento);
         caixa(s, x + 14, 84, w - 28, 20, b.titulo, 8.5, estilo.tinta, estilo.fundo, true, fontes.titles);
-        caixa(s, x + 14, 118, w - 28, 235, b.linhas.join('\n'), fs, cores.textBody);
+        caixa(s, x + 14, 118, w - 28, ES_LIMITES_H, b.linhas.join('\n'), fs, cores.textBody);
       });
     }
 
