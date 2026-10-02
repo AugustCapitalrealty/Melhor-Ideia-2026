@@ -28,10 +28,18 @@ function esLarguraUtil_(largura) {
   return Math.max(12, largura - ES_RECUO);
 }
 
+/**
+ * Marca invisível no início de uma linha que só continua o parágrafo anterior.
+ * A quebra estimada serve para paginar e medir as caixas; no slide o parágrafo vai
+ * inteiro e o próprio Slides quebra as linhas, o que permite justificar o texto.
+ */
+const ES_CONTINUA = '⁣';
+
 /** Largura aproximada do texto, calibrada pelas métricas reais do Open Sans. */
 function esLarguraTexto_(texto, fonte) {
   return Array.from(texto).reduce(function (n, c) {
     return n + (
+      c === ES_CONTINUA ? 0 :
       /\s/.test(c) ? .27 :
       /[ilIj.,:;!'|()[\]\/-]/.test(c) ? .29 :
       /[tfr]/.test(c) ? .39 :
@@ -53,7 +61,7 @@ function esQuebrar_(texto, largura, fonte) {
   String(texto || '').split('\n').forEach(function (paragrafo) {
     const raw = paragrafo.trim();
     if (!raw) { linhas.push(''); return; }
-    const indent = esEhMarcador_(raw) ? '  ' : '';
+    const indent = ES_CONTINUA + (esEhMarcador_(raw) ? '  ' : '');
     let linha = '';
     raw.split(/\s+/).forEach(function (palavra) {
       if (linha && esLarguraTexto_(linha + ' ' + palavra, fonte) > largura) {
@@ -72,6 +80,16 @@ function esQuebrar_(texto, largura, fonte) {
     if (linha) linhas.push(linha);
   });
   return linhas;
+}
+
+/** Junta as linhas estimadas de volta nos parágrafos originais, para o Slides quebrar e justificar. */
+function esParagrafos_(texto) {
+  return String(texto).split('\n').reduce(function (out, linha) {
+    if (linha.charAt(0) !== ES_CONTINUA) out.push(linha);
+    else if (out.length) out[out.length - 1] += ' ' + linha.slice(1).trim();
+    else out.push(linha.slice(1).trim()); // fatia que começa no meio do parágrafo (célula da EAP)
+    return out;
+  }, []).join('\n');
 }
 
 /** Remove linhas em branco nas pontas, que só empurrariam o texto dentro do card. */
@@ -398,7 +416,8 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
   const sx = deck.getPageWidth() / 720, sy = deck.getPageHeight() / 405;
   const dimensoes = {};
 
-  function caixa(s, x, y, w, h, t, fs, cor, fundo, bold, fonte, bordaCor, centro) {
+  /** `alinhar`: true centraliza, 'justificar' justifica; sem valor, alinha à esquerda. */
+  function caixa(s, x, y, w, h, t, fs, cor, fundo, bold, fonte, bordaCor, alinhar) {
     const shape = s.insertShape(SlidesApp.ShapeType.RECTANGLE, x * sx, y * sy, w * sx, h * sy);
     if (bordaCor) {
       shape.getBorder().setWeight(1).getLineFill().setSolidFill(bordaCor);
@@ -408,9 +427,17 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     if (fundo) shape.getFill().setSolidFill(fundo); else shape.getFill().setTransparent();
     shape.setContentAlignment(SlidesApp.ContentAlignment.TOP);
     if (t === '' || t == null) return shape;
-    const text = shape.getText(); text.setText(String(t));
+    const text = shape.getText(); text.setText(esParagrafos_(t));
     text.getTextStyle().setFontFamily(fonte || fontes.body).setFontSize((fs || ES_FS.corpo) * sy).setForegroundColor(cor || cores.textBody).setBold(!!bold);
-    text.getParagraphStyle().setParagraphAlignment(centro ? SlidesApp.ParagraphAlignment.CENTER : SlidesApp.ParagraphAlignment.START).setLineSpacing(110).setSpaceAbove(0).setSpaceBelow(0);
+    const alinhamento = alinhar === 'justificar' ? SlidesApp.ParagraphAlignment.JUSTIFIED : alinhar ? SlidesApp.ParagraphAlignment.CENTER : SlidesApp.ParagraphAlignment.START;
+    text.getParagraphStyle().setParagraphAlignment(alinhamento).setLineSpacing(110).setSpaceAbove(0).setSpaceBelow(0);
+    // Tópico com marcador: a segunda linha começa alinhada ao texto, e não embaixo do "•".
+    if (alinhar === 'justificar') {
+      text.getParagraphs().forEach(function (par) {
+        const trecho = par.getRange();
+        if (esEhMarcador_(trecho.asString())) trecho.getParagraphStyle().setIndentStart(esLarguraTexto_('• ', fs || ES_FS.corpo) * sx).setIndentFirstLine(0);
+      });
+    }
     return shape;
   }
 
@@ -418,7 +445,7 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
   function cartao(s, x, y, w, h) { caixa(s, x, y, w, h, '', 0, null, cores.bgSlide, false, null, cores.line); }
   function rotulo(s, x, y, w, t, cor, fundo, centro) { caixa(s, x, y, w, 22, t, ES_FS.rotulo, cor || cores.brandLight, fundo, true, fontes.titles, null, centro); }
   function corpo(s, x, y, w, linhas, destaque) {
-    caixa(s, x, y, w, esAlturaTexto_(linhas.length, ES_FS.corpo), linhas.join('\n'), ES_FS.corpo, cores.textBody, null, !!destaque);
+    caixa(s, x, y, w, esAlturaTexto_(linhas.length, ES_FS.corpo), linhas.join('\n'), ES_FS.corpo, cores.textBody, null, !!destaque, null, null, 'justificar');
     return esAlturaTexto_(linhas.length, ES_FS.corpo);
   }
   /**
@@ -567,12 +594,12 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
       if (p.detalhe) {
         cartao(s, 24, ES_AREA.y, 280, hImg);
         imagem(s, blobs[p.detalhe], 26, ES_AREA.y + 2, 276, hImg - 4);
-        if (p.legenda.length) caixa(s, 24, yTexto, 280, hTexto, p.legenda.join('\n'), ES_FS.legenda, cores.textBody, cores.bgSlide, false, null, cores.line);
+        if (p.legenda.length) caixa(s, 24, yTexto, 280, hTexto, p.legenda.join('\n'), ES_FS.legenda, cores.textBody, cores.bgSlide, false, null, cores.line, 'justificar');
       }
       const xImg = p.detalhe ? 324 : 177;
       cartao(s, xImg, ES_AREA.y, 365, hImg);
       imagem(s, blobs[p.imagem], xImg + 2, ES_AREA.y + 2, 361, hImg - 4);
-      caixa(s, xImg, yTexto, 365, hTexto, p.linhas.join('\n'), ES_FS.corpo, cores.textBody, cores.bgSlide, false, null, cores.line);
+      caixa(s, xImg, yTexto, 365, hTexto, p.linhas.join('\n'), ES_FS.corpo, cores.textBody, cores.bgSlide, false, null, cores.line, 'justificar');
     }
 
     // B) Contexto Duplo (Objetivo + Vistoria em 2 Cards Executivos)

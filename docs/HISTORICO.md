@@ -248,10 +248,24 @@ Um agente gerou decks com o Google simulado e mediu cada slide, e as três se co
 
 **Versão visual**: `ESL3` → `ESL4` → `ESL5`. Uma revisão já emitida numa versão anterior é regenerada no layout novo ao clicar em Gerar, e o arquivo antigo fica no histórico.
 
+### Texto justificado (v73)
+
+Pedido do usuário depois de ver a v72: todo texto de corpo justificado. Só trocar o alinhamento não bastava, porque o gerador quebrava as linhas à mão, cada linha virava um parágrafo e o Slides não justifica a última linha de um parágrafo.
+
+| Decisão | Motivo |
+| :--- | :--- |
+| O parágrafo vai inteiro para o Slides, que quebra e justifica as linhas; a quebra estimada continua só para medir as caixas e paginar | Sem isso o justificado não aparece. Ganho extra: quem editar o slide depois vê o texto se ajustar em vez de quebrar torto |
+| Marca invisível (U+2063) no início de cada linha de continuação, retirada no desenho por `esParagrafos_` | Mantém a paginação por linhas sem perder onde termina cada parágrafo |
+| Tópico com "•" recebe recuo de segunda linha (`setIndentStart`) | Com o parágrafo inteiro, o Slides alinharia a segunda linha embaixo do marcador |
+| Justificado no corpo de todos os slides de conteúdo e no endereço e na legenda do detalhe da localização | Pedido do usuário |
+| Títulos, rótulos, células da EAP e legendas embaixo das fotos continuam como estavam (legenda centralizada) | Justificar uma coluna de 3 ou 4 palavras abre buracos entre elas. Muda se o usuário pedir |
+
+Versão visual `ESL6`. Conferido com um preview em HTML em que o navegador quebra e justifica, como o Slides fará, usando o escopo das barreiras.
+
 ### Publicação
 
 - O `npm run push` só atualiza o @HEAD do Apps Script. Os usuários abrem a implantação versionada `AKfycbxy2cJdA-…`, que precisa de `npx clasp deploy -i <id> -d "<descrição>"`. O link não muda.
-- v71: escala única e fotos ao lado. v72: texto e fotos em slides separados.
+- v71: escala única e fotos ao lado. v72: texto e fotos em slides separados. v73: texto justificado.
 - Para voltar atrás, basta reimplantar a versão anterior no mesmo ID.
 - Antes de mexer no código: `git fetch` e conferir `main..origin/main`, porque existe outra cópia que também envia commits.
 

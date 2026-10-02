@@ -37,7 +37,9 @@ function ambiente() {
             const e = { text: '', x, y, w, h }; s.elements.push(e);
             const style = { setFontFamily(v) { e.font = v; return this; }, setFontSize(v) { e.fs = v; return this; }, setForegroundColor(v) { e.color = v; return this; }, setBold(v) { e.bold = v; return this; } };
             const par = { setParagraphAlignment(v) { e.align = v; return this; }, setLineSpacing() { return this; }, setSpaceAbove() { return this; }, setSpaceBelow() { return this; } };
-            const t = { setText(v) { e.text = v; }, getTextStyle: () => style, getParagraphStyle: () => par };
+            const t = { setText(v) { e.text = v; }, getTextStyle: () => style, getParagraphStyle: () => par,
+              getParagraphs: () => e.text.split('\n').map(texto => ({ getRange: () => ({ asString: () => texto, getParagraphStyle: () => ({
+                setIndentStart(v) { (e.recuos = e.recuos || []).push({ texto, v }); return this; }, setIndentFirstLine() { return this; } }) }) })) };
             const border = { setTransparent() { return this; }, setWeight(w) { e.borderW = w; return this; }, getLineFill: () => ({ setSolidFill(c) { e.borderColor = c; return this; } }) };
             return { getBorder: () => border, getFill: () => ({ setSolidFill(v) { e.fill = v; }, setTransparent() {} }), setContentAlignment() {}, getText: () => t };
           }
@@ -50,7 +52,7 @@ function ambiente() {
       base64Decode: s => Array.from(Buffer.from(s, 'base64')), base64Encode: b => Buffer.from(b).toString('base64'), newBlob: (b,m,n) => blob(n) },
     HtmlService: { createHtmlOutputFromFile: () => ({ getContent: () => fs.readFileSync(path.join(root,'app/EscopoAssets.html'),'utf8') }) },
     DriveApp: { getFileById: file, getFolderById: () => ({ createFile: () => file('file-' + (++seq)) }) },
-    SlidesApp: { create: deck, ShapeType: { RECTANGLE: 'rect' }, ContentAlignment: { TOP: 'top', MIDDLE: 'middle' }, ParagraphAlignment: { START: 'start', CENTER: 'center' }, PredefinedLayout: { BLANK: 'blank' } },
+    SlidesApp: { create: deck, ShapeType: { RECTANGLE: 'rect' }, ContentAlignment: { TOP: 'top', MIDDLE: 'middle' }, ParagraphAlignment: { START: 'start', CENTER: 'center', JUSTIFIED: 'justified' }, PredefinedLayout: { BLANK: 'blank' } },
     SpreadsheetApp: { create: planilha, flush() {} },
   });
   for (const name of ['Util.gs','Apresentacao_Conselho.gs','Escopos.gs','EscopoSlides.gs','EscopoPlanilha.gs']) vm.runInContext(fs.readFileSync(path.join(root,'app',name),'utf8'),ctx);
@@ -195,7 +197,10 @@ for(const [deckX,planoX] of [[a.decks[0],planoBase],[visual,plano],[deckG,planoG
     for(const e of textos.filter(e=>e.font==='Open Sans'&&e.fs!==ES_FS.legenda)){
       assert.equal(e.fs,ES_FS.corpo,'corpo com tamanho único: '+p.tipo+' '+e.text.slice(0,30));
       assert.equal(e.color,tinta.corpo,'corpo com cor única: '+p.tipo+' '+e.text.slice(0,30));
+      // Pedido em 02/10: corpo justificado. O parágrafo vai inteiro para o Slides quebrar e justificar.
+      assert.equal(e.align,'justified','corpo justificado: '+p.tipo+' '+e.text.slice(0,30));
     }
+    for(const e of els.filter(e=>e.text))assert(!e.text.includes('⁣'),'marca de continuação não vaza para o slide');
     for(const e of textos.filter(e=>e.font==='Montserrat'))assert.equal(e.fs,ES_FS.rotulo,'rótulo com tamanho único: '+p.tipo+' '+e.text);
   });
 }
@@ -214,6 +219,14 @@ for(const img of deckReal.pages[planoG.indexOf(fotosG[0])].elements.filter(e=>e.
   const legenda=deckReal.pages[planoG.indexOf(fotosG[0])].elements.find(e=>e.text&&e.text.startsWith('FOTO')&&Math.abs(e.y-(img.y+img.h+2))<.01);
   assert(legenda,'número da foto logo abaixo da imagem');
 }
+// Tópico longo: no slide é um parágrafo só (justificado inteiro) e a segunda linha recua até o texto do "•".
+const topicoLongo='Fornecimento de 28 barreiras plásticas viárias, na cor laranja com refletivo branco, destinadas à sinalização e proteção das áreas indicadas no mapa anexo';
+const planoTop=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),grupos:[{id:'g1',titulo:'Barreiras',servicos:topicoLongo+'\nTotal: 28 unidades'}]}));
+const servTop=planoTop.find(p=>p.tipo==='servicos');assert(servTop.linhas.length>=3,'o tópico ocupa mais de uma linha na estimativa');
+const deckTop=a.ctx.SlidesApp.create('topico');c.esDesenharSlides_(deckTop,planoTop,blobsT,{revisao:1,data:'2026-09-09'});
+const caixaTop=deckTop.pages[planoTop.indexOf(servTop)].elements.find(e=>(e.text||'').includes('barreiras'));
+assert.deepEqual(caixaTop.text.split('\n'),['• '+topicoLongo,'• Total: 28 unidades'],'um parágrafo por tópico, sem quebra manual');
+assert.equal(caixaTop.recuos.length,2,'cada tópico com recuo de segunda linha');assert(caixaTop.recuos.every(r=>r.v>5&&r.v<12));
 const tiposVistos=new Set([planoBase,plano,planoG,limitesLongos,textosLongosPlano()].flat().map(p=>p.tipo));
 for(const t of comCorpo)assert(tiposVistos.has(t),'consistência conferida também em '+t);
 const textosLongos=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),prazo:'Prazo detalhado '.repeat(24),aviso:'Diretriz importante '.repeat(120)}));
