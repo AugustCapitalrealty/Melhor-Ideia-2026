@@ -23,28 +23,68 @@ const ES_LARG = { cheio: 628, lado: 256 };
 /** Painel de fotos ao lado dos serviços e faixa de fotos na largura toda. */
 const ES_FOTOS = { lado: { x: 340, w: 356, max: 2 }, cheio: { x: 24, w: 672, max: 4 }, minImagem: 110 };
 
+/** Largura de fato disponível para o texto dentro de uma caixa de `largura` pontos. */
+function esLarguraUtil_(largura) {
+  return Math.max(12, largura - ES_RECUO);
+}
+
+/** Largura aproximada do texto, calibrada pelas métricas reais do Open Sans. */
 function esLarguraTexto_(texto, fonte) {
   return Array.from(texto).reduce(function (n, c) {
-    return n + (/\s/.test(c) ? .3 : /[ilIjtfr.,:;!'|]/.test(c) ? .38 : /[MW@%mw]/.test(c) ? 1 : /[A-ZÁÉÍÓÚÃÕÇ]/.test(c) ? .78 : .65) * fonte;
+    return n + (
+      /\s/.test(c) ? .27 :
+      /[ilIj.,:;!'|()[\]\/-]/.test(c) ? .29 :
+      /[tfr]/.test(c) ? .39 :
+      /[MWmw@%]/.test(c) ? .90 :
+      /[A-ZÁÉÍÓÚÃÕÇÂÊÔÀÜ]/.test(c) ? .69 :
+      .58
+    ) * fonte;
   }, 0);
 }
 
+/** Marcador de lista no início da linha: "• ", "- ", "1. " ou "1) ". */
+function esEhMarcador_(texto) {
+  return /^\s*(?:[•●\-*]|\d+[.)]\s)/.test(texto);
+}
+
+/** Quebra em linhas; a continuação de um item de lista sai recuada, alinhada ao texto do item. */
 function esQuebrar_(texto, largura, fonte) {
   const linhas = [];
   String(texto || '').split('\n').forEach(function (paragrafo) {
-    if (!paragrafo.trim()) { linhas.push(''); return; }
+    const raw = paragrafo.trim();
+    if (!raw) { linhas.push(''); return; }
+    const indent = esEhMarcador_(raw) ? '  ' : '';
     let linha = '';
-    paragrafo.trim().split(/\s+/).forEach(function (palavra) {
-      if (linha && esLarguraTexto_(linha + ' ' + palavra, fonte) > largura) { linhas.push(linha); linha = ''; }
+    raw.split(/\s+/).forEach(function (palavra) {
+      if (linha && esLarguraTexto_(linha + ' ' + palavra, fonte) > largura) {
+        linhas.push(linha);
+        linha = indent;
+      }
       Array.from(palavra).forEach(function (c, i) {
-        if (i === 0 && linha) linha += ' ';
-        if (esLarguraTexto_(linha + c, fonte) > largura) { linhas.push(linha); linha = ''; }
+        if (i === 0 && linha && linha !== indent) linha += ' ';
+        if (esLarguraTexto_(linha + c, fonte) > largura) {
+          linhas.push(linha);
+          linha = indent;
+        }
         linha += c;
       });
     });
-    linhas.push(linha);
+    if (linha) linhas.push(linha);
   });
   return linhas;
+}
+
+/** Remove linhas em branco nas pontas, que só empurrariam o texto dentro do card. */
+function esAparar_(linhas) {
+  const out = linhas.slice();
+  while (out.length && out[0] === '') out.shift();
+  while (out.length && out[out.length - 1] === '') out.pop();
+  return out;
+}
+
+/** O rótulo só aparece quando acrescenta informação ao título da página. */
+function esMostrarBadge_(titulo, badge) {
+  return !!badge && String(badge).trim().toUpperCase() !== String(titulo || '').trim().toUpperCase();
 }
 
 /** Altura de uma caixa com n linhas, já contando a margem interna. */
@@ -52,8 +92,9 @@ function esAlturaTexto_(linhas, fonte) {
   return linhas ? linhas * fonte * ES_ENTRELINHA + ES_RECUO : 0;
 }
 
-function esAlturaCartao_(linhas) {
-  return ES_CARTAO.topo + esAlturaTexto_(linhas, ES_FS.corpo) + ES_CARTAO.base;
+/** Cartão de texto: 30 pt de topo quando há rótulo, 10 pt quando não há. */
+function esAlturaCartao_(linhas, semRotulo) {
+  return (semRotulo ? 10 : ES_CARTAO.topo) + esAlturaTexto_(linhas, ES_FS.corpo) + ES_CARTAO.base;
 }
 
 /** Corta com reticências o que não pode crescer (cabeçalho, capa); o texto completo está em outra página. */
@@ -64,23 +105,70 @@ function esLimitarLinhas_(linhas, max) {
   return r;
 }
 
-/** Divide linhas balanceando o final para nunca deixar órfãos (menos de 4 linhas no fim). */
+/** Divide linhas balanceando o final e respeitando quebras de parágrafo, marcadores e sentenças. */
 function esFatiarLinhas_(linhas, tamanhoMax) {
   if (linhas.length <= tamanhoMax) return [linhas];
   const resultado = [];
   let i = 0;
   while (i < linhas.length) {
-    let restante = linhas.length - i;
+    const restante = linhas.length - i;
     if (restante <= tamanhoMax) {
       resultado.push(linhas.slice(i));
       break;
     }
     let fatia = tamanhoMax;
-    if (restante - fatia < 4) fatia = restante - 4;
-    resultado.push(linhas.slice(i, i + fatia));
+    if (restante - fatia < 3) {
+      // Sobraria muito pouco no final: divide o restante ao meio.
+      fatia = Math.ceil(restante / 2);
+    } else {
+      // Melhor corte entre (fatia - 5) e fatia: linha vazia, depois novo marcador, depois fim de frase.
+      const minBusca = Math.max(4, fatia - 5);
+      const criterios = [
+        function (j) { return linhas[i + j - 1] === '' || linhas[i + j] === ''; },
+        function (j) { return esEhMarcador_(linhas[i + j] || ''); },
+        function (j) { return /[.!?:]\s*$/.test(linhas[i + j - 1] || ''); }
+      ];
+      let melhorCorte = -1;
+      for (let k = 0; k < criterios.length && melhorCorte === -1; k++) {
+        for (let j = fatia; j >= minBusca; j--) if (criterios[k](j)) { melhorCorte = j; break; }
+      }
+      if (melhorCorte !== -1 && restante - melhorCorte >= 3) fatia = melhorCorte;
+    }
+    const fatiaLinhas = esAparar_(linhas.slice(i, i + fatia));
+    if (fatiaLinhas.length) resultado.push(fatiaLinhas);
     i += fatia;
+    while (i < linhas.length && linhas[i] === '') i++;
   }
-  return resultado;
+  return resultado.length ? resultado : [linhas];
+}
+
+/** Quebra os blocos de limites em colunas lado a lado; devolve null quando algum não couber. */
+function esBlocosCabem_(blocos) {
+  const w = (ES_AREA.w - 14 * (blocos.length - 1)) / blocos.length;
+  const comLinhas = blocos.map(function (b) {
+    return Object.assign({}, b, { linhas: esAparar_(esQuebrar_(b.texto, esLarguraUtil_(w - 28), ES_FS.corpo)) });
+  });
+  return comLinhas.every(function (b) { return b.linhas.length <= 13; }) ? comLinhas : null;
+}
+
+/**
+ * Maior arranjo que couber, nesta ordem: os blocos todos lado a lado; senão dois
+ * juntos e o terceiro em card próprio; senão cada um em seu card de largura cheia.
+ */
+function esArranjarLimites_(blocos) {
+  const sozinhos = function (bs) { return bs.map(function (b) { return [b]; }); };
+  if (blocos.length < 2) return sozinhos(blocos);
+  const todos = esBlocosCabem_(blocos);
+  if (todos) return [todos];
+  if (blocos.length === 3) {
+    const particoes = [[[0, 1], [2]], [[0], [1, 2]]];
+    for (let i = 0; i < particoes.length; i++) {
+      const grupos = particoes[i].map(function (idx) { return idx.map(function (j) { return blocos[j]; }); });
+      const par = esBlocosCabem_(grupos.filter(function (g) { return g.length > 1; })[0]);
+      if (par) return grupos.map(function (g) { return g.length > 1 ? par : g; });
+    }
+  }
+  return sozinhos(blocos);
 }
 
 /**
@@ -176,9 +264,12 @@ function esPlanejarSlides_(d) {
     numeroSecao++;
     p.push({ tipo: 'capa-secao', numero: String(numeroSecao).padStart(2, '0'), titulo: titulo, subtitulo: subtitulo });
   }
+  // Página única fica no centro da área; continuação começa no topo, como a página anterior.
   function cartoes(titulo, subtitulo, badge, linhas) {
-    esFatiarLinhas_(linhas, ES_CARTAO.linhas).forEach(function (q, idx) {
-      p.push({ tipo: 'card-texto', titulo: titulo, subtitulo: idx ? '(continuação)' : subtitulo, badge: badge, linhas: q });
+    const paginas = esFatiarLinhas_(esAparar_(linhas), ES_CARTAO.linhas);
+    paginas.forEach(function (q, idx) {
+      p.push({ tipo: 'card-texto', titulo: titulo, subtitulo: idx ? '(continuação)' : subtitulo, badge: badge, linhas: q,
+        fs: ES_FS.corpo, centralizar: paginas.length === 1 });
     });
   }
 
@@ -249,7 +340,8 @@ function esPlanejarSlides_(d) {
       const sobra = function (x) { return x.resto ? esQuebrar_(x.resto, larguraSeguinte, ES_FS.corpo).length : 3; };
       let t = esTomarLinhas_(resto, largura, ES_CARTAO.linhas);
       for (let m = ES_CARTAO.linhas - 1; sobra(t) < 3 && m >= ES_CARTAO.linhas / 2; m--) t = esTomarLinhas_(resto, largura, m);
-      p.push({ tipo: 'servicos', titulo: 'Serviços a Executar', subtitulo: subtitulo, linhas: t.linhas, fotos: lado });
+      p.push({ tipo: 'servicos', titulo: 'Serviços a Executar', subtitulo: subtitulo, linhas: t.linhas, fotos: lado,
+        fs: ES_FS.corpo, centralizar: pagina === 1 && !t.resto && !fotos.length });
       resto = t.resto;
     }
   });
@@ -290,18 +382,15 @@ function esPlanejarSlides_(d) {
     { titulo: 'EXCLUSÕES', texto: d.exclusoes, cor: 'ambar' },
     { titulo: 'CRITÉRIOS DE ACEITE', texto: d.criteriosAceite, cor: 'verde' }
   ].filter(function (b) { return b.texto; });
-  if (blocosLimites.length) {
-    const wColuna = (ES_AREA.w - 14 * (blocosLimites.length - 1)) / blocosLimites.length;
-    blocosLimites.forEach(function (b) { b.linhas = esQuebrar_(b.texto, wColuna - 28 - ES_RECUO, ES_FS.corpo); });
-    if (blocosLimites.every(function (b) { return b.linhas.length <= 13; })) {
-      p.push({ tipo: 'limites-aceite', titulo: 'Limites e critérios de aceite', subtitulo: 'Referência objetiva para proposta, execução e recebimento', blocos: blocosLimites });
-    } else {
-      // Texto longo vai para a largura toda, quebrado de novo nela, e não na largura da coluna.
-      blocosLimites.forEach(function (b) {
-        cartoes(b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase(), 'Limites e critérios de aceite', b.titulo, esQuebrar_(b.texto, ES_LARG.cheio, ES_FS.corpo));
-      });
+  esArranjarLimites_(blocosLimites).forEach(function (grupo) {
+    if (grupo.length > 1) {
+      p.push({ tipo: 'limites-aceite', titulo: 'Limites e critérios de aceite', subtitulo: 'Referência objetiva para proposta, execução e recebimento', blocos: grupo });
+      return;
     }
-  }
+    // Bloco sozinho vai para a largura toda, quebrado de novo nela, e não na largura da coluna.
+    const b = grupo[0];
+    cartoes(b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase(), 'Limites e critérios de aceite', b.titulo, esQuebrar_(b.texto, ES_LARG.cheio, ES_FS.corpo));
+  });
 
   // 9. Prazos, Contato e Aviso Final (Consolidado em Cards Executivos)
   if (d.prazo || d.responsavel || d.aviso || d.visita) {
@@ -357,13 +446,16 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     caixa(s, x, y, w, esAlturaTexto_(linhas.length, ES_FS.corpo), linhas.join('\n'), ES_FS.corpo, destaque ? cores.textMain : cores.textBody, null, !!destaque);
     return esAlturaTexto_(linhas.length, ES_FS.corpo);
   }
-  /** Cartão do tamanho do texto; o que é curto fica no centro da área, e não preso no alto à esquerda. */
-  function cartaoTexto(s, x, w, titulo, linhas, alturaFixa) {
-    const h = alturaFixa || esAlturaCartao_(linhas.length);
-    const y = ES_AREA.y + (alturaFixa ? 0 : Math.max(0, (ES_AREA.h - h) / 2));
+  /**
+   * Cartão do tamanho do texto. Página única fica no centro da área, e não presa no alto à esquerda;
+   * continuação começa no topo. Sem rótulo, o corpo sobe para o lugar dele.
+   */
+  function cartaoTexto(s, x, w, titulo, linhas, centralizar, alturaFixa) {
+    const h = alturaFixa || esAlturaCartao_(linhas.length, !titulo);
+    const y = ES_AREA.y + (centralizar && !alturaFixa ? Math.max(0, (ES_AREA.h - h) / 2) : 0);
     cartao(s, x, y, w, h);
-    rotulo(s, x + 14, y + 10, w - 28, titulo);
-    corpo(s, x + 14, y + ES_CARTAO.topo, w - 28, linhas);
+    if (titulo) rotulo(s, x + 14, y + 10, w - 28, titulo);
+    corpo(s, x + 14, y + (titulo ? ES_CARTAO.topo : 10), w - 28, linhas);
   }
 
   function imagem(s, blob, x, y, w, h) {
@@ -513,16 +605,16 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
 
     // C) Card Destaque (Objetivo, Vistoria, Considerações e textos longos)
     else if (p.tipo === 'card-texto') {
-      cartaoTexto(s, 24, 672, p.badge, p.linhas);
+      cartaoTexto(s, 24, 672, esMostrarBadge_(p.titulo, p.badge) ? p.badge : '', p.linhas, p.centralizar);
     }
 
     // D) Serviços a Executar, com as fotos do próprio grupo à direita
     else if (p.tipo === 'servicos') {
       if (p.fotos.length) {
-        cartaoTexto(s, 24, 300, 'ATIVIDADES A EXECUTAR', p.linhas, ES_AREA.h);
+        cartaoTexto(s, 24, 300, 'ATIVIDADES A EXECUTAR', p.linhas, false, ES_AREA.h);
         painelFotos(s, p.fotos, ES_FOTOS.lado);
       } else {
-        cartaoTexto(s, 24, 672, 'ATIVIDADES A EXECUTAR', p.linhas);
+        cartaoTexto(s, 24, 672, 'ATIVIDADES A EXECUTAR', p.linhas, p.centralizar);
       }
     }
 

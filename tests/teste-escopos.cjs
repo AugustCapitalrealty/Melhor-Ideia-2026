@@ -50,7 +50,7 @@ function ambiente() {
       base64Decode: s => Array.from(Buffer.from(s, 'base64')), base64Encode: b => Buffer.from(b).toString('base64'), newBlob: (b,m,n) => blob(n) },
     HtmlService: { createHtmlOutputFromFile: () => ({ getContent: () => fs.readFileSync(path.join(root,'app/EscopoAssets.html'),'utf8') }) },
     DriveApp: { getFileById: file, getFolderById: () => ({ createFile: () => file('file-' + (++seq)) }) },
-    SlidesApp: { create: deck, ShapeType: { RECTANGLE: 'rect' }, ContentAlignment: { TOP: 'top' }, ParagraphAlignment: { START: 'start', CENTER: 'center' }, PredefinedLayout: { BLANK: 'blank' } },
+    SlidesApp: { create: deck, ShapeType: { RECTANGLE: 'rect' }, ContentAlignment: { TOP: 'top', MIDDLE: 'middle' }, ParagraphAlignment: { START: 'start', CENTER: 'center' }, PredefinedLayout: { BLANK: 'blank' } },
     SpreadsheetApp: { create: planilha, flush() {} },
   });
   for (const name of ['Util.gs','Apresentacao_Conselho.gs','Escopos.gs','EscopoSlides.gs','EscopoPlanilha.gs']) vm.runInContext(fs.readFileSync(path.join(root,'app',name),'utf8'),ctx);
@@ -214,6 +214,55 @@ for(const t of comCorpo)assert(tiposVistos.has(t),'consistência conferida tamb�
 const textosLongos=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),prazo:'Prazo detalhado '.repeat(24),aviso:'Diretriz importante '.repeat(120)}));
 assert(textosLongos.some(p=>p.tipo==='card-texto'&&p.titulo==='Prazos'),'prazo longo recebe paginação própria');
 assert(textosLongos.some(p=>p.tipo==='card-texto'&&p.titulo==='Diretrizes para cotação'),'aviso longo recebe paginação própria');
+const textoScreenshot = [
+  'A proposta deverá contemplar todos os custos envolvidos, incluindo fornecimento, transporte, instalação e eventuais acessórios necessários para pleno funcionamento dos equipamentos.',
+  '',
+  'Os equipamentos deverão ser entregues prontos para operação.',
+  '',
+  'Considerar equipamento com proteção IP 65',
+  '',
+  'Equipamento deve ser Bivolt com tecnologia LED para cancelas de alto fluxo.',
+  '',
+  'Condição de pagamento:',
+  'Pagamento integral em até 28 dias após a entrega dos materiais'
+].join('\n');
+const planoScreenshot = c.esPlanejarSlides_(c.esNormalizar_({...exemplo(), inclusoes: textoScreenshot, exclusoes: '', criteriosAceite: ''}));
+const slidesInclusoes = planoScreenshot.filter(p => p.titulo === 'Inclusões');
+assert.equal(slidesInclusoes.length, 1, 'inclusões moderadas cabem em 1 slide único sem cisão');
+assert(!planoScreenshot.some(p => p.titulo === 'Inclusões' && (p.subtitulo||'').includes('continuação')), 'sem slide órfão de continuação');
+assert(slidesInclusoes[0].linhas[0].length > 60, 'linha de texto ocupa largura cheia do slide (>60 chars), sem estresse de 190pt');
+const itensLongos = Array.from({length: 14}, (_, i) => `Item ${i + 1}: Descrição detalhada do fornecimento com especificação técnica completa.`);
+const planoQuebraSemantica = c.esPlanejarSlides_(c.esNormalizar_({...exemplo(), inclusoes: itensLongos.join('\n\n')}));
+const slidesQuebra = planoQuebraSemantica.filter(p => p.titulo === 'Inclusões');
+assert(slidesQuebra.length > 1, 'texto extenso pagina corretamente');
+slidesQuebra.forEach(s => {
+  const ultimaLinha = s.linhas[s.linhas.length - 1];
+  assert(/[.!?:]$/.test(ultimaLinha.trim()), 'slide nunca termina no meio de uma frase: ' + ultimaLinha);
+});
+// O card de página única é centralizado no lugar de crescer a letra: os usuários reclamaram (02/10) da fonte mudando de slide para slide.
+assert.equal(slidesInclusoes[0].fs, ES_FS.corpo, 'card único mantém o corpo de todo o deck');
+assert(slidesInclusoes[0].centralizar, 'card único sai centralizado na vertical');
+assert.equal(c.esMostrarBadge_('Inclusões','INCLUSÕES'), false, 'badge não repete o título da página');
+assert(c.esMostrarBadge_('Prazos','CRONOGRAMA'), 'badge que acrescenta informação continua visível');
+// Já as páginas de continuação mantêm um corpo só, senão o texto mudaria de tamanho ao virar o slide.
+slidesQuebra.forEach(s=>assert.equal(s.fs,ES_FS.corpo,'continuação mantém o mesmo corpo'));
+assert(!slidesQuebra.some(s=>s.centralizar),'página de continuação começa no topo');
+// Nenhuma linha pode passar da largura útil da caixa — o Slides reserva recuo interno dos dois lados.
+const utilCard=c.esLarguraUtil_(644);
+planoScreenshot.concat(planoQuebraSemantica).filter(p=>p.tipo==='card-texto').forEach(p=>{
+  p.linhas.forEach(l=>assert(c.esLarguraTexto_(l,p.fs)<=utilCard,'linha cabe na caixa desenhada: '+l));
+});
+// Dois blocos que cabem lado a lado não são explodidos só porque o terceiro é longo.
+const curtoLim='Fornecimento, transporte e instalação inclusos.\nGarantia de 12 meses.';
+const longoLim=Array.from({length:22},(_,i)=>'• Requisito '+(i+1)+' com especificação técnica detalhada e extensa.').join('\n');
+const planoMisto=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),inclusoes:curtoLim,exclusoes:curtoLim,criteriosAceite:longoLim}));
+const duploLim=planoMisto.filter(p=>p.tipo==='limites-aceite');
+assert.equal(duploLim.length,1,'os dois blocos curtos continuam em um slide só');
+assert.equal(duploLim[0].blocos.length,2,'slide de limites fica com as duas colunas que cabem');
+assert(planoMisto.some(p=>p.titulo==='Critérios de aceite'),'só o bloco longo ganha card próprio');
+// Marcador de lista vale no início da linha; numeração no meio da frase não é lista.
+assert(c.esEhMarcador_('1. Primeiro item')&&c.esEhMarcador_('• Item'),'marcador no início conta');
+assert(!c.esEhMarcador_('Conforme NBR 5410. 2 vias exigidas'),'numeração no meio da frase não é lista');
 assert.equal(c.apiEscopoEnviarImagem('x','text/html','AAAA').ok,false);
 assert.equal(c.apiEscopoImagem('private-file').ok,false,'API não lê arquivos arbitrários do Drive');
 // Render de todas as amostras para inspeção visual opcional em ferramentas locais.
