@@ -211,6 +211,80 @@ Três armadilhas técnicas registradas em §17 da base — a mais cara foi `R$ -
 
 ---
 
+## 02/10/2026 — sexta
+
+### Ambiente: índice do git corrompido pelo Drive
+
+O `.git/index` tinha sumido. Sobraram `index.lock` e `packed-refs.lock` de um commit interrompido em 17/09 às 14:25, e por isso o git mostrava os 234 arquivos como apagados. O índice foi reconstruído com `git reset`, e nenhum arquivo de trabalho foi alterado.
+
+**Restrição registrada**: a máquina tem Deep Freeze, então o C: volta ao estado congelado a cada reinício. O repositório continua no Google Drive (G:), e o GitHub é a cópia de segurança: dar push ao fim de cada sessão. O Node fica em `C:\Program Files\nodejs` e pode não estar no PATH da sessão do VS Code.
+
+### Retorno dos usuários sobre os slides do escopo
+
+Três reclamações sobre o deck gerado na aba Escopos:
+
+1. "Em cada slide está ficando um tamanho de fonte diferente e a cor também."
+2. "A configuração está ficando tudo em um canto só."
+3. "A foto precisa estar junto com a descrição."
+
+Um agente gerou decks com o Google simulado e mediu cada slide, e as três se confirmaram:
+- **Fonte e cor**: o corpo saía em sete tamanhos diferentes e com duas cores; os rótulos tinham três tamanhos e três cores.
+- **Conteúdo num canto**: um grupo com 3 tópicos ocupava 8% do slide.
+- **Foto longe da descrição**: as fotos ficavam numa seção própria, em média sete slides depois dos serviços do grupo.
+
+| Decisão | Motivo |
+| :--- | :--- |
+| Escala tipográfica única (`ES_FS`): corpo 11,5 pt e rótulo 9 pt Montserrat, uma cor de corpo em todo o deck | Reclamação 1. A tabela da EAP mantém 8,5 pt, por ser tabela |
+| Cartão do tamanho do texto, centralizado quando cabe em uma página; a continuação começa no topo | Reclamação 2 |
+| Texto quebrado na largura em que será desenhado | Limites, prazos e aviso eram quebrados na coluna estreita e desenhados no cartão largo |
+| Altura de linha pela métrica da Open Sans (1,362 em × 110%) | A estimativa de 1,2 em deixava texto vazar dos cartões cheios |
+| Legenda colada na foto pelo tamanho real da imagem (cabeçalho PNG/JPEG, com rotação EXIF) | O Slides encaixa a imagem mantendo a proporção; sem o tamanho real, a legenda ficava na borda da moldura |
+| ~~Fotos do grupo à direita do texto, até 2 por slide~~ | Publicado na v71. **Revertido no mesmo dia**: com poucos tópicos, o cartão de texto ficava 70% vazio (print do usuário, escopo das barreiras plásticas, R2) |
+| Cada grupo: primeiro um slide só com o texto, no slide seguinte as suas fotos (até 4) | Pedido do usuário após ver a v71. Publicado na v72 |
+| Fotos apoiadas na mesma linha de base | Foto deitada ao lado de foto em pé deixava os números desalinhados |
+| A paginação corta antes de um tópico, nunca no meio | O teste E2E pegou um tópico partido entre dois slides |
+
+**Merge com o trabalho de 22/09**: o primeiro push foi recusado. O GitHub tinha dois commits de 22/09, feitos em outra cópia do repositório, que esta pasta do Drive não tinha. Ficaram deles a paginação que não corta frase, o arranjo parcial de limites (dois blocos lado a lado e o terceiro em cartão próprio), o recuo na continuação de tópicos, a calibração de largura do Open Sans e o rótulo que não repete o título. ~~Corpo adaptativo de até 14 pt~~: substituído pela escala única, porque era exatamente a causa da reclamação 1.
+
+**Versão visual**: `ESL3` → `ESL4` → `ESL5`. Uma revisão já emitida numa versão anterior é regenerada no layout novo ao clicar em Gerar, e o arquivo antigo fica no histórico.
+
+### Publicação
+
+- O `npm run push` só atualiza o @HEAD do Apps Script. Os usuários abrem a implantação versionada `AKfycbxy2cJdA-…`, que precisa de `npx clasp deploy -i <id> -d "<descrição>"`. O link não muda.
+- v71: escala única e fotos ao lado. v72: texto e fotos em slides separados.
+- Para voltar atrás, basta reimplantar a versão anterior no mesmo ID.
+- Antes de mexer no código: `git fetch` e conferir `main..origin/main`, porque existe outra cópia que também envia commits.
+
+### Teste de ponta a ponta com Playwright
+
+O Playwright foi instalado fora do projeto (no scratchpad da sessão, por causa do Deep Freeze) e usa o Chrome da máquina. Com o Google simulado, o teste percorreu a interface real:
+- 3 grupos de serviço;
+- 9 fotos reais enviadas pelo botão de cada grupo: paisagem, em pé e foto de celular com EXIF 6;
+- EAP e condições;
+- salvar e gerar.
+
+Na v72 passaram todas as verificações: corpo 11,5 em todos os slides, cada foto logo depois do texto do seu grupo, proporção certa (inclusive EXIF 6), "FOTO n" 2 pt abaixo da imagem, nenhuma foto perdida ou repetida e nada passando do rodapé.
+
+O `tests/teste-escopos-browser.cjs` estava desatualizado desde 17/09: esperava a mensagem do servidor, mas a pendência agora é barrada no navegador e aparece no diagnóstico. Foi corrigido. Ele continua fora do `npm test` porque depende do Playwright; para rodar, aponte `PLAYWRIGHT_MODULE` para uma instalação externa.
+
+**Não verificado**: se o Google Slides aplica a rotação EXIF ao inserir a foto. Se não aplicar, foto de celular tirada em pé sai deitada dentro de uma moldura em pé.
+
+### Pendências da tela de Escopos (decididas para depois)
+
+Vieram do teste E2E. O usuário pediu para não mexer por enquanto.
+
+| # | Pendência | Onde | Sugestão |
+| :--- | :--- | :--- | :--- |
+| 1 | Foto acima de 5 MB é recusada, e HEIC também; foto de celular costuma passar disso | `EscopoInterface.html` (`esArquivoUI`) | Reduzir e recodificar no navegador (canvas) antes de enviar. Isso também grava a orientação nos pixels e elimina o risco do EXIF acima |
+| 2 | "Título do conjunto fotográfico" é obrigatório, mas não aparece mais no deck | `EscopoInterface.html` e `Escopos.gs` (`esValidarGeracao_`) | Tirar o campo e a validação, ou voltar a exibi-lo |
+| 3 | A legenda é um campo de uma linha (180 caracteres); legenda longa fica escondida | `EscopoInterface.html` (`esInputUI`) | Trocar por textarea com contador |
+| 4 | O envio de várias fotos para no primeiro erro, sem dizer qual arquivo falhou, e a tela rola para o topo | `EscopoInterface.html` (`esUploadFotosUI`) | Seguir com os demais arquivos e listar os recusados junto do grupo |
+| 5 | Escolher um arquivo recusado marca "alterações não salvas" | `EscopoInterface.html`, listener de `input` | Ignorar `input[type=file]` |
+| 6 | "Salvando e gerando…" aparece no topo, longe do botão clicado | `EscopoInterface.html` | Mostrar o status na barra fixa |
+| 7 | ↑/↓ de foto troca com a vizinha de outro grupo e nada muda na tela | `EscopoInterface.html` (`esMoverUI`) | Mover só entre fotos do mesmo grupo |
+
+---
+
 ## Próxima entrada
 
 *(a preencher conforme avançamos)*

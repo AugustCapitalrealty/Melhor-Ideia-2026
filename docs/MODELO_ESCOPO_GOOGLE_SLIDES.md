@@ -25,6 +25,8 @@ Análise em 09/09/2026. Estado: primeira implementação local concluída; publi
 
 A altura de linha passou a usar a métrica da Open Sans (1,362 em × 110%), que é mais próxima do que o Slides desenha. A versão visual passou de `ESL3` para `ESL5` (a `ESL4` durou só a manhã de 02/10): revisões já emitidas no modelo antigo são regeneradas no novo ao clicar em Gerar, e o histórico anterior é preservado. O campo "Título do conjunto fotográfico" continua salvo, mas o deck passou a usar o título do grupo. Da revisão de 22/09 foram mantidas a paginação que não corta frase, o arranjo parcial de limites (dois blocos lado a lado e o terceiro em cartão próprio), o recuo na continuação de tópicos e a calibração de largura do Open Sans; o corpo adaptativo de até 14 pt foi substituído pela escala única.
 
+Verificação, publicação (v71 e v72) e pendências da tela de Escopos, adiadas a pedido do usuário: ver [Histórico, 02/10/2026](HISTORICO.md#02102026--sexta).
+
 - Aba **Escopos**, também acessível por `?page=escopos`, com identificação, localização, objetivo, vistoria, grupos de serviços, fotos, itens para cotação e condições.
 - Rascunhos salvos em revisões imutáveis; salvamento concorrente de uma versão antiga é recusado. Geração repetida da mesma revisão retorna os arquivos já registrados.
 - Imagem e endereço padrão de Curitiba extraídos da referência. Os demais Megas recebem seu padrão pelo próprio formulário; nenhum endereço ou imagem foi inventado para eles.
