@@ -8,6 +8,22 @@ Análise em 09/09/2026. Estado: primeira implementação local concluída; publi
 
 **Revisão de experiência em 17/09/2026:** o formulário ganhou orientação por resultado, indicação dos campos obrigatórios, diagnóstico de pendências e campos próprios para inclusões, exclusões e critérios de aceite. O deck passou a incluir a EAP técnica, sem colunas de preço, e a paginar textos longos de prazos e diretrizes. O histórico passou a recuperar também as planilhas já emitidas.
 
+**Retorno dos usuários em 02/10/2026:** três reclamações sobre o deck gerado. Todas foram confirmadas na auditoria do deck simulado e corrigidas em `EscopoSlides.gs`.
+
+1. **Fonte e cor mudavam de slide para slide.** O corpo saía em sete tamanhos diferentes, de 8,5 a 12,5 pt, e alternava entre 11 e 12,5 dentro do mesmo grupo. Os rótulos tinham três tamanhos e três cores.
+   - Agora há uma escala única (`ES_FS`): corpo em 11,5 pt e rótulo em 9 pt Montserrat azul, em todos os slides de conteúdo.
+   - O corpo tem uma cor só. A cor escura em negrito fica apenas para o nome do responsável.
+2. **Conteúdo num canto.** Os cartões tinham sempre o tamanho da página, com o texto preso no alto à esquerda: um grupo de três tópicos ocupava 8% do slide. Textos longos de limites, prazos e aviso eram quebrados na largura da coluna estreita e desenhados no cartão largo.
+   - Agora o cartão acompanha o tamanho do texto e fica centralizado na área.
+   - Todo texto é quebrado na largura em que será desenhado.
+3. **Foto longe da descrição.** As fotos ficavam numa seção própria, em média sete slides depois dos serviços do grupo.
+   - Agora cada grupo de serviço traz as suas fotos à direita da lista de atividades, até duas por slide. As que sobram vêm logo em seguida, ainda com o título do grupo.
+   - A foto vinculada a mais de um grupo aparece no primeiro deles.
+   - A numeração das fotos é contínua dentro do grupo.
+   - O gerador lê o tamanho real da imagem no cabeçalho PNG/JPEG, já com a rotação EXIF de foto de celular aplicada. Assim, o número e a legenda ficam colados na foto, e não na borda da moldura.
+
+A altura de linha passou a usar a métrica da Open Sans (1,362 em × 110%), que é mais próxima do que o Slides desenha. A versão visual passou de `ESL3` para `ESL4`: revisões já emitidas no modelo antigo são regeneradas no novo ao clicar em Gerar, e o histórico anterior é preservado. O campo "Título do conjunto fotográfico" continua salvo, mas o deck passou a usar o título do grupo.
+
 - Aba **Escopos**, também acessível por `?page=escopos`, com identificação, localização, objetivo, vistoria, grupos de serviços, fotos, itens para cotação e condições.
 - Rascunhos salvos em revisões imutáveis; salvamento concorrente de uma versão antiga é recusado. Geração repetida da mesma revisão retorna os arquivos já registrados.
 - Imagem e endereço padrão de Curitiba extraídos da referência. Os demais Megas recebem seu padrão pelo próprio formulário; nenhum endereço ou imagem foi inventado para eles.

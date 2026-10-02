@@ -328,10 +328,10 @@ function apiEscopoGerar(id, revisao) {
     const reserva = cfComTrava_(function () {
       const anteriores = cfLerTudo_('EscopoArquivos').filter(function (f) { return f.ID_ESCOPO === id && Number(f.REVISAO) === Number(revisao); });
       // Reutiliza apenas a versão visual atual; arquivos antigos ficam no histórico.
-      const pronto = anteriores.filter(function (f) { return f.STATUS === 'concluido' && String(f.ID).indexOf('ESL3-') === 0; })[0];
+      const pronto = anteriores.filter(function (f) { return f.STATUS === 'concluido' && String(f.ID).indexOf('ESL4-') === 0; })[0];
       if (pronto) return { pronto: pronto };
       if (anteriores.some(esGerandoAtivo_)) throw new Error('Esta revisão já está sendo gerada. Aguarde alguns minutos e reabra o escopo.');
-      const token = 'ESL3-' + Utilities.getUuid(), agora = new Date().toISOString();
+      const token = 'ESL4-' + Utilities.getUuid(), agora = new Date().toISOString();
       // Tentativa que falhou ou morreu no limite de tempo: a mesma linha é reaproveitada,
       // e os arquivos incompletos que ela deixou vão para a lixeira.
       const refazer = anteriores.filter(function (f) { return f.STATUS === 'falhou' || f.STATUS === 'gerando'; })[0];

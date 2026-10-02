@@ -36,7 +36,7 @@ function ambiente() {
           insertShape(type, x, y, w, h) {
             const e = { text: '', x, y, w, h }; s.elements.push(e);
             const style = { setFontFamily(v) { e.font = v; return this; }, setFontSize(v) { e.fs = v; return this; }, setForegroundColor(v) { e.color = v; return this; }, setBold(v) { e.bold = v; return this; } };
-            const par = { setParagraphAlignment() { return this; }, setLineSpacing() { return this; }, setSpaceAbove() { return this; }, setSpaceBelow() { return this; } };
+            const par = { setParagraphAlignment(v) { e.align = v; return this; }, setLineSpacing() { return this; }, setSpaceAbove() { return this; }, setSpaceBelow() { return this; } };
             const t = { setText(v) { e.text = v; }, getTextStyle: () => style, getParagraphStyle: () => par };
             const border = { setTransparent() { return this; }, setWeight(w) { e.borderW = w; return this; }, getLineFill: () => ({ setSolidFill(c) { e.borderColor = c; return this; } }) };
             return { getBorder: () => border, getFill: () => ({ setSolidFill(v) { e.fill = v; }, setTransparent() {} }), setContentAlignment() {}, getText: () => t };
@@ -50,7 +50,7 @@ function ambiente() {
       base64Decode: s => Array.from(Buffer.from(s, 'base64')), base64Encode: b => Buffer.from(b).toString('base64'), newBlob: (b,m,n) => blob(n) },
     HtmlService: { createHtmlOutputFromFile: () => ({ getContent: () => fs.readFileSync(path.join(root,'app/EscopoAssets.html'),'utf8') }) },
     DriveApp: { getFileById: file, getFolderById: () => ({ createFile: () => file('file-' + (++seq)) }) },
-    SlidesApp: { create: deck, ShapeType: { RECTANGLE: 'rect' }, ContentAlignment: { TOP: 'top' }, ParagraphAlignment: { START: 'start' }, PredefinedLayout: { BLANK: 'blank' } },
+    SlidesApp: { create: deck, ShapeType: { RECTANGLE: 'rect' }, ContentAlignment: { TOP: 'top' }, ParagraphAlignment: { START: 'start', CENTER: 'center' }, PredefinedLayout: { BLANK: 'blank' } },
     SpreadsheetApp: { create: planilha, flush() {} },
   });
   for (const name of ['Util.gs','Apresentacao_Conselho.gs','Escopos.gs','EscopoSlides.gs','EscopoPlanilha.gs']) vm.runInContext(fs.readFileSync(path.join(root,'app',name),'utf8'),ctx);
@@ -131,7 +131,9 @@ const imgId='IMG-11111111-1111-1111-1111-111111111111';
 const fotos=Array.from({length:9},(_,i)=>({imagem:imgId,titulo:'QD Módulo 01',legenda:i===0?'Legenda extensa '.repeat(10):'',grupos:['g1']}));
 const longo=c.esNormalizar_({...exemplo(),fotos,objetivo:'PALAVRA '.repeat(600),itens:[{...exemplo().itens[0],descricao:'Descrição comprida '.repeat(120)}]});
 const plano=c.esPlanejarSlides_(longo);
-assert.deepEqual(Array.from(plano.filter(p=>p.tipo==='fotos'),p=>p.fotos.length),[4,4,1]);
+// Nove fotos de um grupo curto: duas ao lado dos serviços e o resto logo em seguida, ainda no grupo.
+assert.deepEqual(Array.from(plano.filter(p=>(p.fotos||[]).length),p=>p.tipo+':'+p.fotos.length),['servicos:2','fotos:4','fotos:3']);
+assert.deepEqual(Array.from(plano.flatMap(p=>p.fotos||[]),f=>f.numero),[1,2,3,4,5,6,7,8,9],'numeração contínua dentro do grupo');
 const objetivo=plano.filter(p=>p.titulo==='Objetivo').flatMap(p=>Array.from(p.linhas)).join(' ');
 assert.equal((objetivo.match(/PALAVRA/g)||[]).length,600,'paginação não perde texto');
 assert(plano.some(p=>p.tipo==='eap'),'EAP resumida também orienta quem lê o deck');
@@ -142,14 +144,73 @@ const visual=a.ctx.SlidesApp.create('longo');c.esDesenharSlides_(visual,plano,{l
 for(const page of visual.pages)for(const e of page.elements){assert(e.y+e.h<=405.01,JSON.stringify(e));assert(e.x+e.w<=720.01);}
 // A descrição da foto sai no mesmo slide da foto, logo abaixo dela — nunca num slide separado.
 assert(!plano.some(p=>/Legendas/.test(p.titulo)),'sem slide separado de legendas');
-const idxFotos=plano.findIndex(p=>p.tipo==='fotos'),slideFoto=visual.pages[idxFotos].elements;
+const idxFotos=plano.findIndex(p=>(p.fotos||[]).length),slideFoto=visual.pages[idxFotos].elements;
 const imgFoto=slideFoto.find(e=>e.image==='foto'),legFoto=slideFoto.find(e=>(e.text||'').includes('Legenda extensa'));
 assert(legFoto,'legenda renderizada junto da foto');assert(legFoto.y>=imgFoto.y+imgFoto.h,'legenda abaixo da foto');
 assert(Math.abs(legFoto.x-imgFoto.x)<12,'legenda alinhada à própria foto');
 const legendasLongas=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),fotos:Array.from({length:4},()=>({imagem:imgId,titulo:'QD',legenda:'MWMWMWMWM '.repeat(18).trim(),grupos:['g1']}))}));
 const visualLeg=a.ctx.SlidesApp.create('legendas');c.esDesenharSlides_(visualLeg,legendasLongas,{logo:{name:'logo'},logoPreta:{name:'logoPreta'},'padrao:curitiba':{name:'curitiba'},[imgId]:{name:'foto'}},{revisao:1,data:'2026-09-09'});
 for(const page of visualLeg.pages)for(const e of page.elements.filter(e=>e.y<382)){assert(e.y+e.h<=382,'legenda máxima não invade o rodapé: '+JSON.stringify(e));}
-assert.equal(legendasLongas.filter(p=>p.tipo==='fotos').reduce((n,p)=>n+p.fotos.length,0),4,'nenhuma foto perdida');
+assert.equal(legendasLongas.reduce((n,p)=>n+(p.fotos||[]).length,0),4,'nenhuma foto perdida');
+// Retorno dos usuários em 02/10/2026: foto junto da descrição do serviço, letra e cor iguais em todo o deck,
+// e conteúdo curto sem ficar preso num canto.
+const ES_FS=vm.runInContext('ES_FS',c),tinta={corpo:'#46516B',destaque:'#16213E'};
+const grupos3=c.esNormalizar_({...exemplo(),
+  grupos:[{id:'g1',titulo:'Módulo 01',servicos:'Instalar diagrama\nOrganizar fios\nTestar'},{id:'g2',titulo:'Módulo 02',servicos:'Trocar disjuntor'},{id:'g3',titulo:'Shaft',servicos:'Vedar shaft'}],
+  itens:[{...exemplo().itens[0],grupos:['g1','g2','g3']}],
+  fotos:[{imagem:imgId,titulo:'x',legenda:'Quadro do módulo 02',grupos:['g2']},{imagem:imgId,titulo:'x',legenda:'Quadro do módulo 01',grupos:['g1']},{imagem:imgId,titulo:'x',legenda:'',grupos:['g1','g2']}]});
+const planoG=c.esPlanejarSlides_(grupos3),servG=planoG.filter(p=>p.tipo==='servicos');
+assert.deepEqual(clone(servG.map(p=>p.subtitulo)),['Módulo 01','Módulo 02','Shaft']);
+assert.deepEqual(clone(servG.map(p=>p.fotos.map(f=>f.legenda))),[['Quadro do módulo 01',''],['Quadro do módulo 02'],[]],'cada foto no slide dos serviços do seu grupo, sem repetir');
+assert(!planoG.some(p=>p.tipo==='capa-secao'&&/Fotogr/.test(p.titulo)),'sem seção de fotos longe dos serviços');
+const blobsT={logo:{name:'logo'},logoPreta:{name:'logoPreta'},'padrao:curitiba':{name:'curitiba'},[imgId]:{name:'foto'}};
+const deckG=a.ctx.SlidesApp.create('grupos');c.esDesenharSlides_(deckG,planoG,blobsT,{revisao:1,data:'2026-09-09'});
+const pagServ=deckG.pages[planoG.indexOf(servG[0])].elements;
+assert(pagServ.some(e=>(e.text||'').includes('Instalar diagrama')),'serviços no slide');
+assert.equal(pagServ.filter(e=>e.image==='foto').length,2,'fotos do grupo no mesmo slide dos serviços');
+assert(pagServ.filter(e=>e.image==='foto').every(e=>e.x>=340),'fotos à direita, sem cobrir o texto');
+const cartaoShaft=deckG.pages[planoG.indexOf(servG[2])].elements.find(e=>e.fill==='#F6F8FC'&&e.w===672);
+assert(Math.abs(cartaoShaft.y+cartaoShaft.h/2-(66+305/2))<1,'texto curto sem foto fica no centro, não no alto à esquerda');
+// Textos longos de inclusões quebram na largura em que serão desenhados, não na da coluna estreita.
+const limitesLongos=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),inclusoes:'Fornecimento de materiais e mão de obra '.repeat(30)}));
+const inclusao=limitesLongos.find(p=>p.titulo==='Inclusões');
+assert(Math.max(...inclusao.linhas.map(l=>c.esLarguraTexto_(l,ES_FS.corpo)))>500,'inclusões longas ocupam a largura do cartão');
+const deckLim=a.ctx.SlidesApp.create('limites');c.esDesenharSlides_(deckLim,limitesLongos,blobsT,{revisao:1,data:'2026-09-09'});
+const deckTL=a.ctx.SlidesApp.create('textos');c.esDesenharSlides_(deckTL,textosLongosPlano(),blobsT,{revisao:1,data:'2026-09-09'});
+function textosLongosPlano(){return c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),prazo:'Prazo detalhado '.repeat(24),aviso:'Diretriz importante '.repeat(120)}));}
+const planoBase=c.esPlanejarSlides_(c.esNormalizar_(exemplo()));
+const comCorpo=['local','contexto-duplo','card-texto','servicos','limites-aceite','encerramento'];
+for(const [deckX,planoX] of [[a.decks[0],planoBase],[visual,plano],[deckG,planoG],[deckLim,limitesLongos],[deckTL,textosLongosPlano()],[visualLeg,legendasLongas]]){
+  assert.equal(deckX.pages.length,planoX.length);
+  planoX.forEach((p,i)=>{
+    const els=deckX.pages[i].elements;
+    for(const e of els.filter(e=>e.y>=56&&e.y<382))assert(e.y+e.h<=382.01,'conteúdo não invade o rodapé: '+p.tipo+' '+JSON.stringify(e));
+    if(!comCorpo.includes(p.tipo))return;
+    const textos=els.filter(e=>e.text&&e.y>=56&&e.y<382);
+    for(const e of textos.filter(e=>e.font==='Open Sans'&&e.fs!==ES_FS.legenda)){
+      assert.equal(e.fs,ES_FS.corpo,'corpo com tamanho único: '+p.tipo+' '+e.text.slice(0,30));
+      assert.equal(e.color,e.bold?tinta.destaque:tinta.corpo,'corpo com cor única: '+p.tipo+' '+e.text.slice(0,30));
+    }
+    for(const e of textos.filter(e=>e.font==='Montserrat'))assert.equal(e.fs,ES_FS.rotulo,'rótulo com tamanho único: '+p.tipo+' '+e.text);
+  });
+}
+// Tamanho real da foto: a legenda encosta na imagem, inclusive em foto de celular tirada em pé (EXIF 6).
+const bytesBlob=b=>({getBytes:()=>b.map(x=>x>127?x-256:x)});
+const png=[137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,3,32,0,0,2,88,8,2,0,0,0];
+assert.deepEqual(clone(c.esDimensoesImagem_(bytesBlob(png))),{w:800,h:600});
+const exif=[0xFF,0xE1,0,34,0x45,0x78,0x69,0x66,0,0,0x49,0x49,0x2A,0,8,0,0,0,1,0,0x12,0x01,3,0,1,0,0,0,6,0,0,0,0,0,0,0];
+const sof=[0xFF,0xC0,0,17,8,2,0x58,3,0x20,3,1,0x22,0,2,0x11,1,3,0x11,1,0xFF,0xDA,0,8,0,0,0,0,0,0];
+assert.deepEqual(clone(c.esDimensoesImagem_(bytesBlob([0xFF,0xD8,...sof]))),{w:800,h:600});
+assert.deepEqual(clone(c.esDimensoesImagem_(bytesBlob([0xFF,0xD8,...exif,...sof]))),{w:600,h:800},'foto de celular em pé');
+assert.equal(c.esDimensoesImagem_(bytesBlob(new Array(40).fill(1))),null);assert.equal(c.esDimensoesImagem_(undefined),null);
+const deckReal=a.ctx.SlidesApp.create('real');c.esDesenharSlides_(deckReal,planoG,{...blobsT,[imgId]:{name:'foto',...bytesBlob([0xFF,0xD8,...exif,...sof])}},{revisao:1,data:'2026-09-09'});
+for(const img of deckReal.pages[planoG.indexOf(servG[0])].elements.filter(e=>e.image==='foto')){
+  assert(Math.abs(img.w/img.h-600/800)<.001,'proporção da foto preservada');
+  const legenda=deckReal.pages[planoG.indexOf(servG[0])].elements.find(e=>e.text&&e.text.startsWith('FOTO')&&Math.abs(e.y-(img.y+img.h+2))<.01);
+  assert(legenda,'número da foto logo abaixo da imagem');
+}
+const tiposVistos=new Set([planoBase,plano,planoG,limitesLongos,textosLongosPlano()].flat().map(p=>p.tipo));
+for(const t of comCorpo)assert(tiposVistos.has(t),'consistência conferida também em '+t);
 const textosLongos=c.esPlanejarSlides_(c.esNormalizar_({...exemplo(),prazo:'Prazo detalhado '.repeat(24),aviso:'Diretriz importante '.repeat(120)}));
 assert(textosLongos.some(p=>p.tipo==='card-texto'&&p.titulo==='Prazos'),'prazo longo recebe paginação própria');
 assert(textosLongos.some(p=>p.tipo==='card-texto'&&p.titulo==='Diretrizes para cotação'),'aviso longo recebe paginação própria');

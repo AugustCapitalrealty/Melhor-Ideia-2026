@@ -4,6 +4,25 @@
  * Paleta e Identidade Visual: DS_CN (Montserrat + Open Sans)
  */
 
+/**
+ * Escala tipográfica única: cada papel tem um tamanho só, em todos os slides.
+ * Antes cada tipo de página escolhia o seu (o corpo ia de 10,5 a 12,5) e quem lia
+ * via a letra mudar de um slide para o outro.
+ */
+const ES_FS = { titulo: 16, subtitulo: 10, corpo: 11.5, rotulo: 9, legenda: 9.5, tabela: 8.5, rodape: 8 };
+/** Altura da linha no Slides: métrica da Open Sans (1,362 em) × espaçamento de 110%. */
+const ES_ENTRELINHA = 1.5;
+/** Margem interna da caixa de texto do Slides (7,2 pt de cada lado), com folga. */
+const ES_RECUO = 16;
+/** Área útil entre o cabeçalho e o rodapé. */
+const ES_AREA = { x: 24, y: 66, w: 672, h: 305 };
+/** Cartão com rótulo: o rótulo ocupa 30 pt no topo e o corpo termina 8 pt antes da borda. */
+const ES_CARTAO = { topo: 30, base: 8, linhas: 14 };
+/** Largura de quebra do corpo: cartão da largura toda, ou coluna de texto ao lado das fotos. */
+const ES_LARG = { cheio: 628, lado: 256 };
+/** Painel de fotos ao lado dos serviços e faixa de fotos na largura toda. */
+const ES_FOTOS = { lado: { x: 340, w: 356, max: 2 }, cheio: { x: 24, w: 672, max: 4 }, minImagem: 110 };
+
 function esLarguraTexto_(texto, fonte) {
   return Array.from(texto).reduce(function (n, c) {
     return n + (/\s/.test(c) ? .3 : /[ilIjtfr.,:;!'|]/.test(c) ? .38 : /[MW@%mw]/.test(c) ? 1 : /[A-ZÁÉÍÓÚÃÕÇ]/.test(c) ? .78 : .65) * fonte;
@@ -28,6 +47,23 @@ function esQuebrar_(texto, largura, fonte) {
   return linhas;
 }
 
+/** Altura de uma caixa com n linhas, já contando a margem interna. */
+function esAlturaTexto_(linhas, fonte) {
+  return linhas ? linhas * fonte * ES_ENTRELINHA + ES_RECUO : 0;
+}
+
+function esAlturaCartao_(linhas) {
+  return ES_CARTAO.topo + esAlturaTexto_(linhas, ES_FS.corpo) + ES_CARTAO.base;
+}
+
+/** Corta com reticências o que não pode crescer (cabeçalho, capa); o texto completo está em outra página. */
+function esLimitarLinhas_(linhas, max) {
+  if (linhas.length <= max) return linhas;
+  const r = linhas.slice(0, max);
+  r[max - 1] = r[max - 1].slice(0, -2).replace(/\s+$/, '') + '…';
+  return r;
+}
+
 /** Divide linhas balanceando o final para nunca deixar órfãos (menos de 4 linhas no fim). */
 function esFatiarLinhas_(linhas, tamanhoMax) {
   if (linhas.length <= tamanhoMax) return [linhas];
@@ -47,15 +83,84 @@ function esFatiarLinhas_(linhas, tamanhoMax) {
   return resultado;
 }
 
-const ES_FOTO_LEGENDA_FS = 9;
-const ES_FOTO_LEGENDA_MAX = 120;
+/**
+ * Tira do texto as linhas que cabem numa página e devolve o restante como texto,
+ * para a página seguinte quebrá-lo na largura dela (com ou sem fotos ao lado).
+ */
+function esTomarLinhas_(texto, largura, max) {
+  const paragrafos = String(texto).split('\n'), linhas = [];
+  for (let i = 0; i < paragrafos.length; i++) {
+    const partes = esQuebrar_(paragrafos[i], largura, ES_FS.corpo);
+    if (linhas.length + partes.length <= max) { Array.prototype.push.apply(linhas, partes); continue; }
+    const cabe = max - linhas.length;
+    Array.prototype.push.apply(linhas, partes.slice(0, cabe));
+    return { linhas: linhas, resto: [partes.slice(cabe).join(' ')].concat(paragrafos.slice(i + 1)).join('\n') };
+  }
+  return { linhas: linhas, resto: '' };
+}
 
-/** Largura de cada foto no slide e altura reservada para as descrições abaixo delas. */
-function esLayoutFotos_(fotos) {
-  const n = fotos.length, gap = 16, wFoto = (672 - gap * (n - 1)) / n;
-  const legendas = fotos.map(function (f) { return f.legenda ? esQuebrar_(f.legenda, wFoto - 16, ES_FOTO_LEGENDA_FS) : []; });
-  const maxLinhas = Math.max.apply(null, legendas.map(function (l) { return l.length; }));
-  return { wFoto: wFoto, gap: gap, legendas: legendas, hLegenda: maxLinhas ? Math.ceil(maxLinhas * ES_FOTO_LEGENDA_FS * 1.3 + 12) : 0 };
+/** Largura de cada foto, legendas quebradas e altura da caixa de imagem que sobra acima delas. */
+function esLayoutFotos_(fotos, largura) {
+  const n = fotos.length, gap = 16, w = (largura - gap * (n - 1)) / n;
+  const legendas = fotos.map(function (f) { return f.legenda ? esQuebrar_(f.legenda, w - 12 - ES_RECUO, ES_FS.legenda) : []; });
+  const hLegenda = Math.max.apply(null, legendas.map(function (l) { return esAlturaTexto_(l.length, ES_FS.legenda); }));
+  return { w: w, gap: gap, legendas: legendas, hLegenda: hLegenda, hImagem: ES_AREA.h - 12 - 18 - hLegenda };
+}
+
+/** Quantas fotos cabem na próxima página sem a legenda espremer a imagem. */
+function esTomarFotos_(fotos, painel) {
+  let n = Math.min(painel.max, fotos.length);
+  while (n > 1 && esLayoutFotos_(fotos.slice(0, n), painel.w).hImagem < ES_FOTOS.minImagem) n--;
+  return fotos.splice(0, n);
+}
+
+/**
+ * Largura e altura lidas do cabeçalho PNG/JPEG, com a rotação EXIF da câmera aplicada.
+ * O Slides encaixa a imagem mantendo a proporção; sabendo o tamanho real, a legenda
+ * fica colada na foto e não na borda da moldura. Devolve null se não reconhecer.
+ */
+function esDimensoesImagem_(blob) {
+  let b;
+  try { b = blob && blob.getBytes(); } catch (e) { return null; }
+  if (!b || b.length < 24) return null;
+  const u = function (i) { return b[i] & 255; };
+  if (u(0) === 137 && u(1) === 80 && u(2) === 78 && u(3) === 71) {
+    const w = (u(16) << 24 | u(17) << 16 | u(18) << 8 | u(19)) >>> 0, h = (u(20) << 24 | u(21) << 16 | u(22) << 8 | u(23)) >>> 0;
+    return w && h ? { w: w, h: h } : null;
+  }
+  if (u(0) !== 255 || u(1) !== 216) return null;
+  let i = 2, girada = false;
+  while (i + 9 < b.length) {
+    if (u(i) !== 255) return null;
+    const m = u(i + 1);
+    if (m === 255) { i++; continue; }
+    const tam = u(i + 2) << 8 | u(i + 3);
+    if (m === 0xE1 && u(i + 4) === 0x45 && u(i + 5) === 0x78 && u(i + 6) === 0x69 && u(i + 7) === 0x66) girada = esOrientacaoExif_(b, i + 10) >= 5;
+    if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) {
+      const h = u(i + 5) << 8 | u(i + 6), w = u(i + 7) << 8 | u(i + 8);
+      if (!w || !h) return null;
+      return girada ? { w: h, h: w } : { w: w, h: h };
+    }
+    i += 2 + tam;
+  }
+  return null;
+}
+
+/** Orientação EXIF (1 a 8); de 5 a 8 a foto foi tirada de lado e largura e altura se invertem. */
+function esOrientacaoExif_(b, t) {
+  try {
+    const u = function (i) { return b[i] & 255; }, le = u(t) === 0x49;
+    const r16 = function (i) { return le ? u(i) | u(i + 1) << 8 : u(i) << 8 | u(i + 1); };
+    const r32 = function (i) { return le ? (r16(i) | r16(i + 2) << 16) >>> 0 : (r16(i) << 16 | r16(i + 2)) >>> 0; };
+    const ifd = t + r32(t + 4);
+    if (ifd + 2 > b.length) return 1;
+    const n = r16(ifd);
+    for (let k = 0; k < n && ifd + 14 + k * 12 <= b.length; k++) {
+      const e = ifd + 2 + k * 12;
+      if (r16(e) === 0x0112) return r16(e + 8);
+    }
+  } catch (e) { /* EXIF ilegível: segue sem rotação */ }
+  return 1;
 }
 
 /**
@@ -64,13 +169,19 @@ function esLayoutFotos_(fotos) {
  */
 function esPlanejarSlides_(d) {
   const identificacao = [d.megaNome, d.armazem, d.modulos].filter(Boolean).join(' · ');
-  const identificacaoLonga = esQuebrar_(identificacao, 620, 13).length > 3;
+  // A capa tem uma linha para a identificação; mais do que isso ganha página própria.
+  const identificacaoLonga = esQuebrar_(identificacao, 632, 12).length > 1;
   let numeroSecao = 0;
   function secao(titulo, subtitulo) {
     numeroSecao++;
     p.push({ tipo: 'capa-secao', numero: String(numeroSecao).padStart(2, '0'), titulo: titulo, subtitulo: subtitulo });
   }
-  
+  function cartoes(titulo, subtitulo, badge, linhas) {
+    esFatiarLinhas_(linhas, ES_CARTAO.linhas).forEach(function (q, idx) {
+      p.push({ tipo: 'card-texto', titulo: titulo, subtitulo: idx ? '(continuação)' : subtitulo, badge: badge, linhas: q });
+    });
+  }
+
   // 1. Capa Executiva com Metadados
   const p = [{
     tipo: 'capa',
@@ -84,102 +195,80 @@ function esPlanejarSlides_(d) {
   }];
 
   // 2. Localização do Empreendimento
-  const enderecoLongo = esQuebrar_(d.megaNome + '\n' + d.endereco, 343, 11).length > 4;
+  const enderecoLongo = esQuebrar_(d.megaNome + '\n' + d.endereco, 349, ES_FS.corpo).length > 4;
   p.push({
     tipo: 'local',
     titulo: 'Localização',
     subtitulo: d.megaNome,
     imagem: d.imagem,
     detalhe: d.detalhe,
-    legenda: d.detalheLegenda,
-    texto: enderecoLongo ? d.megaNome : d.megaNome + '\n' + d.endereco
+    legenda: d.detalhe && d.detalheLegenda ? esQuebrar_(d.detalheLegenda, 264, ES_FS.legenda) : [],
+    linhas: esQuebrar_(enderecoLongo ? d.megaNome : d.megaNome + '\n' + d.endereco, 349, ES_FS.corpo)
   });
-  if (identificacaoLonga) {
-    p.push({ tipo: 'card-texto', titulo: 'Identificação', subtitulo: d.megaNome, badge: 'IDENTIFICAÇÃO', linhas: esQuebrar_(identificacao, 640, 12) });
-  }
-  if (enderecoLongo) {
-    p.push({ tipo: 'card-texto', titulo: 'Localização — endereço', subtitulo: d.megaNome, badge: 'ENDEREÇO', linhas: esQuebrar_(d.endereco, 640, 12) });
-  }
+  if (identificacaoLonga) cartoes('Identificação', d.megaNome, 'IDENTIFICAÇÃO', esQuebrar_(identificacao, ES_LARG.cheio, ES_FS.corpo));
+  if (enderecoLongo) cartoes('Localização — endereço', d.megaNome, 'ENDEREÇO', esQuebrar_(d.endereco, ES_LARG.cheio, ES_FS.corpo));
 
   // 3. Contexto: Objetivo & Resumo da Vistoria
-  const linhasObj = esQuebrar_(d.objetivo || '', 630, 12);
-  const linhasVist = esQuebrar_(d.vistoria || '', 630, 12);
-  const totalLinhasContexto = (d.objetivo ? linhasObj.length + 3 : 0) + (d.vistoria ? linhasVist.length + 3 : 0);
-
-  if (d.objetivo && d.vistoria && totalLinhasContexto <= 18 && linhasObj.length <= 8 && linhasVist.length <= 9) {
-    // Ambos cabem perfeitamente em um slide executivo duplo!
-    p.push({
-      tipo: 'contexto-duplo',
-      titulo: 'Objetivo & Vistoria Técnica',
-      subtitulo: d.megaNome,
-      objetivo: linhasObj,
-      vistoria: linhasVist
-    });
+  const linhasObj = esQuebrar_(d.objetivo || '', ES_LARG.cheio, ES_FS.corpo);
+  const linhasVist = esQuebrar_(d.vistoria || '', ES_LARG.cheio, ES_FS.corpo);
+  if (d.objetivo && d.vistoria && esAlturaCartao_(linhasObj.length) + 14 + esAlturaCartao_(linhasVist.length) <= ES_AREA.h) {
+    p.push({ tipo: 'contexto-duplo', titulo: 'Objetivo & Vistoria Técnica', subtitulo: d.megaNome, objetivo: linhasObj, vistoria: linhasVist });
   } else {
-    // Se muito longos, divide em cards dedicados com paginação anti-órfão
-    if (d.objetivo) {
-      const quebras = esFatiarLinhas_(linhasObj, 16);
-      quebras.forEach(function (q, idx) {
-        p.push({ tipo: 'card-texto', titulo: 'Objetivo', subtitulo: idx ? '(continuação)' : d.megaNome, badge: 'OBJETIVO', linhas: q });
-      });
-    }
-    if (d.vistoria) {
-      const quebras = esFatiarLinhas_(linhasVist, 16);
-      quebras.forEach(function (q, idx) {
-        p.push({ tipo: 'card-texto', titulo: 'Resumo da vistoria', subtitulo: idx ? '(continuação)' : d.megaNome, badge: 'VISTORIA TÉCNICA', linhas: q });
-      });
-    }
+    if (d.objetivo) cartoes('Objetivo', d.megaNome, 'OBJETIVO', linhasObj);
+    if (d.vistoria) cartoes('Resumo da vistoria', d.megaNome, 'VISTORIA TÉCNICA', linhasVist);
   }
 
-  // 4. Divisória de Serviços a Executar
+  // 4. Serviços a executar, cada grupo com as suas fotos no mesmo slide.
+  // A foto entra no primeiro grupo a que está vinculada, na ordem dos grupos.
   if (d.grupos.length) {
-    secao('Serviços a Executar', 'Detalhamento das atividades e escopo técnico por ambiente');
+    secao('Serviços a Executar', 'Atividades e registro fotográfico de cada ambiente');
   }
-
-  // 5. Grupos de Serviços com Prevenção de Órfãos
+  const fotosDoGrupo = {};
+  d.fotos.forEach(function (f) {
+    const g = d.grupos.filter(function (x) { return f.grupos.indexOf(x.id) >= 0; })[0];
+    if (!g) return;
+    (fotosDoGrupo[g.id] = fotosDoGrupo[g.id] || []).push(f);
+  });
   d.grupos.forEach(function (g) {
-    const topicos = g.servicos.split('\n')
+    let resto = g.servicos.split('\n')
       .filter(function (s) { return s.trim(); })
-      .map(function (s) { return '• ' + s.replace(/^[•●\-*]\s*/, ''); });
-
-    const textoCompleto = topicos.join('\n');
-    const linhasServicos = esQuebrar_(textoCompleto, 640, 12);
-
-    // Se tiver até 20 linhas, mantém no mesmo slide com layout compacto
-    if (linhasServicos.length <= 20) {
-      p.push({
-        tipo: 'servicos',
-        titulo: 'Serviços a Executar',
-        subtitulo: g.titulo,
-        linhas: linhasServicos,
-        compacto: linhasServicos.length > 13
-      });
-    } else {
-      // Divide de forma balanceada sem deixar 1 ou 2 linhas órfãs
-      const quebras = esFatiarLinhas_(linhasServicos, 16);
-      quebras.forEach(function (q, idx) {
-        p.push({
-          tipo: 'servicos',
-          titulo: 'Serviços a Executar',
-          subtitulo: g.titulo + (idx ? ' (continuação)' : ''),
-          linhas: q,
-          compacto: q.length > 13
-        });
-      });
+      .map(function (s) { return '• ' + s.trim().replace(/^[•●\-*]\s*/, ''); })
+      .join('\n');
+    const fotos = (fotosDoGrupo[g.id] || []).map(function (f, i) { return Object.assign({}, f, { numero: i + 1 }); });
+    let pagina = 0;
+    while (resto || fotos.length) {
+      const subtitulo = g.titulo + (pagina++ ? ' (continuação)' : '');
+      if (!resto) {
+        p.push({ tipo: 'fotos', titulo: 'Registro Fotográfico', subtitulo: subtitulo, fotos: esTomarFotos_(fotos, ES_FOTOS.cheio) });
+        continue;
+      }
+      const lado = esTomarFotos_(fotos, ES_FOTOS.lado), largura = lado.length ? ES_LARG.lado : ES_LARG.cheio;
+      // Anti-órfão: a próxima página não fica com 1 ou 2 linhas soltas. A conta usa a largura dela,
+      // que é maior quando as fotos do grupo já acabaram.
+      const larguraSeguinte = fotos.length ? ES_LARG.lado : ES_LARG.cheio;
+      const sobra = function (x) { return x.resto ? esQuebrar_(x.resto, larguraSeguinte, ES_FS.corpo).length : 3; };
+      let t = esTomarLinhas_(resto, largura, ES_CARTAO.linhas);
+      for (let m = ES_CARTAO.linhas - 1; sobra(t) < 3 && m >= ES_CARTAO.linhas / 2; m--) t = esTomarLinhas_(resto, largura, m);
+      p.push({ tipo: 'servicos', titulo: 'Serviços a Executar', subtitulo: subtitulo, linhas: t.linhas, fotos: lado });
+      resto = t.resto;
     }
   });
 
-  // 6. EAP resumida no próprio deck: o destinatário entende quantidades e referências sem depender do Excel.
+  // 5. EAP resumida no próprio deck: o destinatário entende quantidades e referências sem depender do Excel.
   if (d.itens.length) {
     secao('Escopo para Cotação', 'Itens, quantidades e referências que compõem esta revisão');
     const linhasEap = [];
     d.itens.forEach(function (it) {
       const grupo = it.tipo === 'grupo';
-      const partes = esQuebrar_(it.descricao, grupo ? 570 : 365, grupo ? 9.5 : 8.5);
-      for (let i = 0; i < partes.length; i += 2) {
-        linhasEap.push({ grupo: grupo, codigo: i ? '' : it.codigo, descricao: partes.slice(i, i + 2).join('\n'),
-          quantidade: i || grupo ? '' : String(it.quantidade).replace('.', ','), unidade: i || grupo ? '' : it.unidade,
-          referencia: i || grupo ? '' : it.referencia, continuacao: i > 0 });
+      const desc = esQuebrar_(it.descricao, 359, ES_FS.tabela);
+      const un = grupo ? [] : esQuebrar_(it.unidade, 34, ES_FS.tabela);
+      const ref = grupo ? [] : esQuebrar_(it.referencia, 115, ES_FS.tabela);
+      const linhas = Math.ceil(Math.max(desc.length, un.length, ref.length) / 2);
+      for (let i = 0; i < linhas; i++) {
+        const fatia = function (a) { return a.slice(i * 2, i * 2 + 2).join('\n'); };
+        linhasEap.push({ grupo: grupo, codigo: i ? '' : it.codigo, descricao: fatia(desc),
+          quantidade: i || grupo ? '' : String(it.quantidade).replace('.', ','), unidade: fatia(un),
+          referencia: fatia(ref), continuacao: i > 0 });
       }
     });
     for (let i = 0; i < linhasEap.length; i += 7) {
@@ -187,92 +276,49 @@ function esPlanejarSlides_(d) {
     }
   }
 
-  // 7. Divisória de Registro Fotográfico
-  if (d.fotos.length) {
-    secao('Registro Fotográfico', 'Evidências visuais levantadas na vistoria técnica de campo');
-  }
-
-  // 7. Fotografias Agrupadas (até 4 por slide, cada uma com sua descrição logo abaixo)
-  const conjuntos = [];
-  d.fotos.forEach(function (f) {
-    const chave = JSON.stringify([f.titulo, f.grupos]);
-    let ultimo = conjuntos[conjuntos.length - 1];
-    if (!ultimo || ultimo.chave !== chave || ultimo.fotos.length === 4 ||
-        esLayoutFotos_(ultimo.fotos.concat([f])).hLegenda > ES_FOTO_LEGENDA_MAX) {
-      ultimo = { chave: chave, fotos: [], titulo: f.titulo };
-      conjuntos.push(ultimo);
-    }
-    ultimo.fotos.push(f);
-  });
-
-  conjuntos.forEach(function (g) {
-    const sub = g.titulo ? g.titulo.replace(/^Registro\s+Fotogr[aá]fico\s*[-–—:]*\s*/i, '') : 'Instalações Inspecionadas';
-    p.push({ tipo: 'fotos', titulo: 'Registro Fotográfico', subtitulo: sub, fotos: g.fotos });
-  });
-
-  // 10. Divisória de Diretrizes e Condições
+  // 6. Divisória de Diretrizes e Condições
   if (d.consideracoes || d.prazo || d.aviso || d.visita) {
     secao('Considerações', 'Requisitos técnicos, prazos, visitas e diretrizes para elaboração da proposta');
   }
 
-  // 11. Considerações Técnicas com Anti-Órfão
-  if (d.consideracoes) {
-    const linhasCons = esQuebrar_(d.consideracoes, 640, 12);
-    if (linhasCons.length <= 18) {
-      p.push({ tipo: 'card-texto', titulo: 'Considerações', subtitulo: 'Requisitos técnicos e operacionais', badge: 'DIRETRIZES', linhas: linhasCons });
-    } else {
-      const quebras = esFatiarLinhas_(linhasCons, 15);
-      quebras.forEach(function (q, idx) {
-        p.push({ tipo: 'card-texto', titulo: 'Considerações', subtitulo: idx ? '(continuação)' : 'Requisitos técnicos e operacionais', badge: 'DIRETRIZES', linhas: q });
-      });
-    }
-  }
+  // 7. Considerações Técnicas com Anti-Órfão
+  if (d.consideracoes) cartoes('Considerações', 'Requisitos técnicos e operacionais', 'DIRETRIZES', esQuebrar_(d.consideracoes, ES_LARG.cheio, ES_FS.corpo));
 
-  // 12. Limites e aceite: reduz ambiguidades para quem prepara a proposta e para quem recebe o serviço.
+  // 8. Limites e aceite: reduz ambiguidades para quem prepara a proposta e para quem recebe o serviço.
   const blocosLimites = [
     { titulo: 'INCLUSÕES', texto: d.inclusoes, cor: 'azul' },
     { titulo: 'EXCLUSÕES', texto: d.exclusoes, cor: 'ambar' },
     { titulo: 'CRITÉRIOS DE ACEITE', texto: d.criteriosAceite, cor: 'verde' }
-  ].filter(function (b) { return b.texto; }).map(function (b) {
-    return Object.assign({}, b, { linhas: esQuebrar_(b.texto, 190, 10.5) });
-  });
+  ].filter(function (b) { return b.texto; });
   if (blocosLimites.length) {
-    const total = blocosLimites.reduce(function (n, b) { return n + b.linhas.length; }, 0);
-    const cabeEmResumo = total <= 22 && blocosLimites.every(function (b) { return b.linhas.length <= 10; });
-    if (cabeEmResumo) {
+    const wColuna = (ES_AREA.w - 14 * (blocosLimites.length - 1)) / blocosLimites.length;
+    blocosLimites.forEach(function (b) { b.linhas = esQuebrar_(b.texto, wColuna - 28 - ES_RECUO, ES_FS.corpo); });
+    if (blocosLimites.every(function (b) { return b.linhas.length <= 13; })) {
       p.push({ tipo: 'limites-aceite', titulo: 'Limites e critérios de aceite', subtitulo: 'Referência objetiva para proposta, execução e recebimento', blocos: blocosLimites });
     } else {
+      // Texto longo vai para a largura toda, quebrado de novo nela, e não na largura da coluna.
       blocosLimites.forEach(function (b) {
-        esFatiarLinhas_(b.linhas, 16).forEach(function (q, idx) {
-          const titulo = b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase();
-          p.push({ tipo: 'card-texto', titulo: titulo, subtitulo: idx ? '(continuação)' : 'Limites e critérios de aceite', badge: b.titulo, linhas: q });
-        });
+        cartoes(b.titulo.charAt(0) + b.titulo.slice(1).toLowerCase(), 'Limites e critérios de aceite', b.titulo, esQuebrar_(b.texto, ES_LARG.cheio, ES_FS.corpo));
       });
     }
   }
 
-  // 13. Prazos, Contato e Aviso Final (Consolidado em Cards Executivos)
+  // 9. Prazos, Contato e Aviso Final (Consolidado em Cards Executivos)
   if (d.prazo || d.responsavel || d.aviso || d.visita) {
-    const linhasAviso = esQuebrar_(d.aviso || 'Este escopo tem caráter orientativo e serve como base técnica para cotação.', 300, 11);
-    const linhasPrazo = esQuebrar_(d.prazo || '', 290, 11);
-    if (linhasPrazo.length > 6) {
-      esFatiarLinhas_(linhasPrazo, 16).forEach(function (q, idx) {
-        p.push({ tipo: 'card-texto', titulo: 'Prazos', subtitulo: idx ? '(continuação)' : 'Proposta, visita e execução', badge: 'CRONOGRAMA', linhas: q });
-      });
-    }
-    if (linhasAviso.length > 12) {
-      esFatiarLinhas_(linhasAviso, 16).forEach(function (q, idx) {
-        p.push({ tipo: 'card-texto', titulo: 'Diretrizes para cotação', subtitulo: idx ? '(continuação)' : d.megaNome, badge: 'AVISO AO PROPONENTE', linhas: q });
-      });
-    }
+    const aviso = d.aviso || 'Este escopo tem caráter orientativo e serve como base técnica para cotação.';
+    const linhasAviso = esQuebrar_(aviso, 284, ES_FS.corpo);
+    const linhasPrazo = esQuebrar_(d.prazo || '', 282, ES_FS.corpo);
+    if (linhasPrazo.length > 6) cartoes('Prazos', 'Proposta, visita e execução', 'CRONOGRAMA', esQuebrar_(d.prazo, ES_LARG.cheio, ES_FS.corpo));
+    if (linhasAviso.length > 11) cartoes('Diretrizes para cotação', d.megaNome, 'AVISO AO PROPONENTE', esQuebrar_(aviso, ES_LARG.cheio, ES_FS.corpo));
     p.push({
       tipo: 'encerramento',
       titulo: 'Prazos e contato',
       subtitulo: d.megaNome,
-      responsavel: d.responsavel || 'A definir pelo solicitante',
-      prazo: !d.prazo ? 'A definir pelo solicitante' : linhasPrazo.length > 6 ? 'Consulte a página de prazos desta revisão.' : d.prazo,
+      // Negrito é mais largo: quebra com folga para não estourar a coluna.
+      responsavel: esLimitarLinhas_(esQuebrar_(d.responsavel || 'A definir pelo solicitante', 266, ES_FS.corpo), 5),
+      prazo: !d.prazo ? ['A definir pelo solicitante'] : linhasPrazo.length > 6 ? esQuebrar_('Consulte a página de prazos desta revisão.', 282, ES_FS.corpo) : linhasPrazo,
       visita: !!d.visita,
-      aviso: linhasAviso.length > 12 ? ['Consulte as diretrizes para cotação nas páginas anteriores.'] : linhasAviso
+      aviso: linhasAviso.length > 11 ? esQuebrar_('Consulte as diretrizes para cotação nas páginas anteriores.', 284, ES_FS.corpo) : linhasAviso
     });
   }
 
@@ -286,8 +332,9 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
   deck.getSlides().forEach(function (s) { s.remove(); });
   const cores = DS_CN.colors, fontes = DS_CN.typography;
   const sx = deck.getPageWidth() / 720, sy = deck.getPageHeight() / 405;
+  const dimensoes = {};
 
-  function caixa(s, x, y, w, h, t, fs, cor, fundo, bold, fonte, bordaCor) {
+  function caixa(s, x, y, w, h, t, fs, cor, fundo, bold, fonte, bordaCor, centro) {
     const shape = s.insertShape(SlidesApp.ShapeType.RECTANGLE, x * sx, y * sy, w * sx, h * sy);
     if (bordaCor) {
       shape.getBorder().setWeight(1).getLineFill().setSolidFill(bordaCor);
@@ -298,14 +345,52 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     shape.setContentAlignment(SlidesApp.ContentAlignment.TOP);
     if (t === '' || t == null) return shape;
     const text = shape.getText(); text.setText(String(t));
-    text.getTextStyle().setFontFamily(fonte || fontes.body).setFontSize((fs || 12) * sy).setForegroundColor(cor || cores.textBody).setBold(!!bold);
-    text.getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.START).setLineSpacing(110).setSpaceAbove(0).setSpaceBelow(0);
+    text.getTextStyle().setFontFamily(fonte || fontes.body).setFontSize((fs || ES_FS.corpo) * sy).setForegroundColor(cor || cores.textBody).setBold(!!bold);
+    text.getParagraphStyle().setParagraphAlignment(centro ? SlidesApp.ParagraphAlignment.CENTER : SlidesApp.ParagraphAlignment.START).setLineSpacing(110).setSpaceAbove(0).setSpaceBelow(0);
     return shape;
+  }
+
+  // Os três papéis de texto do deck. Nenhum slide escolhe tamanho ou cor por conta própria.
+  function cartao(s, x, y, w, h) { caixa(s, x, y, w, h, '', 0, null, cores.bgSlide, false, null, cores.line); }
+  function rotulo(s, x, y, w, t, cor, fundo, centro) { caixa(s, x, y, w, 22, t, ES_FS.rotulo, cor || cores.brandLight, fundo, true, fontes.titles, null, centro); }
+  function corpo(s, x, y, w, linhas, destaque) {
+    caixa(s, x, y, w, esAlturaTexto_(linhas.length, ES_FS.corpo), linhas.join('\n'), ES_FS.corpo, destaque ? cores.textMain : cores.textBody, null, !!destaque);
+    return esAlturaTexto_(linhas.length, ES_FS.corpo);
+  }
+  /** Cartão do tamanho do texto; o que é curto fica no centro da área, e não preso no alto à esquerda. */
+  function cartaoTexto(s, x, w, titulo, linhas, alturaFixa) {
+    const h = alturaFixa || esAlturaCartao_(linhas.length);
+    const y = ES_AREA.y + (alturaFixa ? 0 : Math.max(0, (ES_AREA.h - h) / 2));
+    cartao(s, x, y, w, h);
+    rotulo(s, x + 14, y + 10, w - 28, titulo);
+    corpo(s, x + 14, y + ES_CARTAO.topo, w - 28, linhas);
   }
 
   function imagem(s, blob, x, y, w, h) {
     if (!blob) return;
     s.insertImage(blob, x * sx, y * sy, w * sx, h * sy);
+  }
+
+  function dimensao(ref) {
+    if (!(ref in dimensoes)) dimensoes[ref] = esDimensoesImagem_(blobs[ref]);
+    return dimensoes[ref];
+  }
+
+  /** Fotos lado a lado; cada uma com o número e a legenda logo abaixo da imagem, não da moldura. */
+  function painelFotos(s, fotos, painel) {
+    const l = esLayoutFotos_(fotos, painel.w);
+    fotos.forEach(function (f, i) {
+      const x = painel.x + i * (l.w + l.gap), wCaixa = l.w - 12, y = ES_AREA.y + 6;
+      cartao(s, x, ES_AREA.y, l.w, ES_AREA.h);
+      const dim = dimensao(f.imagem), escala = dim ? Math.min(wCaixa / dim.w, l.hImagem / dim.h) : 0;
+      const fw = dim ? dim.w * escala : wCaixa, fh = dim ? dim.h * escala : l.hImagem;
+      const fy = y + (l.hImagem - fh) / 2;
+      imagem(s, blobs[f.imagem], x + 6 + (wCaixa - fw) / 2, fy, fw, fh);
+      rotulo(s, x + 6, fy + fh + 2, wCaixa, 'FOTO ' + f.numero, cores.brandMed, null, true);
+      if (l.legendas[i].length) {
+        caixa(s, x + 6, fy + fh + 18, wCaixa, esAlturaTexto_(l.legendas[i].length, ES_FS.legenda), l.legendas[i].join('\n'), ES_FS.legenda, cores.textBody, null, false, null, null, true);
+      }
+    });
   }
 
   paginas.forEach(function (p, idx) {
@@ -320,39 +405,36 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     if (p.tipo === 'capa') {
       s.getBackground().setSolidFill(cores.brandDark);
       imagem(s, blobs.logo, 36, 32, 160, 35);
-      
+
       // Badge Institucional
-      caixa(s, 36, 78, 290, 18, 'GESTÃO DE CONTRATAÇÕES · ESCOPO DE CONTRATAÇÃO', 8.5, cores.white, '#1E295B', true);
+      rotulo(s, 36, 76, 340, 'GESTÃO DE CONTRATAÇÕES · ESCOPO DE CONTRATAÇÃO', cores.white, '#1E295B');
 
       // Título Principal
-      let fsTit = 26, lTit = esQuebrar_(p.titulo, 640, fsTit);
-      while (lTit.length * fsTit * 1.2 > 120 && fsTit > 16) {
-        fsTit -= 2; lTit = esQuebrar_(p.titulo, 640, fsTit);
+      let fsTit = 26, lTit = esQuebrar_(p.titulo, 632, fsTit);
+      while (esAlturaTexto_(lTit.length, fsTit) > 124 && fsTit > 16) {
+        fsTit -= 2; lTit = esQuebrar_(p.titulo, 632, fsTit);
       }
-      caixa(s, 36, 106, 648, 120, lTit.join('\n'), fsTit, cores.white, null, true, fontes.titles);
-      
+      caixa(s, 36, 104, 648, 124, lTit.join('\n'), fsTit, cores.white, null, true, fontes.titles);
+
       // Linha de acento azul elétrico
-      caixa(s, 36, 236, 648, 3, '', 10, null, cores.brandLight);
+      caixa(s, 36, 234, 648, 3, '', 0, null, cores.brandLight);
 
       // Subtítulo
       if (p.subtitulo) {
-        caixa(s, 36, 246, 648, 26, p.subtitulo, 12, cores.brandSoft);
+        caixa(s, 36, 244, 648, 32, p.subtitulo, 12, cores.brandSoft);
       }
 
       // Card de Metadados Executivo no Rodapé
-      caixa(s, 36, 285, 648, 70, '', 10, null, '#192455', false, null, '#283675');
-      
-      // Coluna 1: Empreendimento
-      caixa(s, 50, 295, 190, 14, 'EMPREENDIMENTO', 7.5, cores.brandLight, null, true, fontes.titles);
-      caixa(s, 50, 312, 190, 32, p.meta.mega, 10.5, cores.white, null, true);
-
-      // Coluna 2: Local / Armazém
-      caixa(s, 255, 295, 200, 14, 'LOCAL / ÁREA', 7.5, cores.brandLight, null, true, fontes.titles);
-      caixa(s, 255, 312, 200, 32, p.meta.local, 10.5, cores.white);
-
-      // Coluna 3: Responsável & Revisão
-      caixa(s, 470, 295, 200, 14, 'EMISSÃO & RESPONSÁVEL', 7.5, cores.brandLight, null, true, fontes.titles);
-      caixa(s, 470, 312, 200, 32, p.meta.responsavel + '\nR' + meta.revisao + ' · ' + String(meta.data).slice(0, 10), 9.5, cores.brandSoft);
+      caixa(s, 36, 280, 648, 84, '', 0, null, '#192455', false, null, '#283675');
+      const colunas = [
+        { x: 50, titulo: 'EMPREENDIMENTO', linhas: esLimitarLinhas_(esQuebrar_(p.meta.mega, 174, 10.5), 2) },
+        { x: 262, titulo: 'LOCAL / ÁREA', linhas: esLimitarLinhas_(esQuebrar_(p.meta.local, 174, 10.5), 2) },
+        { x: 474, titulo: 'EMISSÃO & RESPONSÁVEL', linhas: esLimitarLinhas_(esQuebrar_(p.meta.responsavel, 174, 10.5), 1).concat(['R' + meta.revisao + ' · ' + String(meta.data).slice(0, 10)]) }
+      ];
+      colunas.forEach(function (c) {
+        rotulo(s, c.x, 288, 190, c.titulo);
+        caixa(s, c.x, 308, 190, esAlturaTexto_(2, 10.5), c.linhas.join('\n'), 10.5, cores.white);
+      });
       return;
     }
 
@@ -365,7 +447,7 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
 
       // Número da Seção Editorial
       caixa(s, 45, 130, 200, 20, 'SEÇÃO ' + p.numero, 11, cores.brandSoft, null, true, fontes.titles);
-      caixa(s, 45, 154, 40, 3, '', 10, null, cores.brandLight);
+      caixa(s, 45, 154, 40, 3, '', 0, null, cores.brandLight);
 
       // Título da Seção
       caixa(s, 45, 168, 630, 50, p.titulo, 27, cores.white, null, true, fontes.titles);
@@ -380,13 +462,12 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     // ──────────────────────────────────────────
     // 3. CABEÇALHO PADRÃO INTERNACIONAL (LIMPO, COM LOGO PRETA)
     // ──────────────────────────────────────────
-    caixa(s, 24, 13, 4, 34, '', 10, null, cores.brandLight);
+    caixa(s, 24, 13, 4, 34, '', 0, null, cores.brandLight);
 
-    const linhasTitulo = esQuebrar_(p.titulo, 490, 16), tituloDuplo = linhasTitulo.length > 1;
-    const titFormatado = linhasTitulo.slice(0, 2).join('\n');
-    caixa(s, 34, 11, 500, tituloDuplo ? 34 : 22, titFormatado, tituloDuplo ? 14 : 16, cores.textMain, null, true, fontes.titles);
+    // Título e subtítulo sempre do mesmo tamanho; o que não couber em uma linha termina em reticências.
+    caixa(s, 34, 6, 500, 26, esLimitarLinhas_(esQuebrar_(p.titulo, 484, ES_FS.titulo), 1).join(''), ES_FS.titulo, cores.textMain, null, true, fontes.titles);
     if (p.subtitulo) {
-      caixa(s, 34, tituloDuplo ? 43 : 32, 500, 14, esQuebrar_(p.subtitulo, 490, 10).slice(0, 1).join('\n'), 10, cores.brandMed, null, false);
+      caixa(s, 34, 31, 500, 20, esLimitarLinhas_(esQuebrar_(p.subtitulo, 484, ES_FS.subtitulo), 1).join(''), ES_FS.subtitulo, cores.brandMed, null, false);
     }
 
     // LOGO PRETA OFICIAL À DIREITA (Transparente e limpa)
@@ -397,7 +478,7 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
     }
 
     // Linha divisória fina
-    caixa(s, 24, 52, 672, .75, '', 10, null, cores.line);
+    caixa(s, 24, 52, 672, .75, '', 0, null, cores.line);
 
     // ──────────────────────────────────────────
     // 4. CONTEÚDO ESPECÍFICO POR TIPO
@@ -405,86 +486,72 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
 
     // A) Localização
     if (p.tipo === 'local') {
+      const hTexto = Math.max(esAlturaTexto_(p.linhas.length, ES_FS.corpo), esAlturaTexto_(p.legenda.length, ES_FS.legenda), 60);
+      const hImg = ES_AREA.h - 8 - hTexto, yTexto = ES_AREA.y + hImg + 8;
       if (p.detalhe) {
-        caixa(s, 24, 64, 280, 230, '', 10, null, cores.bgSlide, false, null, cores.line);
-        imagem(s, blobs[p.detalhe], 26, 66, 276, 226);
-        if (p.legenda) caixa(s, 24, 298, 280, 75, esQuebrar_(p.legenda, 260, 9).join('\n'), 9, cores.textBody, cores.bgSlide, false, null, cores.line);
+        cartao(s, 24, ES_AREA.y, 280, hImg);
+        imagem(s, blobs[p.detalhe], 26, ES_AREA.y + 2, 276, hImg - 4);
+        if (p.legenda.length) caixa(s, 24, yTexto, 280, hTexto, p.legenda.join('\n'), ES_FS.legenda, cores.textBody, cores.bgSlide, false, null, cores.line);
       }
-      const xImg = p.detalhe ? 324 : 170;
-      caixa(s, xImg, 64, 365, 230, '', 10, null, cores.bgSlide, false, null, cores.line);
-      imagem(s, blobs[p.imagem], xImg + 2, 66, 361, 226);
-      caixa(s, xImg, 298, 365, 75, esQuebrar_(p.texto, 340, 10.5).join('\n'), 10.5, cores.textMain, cores.bgSlide, false, null, cores.line);
+      const xImg = p.detalhe ? 324 : 177;
+      cartao(s, xImg, ES_AREA.y, 365, hImg);
+      imagem(s, blobs[p.imagem], xImg + 2, ES_AREA.y + 2, 361, hImg - 4);
+      caixa(s, xImg, yTexto, 365, hTexto, p.linhas.join('\n'), ES_FS.corpo, cores.textBody, cores.bgSlide, false, null, cores.line);
     }
 
     // B) Contexto Duplo (Objetivo + Vistoria em 2 Cards Executivos)
     else if (p.tipo === 'contexto-duplo') {
-      // Card 1: Objetivo
-      caixa(s, 24, 66, 672, 138, '', 10, null, cores.bgSlide, false, null, cores.line);
-      caixa(s, 38, 76, 200, 16, 'OBJETIVO DA INTERVENÇÃO', 9, cores.brandLight, null, true, fontes.titles);
-      caixa(s, 38, 96, 644, 98, p.objetivo.join('\n'), 11.5, cores.textBody);
-
-      // Card 2: Vistoria Técnica
-      caixa(s, 24, 218, 672, 154, '', 10, null, cores.bgSlide, false, null, cores.line);
-      caixa(s, 38, 228, 240, 16, 'DIAGNÓSTICO DA VISTORIA TÉCNICA', 9, cores.brandMed, null, true, fontes.titles);
-      caixa(s, 38, 248, 644, 114, p.vistoria.join('\n'), 11.5, cores.textBody);
+      const h1 = esAlturaCartao_(p.objetivo.length), h2 = esAlturaCartao_(p.vistoria.length);
+      const y1 = ES_AREA.y + Math.max(0, (ES_AREA.h - h1 - 14 - h2) / 2), y2 = y1 + h1 + 14;
+      cartao(s, 24, y1, 672, h1);
+      rotulo(s, 38, y1 + 10, 644, 'OBJETIVO DA INTERVENÇÃO');
+      corpo(s, 38, y1 + ES_CARTAO.topo, 644, p.objetivo);
+      cartao(s, 24, y2, 672, h2);
+      rotulo(s, 38, y2 + 10, 644, 'DIAGNÓSTICO DA VISTORIA TÉCNICA');
+      corpo(s, 38, y2 + ES_CARTAO.topo, 644, p.vistoria);
     }
 
-    // C) Card Destaque (Objetivo ou Vistoria isolados)
+    // C) Card Destaque (Objetivo, Vistoria, Considerações e textos longos)
     else if (p.tipo === 'card-texto') {
-      caixa(s, 24, 66, 672, 305, '', 10, null, cores.bgSlide, false, null, cores.line);
-      if (p.badge) {
-        caixa(s, 38, 78, 240, 18, p.badge, 9, cores.brandLight, null, true, fontes.titles);
-      }
-      caixa(s, 38, p.badge ? 104 : 82, 644, 255, p.linhas.join('\n'), 12, cores.textBody);
+      cartaoTexto(s, 24, 672, p.badge, p.linhas);
     }
 
-    // D) Serviços a Executar
+    // D) Serviços a Executar, com as fotos do próprio grupo à direita
     else if (p.tipo === 'servicos') {
-      const fs = p.compacto ? 11 : 12.5;
-      caixa(s, 24, 66, 672, 305, '', 10, null, cores.bgSlide, false, null, cores.line);
-      caixa(s, 38, 76, 644, 18, 'LISTA DE ATIVIDADES A EXECUTAR', 8.5, cores.brandLight, null, true, fontes.titles);
-      caixa(s, 38, 100, 644, 260, p.linhas.join('\n'), fs, cores.textMain, null, false);
+      if (p.fotos.length) {
+        cartaoTexto(s, 24, 300, 'ATIVIDADES A EXECUTAR', p.linhas, ES_AREA.h);
+        painelFotos(s, p.fotos, ES_FOTOS.lado);
+      } else {
+        cartaoTexto(s, 24, 672, 'ATIVIDADES A EXECUTAR', p.linhas);
+      }
     }
 
     // E) EAP resumida — dados técnicos no deck; preços permanecem na planilha de resposta.
     else if (p.tipo === 'eap') {
-      const x = [24, 80, 455, 515, 565, 696], yCab = 72, hCab = 24;
-      caixa(s, 24, 66, 672, 305, '', 10, null, cores.white, false, null, cores.line);
-      caixa(s, x[0], yCab, x[1]-x[0], hCab, 'CÓD.', 8, cores.white, cores.brandMed, true, fontes.titles);
-      caixa(s, x[1], yCab, x[2]-x[1], hCab, 'DESCRIÇÃO / SERVIÇO', 8, cores.white, cores.brandMed, true, fontes.titles);
-      caixa(s, x[2], yCab, x[3]-x[2], hCab, 'QTD.', 8, cores.white, cores.brandMed, true, fontes.titles);
-      caixa(s, x[3], yCab, x[4]-x[3], hCab, 'UN.', 8, cores.white, cores.brandMed, true, fontes.titles);
-      caixa(s, x[4], yCab, x[5]-x[4], hCab, 'REFERÊNCIA', 8, cores.white, cores.brandMed, true, fontes.titles);
-      p.linhas.forEach(function (r, i) {
-        const y = yCab + hCab + i * 35, fundo = r.grupo ? cores.brandSoft : (i % 2 ? cores.bgSlide : cores.white);
-        const tinta = r.grupo ? cores.brandDark : cores.textBody;
-        caixa(s, x[0], y, x[1]-x[0], 35, r.codigo, 8.5, tinta, fundo, r.grupo);
-        caixa(s, x[1], y, x[2]-x[1], 35, r.descricao, r.grupo ? 9 : 8.5, tinta, fundo, r.grupo);
-        caixa(s, x[2], y, x[3]-x[2], 35, r.quantidade, 8.5, tinta, fundo, false);
-        caixa(s, x[3], y, x[4]-x[3], 35, r.unidade, 8.5, tinta, fundo, false);
-        caixa(s, x[4], y, x[5]-x[4], 35, r.referencia, 8.5, tinta, fundo, false);
+      const x = [24, 80, 455, 515, 565, 696], yCab = 70, hCab = 24, hLinha = 38;
+      ['CÓD.', 'DESCRIÇÃO / SERVIÇO', 'QTD.', 'UN.', 'REFERÊNCIA'].forEach(function (t, c) {
+        caixa(s, x[c], yCab, x[c + 1] - x[c], hCab, t, ES_FS.rotulo, cores.white, cores.brandMed, true, fontes.titles);
       });
-      caixa(s, 34, 349, 650, 16, 'Valores e condições comerciais são preenchidos na planilha da mesma revisão.', 8, cores.textBody, null, false);
+      p.linhas.forEach(function (r, i) {
+        const y = yCab + hCab + i * hLinha, fundo = r.grupo ? cores.brandSoft : (i % 2 ? cores.bgSlide : cores.white);
+        const tinta = r.grupo ? cores.brandDark : cores.textBody;
+        [r.codigo, r.descricao, r.quantidade, r.unidade, r.referencia].forEach(function (t, c) {
+          caixa(s, x[c], y, x[c + 1] - x[c], hLinha, t, ES_FS.tabela, tinta, fundo, r.grupo);
+        });
+      });
+      caixa(s, 24, yCab + hCab + 7 * hLinha + 2, 672, 18, 'Valores e condições comerciais são preenchidos na planilha da mesma revisão.', ES_FS.tabela, cores.textBody);
     }
 
-    // F) Registro Fotográfico (Cards e Molduras)
+    // F) Fotos que não couberam ao lado dos serviços do grupo
     else if (p.tipo === 'fotos') {
-      const layout = esLayoutFotos_(p.fotos), wFoto = layout.wFoto, hLeg = layout.hLegenda;
-      const hCard = hLeg ? 305 : 275, hImg = hCard - 30 - hLeg, yRotulo = 68 + hImg + 3;
-      p.fotos.forEach(function (f, i) {
-        const x = 24 + i * (wFoto + layout.gap);
-        caixa(s, x, 66, wFoto, hCard, '', 10, null, cores.bgSlide, false, null, cores.line);
-        imagem(s, blobs[f.imagem], x + 2, 68, wFoto - 4, hImg);
-        caixa(s, x, yRotulo, wFoto, 24, 'REGISTRO FOTOGRÁFICO ' + (i + 1), 8.5, cores.brandMed, cores.brandSoft, true, fontes.titles);
-        if (layout.legendas[i].length) {
-          caixa(s, x + 8, yRotulo + 30, wFoto - 16, hLeg - 8, layout.legendas[i].join('\n'), ES_FOTO_LEGENDA_FS, cores.textBody);
-        }
-      });
+      painelFotos(s, p.fotos, ES_FOTOS.cheio);
     }
 
     // G) Limites e critérios de aceite em cards de leitura rápida
     else if (p.tipo === 'limites-aceite') {
-      const gap = 14, w = (672 - gap * (p.blocos.length - 1)) / p.blocos.length;
+      const gap = 14, w = (ES_AREA.w - gap * (p.blocos.length - 1)) / p.blocos.length;
+      const hCard = Math.max.apply(null, p.blocos.map(function (b) { return 44 + esAlturaTexto_(b.linhas.length, ES_FS.corpo) + ES_CARTAO.base; }));
+      const y = ES_AREA.y + Math.max(0, (ES_AREA.h - hCard) / 2);
       const estilos = {
         azul: { fundo: cores.brandSoft, tinta: cores.brandMed, acento: cores.brandLight },
         ambar: { fundo: cores.amberBg, tinta: cores.amberInk, acento: cores.amberSolid },
@@ -492,41 +559,43 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
       };
       p.blocos.forEach(function (b, i) {
         const x = 24 + i * (w + gap), estilo = estilos[b.cor] || estilos.azul;
-        caixa(s, x, 66, w, 305, '', 10, null, cores.white, false, null, cores.line);
-        caixa(s, x, 66, w, 5, '', 10, null, estilo.acento);
-        caixa(s, x + 14, 84, w - 28, 20, b.titulo, 8.5, estilo.tinta, estilo.fundo, true, fontes.titles);
-        caixa(s, x + 14, 118, w - 28, 235, b.linhas.join('\n'), 10.5, cores.textBody);
+        caixa(s, x, y, w, hCard, '', 0, null, cores.white, false, null, cores.line);
+        caixa(s, x, y, w, 5, '', 0, null, estilo.acento);
+        caixa(s, x + 14, y + 16, w - 28, 22, b.titulo, ES_FS.rotulo, estilo.tinta, estilo.fundo, true, fontes.titles);
+        corpo(s, x + 14, y + 44, w - 28, b.linhas);
       });
     }
 
     // H) Encerramento: Prazos, Contato & Instruções
     else if (p.tipo === 'encerramento') {
-      caixa(s, 24, 66, 326, 305, '', 10, null, cores.bgSlide, false, null, cores.line);
-      caixa(s, 38, 80, 290, 16, 'CRONOGRAMA & CONTATO', 9, cores.brandLight, null, true, fontes.titles);
-      
-      caixa(s, 38, 106, 290, 14, 'RESPONSÁVEL TÉCNICO', 8, cores.textMuted, null, true);
-      caixa(s, 38, 122, 290, 26, p.responsavel, 12, cores.textMain, null, true);
+      const hAlerta = esAlturaTexto_(2, ES_FS.rotulo);
+      const hEsq = 10 + 20 + esAlturaTexto_(p.responsavel.length, ES_FS.corpo) + 8 + 20 + esAlturaTexto_(p.prazo.length, ES_FS.corpo) + ES_CARTAO.base;
+      const hDir = 10 + 20 + (p.visita ? hAlerta + 8 : 0) + esAlturaTexto_(p.aviso.length, ES_FS.corpo) + ES_CARTAO.base;
+      const hCard = Math.max(hEsq, hDir), y = ES_AREA.y + Math.max(0, (ES_AREA.h - hCard) / 2);
 
-      caixa(s, 38, 160, 290, 14, 'PRAZOS PARA PROPOSTA E EXECUÇÃO', 8, cores.textMuted, null, true);
-      caixa(s, 38, 178, 290, 80, p.prazo, 11, cores.textBody);
+      cartao(s, 24, y, 326, hCard);
+      let yE = y + 10;
+      rotulo(s, 38, yE, 298, 'RESPONSÁVEL TÉCNICO'); yE += 20;
+      yE += corpo(s, 38, yE, 298, p.responsavel, true) + 8;
+      rotulo(s, 38, yE, 298, 'PRAZOS PARA PROPOSTA E EXECUÇÃO'); yE += 20;
+      corpo(s, 38, yE, 298, p.prazo);
 
-      caixa(s, 368, 66, 328, 305, '', 10, null, cores.bgSlide, false, null, cores.line);
-      caixa(s, 382, 80, 290, 16, 'DIRETRIZES PARA COTAÇÃO', 9, cores.brandMed, null, true, fontes.titles);
-
+      cartao(s, 368, y, 328, hCard);
+      let yD = y + 10;
+      rotulo(s, 382, yD, 300, 'DIRETRIZES PARA COTAÇÃO'); yD += 20;
       if (p.visita) {
-        caixa(s, 382, 106, 300, 36, 'OBRIGATÓRIA VISITA TÉCNICA PRÉVIA\nPara validação das condições locais antes da proposta.', 9, '#7A5B00', '#FDF1D2', true, null, '#E5A417');
+        caixa(s, 382, yD, 300, hAlerta, 'OBRIGATÓRIA VISITA TÉCNICA PRÉVIA\nPara validação das condições locais antes da proposta.', ES_FS.rotulo, cores.amberInk, cores.amberBg, true, fontes.titles, cores.amberSolid);
+        yD += hAlerta + 8;
       }
-
-      caixa(s, 382, p.visita ? 154 : 106, 300, 14, 'CARÁTER DO ESCOPO', 8, cores.textMuted, null, true);
-      caixa(s, 382, p.visita ? 172 : 124, 300, 160, p.aviso.join('\n'), 10.5, cores.textBody);
+      corpo(s, 382, yD, 300, p.aviso);
     }
 
     // ──────────────────────────────────────────
     // 5. RODAPÉ EXECUTIVO
     // ──────────────────────────────────────────
-    caixa(s, 24, 382, 672, .75, '', 10, null, cores.line);
+    caixa(s, 24, 382, 672, .75, '', 0, null, cores.line);
     const metaTexto = 'CAPITAL REALTY · ' + (meta.id || '') + ' · R' + meta.revisao + ' · ' + String(meta.data).slice(0, 10);
-    caixa(s, 24, 385, 450, 16, metaTexto, 7.5, cores.textBody);
-    caixa(s, 540, 385, 156, 16, 'PÁGINA ' + (idx + 1) + ' / ' + paginas.length, 8, cores.brandMed, null, true, fontes.titles);
+    caixa(s, 24, 385, 450, 16, metaTexto, ES_FS.rodape, cores.textBody);
+    caixa(s, 540, 385, 156, 16, 'PÁGINA ' + (idx + 1) + ' / ' + paginas.length, ES_FS.rodape, cores.brandMed, null, true, fontes.titles);
   });
 }
