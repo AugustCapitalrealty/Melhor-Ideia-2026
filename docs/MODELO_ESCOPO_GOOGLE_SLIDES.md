@@ -17,12 +17,13 @@ Análise em 09/09/2026. Estado: primeira implementação local concluída; publi
    - Agora o cartão acompanha o tamanho do texto e fica centralizado na área.
    - Todo texto é quebrado na largura em que será desenhado.
 3. **Foto longe da descrição.** As fotos ficavam numa seção própria, em média sete slides depois dos serviços do grupo.
-   - Agora cada grupo de serviço traz as suas fotos à direita da lista de atividades, até duas por slide. As que sobram vêm logo em seguida, ainda com o título do grupo.
+   - Agora cada grupo tem primeiro um slide só com o texto dos serviços e, no slide seguinte, as suas fotos, até quatro por slide. A primeira versão, com as fotos à direita do texto, deixava o cartão vazio quando havia poucos tópicos e foi trocada a pedido do usuário, no mesmo dia.
+   - As fotos ficam apoiadas na mesma linha de base, então os números e as legendas saem alinhados mesmo com uma foto deitada ao lado de uma em pé.
    - A foto vinculada a mais de um grupo aparece no primeiro deles.
    - A numeração das fotos é contínua dentro do grupo.
    - O gerador lê o tamanho real da imagem no cabeçalho PNG/JPEG, já com a rotação EXIF de foto de celular aplicada. Assim, o número e a legenda ficam colados na foto, e não na borda da moldura.
 
-A altura de linha passou a usar a métrica da Open Sans (1,362 em × 110%), que é mais próxima do que o Slides desenha. A versão visual passou de `ESL3` para `ESL4`: revisões já emitidas no modelo antigo são regeneradas no novo ao clicar em Gerar, e o histórico anterior é preservado. O campo "Título do conjunto fotográfico" continua salvo, mas o deck passou a usar o título do grupo. Da revisão de 22/09 foram mantidas a paginação que não corta frase, o arranjo parcial de limites (dois blocos lado a lado e o terceiro em cartão próprio), o recuo na continuação de tópicos e a calibração de largura do Open Sans; o corpo adaptativo de até 14 pt foi substituído pela escala única.
+A altura de linha passou a usar a métrica da Open Sans (1,362 em × 110%), que é mais próxima do que o Slides desenha. A versão visual passou de `ESL3` para `ESL5` (a `ESL4` durou só a manhã de 02/10): revisões já emitidas no modelo antigo são regeneradas no novo ao clicar em Gerar, e o histórico anterior é preservado. O campo "Título do conjunto fotográfico" continua salvo, mas o deck passou a usar o título do grupo. Da revisão de 22/09 foram mantidas a paginação que não corta frase, o arranjo parcial de limites (dois blocos lado a lado e o terceiro em cartão próprio), o recuo na continuação de tópicos e a calibração de largura do Open Sans; o corpo adaptativo de até 14 pt foi substituído pela escala única.
 
 - Aba **Escopos**, também acessível por `?page=escopos`, com identificação, localização, objetivo, vistoria, grupos de serviços, fotos, itens para cotação e condições.
 - Rascunhos salvos em revisões imutáveis; salvamento concorrente de uma versão antiga é recusado. Geração repetida da mesma revisão retorna os arquivos já registrados.

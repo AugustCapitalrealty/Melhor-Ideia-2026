@@ -131,8 +131,9 @@ const imgId='IMG-11111111-1111-1111-1111-111111111111';
 const fotos=Array.from({length:9},(_,i)=>({imagem:imgId,titulo:'QD Módulo 01',legenda:i===0?'Legenda extensa '.repeat(10):'',grupos:['g1']}));
 const longo=c.esNormalizar_({...exemplo(),fotos,objetivo:'PALAVRA '.repeat(600),itens:[{...exemplo().itens[0],descricao:'Descrição comprida '.repeat(120)}]});
 const plano=c.esPlanejarSlides_(longo);
-// Nove fotos de um grupo curto: duas ao lado dos serviços e o resto logo em seguida, ainda no grupo.
-assert.deepEqual(Array.from(plano.filter(p=>(p.fotos||[]).length),p=>p.tipo+':'+p.fotos.length),['servicos:2','fotos:4','fotos:3']);
+// Nove fotos de um grupo: os serviços vêm sozinhos e as fotos logo em seguida, até 4 por slide.
+assert.deepEqual(Array.from(plano.filter(p=>(p.fotos||[]).length),p=>p.tipo+':'+p.fotos.length),['fotos:4','fotos:4','fotos:1']);
+assert.equal(plano[plano.findIndex(p=>p.tipo==='fotos')-1].tipo,'servicos','fotos logo depois do texto do grupo');
 assert.deepEqual(Array.from(plano.flatMap(p=>p.fotos||[]),f=>f.numero),[1,2,3,4,5,6,7,8,9],'numeração contínua dentro do grupo');
 const objetivo=plano.filter(p=>p.titulo==='Objetivo').flatMap(p=>Array.from(p.linhas)).join(' ');
 assert.equal((objetivo.match(/PALAVRA/g)||[]).length,600,'paginação não perde texto');
@@ -161,14 +162,18 @@ const grupos3=c.esNormalizar_({...exemplo(),
   fotos:[{imagem:imgId,titulo:'x',legenda:'Quadro do módulo 02',grupos:['g2']},{imagem:imgId,titulo:'x',legenda:'Quadro do módulo 01',grupos:['g1']},{imagem:imgId,titulo:'x',legenda:'',grupos:['g1','g2']}]});
 const planoG=c.esPlanejarSlides_(grupos3),servG=planoG.filter(p=>p.tipo==='servicos');
 assert.deepEqual(clone(servG.map(p=>p.subtitulo)),['Módulo 01','Módulo 02','Shaft']);
-assert.deepEqual(clone(servG.map(p=>p.fotos.map(f=>f.legenda))),[['Quadro do módulo 01',''],['Quadro do módulo 02'],[]],'cada foto no slide dos serviços do seu grupo, sem repetir');
+// Pedido em 02/10: primeiro o slide só com o texto do grupo, no seguinte as fotos dele.
+assert.deepEqual(clone(planoG.filter(p=>['servicos','fotos'].includes(p.tipo)).map(p=>p.tipo+':'+p.subtitulo+':'+(p.fotos||[]).map(f=>f.legenda).join('|'))),
+  ['servicos:Módulo 01:','fotos:Módulo 01:Quadro do módulo 01|','servicos:Módulo 02:','fotos:Módulo 02:Quadro do módulo 02','servicos:Shaft:'],'cada foto logo depois do texto do seu grupo, sem repetir');
+const fotosG=planoG.filter(p=>p.tipo==='fotos');
 assert(!planoG.some(p=>p.tipo==='capa-secao'&&/Fotogr/.test(p.titulo)),'sem seção de fotos longe dos serviços');
 const blobsT={logo:{name:'logo'},logoPreta:{name:'logoPreta'},'padrao:curitiba':{name:'curitiba'},[imgId]:{name:'foto'}};
 const deckG=a.ctx.SlidesApp.create('grupos');c.esDesenharSlides_(deckG,planoG,blobsT,{revisao:1,data:'2026-09-09'});
 const pagServ=deckG.pages[planoG.indexOf(servG[0])].elements;
 assert(pagServ.some(e=>(e.text||'').includes('Instalar diagrama')),'serviços no slide');
-assert.equal(pagServ.filter(e=>e.image==='foto').length,2,'fotos do grupo no mesmo slide dos serviços');
-assert(pagServ.filter(e=>e.image==='foto').every(e=>e.x>=340),'fotos à direita, sem cobrir o texto');
+assert.equal(pagServ.filter(e=>e.image).length,1,'slide de serviços só com o texto (e o logo)');
+const pagFotosG=deckG.pages[planoG.indexOf(fotosG[0])].elements;
+assert.equal(pagFotosG.filter(e=>e.image==='foto').length,2,'fotos do grupo no slide seguinte');
 const cartaoShaft=deckG.pages[planoG.indexOf(servG[2])].elements.find(e=>e.fill==='#F6F8FC'&&e.w===672);
 assert(Math.abs(cartaoShaft.y+cartaoShaft.h/2-(66+305/2))<1,'texto curto sem foto fica no centro, não no alto à esquerda');
 // Textos longos de inclusões quebram na largura em que serão desenhados, não na da coluna estreita.
@@ -189,7 +194,7 @@ for(const [deckX,planoX] of [[a.decks[0],planoBase],[visual,plano],[deckG,planoG
     const textos=els.filter(e=>e.text&&e.y>=56&&e.y<382);
     for(const e of textos.filter(e=>e.font==='Open Sans'&&e.fs!==ES_FS.legenda)){
       assert.equal(e.fs,ES_FS.corpo,'corpo com tamanho único: '+p.tipo+' '+e.text.slice(0,30));
-      assert.equal(e.color,e.bold?tinta.destaque:tinta.corpo,'corpo com cor única: '+p.tipo+' '+e.text.slice(0,30));
+      assert.equal(e.color,tinta.corpo,'corpo com cor única: '+p.tipo+' '+e.text.slice(0,30));
     }
     for(const e of textos.filter(e=>e.font==='Montserrat'))assert.equal(e.fs,ES_FS.rotulo,'rótulo com tamanho único: '+p.tipo+' '+e.text);
   });
@@ -204,9 +209,9 @@ assert.deepEqual(clone(c.esDimensoesImagem_(bytesBlob([0xFF,0xD8,...sof]))),{w:8
 assert.deepEqual(clone(c.esDimensoesImagem_(bytesBlob([0xFF,0xD8,...exif,...sof]))),{w:600,h:800},'foto de celular em pé');
 assert.equal(c.esDimensoesImagem_(bytesBlob(new Array(40).fill(1))),null);assert.equal(c.esDimensoesImagem_(undefined),null);
 const deckReal=a.ctx.SlidesApp.create('real');c.esDesenharSlides_(deckReal,planoG,{...blobsT,[imgId]:{name:'foto',...bytesBlob([0xFF,0xD8,...exif,...sof])}},{revisao:1,data:'2026-09-09'});
-for(const img of deckReal.pages[planoG.indexOf(servG[0])].elements.filter(e=>e.image==='foto')){
+for(const img of deckReal.pages[planoG.indexOf(fotosG[0])].elements.filter(e=>e.image==='foto')){
   assert(Math.abs(img.w/img.h-600/800)<.001,'proporção da foto preservada');
-  const legenda=deckReal.pages[planoG.indexOf(servG[0])].elements.find(e=>e.text&&e.text.startsWith('FOTO')&&Math.abs(e.y-(img.y+img.h+2))<.01);
+  const legenda=deckReal.pages[planoG.indexOf(fotosG[0])].elements.find(e=>e.text&&e.text.startsWith('FOTO')&&Math.abs(e.y-(img.y+img.h+2))<.01);
   assert(legenda,'número da foto logo abaixo da imagem');
 }
 const tiposVistos=new Set([planoBase,plano,planoG,limitesLongos,textosLongosPlano()].flat().map(p=>p.tipo));

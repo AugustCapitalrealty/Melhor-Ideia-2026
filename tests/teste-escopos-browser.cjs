@@ -82,7 +82,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     assert.match(await page.locator('#es-cobertura').innerText(),/cópia/);
     await page.getByRole('button',{name:'Gerar Slides e PDF',exact:true}).click();
     await page.waitForFunction(()=>!esUI.ocupado);
-    assert.match(await page.locator('#es-status').innerText(),/Vincule itens/);
+    // Desde 17/09 a pendência é barrada no navegador e explicada no diagnóstico, sem ir ao servidor.
+    assert.match(await page.locator('#es-diagnostico').innerText(),/Vincule cada grupo/);
     await page.locator('#es-grupos > .es-grupo').nth(1).getByRole('button',{name:'Remover',exact:true}).click();
     await page.locator('#es-objetivo').fill('<img src=x onerror=alert(1)> é texto digitado.');
     await page.getByRole('button',{name:'Salvar rascunho',exact:true}).click();
