@@ -80,7 +80,7 @@ Três provas, nesta ordem, em todo material (deck, vídeo, fala):
 | Prova | Situação | Ação até 15/10 |
 | :--- | :--- | :--- |
 | **Tempo** PowerPoint × sistema | 🔴 só estimativa por cliques (~20 × ~30–35 min, escopo simples) | **Medição até 14/10** (Guilherme). 2–3 escopos, cronômetro do primeiro campo ao PDF pronto, anotar quem montou e se já conhecia o escopo. Apresentar como **amostra pequena**, com a tabela crua |
-| **Uso real** | 🟡 em 11/10: 8 escopos (6 reais nos 3 Megas + 2 testes); PPCI de Itajaí na R9 com 6 revisões geradas | **Recontar na base de produção** no dia 13 ou 14: escopos emitidos por Mega, revisões, usuários distintos, primeira e última data |
+| **Uso real** | 🟡 em 11/10: 4 escopos reais emitidos (Itajaí 3, Curitiba 1; corrigido em 11/10: os demais eram exemplo ou teste); PPCI de Itajaí na R9 com 6 revisões geradas | **Recontar na base de produção** no dia 13 ou 14: escopos emitidos por Mega, revisões, usuários distintos, primeira e última data |
 | **Satisfação de colaboradores** (está escrito no critério) | 🔴 nada coletado | **2 ou 3 depoimentos curtos** de quem usa (o Jonatas e quem mais montou escopo): uma frase cada, com nome e cargo, e autorização para citar. Opcional: 3 perguntas de 1 a 5 |
 | **Padronização** (antes × depois) | 🟡 temos o depois; falta o antes | O Guilherme separa **2–3 escopos antigos em PowerPoint** de Megas diferentes. O slide mostra "3 Megas, 3 formatos" × "um padrão". É o slide mais forte que dá para fazer sem número |
 | **Reaproveitamento** | 🟢 escopo base existe (v76): grupos, EAP, inclusões, exclusões, aceite e aviso vêm prontos | Contar no código quantos campos o escopo base traz e mostrar um escopo que partiu de outro, se houver em produção |

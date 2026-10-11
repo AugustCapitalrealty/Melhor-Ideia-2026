@@ -139,7 +139,7 @@ S.push(conteudo(6, 2,
 // 7. Antes × depois (pendente: escopos antigos)
 S.push(conteudo(7, 2,
   'Um padrão de escopo para a empresa toda',
-  'Antes, o escopo era montado à mão no PowerPoint; o sistema dá um formato único, hoje em uso a partir dos três Megas e proposto para a empresa toda',
+  'Antes, o escopo era montado à mão no PowerPoint; o sistema dá um formato único, hoje em uso nos Megas Itajaí e Curitiba e proposto para a empresa toda',
   `<div class="antes-depois">
     <div class="ad-lado"><div class="fx-rot">ANTES · POWERPOINT</div><div class="ad-antes">${['Curitiba', 'Itajaí', 'Esteio'].map((m) =>
       `<div class="vazio">Escopo antigo<br><b>Mega ${m}</b><br><span>aguardando arquivo</span></div>`).join('')}</div></div>
@@ -180,10 +180,10 @@ S.push(conteudo(9, 3,
 
 // 10. Uso real
 S.push(conteudo(10, 3,
-  'O escopo já está em uso: começou pelos três Megas',
+  'O escopo já está em uso: começou pelos Megas Itajaí e Curitiba',
   'Escopos emitidos para fornecedor, não protótipo; o mesmo padrão serve a qualquer área que contrata',
   `<div class="tres">
-    <div class="kpi"><div class="kpi-n">6</div><div class="kpi-t">escopos reais na base</div><div class="kpi-d">Curitiba (2), Itajaí (3) e Esteio (1). Os de teste não contam.</div></div>
+    <div class="kpi"><div class="kpi-n">4</div><div class="kpi-t">escopos reais emitidos</div><div class="kpi-d">Itajaí (3) e Curitiba (1, a casa de bombas). Os outros da base foram teste ou exemplo e não contam.</div></div>
     <div class="kpi"><div class="kpi-n">R9</div><div class="kpi-t">revisões do PPCI de Itajaí</div><div class="kpi-d">6 revisões geradas pelo sistema (R4 a R9), cada uma com deck e PDF; a planilha do fornecedor saiu na R9.</div></div>
     <div class="kpi"><div class="kpi-n">9 dias</div><div class="kpi-t">de 02/10 a 11/10: da v71 à v77</div><div class="kpi-d">As mudanças vieram de pedidos de quem usa (slide 12).</div></div>
   </div>`,

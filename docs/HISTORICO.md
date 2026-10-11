@@ -502,8 +502,10 @@ em 11/10 (noite). O escopo roda em produção desde setembro (R4 do PPCI em 15/0
 **Checador do roteiro** (`video/02-relatorio/CHECAGEM-ROTEIRO-2026-10-11.md`, sobre a v1: REPROVADO). Roteiro v3 aplica o parecer:
 abertura no caso; oferta, não execução; a proposta de 2 visitas é a que não incluía o laudo PMOC com ART (não "a lei exige"); preço sem
 discriminação; VB × KG; dois botões; reaproveitamento parcial; testes "antes de publicar"; integração como proposta; casos como
-cartões; recortes obrigatórios de D02, D90/E04 e da barra de abas. **Esteio confirmado:** "Escopo - Manutenção Piso DHL - R3.pdf"
-(MEGA CENTRO LOGÍSTICO ESTEIO) em `G:\Meu Drive\MELHOR IDEIA 2026\PLANO\`; seis reais = Curitiba 2, Itajaí 3, Esteio 1. Locução v3:
+cartões; recortes obrigatórios de D02, D90/E04 e da barra de abas. ~~Esteio confirmado~~ **corrigido pelo Guilherme:** *"Esteio foi só um exemplo; os reais são do Mega Itajaí e um do Mega Curitiba,
+que foi a casa de bombas"*. Escopos reais emitidos: **4** (Itajaí 3: sinalização viária, bombas de drenagem, PPCI do prédio de apoio;
+Curitiba 1: casa de bombas de água potável). Esteio (piso DHL), Curitiba (adequações elétricas) e "Teste 01" foram exemplo ou teste.
+O "6 reais nos 3 Megas" de CONHECIMENTO §9 e da estratégia estava errado. Locução v3:
 348 palavras sem o capítulo 7 (~2 min 20 s). Falta o Checador conferir a v3.
 
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,

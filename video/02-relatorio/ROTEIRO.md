@@ -1,7 +1,7 @@
 # Gestão de Contratações · vídeo do relatório (2–3 min) — v3, 11/10/2026
 
 Pedido do Guilherme em 11/10/2026: *"me manda o roteiro para eu gerar no ElevenLabs"*. Escala: **a empresa toda** é proposta; o uso
-começou pelos três Megas. O conselho aprovou a parte do escopo; fornecedor e preço serão um **projeto futuro com a TI** (Fluig/RM ainda não
+começou pelos Megas Itajaí e Curitiba. O conselho aprovou a parte do escopo; fornecedor e preço serão um **projeto futuro com a TI** (Fluig/RM ainda não
 integrado; o vídeo não diz que existe). Mesma história do deck (`relatorio/rascunho/`).
 
 - **v3** aplica o parecer do Checador (`CHECAGEM-ROTEIRO-2026-10-11.md`, feito sobre a v1): abertura no caso, oferta (não execução),
@@ -33,7 +33,7 @@ integrado; o vídeo não diz que existe). Mesma história do deck (`relatorio/ra
 | Ideia aprovada; comitê pediu detalhes porque parte já existe no Fluig; conselho aprovou o escopo; fornecedor e preço em projeto futuro com a TI | e-mails de 29/04 e 19/05/2026; aprovações informadas pelo Guilherme (`docs/HISTORICO.md`, 11/10/2026) — **datas a confirmar** |
 | Do mesmo cadastro saem apresentação, PDF e planilha, em duas etapas (dois botões) | `app/EscopoInterface.html`; tela E05 |
 | Escopo base: o que vem e o que se preenche | `app/Escopos.gs`; `docs/HISTORICO.md` (v76, 11/10/2026) |
-| Escopos emitidos nos três Megas: Curitiba (bombas de água potável; adequações elétricas), Itajaí (sinalização viária; bombas de drenagem; PPCI do prédio de apoio), Esteio (manutenção do piso DHL, R3) | PDFs gerados pelo sistema em `G:\Meu Drive\MELHOR IDEIA 2026\PLANO\` (lidos em 11/10/2026) |
+| Escopos reais emitidos: Itajaí (sinalização viária; bombas de drenagem; PPCI do prédio de apoio) e Curitiba (casa de bombas de água potável). Os demais (Esteio, piso DHL; Curitiba, adequações elétricas; "Teste 01") foram exemplo ou teste | Guilherme, 11/10/2026; PDFs em `G:\Meu Drive\MELHOR IDEIA 2026\PLANO\` |
 | PPCI do prédio de apoio de Itajaí na revisão 9; revisões R4 a R9 registradas | tela E05; `video/capturas/2026-10-11/escopo-ppci/P-arquivos.json` |
 | Pedidos de usuários viraram versão | `docs/HISTORICO.md` 02/10 e 11/10/2026 |
 | 34 suítes de teste, rodadas antes de publicar | `package.json`; `docs/HISTORICO.md` (publicação da v77) |
@@ -108,10 +108,10 @@ o registro fotográfico; depois o botão "Gerar planilha para fornecedor" e a pl
 
 ## 5 · EM USO
 
-**5.1 · OS TRÊS MEGAS (cartão) E AS REVISÕES (E05, sem a barra de abas).** "Curitiba · Itajaí · Esteio"; depois "Arquivos
+**5.1 · ONDE JÁ RODA (cartão) E AS REVISÕES (E05, sem a barra de abas).** "Itajaí · Curitiba"; depois "Arquivos
 emitidos" do PPCI de Itajaí, R4 a R9; no fim, cartão "Proposta: toda área da empresa que contrata".
 
-> Já há escopos emitidos nos três Megas: Curitiba, Itajaí e Esteio. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. A proposta é levar esse padrão a toda área da empresa que contrata.
+> Já há escopos reais emitidos nos Megas Itajaí e Curitiba. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. A proposta é levar esse padrão a toda área da empresa que contrata.
 
 ## 6 · QUEM USA PEDE, O SISTEMA MUDA
 

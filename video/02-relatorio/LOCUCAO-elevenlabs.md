@@ -26,7 +26,7 @@ O próximo escopo pode partir de um já emitido. Vêm os serviços, a lista de i
 
 **5-em-uso.mp3**
 
-Já há escopos emitidos nos três Megas: Curitiba, Itajaí e Esteio. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. A proposta é levar esse padrão a toda área da empresa que contrata.
+Já há escopos reais emitidos nos Megas Itajaí e Curitiba. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. A proposta é levar esse padrão a toda área da empresa que contrata.
 
 **6-quem-usa.mp3**
 
