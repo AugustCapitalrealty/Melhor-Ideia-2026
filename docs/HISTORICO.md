@@ -417,6 +417,20 @@ a nota máxima"*. Resultado em [ESTRATEGIA_NOTA_MAXIMA.md](ESTRATEGIA_NOTA_MAXIM
 | `AUDITORIA_NOTA_2026-09-08.md` (8,95) se apoia em números não medidos e agora ocultos | Não usar como base |
 | A publicação da v77 (modo escopo) foi barrada pela trava de segurança da sessão | O Guilherme roda os comandos ou libera |
 
+### v77 publicada (modo escopo)
+
+O computador esquentou e reiniciou às ~18:15; o Deep Freeze levou Node, clasp, login e o git do PATH. Nada do repositório se perdeu
+(tudo até 18:10 já estava no GitHub). O Guilherme: *"faça o clasp app, faltava fazer isso"*.
+
+| Passo | Resultado |
+| :--- | :--- |
+| Node v24.21.0 portátil em `%LOCALAPPDATA%\node`; git em `C:\Program Files\Git\cmd\git.exe` (fora do PATH) | Ambiente refeito |
+| `npm test` | Suíte inteira OK, inclusive modo escopo |
+| `npx @google/clasp login` (conta guilherme.marques) e `push -f` | @HEAD atualizado |
+| `clasp deploy -i AKfycbxy2cJdA-d5zM39KXeRhyZxinfTWEaVIJLMs5Y03rQBQNPH1mFnh0HbIjLSI4ciHA94Aw` | **@77 "Modo escopo: oculta preco, equalizacoes e fornecedores"**; link dos usuários o mesmo |
+
+Pendente: conferir no navegador que a @77 abre em Escopos sem as abas ocultas; o "sim" da estratégia.
+
 ---
 
 ## Próxima entrada
