@@ -56,7 +56,7 @@ function ambiente() {
     SlidesApp: { create: deck, ShapeType: { RECTANGLE: 'rect' }, ContentAlignment: { TOP: 'top', MIDDLE: 'middle' }, ParagraphAlignment: { START: 'start', CENTER: 'center', JUSTIFIED: 'justified' }, PredefinedLayout: { BLANK: 'blank' } },
     SpreadsheetApp: { create: planilha, flush() {} },
   });
-  for (const name of ['Util.gs','Apresentacao_Conselho.gs','Escopos.gs','EscopoSlides.gs','EscopoPlanilha.gs']) vm.runInContext(fs.readFileSync(path.join(root,'app',name),'utf8'),ctx);
+  for (const name of ['Util.gs','Equalizacao.gs','Apresentacao_Conselho.gs','Escopos.gs','EscopoSlides.gs','EscopoPlanilha.gs']) vm.runInContext(fs.readFileSync(path.join(root,'app',name),'utf8'),ctx);
   ctx.cfExigeAutorizacao_ = () => 'teste@capitalrealty.com.br';
   ctx.cfEmpresaDoMega_ = () => ({nome:'Demercado'});
   ctx.esPreparar_ = () => {};
@@ -354,4 +354,57 @@ assert.deepEqual([...(caixaAviso.negritos||[])].sort(),['caráter orientativo','
 const planoDisc=cd.esPlanejarSlides_(cd.esNormalizar_(exemplo()));
 assert(!planoDisc.some(p=>p.titulo==='Diretrizes para cotação'),'o disclaimer cabe no encerramento, sem página própria');
 console.log('Disclaimer: padrão novo, avisos antigos trocados, edição preservada, sem revisão fantasma e negrito no deck OK.');
+// Escopos base (Jonatas, 05/10): classificar, achar e começar um escopo novo a partir de um emitido.
+{
+const amb=ambiente(),cx=amb.ctx;
+assert.equal(cx.esNormalizar_({...exemplo(),categoria:'Tecnologia & Segurança'}).categoria,'Tecnologia & Segurança','categoria escolhida à mão é gravada');
+assert(!('categoria' in cx.esNormalizar_({...exemplo(),categoria:'Inventada'})),'categoria fora da lista não é gravada');
+assert(!('categoria' in cx.esNormalizar_(exemplo())),'sem escolha, nada a mais no conteúdo gravado');
+assert(!('base' in cx.esNormalizar_({...exemplo(),base:{id:"x');alert(1)//",revisao:1,titulo:'x'}})),'origem inválida é descartada');
+const elet=cx.apiEscopoSalvar('',0,exemplo());assert(elet.ok,elet.erro);
+assert.equal(elet.classificacao.categoria,'Material de Construção','classificado pelas palavras dos serviços e da EAP');
+assert.equal(elet.classificacao.subcategoria,'Elétrica & Iluminação');assert.equal(elet.classificacao.manual,false);
+const clima=cx.apiEscopoSalvar('',0,{...exemplo(),titulo:'Manutenção preventiva do ar condicionado',objetivo:'Manter a climatização do escritório.',
+  grupos:[{id:'g1',titulo:'Chiller do bloco administrativo',servicos:'Limpeza dos filtros\nTroca de correias'}],
+  itens:[{descricao:'Manutenção preventiva mensal do chiller',quantidade:'12',unidade:'mês',referencia:'',grupos:['g1']}]});
+assert(clima.ok,clima.erro);
+assert.equal(cx.apiEscopoAbrir(clima.id).classificacao.categoria,'Manutenção Predial & Engenharia','a abertura traz a classificação');
+let lista=cx.apiEscoposListar();assert(lista.ok,lista.erro);
+assert(lista.categorias.includes('Manutenção Predial & Engenharia'),'a tela recebe as categorias para o filtro');
+let eletL=lista.escopos.find(e=>e.id===elet.id),climaL=lista.escopos.find(e=>e.id===clima.id);
+assert.equal(eletL.situacao,'rascunho');assert.equal(eletL.revisaoEmitida,0);
+assert.equal(climaL.categoria,'Manutenção Predial & Engenharia');
+assert(climaL.trechos.includes('Troca de correias'),'cada serviço vira uma linha para a busca');
+assert(climaL.trechos.includes('Manutenção preventiva mensal do chiller'),'a EAP também entra na busca');
+assert.equal(climaL.itens,1);assert.equal(climaL.grupos,1);assert.match(climaL.resumo,/climatização/);
+// Emitido: o PDF saiu. Depois disso, um rascunho R2 é editado e ainda não foi a fornecedor.
+assert(cx.apiEscopoGerar(clima.id,1).ok);
+const r2=cx.apiEscopoSalvar(clima.id,1,{...cx.apiEscopoAbrir(clima.id).dados,objetivo:'Rascunho em andamento.'},cx.apiEscopoAbrir(clima.id).carimbo);
+assert.equal(r2.revisao,2);
+climaL=cx.apiEscoposListar().escopos.find(e=>e.id===clima.id);
+assert.equal(climaL.situacao,'emitido');assert.equal(climaL.revisaoEmitida,1);assert.equal(climaL.revisao,2);
+// Usar como base: vem da revisão que foi a fornecedor, sem o que é do lugar e da data.
+const base=cx.apiEscopoBase(clima.id);assert(base.ok,base.erro);
+assert.deepEqual({...base.origem},{id:clima.id,revisao:1,titulo:'Manutenção preventiva do ar condicionado'});
+assert.equal(base.dados.objetivo,'Manter a climatização do escritório.','a base é a revisão emitida, não o rascunho');
+for(const campo of ['titulo','megaId','endereco','imagem','detalhe','responsavel','vistoria','prazo','armazem','modulos'])assert.equal(base.dados[campo],'',campo+' fica em branco');
+assert.equal(base.dados.fotos.length,0,'fotos são do lugar antigo');
+assert.equal(base.dados.grupos[0].servicos,'Limpeza dos filtros\nTroca de correias');assert.equal(base.dados.itens[0].quantidade,12);
+assert.equal(base.dados.itens[0].grupos[0],base.dados.grupos[0].id,'a EAP continua ligada aos grupos');
+assert.equal(base.dados.criteriosAceite,exemplo().criteriosAceite);assert.equal(base.dados.visita,true);
+assert.equal(base.dados.aviso,cx.esAvisoVigente_(''));
+assert.throws(()=>cx.esNormalizar_(base.dados),/título/,'sem título e Mega a base não grava sozinha');
+const filho=cx.apiEscopoSalvar('',0,{...base.dados,titulo:'Manutenção preventiva do ar condicionado — Esteio',megaId:'ctba'});
+assert(filho.ok,filho.erro);assert.notEqual(filho.id,clima.id);assert.equal(filho.revisao,1);
+assert.equal(JSON.parse(amb.db.Escopos.find(r=>r.ID===filho.id).CONTEUDO).base.id,clima.id,'o novo guarda de onde partiu');
+assert.equal(JSON.parse(amb.db.Escopos.find(r=>r.ID===clima.id&&Number(r.REVISAO)===1).CONTEUDO).titulo,'Manutenção preventiva do ar condicionado','o original não muda');
+lista=cx.apiEscoposListar();
+assert.equal(lista.escopos.find(e=>e.id===clima.id).usos,1,'o original conta quantas vezes serviu de base');
+assert.equal(lista.escopos.find(e=>e.id===filho.id).base,'Manutenção preventiva do ar condicionado');
+assert.equal(lista.escopos.find(e=>e.id===filho.id).categoria,'Manutenção Predial & Engenharia','o novo herda a classificação pelo conteúdo');
+// Sem rascunho por cima, a base vem da última revisão; sem emissão nenhuma, também.
+assert.equal(cx.apiEscopoBase(elet.id).origem.revisao,1);
+assert.equal(cx.apiEscopoBase('ESC-inexistente').ok,false);
+console.log('Escopos base: classificação, busca, emitido × rascunho, base sem o que é do lugar e rastro de origem OK.');
+}
 module.exports={ambiente,exemplo};

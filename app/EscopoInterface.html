@@ -19,17 +19,33 @@
 .es-status{white-space:pre-wrap;padding:12px 0;font-size:14px}.es-status.erro{color:#a32121}.es-fixed{position:sticky;bottom:12px;padding:16px;background:#f0f5fc;border:1px solid #cedaea;border-radius:12px;z-index:25}
 #es-editor[disabled]{opacity:.7}#es-editor{border:0;padding:0;min-width:0}.es-historico a{margin-right:15px}.es-historico li{margin:12px 0}
 .es-guia{background:linear-gradient(135deg,#151e49,#003d7b);color:#fff;border:0}.es-guia h2{font-size:22px}.es-guia p{color:#dbeafe;max-width:900px}.es-passos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}.es-passo{padding:12px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.07);font-size:13px;line-height:1.4}.es-passo strong{display:block;color:#fff;margin-bottom:4px}.es-obrigatorio{color:#a32121}.es-diagnostico{border-left:5px solid #065ca9}.es-diagnostico[data-estado="erro"]{border-left-color:#d64545}.es-diagnostico[data-estado="ok"]{border-left-color:#1e9e62}.es-diagnostico ul{margin:10px 0;padding-left:20px}.es-diagnostico button{padding:2px 6px;margin-left:5px;font-size:12px}.es-recomendado{background:#f7fafc;border:1px solid #dce7f3;border-radius:10px;padding:12px;margin-top:12px}.es-recomendado legend{font-weight:700;color:#173c70;padding:0 6px}.es-mini{font-size:12px;color:#64748b;font-weight:400;display:block;margin-top:3px}
-@media(max-width:680px){.es-grid,.es-foto,.es-passos{grid-template-columns:1fr}.es-card{padding:16px}.es-fixed{position:static}}
+.es-inicio-topo{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}.es-inicio-topo p{max-width:760px;margin:0}
+.es-filtros{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:16px}
+.es-chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}#v-escopos .es-chips button{border-radius:999px;padding:5px 12px;font-size:12.5px}#v-escopos .es-chips button[aria-pressed="true"]{background:#e8f0fb;border-color:#065ca9;color:#003d7b;font-weight:600}
+.es-res{border:1px solid #e0e6ef;border-radius:12px;padding:14px 16px;margin:10px 0;background:#fbfcfe}.es-res h3{font-size:15.5px;margin:0;color:#151e49}
+.es-res-cab{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}.es-res-meta{font-size:12.5px;color:#64748b;margin:4px 0 6px;line-height:1.5}.es-res-resumo,.es-res-trecho{font-size:13px;color:#334155;margin:4px 0 8px;line-height:1.45}.es-res-trecho mark{background:#fff2b3;color:inherit;padding:0 1px;border-radius:2px}
+.es-selo{flex:none;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}.es-selo.emitido{background:#e5f6ed;color:#13734a}.es-selo.rascunho{background:#eef2f7;color:#475569}
+.es-origem{background:#f0f5fc;border:1px solid #cedaea;border-radius:10px;padding:10px 14px;font-size:13px;color:#173c70;margin-bottom:12px}
+@media(max-width:680px){.es-grid,.es-foto,.es-passos,.es-filtros{grid-template-columns:1fr}.es-card{padding:16px}.es-fixed{position:static}}
 </style>
 <section id="v-escopos" hidden>
-  <div class="es-barra"><select id="es-lista" aria-label="Escopos salvos"><option value="">Selecione um escopo salvo</option></select><button onclick="esAbrirUI()">Abrir</button><button onclick="esNovoUI()">Novo escopo</button><button onclick="esCarregarUI(true)">Atualizar lista</button></div>
+  <div class="es-barra"><button id="es-voltar" onclick="esVoltarUI()" hidden>← Todos os escopos</button><button id="es-novo-barra" onclick="esNovoUI()" hidden>Novo escopo</button></div>
   <div id="es-status" class="es-status" role="status" aria-live="polite"></div>
+  <div id="es-inicio" class="es-card">
+    <div class="es-inicio-topo"><div><h2>Escopos</h2><p>Comece do zero ou a partir de um escopo já emitido. Usando um como base, os serviços, a EAP, os limites e o aceite vêm prontos, e fica em branco só o que é do lugar e da data: empreendimento, endereço, fotos, vistoria, prazos e contato.</p></div><button class="es-primary" onclick="esNovoUI()">Novo escopo em branco</button></div>
+    <div class="es-filtros"><label>Buscar<input type="search" id="es-busca" placeholder="Título, serviço, item da EAP, armazém…" oninput="esFiltrarUI()"></label><label>Empreendimento<select id="es-f-mega" onchange="esFiltrarUI()"></select></label><label>Situação<select id="es-f-situacao" onchange="esFiltrarUI()"><option value="">Todos</option><option value="emitido">Emitidos (servem de base)</option><option value="rascunho">Rascunhos</option></select></label></div>
+    <div id="es-cats" class="es-chips" role="group" aria-label="Filtrar por categoria"></div>
+    <p id="es-contagem" class="es-ajuda" aria-live="polite"></p>
+    <div id="es-resultados"></div>
+  </div>
   <fieldset id="es-editor" hidden>
+    <div id="es-origem" class="es-origem" hidden></div>
     <div class="es-card es-guia"><h2>Escopo claro para quem preenche e para quem vai cotar</h2><p>Registre o problema, delimite o que está dentro e fora da contratação e diga como a entrega será aceita. O sistema transforma essas informações em uma apresentação executiva e em uma planilha de cotação. Para salvar um rascunho, informe ao menos o título e o empreendimento; as demais pendências precisam ser resolvidas somente antes da emissão.</p><div class="es-passos"><div class="es-passo"><strong>1 · Contexto</strong>Onde, por que e qual situação foi encontrada.</div><div class="es-passo"><strong>2 · Entrega</strong>Serviços, quantidades, inclusões e exclusões.</div><div class="es-passo"><strong>3 · Recebimento</strong>Prazos, evidências e critérios objetivos de aceite.</div></div></div>
     <div id="es-diagnostico" class="es-card es-diagnostico" data-estado="erro"></div>
     <div class="es-card"><h2>1. Identificação e localização</h2><div class="es-grid">
       <label class="es-wide">Título do escopo <span class="es-obrigatorio">*</span><span class="es-mini">Use uma entrega + local, sem títulos genéricos como “manutenção”.</span><input id="es-titulo" maxlength="180" placeholder="Ex.: Adequar quadros elétricos dos módulos 01 e 02"></label>
       <label>Empreendimento <span class="es-obrigatorio">*</span><select id="es-megaId" onchange="esMegaUI()"></select></label><label>Responsável / contato<span class="es-mini">Quem pode esclarecer dúvidas técnicas.</span><input id="es-responsavel" maxlength="180" placeholder="Nome · e-mail ou telefone"></label>
+      <label class="es-wide">Categoria<span class="es-mini" id="es-categoria-auto"></span><select id="es-categoria"></select></label>
       <label>Armazém<input id="es-armazem" maxlength="100" placeholder="Ex.: Armazém 1"></label><label>Módulos ou áreas<input id="es-modulos" maxlength="160" placeholder="Ex.: Módulos 01 e 02"></label>
       <label class="es-wide">Endereço <span class="es-obrigatorio">*</span><input id="es-endereco" maxlength="400"></label>
       <div><label>Imagem padrão do empreendimento<input type="file" accept="image/png,image/jpeg" onchange="esUploadLocalUI(this,'imagem')"></label><img id="es-img-mega" class="es-preview" hidden alt="Imagem do empreendimento"><p id="es-imagem-aviso" class="es-ajuda"></p><button onclick="esSalvarMegaUI()">Salvar imagem e endereço como padrão deste Mega</button></div>
@@ -46,29 +62,76 @@
   <div id="es-historico" class="es-card es-historico" hidden></div>
 </section>
 <script>
-var esUI = { carregado:false, ocupado:false, sujo:false, id:'', revisao:0, megas:[], dados:null, imagens:{}, arquivos:[], planilhas:[] };
-var esCamposUI = ['titulo','megaId','responsavel','armazem','modulos','endereco','detalheLegenda','objetivo','vistoria','inclusoes','exclusoes','criteriosAceite','consideracoes','prazo','aviso'];
+var esUI = { carregado:false, ocupado:false, sujo:false, id:'', revisao:0, megas:[], categorias:[], lista:[], filtroCategoria:'', classificacao:null, dados:null, imagens:{}, arquivos:[], planilhas:[] };
+var esCamposUI = ['titulo','megaId','categoria','responsavel','armazem','modulos','endereco','detalheLegenda','objetivo','vistoria','inclusoes','exclusoes','criteriosAceite','consideracoes','prazo','aviso'];
 function esEl(id){return document.getElementById(id);}
 function esEscape(v){return String(v == null ? '' : v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function esMsg(texto,erro){esEl('es-status').textContent=texto;esEl('es-status').classList.toggle('erro',!!erro);if(erro)esEl('es-status').scrollIntoView({behavior:'smooth',block:'center'});}
-function esBusy(v){esUI.ocupado=v;esEl('es-editor').disabled=v;document.querySelectorAll('#v-escopos > .es-barra button').forEach(function(b){b.disabled=v;});}
+function esBusy(v){esUI.ocupado=v;esEl('es-editor').disabled=v;document.querySelectorAll('#v-escopos > .es-barra button, #es-inicio button').forEach(function(b){b.disabled=v;});}
 function esCall(nome,args){return new Promise(function(resolve,reject){var r=google.script.run.withSuccessHandler(function(x){if(!x||!x.ok)reject(new Error(x&&x.erro||'Resposta inválida do servidor.'));else resolve(x);}).withFailureHandler(reject);r[nome].apply(r,args||[]);});}
 async function esCarregarUI(forcar){
   if(esUI.ocupado||esUI.carregado&&!forcar)return;
   esBusy(true);esMsg('Carregando escopos…');
-  try{var r=await esCall('apiEscoposListar');esUI.megas=r.megas;esUI.carregado=true;
-    esEl('es-lista').innerHTML='<option value="">Selecione um escopo salvo</option>'+r.escopos.map(function(s){return '<option value="'+esEscape(s.id)+'">'+esEscape(s.titulo+' · '+s.mega+' · R'+s.revisao)+'</option>';}).join('');
-    esEl('es-lista').value=esUI.id;esOpcoesMegaUI();esMsg(r.escopos.length+' escopo(s) salvo(s).');
+  try{var r=await esCall('apiEscoposListar');esUI.megas=r.megas;esUI.categorias=r.categorias||[];esUI.lista=r.escopos;esUI.carregado=true;
+    esUI.lista.forEach(function(s){s._busca=esNormUI([s.titulo,s.mega,s.categoria,s.subcategoria,s.resumo,s.base].concat(s.trechos||[]).join(' '));});
+    var mega=esEl('es-f-mega').value;esEl('es-f-mega').innerHTML='<option value="">Todos</option>'+esUI.megas.map(function(m){return '<option value="'+esEscape(m.id)+'">'+esEscape(m.nome)+'</option>';}).join('');esEl('es-f-mega').value=mega;
+    if(esUI.dados)esOpcoesMegaUI();esFiltrarUI();esMsg('');
   }catch(e){esMsg(e.message,true);}finally{esBusy(false);}
+}
+/* Busca sem acento e sem caixa: "eletrica" acha "Elétrica". */
+function esNormUI(t){return String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();}
+function esCategoriaUI(i){var c=(esUI.chips[i]||{}).v||'';esUI.filtroCategoria=esUI.filtroCategoria===c?'':c;esFiltrarUI();}
+function esLimparFiltrosUI(){esEl('es-busca').value='';esEl('es-f-mega').value='';esEl('es-f-situacao').value='';esUI.filtroCategoria='';esFiltrarUI();esEl('es-busca').focus();}
+/* Trecho com o termo marcado. Sem acento o texto em português mantém o comprimento; se não mantiver, sai sem marca. */
+function esMarcarUI(texto,termo){var n=esNormUI(texto),i=termo?n.indexOf(termo):-1;if(i<0||n.length!==texto.length)return esEscape(texto);return esEscape(texto.slice(0,i))+'<mark>'+esEscape(texto.slice(i,i+termo.length))+'</mark>'+esEscape(texto.slice(i+termo.length));}
+function esNoTituloUI(s,termos){var t=esNormUI(s.titulo);return termos.every(function(x){return t.indexOf(x)>=0;});}
+function esFiltrarUI(){
+  var termos=esNormUI(esEl('es-busca').value).split(/\s+/).filter(Boolean),mega=esEl('es-f-mega').value,sit=esEl('es-f-situacao').value,cat=esUI.filtroCategoria;
+  var antesCat=esUI.lista.filter(function(s){return (!mega||s.megaId===mega)&&(!sit||s.situacao===sit)&&termos.every(function(t){return s._busca.indexOf(t)>=0;});});
+  var cont={};antesCat.forEach(function(s){var k=s.categoria||'-';cont[k]=(cont[k]||0)+1;});
+  esUI.chips=[{v:'',t:'Todas',n:antesCat.length}].concat(esUI.categorias.filter(function(c){return cont[c];}).map(function(c){return {v:c,t:c,n:cont[c]};}));
+  if(cont['-'])esUI.chips.push({v:'-',t:'Sem categoria',n:cont['-']});
+  esEl('es-cats').innerHTML=esUI.chips.map(function(c,i){return '<button type="button" aria-pressed="'+(cat===c.v)+'" onclick="esCategoriaUI('+i+')">'+esEscape(c.t)+' ('+c.n+')</button>';}).join('');
+  var achados=antesCat.filter(function(s){return !cat||(cat==='-'?!s.categoria:s.categoria===cat);});
+  // Com busca, quem tem o termo no título vem antes; dentro de cada grupo, o mais recente.
+  if(termos.length)achados.sort(function(a,b){return (esNoTituloUI(b,termos)-esNoTituloUI(a,termos))||String(b.data).localeCompare(String(a.data));});
+  var filtrando=termos.length||mega||sit||cat,el=esEl('es-resultados');
+  esEl('es-contagem').textContent=!esUI.lista.length?'':filtrando?achados.length+' de '+esUI.lista.length+' escopo(s).':esUI.lista.length+' escopo(s), do mais recente para o mais antigo.';
+  if(!esUI.lista.length){el.innerHTML='<p class="es-ajuda">Nenhum escopo salvo ainda. Comece por <strong>Novo escopo em branco</strong>; depois de emitido, ele aparece aqui para servir de base aos próximos.</p>';return;}
+  if(!achados.length){el.innerHTML='<p class="es-ajuda">Nada encontrado com esses filtros. <button type="button" onclick="esLimparFiltrosUI()">Limpar filtros</button></p>';return;}
+  el.innerHTML=achados.slice(0,50).map(function(s){
+    var emitido=s.situacao==='emitido';
+    var meta=[s.mega,s.categoria?s.categoria+(s.subcategoria?' › '+s.subcategoria:''):'Sem categoria',s.grupos+' grupo(s) · '+s.itens+' item(ns)','atualizado em '+String(esDataUI(s.data)).split(',')[0]];
+    if(s.usos)meta.push('base de '+s.usos+' escopo(s)');if(s.base)meta.push('partiu de “'+s.base+'”');
+    var trecho='';
+    if(termos.length&&!esNoTituloUI(s,termos)){var linha=(s.trechos||[]).filter(function(l){return esNormUI(l).indexOf(termos[0])>=0;})[0];if(linha)trecho='<p class="es-res-trecho">Encontrado em: '+esMarcarUI(linha,termos[0])+'</p>';}
+    var abrir='<button type="button"'+(emitido?'':' class="es-primary"')+' onclick="esAbrirUI(\''+esEscape(s.id)+'\')">'+(emitido?'Abrir':'Continuar')+'</button>';
+    var base='<button type="button"'+(emitido?' class="es-primary"':'')+' onclick="esUsarBaseUI(\''+esEscape(s.id)+'\')">Usar como base</button>';
+    return '<article class="es-res" data-id="'+esEscape(s.id)+'"><div class="es-res-cab"><h3>'+esEscape(s.titulo)+'</h3><span class="es-selo '+(emitido?'emitido':'rascunho')+'">'+(emitido?'Emitido · R'+s.revisaoEmitida:'Rascunho · R'+s.revisao)+'</span></div><div class="es-res-meta">'+esEscape(meta.filter(Boolean).join(' · '))+'</div>'+(s.resumo?'<p class="es-res-resumo">'+esEscape(s.resumo)+'</p>':'')+trecho+'<div class="es-acoes">'+(emitido?base+abrir:abrir+base)+'</div></article>';
+  }).join('')+(achados.length>50?'<p class="es-ajuda">Mostrando 50 de '+achados.length+'. Refine a busca para ver os demais.</p>':'');
+}
+function esMostrarEditorUI(){esEl('es-inicio').hidden=true;esEl('es-voltar').hidden=false;esEl('es-novo-barra').hidden=false;window.scrollTo({top:0});}
+function esVoltarUI(){if(!esPodeTrocarUI())return;esUI.dados=null;esUI.id='';esUI.sujo=false;esUI.arquivos=[];esUI.planilhas=[];esEl('es-editor').hidden=true;esEl('es-historico').hidden=true;esEl('es-inicio').hidden=false;esEl('es-voltar').hidden=true;esEl('es-novo-barra').hidden=true;esMsg('');esCarregarUI(true);}
+async function esUsarBaseUI(id){
+  if(!esPodeTrocarUI())return;esBusy(true);esMsg('Montando o escopo a partir da base…');
+  try{var r=await esCall('apiEscopoBase',[id]);esUI.id='';esUI.revisao=0;esUI.carimbo=null;esUI.arquivos=[];esUI.planilhas=[];esUI.classificacao=null;esUI.dados=r.dados;esPreencherUI();esUI.sujo=true;esInfoUI();esMostrarEditorUI();
+    esMsg('Escopo novo a partir de “'+r.origem.titulo+'” (R'+r.origem.revisao+'). Dê um título, escolha o empreendimento e revise quantidades, prazos e fotos antes de emitir.');esEl('es-titulo').focus();
+  }catch(e){esMsg(e.message,true);}finally{esBusy(false);}
+}
+function esOpcoesCategoriaUI(){
+  var c=esUI.classificacao,auto=c&&c.automatica;
+  esEl('es-categoria').innerHTML='<option value="">Automática'+(auto?' ('+esEscape(auto)+')':'')+'</option>'+esUI.categorias.map(function(x){return '<option value="'+esEscape(x)+'">'+esEscape(x)+'</option>';}).join('');
+  esEl('es-categoria').value=esUI.dados&&esUI.dados.categoria||'';
+  esEl('es-categoria-auto').textContent=!c?'Classificada ao salvar, pelas palavras do título, dos serviços e da EAP. Só escolha uma se a automática errar.':auto?'Pelo conteúdo: '+auto+(!c.manual&&c.subcategoria?' › '+c.subcategoria:'')+'. Escolha outra só se esta estiver errada.':'Pelo conteúdo ainda não dá para decidir a categoria. Escolha uma para o escopo ser achado pelo filtro.';
 }
 function esOpcoesMegaUI(){var id=esUI.dados?esUI.dados.megaId:'';esEl('es-megaId').innerHTML='<option value="">Selecione o empreendimento</option>'+esUI.megas.map(function(m){return '<option value="'+esEscape(m.id)+'">'+esEscape(m.nome)+'</option>';}).join('');esEl('es-megaId').value=id;}
 function esPodeTrocarUI(){return !esUI.ocupado&&(!esUI.sujo||window.confirm('Há alterações não salvas. Deseja descartá-las e continuar?'));}
-function esNovoUI(){if(!esPodeTrocarUI())return;esUI.id='';esUI.revisao=0;esUI.carimbo=null;esUI.arquivos=[];esUI.planilhas=[];esUI.dados={grupos:[],itens:[],fotos:[],imagem:'',detalhe:'',aviso:'O escopo anexado tem caráter orientativo, servindo como base técnica para a elaboração da proposta. É imprescindível que a empresa proponente realize visita técnica prévia, a fim de avaliar as condições reais das instalações e levantar eventuais particularidades que possam impactar na execução do serviço.'};esUI.sujo=false;esPreencherUI();esMsg('Preencha o escopo e salve para retomá-lo depois.');}
-async function esAbrirUI(){
-  var id=esEl('es-lista').value;if(!id||!esPodeTrocarUI())return;esBusy(true);esMsg('Abrindo escopo…');
-  try{var r=await esCall('apiEscopoAbrir',[id]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.carimbo=r.carimbo;esUI.dados=r.dados;esUI.arquivos=r.arquivos;esUI.planilhas=r.planilhas||[];esUI.sujo=false;esPreencherUI();esMsg('Escopo carregado.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}
+function esNovoUI(){if(!esPodeTrocarUI())return;esUI.id='';esUI.revisao=0;esUI.carimbo=null;esUI.arquivos=[];esUI.planilhas=[];esUI.classificacao=null;esUI.dados={grupos:[],itens:[],fotos:[],imagem:'',detalhe:'',aviso:'O escopo anexado tem caráter orientativo, servindo como base técnica para a elaboração da proposta. É imprescindível que a empresa proponente realize visita técnica prévia, a fim de avaliar as condições reais das instalações e levantar eventuais particularidades que possam impactar na execução do serviço.'};esUI.sujo=false;esPreencherUI();esMostrarEditorUI();esMsg('Preencha o escopo e salve para retomá-lo depois.');esEl('es-titulo').focus();}
+async function esAbrirUI(id){
+  if(!id||!esPodeTrocarUI())return;esBusy(true);esMsg('Abrindo escopo…');
+  try{var r=await esCall('apiEscopoAbrir',[id]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.carimbo=r.carimbo;esUI.dados=r.dados;esUI.arquivos=r.arquivos;esUI.planilhas=r.planilhas||[];esUI.classificacao=r.classificacao||null;esUI.sujo=false;esPreencherUI();esMostrarEditorUI();esMsg('Escopo carregado.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}
 }
-function esPreencherUI(){esEl('es-editor').hidden=false;esEl('es-planilha').hidden=true;esOpcoesMegaUI();esCamposUI.forEach(function(k){esEl('es-'+k).value=esUI.dados[k]||'';});esEl('es-visita').checked=!!esUI.dados.visita;esRenderDinamicoUI();esPreviewUI(esEl('es-img-mega'),esUI.dados.imagem);esPreviewUI(esEl('es-img-detalhe'),esUI.dados.detalhe);esInfoUI();esDiagnosticoUI(false);esHistoricoUI();}
+function esPreencherUI(){esEl('es-editor').hidden=false;esEl('es-planilha').hidden=true;esOpcoesMegaUI();esOpcoesCategoriaUI();var b=esUI.dados.base;esEl('es-origem').hidden=!b;esEl('es-origem').textContent=b?'Partiu do escopo “'+b.titulo+'” (R'+b.revisao+'). O que você mudar aqui não altera o original.':'';esCamposUI.forEach(function(k){esEl('es-'+k).value=esUI.dados[k]||'';});esEl('es-visita').checked=!!esUI.dados.visita;esRenderDinamicoUI();esPreviewUI(esEl('es-img-mega'),esUI.dados.imagem);esPreviewUI(esEl('es-img-detalhe'),esUI.dados.detalhe);esInfoUI();esDiagnosticoUI(false);esHistoricoUI();}
 function esColetarUI(){if(!esUI.dados)return;esCamposUI.forEach(function(k){esUI.dados[k]=esEl('es-'+k).value;});esUI.dados.visita=esEl('es-visita').checked;var m=esUI.megas.find(function(m){return m.id===esUI.dados.megaId;});esUI.dados.megaNome=m?m.nome:'';}
 function esInfoUI(){esEl('es-revisao').textContent=(esUI.id?'Revisão '+esUI.revisao:'Novo escopo')+(esUI.sujo?' · alterações não salvas':'');esEl('es-imagem-aviso').textContent=esUI.dados&&esUI.dados.imagem?'Imagem definida para este escopo.':'Cadastre a imagem deste empreendimento antes de gerar.';}
 function esIrUI(id){var el=esEl(id);if(!el)return;el.scrollIntoView({behavior:'smooth',block:'center'});if(typeof el.focus==='function')el.focus();}
@@ -141,7 +204,7 @@ function esRenderDinamicoUI(){
 }
 function esCoberturaUI(){var sem=esUI.dados.grupos.filter(function(g){return !esUI.dados.itens.some(function(it){return it.tipo!=='grupo'&&it.grupos.indexOf(g.id)>=0;});});esEl('es-cobertura').textContent=sem.length?'Grupos ainda sem item para cotação: '+sem.map(function(g){return g.titulo||'Sem título';}).join(', '):'Todos os grupos estão vinculados a itens para cotação.';}
 async function esUploadFotosUI(input,grupoIndice){if(esUI.ocupado)return;var grupo=esUI.dados.grupos[grupoIndice];if(!grupo)return;var files=Array.from(input.files);if(!files.length)return;if(esUI.dados.fotos.length+files.length>40){esMsg('Limite de 40 fotos por escopo.',true);input.value='';return;}esBusy(true);try{for(var i=0;i<files.length;i++){esMsg('Enviando foto '+(i+1)+' de '+files.length+'…');var id=await esArquivoUI(files[i]);esUI.dados.fotos.push({imagem:id,titulo:(grupo.titulo||'Registro fotográfico').slice(0,140),legenda:'',grupos:[grupo.id]});esAlteradoUI();}esMsg('Fotos anexadas ao grupo. Salve o rascunho para registrar a alteração.');}catch(e){esMsg(e.message,true);}finally{input.value='';esRenderDinamicoUI();esBusy(false);}}
-async function esPersistirUI(){esColetarUI();var r=await esCall('apiEscopoSalvar',[esUI.id,esUI.revisao,esUI.dados,esUI.carimbo]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.carimbo=r.carimbo;esUI.sujo=false;esInfoUI();}
+async function esPersistirUI(){esColetarUI();var r=await esCall('apiEscopoSalvar',[esUI.id,esUI.revisao,esUI.dados,esUI.carimbo]);esUI.id=r.id;esUI.revisao=r.revisao;esUI.carimbo=r.carimbo;esUI.sujo=false;if(r.classificacao){esUI.classificacao=r.classificacao;esOpcoesCategoriaUI();}esInfoUI();}
 async function esSalvarUI(){if(esUI.ocupado)return;esBusy(true);esMsg('Salvando rascunho…');try{await esPersistirUI();esMsg('Rascunho salvo — revisão '+esUI.revisao+'.');}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
 async function esGerarUI(){if(esUI.ocupado||!esDiagnosticoUI(true))return;esBusy(true);esMsg('Conferindo o preenchimento…');try{esColetarUI();var previa=await esCall('apiEscopoValidar',[esUI.dados]);esMsg('Salvando e gerando aproximadamente '+previa.paginas+' página(s). Isso pode levar alguns minutos…');await esPersistirUI();var r=await esCall('apiEscopoGerar',[esUI.id,esUI.revisao]);esUI.arquivos=esUI.arquivos.filter(function(a){return a.revisao!==r.revisao;});esUI.arquivos.push(r);esHistoricoUI();esMsg('Apresentação e PDF da revisão '+r.revisao+' prontos. Abra pelos links abaixo.');esEl('es-historico').scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){esMsg(e.message,true);}finally{esBusy(false);}}
 function esDataUI(v){if(!v)return '';var d=new Date(v);return isNaN(d)?'':d.toLocaleString('pt-BR');}

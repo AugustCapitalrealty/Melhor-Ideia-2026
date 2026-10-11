@@ -87,6 +87,14 @@ function esNormalizar_(d) {
     if (!imagem) throw new Error('Foto sem arquivo.');
     return { imagem: imagem, titulo: esTexto_(f.titulo, 140).replace(/\s+/g, ' '), legenda: esTexto_(f.legenda, 180), grupos: vinculos(f.grupos) };
   });
+  // Categoria escolhida à mão; vazio = automática. Nome fora da lista não é gravado.
+  const categoria = esTexto_(d.categoria, 80, 'Categoria');
+  if (categoria && CF_CATEGORIAS.some(function (c) { return c.nome === categoria; })) n.categoria = categoria;
+  // De qual escopo este partiu. Só a referência: o conteúdo copiado já é deste escopo.
+  if (d.base && /^ESC-[A-Za-z0-9-]{1,80}$/.test(String(d.base.id))) {
+    n.base = { id: String(d.base.id), revisao: Math.max(0, Math.floor(Number(d.base.revisao) || 0)),
+      titulo: esTexto_(d.base.titulo, 180).replace(/\s+/g, ' ') };
+  }
   // Uma célula do Sheets suporta 50 mil caracteres. Nunca cortar o documento.
   if (JSON.stringify(n).length > 45000) throw new Error('O escopo excede 45 mil caracteres. Divida-o em solicitações menores.');
   return n;
@@ -102,17 +110,79 @@ function esMegas_() {
       imagem: ctba ? 'padrao:curitiba' : '' }, personalizados[e.ID] || {}, { id: String(e.ID), nome: String(e.NOME) });
   });
 }
+/**
+ * Classificação do escopo pela mesma regra das equalizações: as palavras do título, dos serviços
+ * e da EAP. Inclusões ficam de fora: "limpeza e descarte" está em quase todas e puxaria para Material de Consumo.
+ * Empate não vira categoria (cfCategoriaDerivada_); a escolha manual, quando existe, vence.
+ */
+function esClassificar_(d) {
+  const textos = [d.titulo, d.objetivo].concat(
+    (d.grupos || []).map(function (g) { return (g.titulo || '') + ' ' + (g.servicos || ''); }),
+    (d.itens || []).map(function (it) { return it.descricao; }));
+  const automatica = cfCategoriaDerivada_(textos), categoria = d.categoria || automatica;
+  return { categoria: categoria, subcategoria: categoria ? cfSubcategoriaDerivada_(textos, categoria) : '',
+    automatica: automatica, manual: !!d.categoria };
+}
+
+/** Linhas curtas onde a busca procura e de onde sai o trecho "encontrado em". */
+function esTrechos_(d) {
+  const linhas = [d.armazem, d.modulos];
+  (d.grupos || []).forEach(function (g) {
+    linhas.push(g.titulo);
+    String(g.servicos || '').split('\n').forEach(function (l) { linhas.push(l.replace(/^[\s•\-–*]+/, '')); });
+  });
+  (d.itens || []).forEach(function (it) { linhas.push(it.descricao); });
+  return linhas.map(function (l) { return String(l || '').replace(/\s+/g, ' ').trim().slice(0, 200); })
+    .filter(function (l, i, a) { return l && a.indexOf(l) === i; }).slice(0, 80);
+}
+
+/** Maior revisão de cada escopo que já saiu para fornecedor (PDF ou planilha). */
+function esRevisoesEmitidas_() {
+  const emitidas = {};
+  cfLerTudo_('EscopoArquivos').forEach(function (f) {
+    if (f.STATUS === 'concluido' || f.STATUS === 'planilha') emitidas[f.ID_ESCOPO] = Math.max(emitidas[f.ID_ESCOPO] || 0, Number(f.REVISAO));
+  });
+  return emitidas;
+}
+
 function apiEscoposListar() {
   return esApi_(function () {
     esPreparar_();
-    const ultimos = {};
+    const ultimos = {}, emitidas = esRevisoesEmitidas_(), usos = {};
     cfLerTudo_('Escopos').forEach(function (r) {
       if (!ultimos[r.ID] || Number(r.REVISAO) > Number(ultimos[r.ID].REVISAO)) ultimos[r.ID] = r;
     });
-    return { megas: esMegas_(), escopos: Object.keys(ultimos).map(function (id) {
-      const r = ultimos[id], d = JSON.parse(r.CONTEUDO);
-      return { id: id, revisao: Number(r.REVISAO), titulo: d.titulo, mega: d.megaNome, data: r.CRIADO_EM };
-    }).sort(function (a, b) { return String(b.data).localeCompare(String(a.data)); }) };
+    const escopos = Object.keys(ultimos).map(function (id) {
+      const r = ultimos[id], d = JSON.parse(r.CONTEUDO), c = esClassificar_(d);
+      if (d.base && d.base.id) usos[d.base.id] = (usos[d.base.id] || 0) + 1;
+      return { id: id, revisao: Number(r.REVISAO), titulo: d.titulo, mega: d.megaNome, megaId: d.megaId, data: r.CRIADO_EM,
+        categoria: c.categoria, subcategoria: c.subcategoria,
+        situacao: emitidas[id] ? 'emitido' : 'rascunho', revisaoEmitida: emitidas[id] || 0,
+        resumo: String(d.objetivo || '').replace(/\s+/g, ' ').slice(0, 220), trechos: esTrechos_(d),
+        grupos: (d.grupos || []).length, itens: (d.itens || []).filter(function (it) { return it.tipo !== 'grupo'; }).length,
+        base: d.base ? d.base.titulo : '' };
+    }).sort(function (a, b) { return String(b.data).localeCompare(String(a.data)); });
+    escopos.forEach(function (e) { e.usos = usos[e.id] || 0; });
+    return { megas: esMegas_(), categorias: CF_CATEGORIAS.map(function (c) { return c.nome; }), escopos: escopos };
+  });
+}
+
+/**
+ * Conteúdo para começar um escopo novo a partir de outro. Vem da última revisão emitida, que é a
+ * que já foi a fornecedor; sem emissão, da última. Fica o que descreve o serviço (grupos, EAP,
+ * limites, aceite, condições); sai o que é do lugar e da data (Mega, endereço, fotos, vistoria, prazo, contato).
+ */
+function apiEscopoBase(id) {
+  return esApi_(function () {
+    esPreparar_();
+    const r = esRevisao_(id, esRevisoesEmitidas_()[id] || null), o = JSON.parse(r.CONTEUDO);
+    const base = { id: r.ID, revisao: Number(r.REVISAO), titulo: o.titulo };
+    return { origem: base, dados: { titulo: '', megaId: '', responsavel: '', armazem: '', modulos: '', endereco: '',
+      imagem: '', detalhe: '', detalheLegenda: '', vistoria: '', prazo: '', fotos: [],
+      objetivo: o.objetivo || '', grupos: o.grupos || [], itens: o.itens || [],
+      inclusoes: o.inclusoes || '', exclusoes: o.exclusoes || '', criteriosAceite: o.criteriosAceite || '',
+      consideracoes: o.consideracoes || '', visita: o.visita === true, aviso: esAvisoVigente_(o.aviso),
+      categoria: o.categoria || '', base: base } };
   });
 }
 function esRevisao_(id, rev) {
@@ -136,7 +206,7 @@ function apiEscopoAbrir(id) {
     esPreparar_(); const r = esRevisao_(id);
     const dados = JSON.parse(r.CONTEUDO); dados.aviso = esAvisoVigente_(dados.aviso);
     const artefatos = cfLerTudo_('EscopoArquivos').filter(function (f) { return f.ID_ESCOPO === id; });
-    return { id: r.ID, revisao: Number(r.REVISAO), carimbo: esCarimbo_(String(r.CONTEUDO)), dados: dados,
+    return { id: r.ID, revisao: Number(r.REVISAO), carimbo: esCarimbo_(String(r.CONTEUDO)), dados: dados, classificacao: esClassificar_(dados),
       arquivos: artefatos.filter(function (f) { return f.STATUS === 'concluido'; }).map(esArquivoLinks_),
       planilhas: artefatos.filter(function (f) { return f.STATUS === 'planilha'; }).map(esPlanilhaLinks_) };
   });
@@ -193,7 +263,7 @@ function esConteudoVigente_(json) {
 function apiEscopoSalvar(id, revisao, dados, carimbo) {
   return esApi_(function () {
     esPreparar_(); const d = esDadosDoFormulario_(dados);
-    return cfComTrava_(function () {
+    const salvo = cfComTrava_(function () {
       let atual = null;
       if (id) atual = esRevisao_(id);
       if (atual && (Number(atual.REVISAO) !== Number(revisao) || (carimbo != null && carimbo !== esCarimbo_(String(atual.CONTEUDO)))))
@@ -212,6 +282,7 @@ function apiEscopoSalvar(id, revisao, dados, carimbo) {
       cfInserir_('Escopos', [{ ID: novoId, REVISAO: rev, CONTEUDO: json, CRIADO_EM: agora }]);
       return { id: novoId, revisao: rev, carimbo: esCarimbo_(json) };
     });
+    return Object.assign(salvo, { classificacao: esClassificar_(d) });
   });
 }
 

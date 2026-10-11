@@ -319,9 +319,24 @@ O pedido veio do Jonatas, em comentário de 05/10. O texto foi usado como ele en
 
 O texto sempre fala em visita técnica prévia, mesmo com a caixa "Exigir visita" desmarcada. É o padrão do Facilities; a caixa continua controlando só o alerta âmbar.
 
-### Em avaliação: escopos base para futuras contratações
+### Escopos base, início e busca (v76)
 
-Pedido do Jonatas, 05/10: a plataforma deve classificar, gravar e gerar escopos base automaticamente. A avaliação está na conversa de 11/10; a decisão ainda está pendente.
+Pedido do Jonatas, 05/10: a plataforma deve classificar, gravar e gerar escopos base para futuras contratações. O usuário pediu junto um jeito melhor de começar um escopo e de achar os antigos. Antes, a aba abria com um `select` de todos os escopos e os botões Abrir, Novo e Atualizar, e todo escopo começava em branco.
+
+| Decisão | Motivo |
+| :--- | :--- |
+| A aba abre numa tela de início: "Novo escopo em branco", busca, filtros por Mega, situação e categoria (com contagem) e um cartão por escopo | Substitui o `select` |
+| A busca ignora acento e caixa e procura no título, no Mega, na categoria, no objetivo, nos serviços (linha a linha) e na EAP. Quando o termo não está no título, o cartão mostra o trecho com o termo marcado | Escopo antigo costuma ser lembrado pelo serviço, não pelo título |
+| A classificação usa a mesma regra das equalizações (`cfCategoriaDerivada_` e `cfSubcategoriaDerivada_`) sobre título, objetivo, serviços e EAP. Empate fica "Sem categoria" | Uma taxonomia só no sistema. Inclusões ficam de fora porque "limpeza e descarte" puxaria quase tudo para Material de Consumo |
+| Campo "Categoria" opcional; vazio é automática, e a tela mostra o que o conteúdo indica | A palavra-chave erra às vezes, e a correção precisa ficar a um clique |
+| A classificação é calculada na listagem, não gravada em coluna | Sem migração, e mudar a regra reclassifica tudo |
+| "Usar como base" parte da última revisão emitida (a que foi a fornecedor). Vêm grupos, EAP, objetivo, inclusões, exclusões, aceite, considerações, visita e aviso. Ficam em branco o título, o Mega, o endereço, as imagens, as fotos, a vistoria, os prazos, o contato, o armazém e os módulos | Esses campos são do lugar e da data |
+| O escopo novo grava `base: {id, revisao, titulo}`. O original mostra "base de N escopo(s)", e o novo mostra "partiu de…" | Rastro de origem; mais tarde permite levar ao escopo base o preço da última contratação |
+| Selo "Emitido · Rn" quando um PDF ou uma planilha saiu; senão, "Rascunho". No emitido, o botão principal é "Usar como base"; no rascunho, é "Continuar" | Emitido é o que já serviu de referência para fornecedor |
+
+`tests/teste-escopos.cjs` agora carrega o `Equalizacao.gs`. O `tests/teste-escopos-browser.cjs` foi atualizado para a tela nova e passou no Chrome com o `playwright-core` 1.47.2 instalado no scratchpad.
+
+**Fica para depois da entrega**: levar ao cartão do escopo base o preço e o fornecedor da última equalização feita a partir dele. A equalização só guarda a origem em texto, no detalhamento ("Escopo: … · ESC-…").
 
 ---
 
