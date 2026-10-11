@@ -513,6 +513,10 @@ Engenharia e outras áreas que tiverem a necessidade de montar um escopo"*. Capa
 Fato × proposta mantidos: o Facilities já usa (Itajaí e Curitiba); as demais áreas são o alcance. Apoio real: dos três casos do
 slide 4, o ar-condicionado é do Facilities e a fundação é da Engenharia (Mega Curitiba, fase 7; BASE_DE_CONHECIMENTO §9).
 
+**Quem testou.** O Guilherme: *"Facilities com o Mega Itajaí, que testou o projeto, e Propriedades com o Ricardo, que testou"*. Slides 7 e
+10 e capítulo 5 do vídeo: "já testado em escopos reais por duas áreas: Facilities (Mega Itajaí) e Propriedades". O nome do Ricardo
+só entra com depoimento autorizado. A confirmar: de que área é o escopo de Curitiba (casa de bombas).
+
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
 

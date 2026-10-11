@@ -140,7 +140,7 @@ S.push(conteudo(6, 2,
 // 7. Antes × depois (pendente: escopos antigos)
 S.push(conteudo(7, 2,
   'Um padrão de escopo para a empresa toda',
-  'Facilities já usa; Propriedades, Engenharia e as demais áreas que montam escopo podem usar o mesmo cadastro',
+  'Facilities (Mega Itajaí) e Propriedades já testaram em escopos reais; Engenharia e as demais áreas que montam escopo podem usar o mesmo cadastro',
   `<div class="antes-depois">
     <div class="ad-lado"><div class="fx-rot">ANTES · POWERPOINT</div><div class="ad-antes">${['Curitiba', 'Itajaí', 'Esteio'].map((m) =>
       `<div class="vazio">Escopo antigo<br><b>Mega ${m}</b><br><span>aguardando arquivo</span></div>`).join('')}</div></div>
@@ -181,8 +181,8 @@ S.push(conteudo(9, 3,
 
 // 10. Uso real
 S.push(conteudo(10, 3,
-  'O escopo já está em uso: começou pelos Megas Itajaí e Curitiba',
-  'Escopos emitidos para fornecedor, não protótipo; começou no Facilities e serve a Propriedades, Engenharia e às demais áreas',
+  'Já testado em escopos reais por duas áreas: Facilities e Propriedades',
+  'Facilities testou no Mega Itajaí e Propriedades também testou; o mesmo padrão serve à Engenharia e às demais áreas',
   `<div class="tres">
     <div class="kpi"><div class="kpi-n">4</div><div class="kpi-t">escopos reais emitidos</div><div class="kpi-d">Itajaí (3) e Curitiba (1, a casa de bombas). Os outros da base foram teste ou exemplo e não contam.</div></div>
     <div class="kpi"><div class="kpi-n">R9</div><div class="kpi-t">revisões do PPCI de Itajaí</div><div class="kpi-d">6 revisões geradas pelo sistema (R4 a R9), cada uma com deck e PDF; a planilha do fornecedor saiu na R9.</div></div>
@@ -258,7 +258,7 @@ const CSS = `
 html,body{width:1920px;height:1080px;overflow:hidden;background:#fff}
 .slide{position:relative;width:1920px;height:1080px;padding:0 128px;font-family:'Open Sans';color:var(--txt);background:#fff;display:none}
 .slide.ativo{display:flow-root}
-h1{font-family:Montserrat;font-weight:700;color:var(--navy);font-size:48px;line-height:1.15;margin-top:128px;max-width:1400px;letter-spacing:-.5px}
+h1{font-family:Montserrat;font-weight:700;color:var(--navy);font-size:48px;line-height:1.15;margin-top:128px;max-width:1320px;letter-spacing:-.5px}
 .sub{font-size:26px;margin-top:16px;color:var(--txt);max-width:1500px}
 .corpo{position:absolute;left:128px;right:128px;top:390px;bottom:120px}
 footer{position:absolute;left:128px;right:128px;bottom:40px;border-top:2px solid var(--linha);padding-top:22px;display:flex;justify-content:space-between;font-size:18px;color:var(--mudo)}

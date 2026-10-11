@@ -26,7 +26,7 @@ O próximo escopo pode partir de um já emitido. Vêm os serviços, a lista de i
 
 **5-em-uso.mp3**
 
-Já há escopos reais emitidos nos Megas Itajaí e Curitiba. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. O mesmo padrão serve à empresa toda: Propriedades, Engenharia e as demais áreas que montam escopo.
+Já foi testado em escopos reais por duas áreas: o Facilities, no Mega Itajaí, e Propriedades. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. O mesmo padrão serve à empresa toda, inclusive à Engenharia e às demais áreas que montam escopo.
 
 **6-quem-usa.mp3**
 
