@@ -35,7 +35,7 @@ integrado; o vídeo não diz que existe). Mesma história do deck (`relatorio/ra
 | Do mesmo cadastro saem apresentação, PDF e planilha, em duas etapas (dois botões) | `app/EscopoInterface.html`; tela E05 |
 | Escopo base: o que vem e o que se preenche | `app/Escopos.gs`; `docs/HISTORICO.md` (v76, 11/10/2026) |
 | Escopos reais emitidos: Itajaí (sinalização viária; bombas de drenagem; PPCI do prédio de apoio) e Curitiba (casa de bombas de água potável). Os demais (Esteio, piso DHL; Curitiba, adequações elétricas; "Teste 01") foram exemplo ou teste | Guilherme, 11/10/2026; PDFs em `G:\Meu Drive\MELHOR IDEIA 2026\PLANO\` |
-| PPCI do prédio de apoio de Itajaí na revisão 9; revisões R4 a R9 registradas | tela E05; `video/capturas/2026-10-11/escopo-ppci/P-arquivos.json` |
+| PPCI do prédio de apoio de Itajaí: revisões R4 a R9 registradas (exemplo; hoje até ajuste pequeno vira revisão nova — Guilherme, 11/10/2026) | tela E05; `video/capturas/2026-10-11/escopo-ppci/P-arquivos.json` |
 | Testado em escopos reais pelo Facilities (Mega Itajaí) e por Propriedades (Ricardo) | Guilherme, 11/10/2026; nome do Ricardo só com depoimento autorizado |
 | Pedidos de usuários viraram versão | `docs/HISTORICO.md` 02/10 e 11/10/2026 |
 | 34 suítes de teste, rodadas antes de publicar | `package.json`; `docs/HISTORICO.md` (publicação da v77) |
@@ -113,7 +113,7 @@ o registro fotográfico; depois o botão "Gerar planilha para fornecedor" e a pl
 **5.1 · ONDE JÁ RODA (cartão) E AS REVISÕES (E05, sem a barra de abas).** "Testado por: Facilities (Mega Itajaí) · Propriedades"; depois "Arquivos
 emitidos" do PPCI de Itajaí, R4 a R9; no fim, cartão "Proposta: toda área da empresa que contrata".
 
-> Já foi testado em escopos reais por duas áreas: o Facilities, no Mega Itajaí, e Propriedades. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. O mesmo padrão serve à empresa toda, inclusive à Engenharia e às demais áreas que montam escopo.
+> Já foi testado em escopos reais por duas áreas: o Facilities, no Mega Itajaí, e Propriedades. No exemplo do prédio de apoio de Itajaí, cada emissão ficou registrada como revisão. Hoje até um ajuste pequeno vira revisão nova; o próximo passo é separar corrigir de gerar uma nova revisão. O mesmo padrão serve à empresa toda, inclusive à Engenharia e às demais áreas que montam escopo.
 
 ## 6 · QUEM USA PEDE, O SISTEMA MUDA
 

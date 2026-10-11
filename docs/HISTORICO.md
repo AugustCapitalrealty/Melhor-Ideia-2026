@@ -544,6 +544,16 @@ pico −1,8 dBTP). O Guilherme: *"está ótimo o tempo"*. A melhorar: o 1º quad
 com o fundo) e conferir os 21 saltos que o `medir.py` apontou. O edge-tts devolveu áudio truncado em 1.3 e 1.5: refeitos
 conferindo palavras do roteiro × palavras no áudio.
 
+**Revisões são exemplo, e a melhoria proposta.** O Guilherme: *"das revisões, fale que foi um exemplo, pois quando alguém altera algo
+básico vira uma nova revisão; deveria ter um botão de arrumar e outro de gerar nova revisão"*. Slide 10 ("R4–R9 · exemplo"), slide 14
+(próximo passo "Corrigir sem gerar revisão", junto com a prévia) e capítulo 5 do vídeo ajustados.
+
+| Proposta (não implementada) | Motivo |
+| :--- | :--- |
+| Dois botões no escopo: **Corrigir** (atualiza os arquivos da revisão atual) e **Gerar nova revisão** (R+1, só quando o conteúdo muda para o fornecedor) | Hoje todo "Gerar" com alteração vira R+1; o PPCI de Itajaí foi da R4 à R9 em parte por ajustes pequenos |
+
+Antes de codar: plano e o "sim" do Guilherme (regra 4). Lembrar: a v75 já evita revisão nova quando só o aviso padrão muda.
+
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
 

@@ -182,7 +182,7 @@ S.push(conteudo(10, 3,
   'Facilities testou no Mega Itajaí e Propriedades também testou; o mesmo padrão serve à Engenharia e às demais áreas',
   `<div class="tres">
     <div class="kpi"><div class="kpi-n">4</div><div class="kpi-t">escopos reais emitidos</div><div class="kpi-d">Facilities, Mega Itajaí (3); Propriedades, casa de bombas do Mega Curitiba (1). Os outros da base foram teste ou exemplo e não contam.</div></div>
-    <div class="kpi"><div class="kpi-n">R9</div><div class="kpi-t">revisões do PPCI de Itajaí</div><div class="kpi-d">6 revisões geradas pelo sistema (R4 a R9), cada uma com deck e PDF; a planilha do fornecedor saiu na R9.</div></div>
+    <div class="kpi"><div class="kpi-n">R4–R9</div><div class="kpi-t">exemplo: PPCI de Itajaí</div><div class="kpi-d">Cada emissão fica registrada como revisão, com deck e PDF. Hoje até um ajuste pequeno vira revisão nova (próximo passo, slide 14).</div></div>
     <div class="kpi"><div class="kpi-n">9 dias</div><div class="kpi-t">de 02/10 a 11/10: da v71 à v77</div><div class="kpi-d">As mudanças vieram de pedidos de quem usa (slide 12).</div></div>
   </div>`,
   'PDFs gerados pelo sistema na pasta do projeto e tela Escopos em produção, 11/10/2026. Recontar em 14/10 (por escopo: Mega, autor, data, revisões e o que foi emitido).', { selo: 'recontar 14/10' }));
@@ -230,12 +230,12 @@ S.push(conteudo(14, 5,
     <div class="pedido"><div class="fx-rot">ENTREGUE · EM PRODUÇÃO</div><ol class="passos">
       <li><b>Cadastro do escopo:</b> serviços por local, fotos junto do serviço e EAP com quantidade, unidade e marca</li>
       <li><b>Documentos gerados:</b> deck, PDF e planilha do fornecedor, com o número da revisão</li>
-      <li><b>Revisões registradas</b> desde 15/09 (PPCI de Itajaí da R4 à R9)</li>
+      <li><b>Revisões registradas</b> desde 15/09 (exemplo: PPCI de Itajaí)</li>
       <li><b>Escopo base e busca</b> dos escopos emitidos (11/10)</li></ol></div>
     <div><div class="fx-rot">PRÓXIMOS PASSOS</div><ol class="passos">
       <li><b>Projeto futuro com a TI:</b> fornecedor e preço no Fluig/RM, onde o cadastro oficial já mora</li>
       <li><b>Foto de celular:</b> reduzir no navegador; hoje foto acima de 5 MB ou HEIC é recusada</li>
-      <li><b>Prévia</b> do deck antes de emitir uma revisão</li>
+      <li><b>Corrigir sem gerar revisão:</b> um botão para ajustar e outro para gerar nova revisão, com prévia antes de emitir</li>
       <li><b>A empresa toda:</b> Propriedades, Engenharia e as demais áreas que montam escopo, no mesmo padrão</li></ol></div>
   </div>`,
   'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. Próximos passos sem data definida; fornecedor e preço são um projeto futuro com a TI, aprovado pelo comitê.'));

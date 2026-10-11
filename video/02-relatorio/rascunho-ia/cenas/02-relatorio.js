@@ -360,12 +360,12 @@ CENAS['4.2'] = {
 // ═════════ 5 · EM USO ═════════
 CENAS['5.1'] = {
   marca: false,
-  sons: S => [{ t: S.w('Facilities'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('Propriedades'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('nove'), som: 'relatorio/destaque', vol: 0.45 }],
+  sons: S => [{ t: S.w('Facilities'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('Propriedades'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('registrada'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
-    const tFa = S.w('Facilities'), tPr = S.w('Propriedades'), tPd = S.w('predio'), tNo = S.w('nove'), tPa = S.w('padrao'), tEn = S.w('Engenharia');
+    const tFa = S.w('Facilities'), tPr = S.w('Propriedades'), tPd = S.w('predio'), tNo = S.w('registrada'), tAj = S.w('ajuste'), tPa = S.w('padrao'), tEn = S.w('Engenharia');
     crFundo();
     const fase = lt < tPd - 0.3 ? 0 : lt < tPa - 0.3 ? 1 : 2;
-    rotulo('05 · EM USO', ['Testado em escopos reais por duas áreas', 'Revisões registradas', 'O mesmo padrão para a empresa toda'][fase], 1);
+    rotulo('05 · EM USO', ['Testado em escopos reais por duas áreas', 'Revisões registradas (exemplo)', 'O mesmo padrão para a empresa toda'][fase], 1);
     if (fase === 0) {
       [['Facilities', 'Mega Itajaí · 3 escopos', tFa], ['Propriedades', 'Mega Curitiba · casa de bombas', tPr]].forEach(([a, b, t], i) => {
         comCartao(prog(lt, t - 0.3, t + 0.3), () => {
@@ -376,7 +376,8 @@ CENAS['5.1'] = {
     } else if (fase === 1) {
       const cam = [250, 440, keys(lt, [[tPd, 1100], [tNo, 1000]])];
       crJanela('Escopo · arquivos emitidos'); crTela('E05', cam);
-      crDestaque(cam, [298, 606, 715, 890], prog(lt, tNo - 0.4, tNo + 0.2), 'REVISÕES 4 A 9');
+      crDestaque(cam, [298, 606, 715, 890], prog(lt, tNo - 0.4, tNo + 0.2), 'EXEMPLO: CADA EMISSÃO É UMA REVISÃO');
+      comCartao(prog(lt, tAj - 0.3, tAj + 0.3), () => { cartao(1010, 640, 700, 300); txt('PRÓXIMO PASSO', 1050, 700, 20, 800, CR.dest, { ls: 3 }); linhas(['Hoje até um ajuste pequeno', 'vira revisão nova.'], 1050, 755, 30, 700, CR.tinta); pilula('Corrigir', 1050, 850, '#E8F1FB', CR.royal, 24); pilula('Gerar nova revisão', 1210, 850, CR.dest, CR.branco, 24); });
     } else {
       [['Facilities', true], ['Propriedades', true], ['Engenharia', false], ['Demais áreas', false]].forEach(([s, ok], i) => {
         const t = i < 2 ? tPa : tEn + (i - 2) * 0.4;
