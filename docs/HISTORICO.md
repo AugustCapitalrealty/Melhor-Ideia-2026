@@ -404,6 +404,19 @@ Configurações, sem erro de JavaScript.
 Cronograma: seg 12 app em modo escopo e medições; ter 13 roteiro e texto do deck (Checador em outra sessão); qua 14 voz, folha,
 Auditor, render e deck final; qui 15 revisão e protocolo no RH.
 
+### Estratégia para a nota máxima (proposta)
+
+O Guilherme: *"ok; vamos deixar a medição até o dia 14; o que a gente precisa agora é montar a estratégia para vender o projeto e pegar
+a nota máxima"*. Resultado em [ESTRATEGIA_NOTA_MAXIMA.md](ESTRATEGIA_NOTA_MAXIMA.md), à espera do "sim".
+
+| Achado | Efeito |
+| :--- | :--- |
+| A ideia aprovada foi "Capital Fornecedores, avaliação de prestadores" (e-mail do comitê de 19/05) e agora vendemos o escopo com fornecedores ocultos | Risco nº 1. Proposta: contar a evolução (pedido → construído → o campo mostrou que o problema nasce no escopo → fornecedor e preço para o Fluig/RM, sem base duplicada) |
+| A nota final é do relatório **e** da apresentação de novembro | 15/10 = passar no corte; novembro = ganhar, com mais um mês de uso |
+| "Satisfação de colaboradores" está escrita no critério de Impacto | Coletar 2–3 depoimentos |
+| `AUDITORIA_NOTA_2026-09-08.md` (8,95) se apoia em números não medidos e agora ocultos | Não usar como base |
+| A publicação da v77 (modo escopo) foi barrada pela trava de segurança da sessão | O Guilherme roda os comandos ou libera |
+
 ---
 
 ## Próxima entrada

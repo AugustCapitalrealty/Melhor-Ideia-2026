@@ -199,6 +199,9 @@ daquele repositório.
 | O que ocultar | Consulta de preço, **Equalizações** e Base Fornecedores, **no app** (implantação em "modo escopo", reversível por chave) **e nas peças** |
 | Linha de base | **Montar escopo no PowerPoint × no sistema** (2 ou 3 escopos). Substitui a do Excel |
 
+**Estratégia completa (critério a critério, ponte com a ideia aprovada, roteiro do deck, semana):**
+[ESTRATEGIA_NOTA_MAXIMA.md](ESTRATEGIA_NOTA_MAXIMA.md).
+
 **Consequência para o relatório e o vídeo:** a história é só o escopo (dor → base e busca → grupos, fotos, EAP → deck padronizado,
 planilha do fornecedor, revisões → número medido → Fluig/RM como próximo passo). A tabela do §2 vale só no que é escopo; os números de
 equalização, consulta de preço, fornecedores e IQF **não entram**.
