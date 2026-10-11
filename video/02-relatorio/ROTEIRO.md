@@ -1,6 +1,6 @@
 # Gestão de Contratações · vídeo do relatório (2–3 min) — v3, 11/10/2026
 
-Pedido do Guilherme em 11/10/2026: *"me manda o roteiro para eu gerar no ElevenLabs"*. Escala: **a empresa toda** é proposta; o uso
+Pedido do Guilherme em 11/10/2026: *"me manda o roteiro para eu gerar no ElevenLabs"*. Escala (Guilherme, 11/10: "vamos vender que o projeto é para a empresa toda"): **Facilities, Propriedades, Engenharia e toda área que monta escopo**; o uso
 começou pelos Megas Itajaí e Curitiba. O conselho aprovou a parte do escopo; fornecedor e preço serão um **projeto futuro com a TI** (Fluig/RM ainda não
 integrado; o vídeo não diz que existe). Mesma história do deck (`relatorio/rascunho/`).
 
@@ -56,7 +56,7 @@ com "sem preço separado".
 
 **1.4 · VERBA OU QUILO (cartão).** "Posicionamento da armadura": "VB" em duas propostas, "KG" nas outras duas.
 
-> Numa obra de fundação, o mesmo item veio em verba numa proposta e em quilos em outra.
+> Numa obra de fundação da Engenharia, o mesmo item veio em verba numa proposta e em quilos em outra.
 
 **1.5 · A CONCLUSÃO (cartão).** Frase em azul-marinho.
 
@@ -111,7 +111,7 @@ o registro fotográfico; depois o botão "Gerar planilha para fornecedor" e a pl
 **5.1 · ONDE JÁ RODA (cartão) E AS REVISÕES (E05, sem a barra de abas).** "Itajaí · Curitiba"; depois "Arquivos
 emitidos" do PPCI de Itajaí, R4 a R9; no fim, cartão "Proposta: toda área da empresa que contrata".
 
-> Já há escopos reais emitidos nos Megas Itajaí e Curitiba. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. A proposta é levar esse padrão a toda área da empresa que contrata.
+> Já há escopos reais emitidos nos Megas Itajaí e Curitiba. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. O mesmo padrão serve à empresa toda: Propriedades, Engenharia e as demais áreas que montam escopo.
 
 ## 6 · QUEM USA PEDE, O SISTEMA MUDA
 
@@ -132,10 +132,10 @@ números do slide 9.
 
 ## 8 · O PRÓXIMO PASSO
 
-**8.1 · PRÓXIMOS PASSOS (cartões).** "Proposta: padrão para a empresa toda" e "Projeto futuro com a TI: fornecedor e preço no Fluig/RM". Sem a tela
+**8.1 · PRÓXIMOS PASSOS (cartões).** "Para a empresa toda: Facilities · Propriedades · Engenharia · demais áreas" e "Projeto futuro com a TI: fornecedor e preço no Fluig/RM". Sem a tela
 de fornecedores.
 
-> A proposta é levar o padrão para a empresa toda. Fornecedor e preço serão um projeto futuro com a TI, no Fluig e no RM, usando o cadastro oficial, para evitar uma base duplicada.
+> O projeto é para a empresa toda: Facilities, Propriedades, Engenharia e toda área que precisa montar um escopo. Fornecedor e preço serão um projeto futuro com a TI, no Fluig e no RM, usando o cadastro oficial, para evitar uma base duplicada.
 
 **8.2 · FECHO.** Fundo azul-marinho, logo negativo, assinatura e o nome do projeto.
 

@@ -508,6 +508,11 @@ Curitiba 1: casa de bombas de água potável). Esteio (piso DHL), Curitiba (adeq
 O "6 reais nos 3 Megas" de CONHECIMENTO §9 e da estratégia estava errado. Locução v3:
 348 palavras sem o capítulo 7 (~2 min 20 s). Falta o Checador conferir a v3.
 
+**Posicionamento: a empresa toda.** O Guilherme: *"vamos vender que o projeto é para a empresa toda: Facilities, Propriedades,
+Engenharia e outras áreas que tiverem a necessidade de montar um escopo"*. Capa, slides 4, 7, 10 e 14 e capítulos 1, 5 e 8 do vídeo.
+Fato × proposta mantidos: o Facilities já usa (Itajaí e Curitiba); as demais áreas são o alcance. Apoio real: dos três casos do
+slide 4, o ar-condicionado é do Facilities e a fundação é da Engenharia (Mega Curitiba, fase 7; BASE_DE_CONHECIMENTO §9).
+
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
 

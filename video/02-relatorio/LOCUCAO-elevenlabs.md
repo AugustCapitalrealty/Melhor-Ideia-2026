@@ -10,7 +10,7 @@ Um MP3 por capítulo, salvo em `video/02-relatorio/voz/` com o nome indicado. Ge
 ---
 **1-problema.mp3**
 
-Três propostas para a manutenção do ar-condicionado. Duas, três e doze visitas por ano, no mesmo item cotado como verba anual. Uma delas não incluía o laudo com responsabilidade técnica que o pedido previa. Em outro caso, a mão de obra veio com um preço só. Infraestrutura, passagem de cabos e instalação do painel estavam descritas, mas sem preços separados. Numa obra de fundação, o mesmo item veio em verba numa proposta e em quilos em outra. Esses casos mostram o que o escopo precisa deixar explícito antes de comparar propostas.
+Três propostas para a manutenção do ar-condicionado. Duas, três e doze visitas por ano, no mesmo item cotado como verba anual. Uma delas não incluía o laudo com responsabilidade técnica que o pedido previa. Em outro caso, a mão de obra veio com um preço só. Infraestrutura, passagem de cabos e instalação do painel estavam descritas, mas sem preços separados. Numa obra de fundação da Engenharia, o mesmo item veio em verba numa proposta e em quilos em outra. Esses casos mostram o que o escopo precisa deixar explícito antes de comparar propostas.
 
 **2-aprovacao.mp3**
 
@@ -26,7 +26,7 @@ O próximo escopo pode partir de um já emitido. Vêm os serviços, a lista de i
 
 **5-em-uso.mp3**
 
-Já há escopos reais emitidos nos Megas Itajaí e Curitiba. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. A proposta é levar esse padrão a toda área da empresa que contrata.
+Já há escopos reais emitidos nos Megas Itajaí e Curitiba. No prédio de apoio de Itajaí, o escopo do sistema de incêndio chegou à revisão nove, com as revisões registradas. O mesmo padrão serve à empresa toda: Propriedades, Engenharia e as demais áreas que montam escopo.
 
 **6-quem-usa.mp3**
 
@@ -38,5 +38,5 @@ Na amostra de [N] escopos, a mediana foi de [X] minutos no sistema e [Y] no Powe
 
 **8-proximo-passo.mp3**
 
-A proposta é levar o padrão para a empresa toda. Fornecedor e preço serão um projeto futuro com a TI, no Fluig e no RM, usando o cadastro oficial, para evitar uma base duplicada. Gestão de Contratações. Começar melhor. Contratar melhor.
+O projeto é para a empresa toda: Facilities, Propriedades, Engenharia e toda área que precisa montar um escopo. Fornecedor e preço serão um projeto futuro com a TI, no Fluig e no RM, usando o cadastro oficial, para evitar uma base duplicada. Gestão de Contratações. Começar melhor. Contratar melhor.
 

@@ -64,6 +64,7 @@ S.push(`<section class="slide capa">
     <div class="kicker">MELHOR IDEIA 2026 · RELATÓRIO FINAL</div>
     <div class="nome">Gestão de Contratações</div>
     <div class="frase">A contratação começa no escopo.</div>
+    <div class="frase2">Para toda área que monta escopo: Facilities, Propriedades, Engenharia e as demais.</div>
   </div>
   <footer><span>Guilherme Marques · Facilities · Capital Realty · 15/10/2026</span><span class="assin"><i></i>Começar melhor. Contratar melhor.</span></footer>
 </section>`);
@@ -101,14 +102,14 @@ S.push(`<section class="slide sumario">
 // 4. A dor: casos reais da empresa, sem nomes nem valores
 S.push(conteudo(4, 1,
   'Cada fornecedor entende o pedido de um jeito, porque o escopo deixa margem',
-  'Três contratações reais da empresa: a resposta muda conforme quem lê o pedido',
+  'Três contratações reais, do Facilities e da Engenharia: a resposta muda conforme quem lê o pedido',
   `<div class="tres">
     <div class="kpi"><div class="kpi-n">2 · 3 · 12</div><div class="kpi-t">visitas por ano, no mesmo item cotado como "1 verba"</div><div class="kpi-d">Manutenção de ar-condicionado: três proponentes, a mesma linha; a diferença estava escondida na observação. A de 2 visitas não incluía o laudo PMOC com responsabilidade técnica previsto no pedido.</div></div>
     <div class="kpi"><div class="kpi-n">1 preço</div><div class="kpi-t">para a mão de obra inteira, sem valor por item</div><div class="kpi-d">Infraestrutura, passagem de cabos e instalação do painel vieram descritas, mas sem preço próprio. Não dá para comparar item a item com quem abriu.</div></div>
-    <div class="kpi"><div class="kpi-n">VB × KG</div><div class="kpi-t">para o mesmo item, conforme o proponente</div><div class="kpi-d">Obra de fundação: o posicionamento da armadura veio como verba em duas propostas e em quilos em outras duas.</div></div>
+    <div class="kpi"><div class="kpi-n">VB × KG</div><div class="kpi-t">para o mesmo item, conforme o proponente</div><div class="kpi-d">Obra de fundação da Engenharia: o posicionamento da armadura veio como verba em duas propostas e em quilos em outras duas.</div></div>
   </div>
   <div class="conclusao">Avaliar o fornecedor depois não corrige um pedido mal feito: <b>o escopo precisa deixar explícito o que se compara.</b></div>`,
-  'Fonte: documentos reais de contratação da empresa analisados em 05/09/2026 (BASE_DE_CONHECIMENTO.md §8.4, §16.3 e §9.2; mapa original do PMOC). São ofertas, não serviços executados. Sem nomes de fornecedores nem valores.'));
+  'Fonte: documentos reais de contratação da empresa analisados em 05/09/2026 (BASE_DE_CONHECIMENTO.md §8.4, §16.3 e §9; mapa original do PMOC). Ar-condicionado: Facilities; fundação: Engenharia (Mega Curitiba, fase 7). São ofertas, não serviços executados. Sem nomes de fornecedores nem valores.'));
 // 5. A ponte com a ideia aprovada
 S.push(conteudo(5, 1,
   'A ideia aprovada começou pela causa, com o aval do conselho: o escopo',
@@ -139,7 +140,7 @@ S.push(conteudo(6, 2,
 // 7. Antes × depois (pendente: escopos antigos)
 S.push(conteudo(7, 2,
   'Um padrão de escopo para a empresa toda',
-  'Antes, o escopo era montado à mão no PowerPoint; o sistema dá um formato único, hoje em uso nos Megas Itajaí e Curitiba e proposto para a empresa toda',
+  'Facilities já usa; Propriedades, Engenharia e as demais áreas que montam escopo podem usar o mesmo cadastro',
   `<div class="antes-depois">
     <div class="ad-lado"><div class="fx-rot">ANTES · POWERPOINT</div><div class="ad-antes">${['Curitiba', 'Itajaí', 'Esteio'].map((m) =>
       `<div class="vazio">Escopo antigo<br><b>Mega ${m}</b><br><span>aguardando arquivo</span></div>`).join('')}</div></div>
@@ -181,7 +182,7 @@ S.push(conteudo(9, 3,
 // 10. Uso real
 S.push(conteudo(10, 3,
   'O escopo já está em uso: começou pelos Megas Itajaí e Curitiba',
-  'Escopos emitidos para fornecedor, não protótipo; o mesmo padrão serve a qualquer área que contrata',
+  'Escopos emitidos para fornecedor, não protótipo; começou no Facilities e serve a Propriedades, Engenharia e às demais áreas',
   `<div class="tres">
     <div class="kpi"><div class="kpi-n">4</div><div class="kpi-t">escopos reais emitidos</div><div class="kpi-d">Itajaí (3) e Curitiba (1, a casa de bombas). Os outros da base foram teste ou exemplo e não contam.</div></div>
     <div class="kpi"><div class="kpi-n">R9</div><div class="kpi-t">revisões do PPCI de Itajaí</div><div class="kpi-d">6 revisões geradas pelo sistema (R4 a R9), cada uma com deck e PDF; a planilha do fornecedor saiu na R9.</div></div>
@@ -238,7 +239,7 @@ S.push(conteudo(14, 5,
       <li><b>Projeto futuro com a TI:</b> fornecedor e preço no Fluig/RM, onde o cadastro oficial já mora</li>
       <li><b>Foto de celular:</b> reduzir no navegador; hoje foto acima de 5 MB ou HEIC é recusada</li>
       <li><b>Prévia</b> do deck antes de emitir uma revisão</li>
-      <li><b>Outras áreas</b> da empresa que contratam serviço usando o mesmo padrão</li></ol></div>
+      <li><b>A empresa toda:</b> Propriedades, Engenharia e as demais áreas que montam escopo, no mesmo padrão</li></ol></div>
   </div>`,
   'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. Próximos passos sem data definida; fornecedor e preço são um projeto futuro com a TI, aprovado pelo conselho.'));
 // 15. Encerramento
@@ -283,6 +284,7 @@ footer span:first-child{max-width:1250px}
 .capa .kicker{font-size:28px}
 .nome{font-family:Montserrat;font-weight:800;color:var(--navy);font-size:104px;letter-spacing:-2px;line-height:1.05;margin-top:22px}
 .frase{font-size:34px;color:var(--txt);margin-top:22px}
+.frase2{font-size:24px;color:var(--azul2);margin-top:14px;font-weight:600}
 .assin{font-family:Montserrat;font-weight:700;color:var(--navy);font-size:22px;display:flex;align-items:center;gap:22px}
 .assin i{display:inline-block;width:14px;height:14px;background:var(--claro)}
 /* revisar */
