@@ -20,3 +20,6 @@ video/**/midia/real/
 relatorio/rascunho/saida/
 relatorio/rascunho/midia/
 relatorio/rascunho/deck.html
+video/MUSICAS/**/*.mp3
+video/**/sons/_amostra.*
+video/motor/_motor/sons/relatorio/_brutos/

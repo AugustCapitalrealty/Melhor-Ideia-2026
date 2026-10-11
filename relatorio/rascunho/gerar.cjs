@@ -22,6 +22,8 @@ const IMG = {
   deckCapa: url(CAP + 'escopo-ppci-docs/D02-slides-y0.png'),
   deckFoto: url('video/01-previa-20s/midia/real/E03-slides-registro-foto.png'),
   planilha: url(CAP + 'escopo-ppci-docs/D90-planilha-fornecedor.png'),
+  logoCor: url('relatorio/marca/Capital Realty Logo RGB Color.png'),
+  logoNeg: url('relatorio/marca/Capital Realty Logo RGB Negativo.png'),
 };
 
 const SECOES = ['O problema', 'A solução', 'Impacto', 'Qualidade e viabilidade', 'Próximos passos'];
@@ -57,6 +59,7 @@ const S = [];
 S.push(`<section class="slide capa">
   <div class="fotos"><div style="background-image:url('${IMG.megaCuritiba}')"></div><div style="background-image:url('${IMG.megaItajai}')"></div><div style="background-image:url('${IMG.megaEsteio}')"></div></div>
   <div class="linha-azul"></div>
+  <img class="logo-capa" src="${IMG.logoCor}">
   <div class="capa-txt">
     <div class="kicker">MELHOR IDEIA 2026 · RELATÓRIO FINAL</div>
     <div class="nome">Gestão de Contratações</div>
@@ -238,7 +241,7 @@ S.push(conteudo(14, 5,
 
 // 15. Encerramento
 S.push(`<section class="slide fim">
-  <div class="fim-txt"><div class="kicker">GESTÃO DE CONTRATAÇÕES</div><div class="nome">Começar melhor.<br>Contratar melhor.</div>
+  <div class="fim-txt"><img class="logo-fim" src="${IMG.logoNeg}"><div class="kicker">GESTÃO DE CONTRATAÇÕES</div><div class="nome">Começar melhor.<br>Contratar melhor.</div>
   <div class="frase">Capital Realty · Facilities · Melhor Ideia 2026</div></div>
   <div class="fotos lado"><div style="background-image:url('${IMG.megaItajai}')"></div></div>
 </section>`);
@@ -369,10 +372,13 @@ table.pend{margin-top:56px;width:100%;border-collapse:collapse;font-size:24px}
 .pedido{background:var(--navy);color:#fff;border-radius:12px;padding:36px}
 .pedido .fx-rot{color:#9CC7FF}
 .pedido b{color:#fff}
+/* marca: área de proteção = altura do "C" (brandbook p. 17) */
+.logo-capa{position:absolute;right:128px;top:860px;height:76px}
+.logo-fim{display:block;height:64px;margin-bottom:70px}
 /* fim */
 .fim{background:var(--navy)}
 .fim .fotos.lado{position:absolute;right:0;top:0;bottom:0;width:760px;height:auto;display:flex}
-.fim-txt{position:absolute;left:147px;top:330px}
+.fim-txt{position:absolute;left:147px;top:250px}
 .fim .kicker{color:var(--claro)}
 .fim .nome{color:#fff;font-size:96px}
 .fim .frase{color:#C9D3E6;font-size:28px;margin-top:40px}

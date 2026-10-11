@@ -10,6 +10,18 @@ equalização e fornecedores ficam fora. Fluig/RM é **próximo passo** (não ex
 - **Capítulo 7 (tempo) só depois da medição de 14/10.** Os depoimentos entram como cartão de texto, com o nome de quem disse.
 - **Portão:** o Checador (outra sessão) confere cada fato antes do render final. Se um fato cair, refaz-se só aquele capítulo.
 
+**Som (gerado no ElevenLabs em 11/10/2026, `sons/gerar_sons.py`; corporativo, pouco e baixo):**
+
+| Onde | Som | Volume |
+| :--- | :--- | :--- |
+| O vídeo todo, sob a voz | `TRILHA = [{ de: 0, arq: 'elevenlabs/musica_contratacoes.mp3', vol: 0.10 }]` (instrumental, 2:40) | 0,10 |
+| Troca de capítulo | `relatorio/transicao` | 0,35 |
+| Número ou caso que aparece (2·3·12, "1 preço", "3 unidades", "revisão nove") | `relatorio/destaque` | 0,45 |
+| Cada um dos três documentos gerados (3.4) e cada chip do escopo base (4.2, só no primeiro) | `relatorio/documento` | 0,40 |
+| Botão "Gerar Slides e PDF" e "Usar como base" | `relatorio/clique` | 0,50 |
+| Logo no fecho (8.2) | `relatorio/fecho` | 0,50 |
+| **Não usar** | plim, brilho, máquina, pop agudo (sons de canal) | — |
+
 | Fato falado | Fonte |
 | :--- | :--- |
 | Manutenção de ar-condicionado (PMOC): 3 proponentes cotaram "1,00 VB" e entregam 2, 3 e 12 visitas/ano; um não emite o laudo exigido (Lei 13.589/2018) | `docs/BASE_DE_CONHECIMENTO.md` §8.4 (documentos reais analisados em 05/09/2026) |

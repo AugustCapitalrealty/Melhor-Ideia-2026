@@ -457,6 +457,21 @@ da empresa que contrata** (proposta). Slides 5, 7, 10 e 14 e capítulos 5 e 8 do
 **Vídeo do relatório:** `video/02-relatorio/ROTEIRO.md` e `LOCUCAO-elevenlabs.md` (8 capítulos, ~320 palavras, cerca de 2 min 10 s;
 o capítulo 7, do tempo, só depois da medição). O Checador ainda não passou: fato que cair, refaz-se só aquele MP3.
 
+**Problema com casos reais.** O Guilherme: *"o problema está genérico, não podemos inventar; tire do real da empresa: cada
+fornecedor pode entender de um jeito, não abrir os detalhes, colocar preço global"*. Vídeo (capítulo 1) e slide 4 passaram a usar
+três casos de BASE_DE_CONHECIMENTO.md: manutenção de ar-condicionado cotada como "1 verba" com 2, 3 e 12 visitas/ano e um sem o
+laudo legal (§8.4); mão de obra com preço fechado e os itens de dentro sem valor (§16.3); o mesmo serviço em VB, KG e M³ (§9.2).
+Sem nomes nem valores. Prompt do Checador do roteiro: [PROMPT_AUDITOR_ROTEIRO.md](PROMPT_AUDITOR_ROTEIRO.md).
+
+**Sons no ElevenLabs** (*"pode gerar pelo ElevenLabs, pode usar os créditos"*). Plano **Creator** (permite uso comercial; resolve a
+dúvida da licença da voz). Saldo antes: 52.788 créditos livres. Gerados por `video/02-relatorio/sons/gerar_sons.py`: 5 efeitos
+corporativos em `video/motor/_motor/sons/relatorio/` e a música instrumental `video/MUSICAS/elevenlabs/musica_contratacoes.mp3`
+(2:40, fora do git como as outras músicas). Gasto: **2.310 créditos** (estimativa 2.510). Plano de som por cena no ROTEIRO.
+
+**Identidade visual.** Logos baixados para `Downloads` (C:, some no reinício) copiados para `relatorio/marca/`; o brandbook é o mesmo da
+raiz. Brandbook: cores #151E49, #003D7B, #065CA9 (as do deck); tipografia oficial **Gotham** (paga; o deck segue com Montserrat, a
+alternativa livre mais próxima, até haver licença); área de proteção = altura do "C" (p. 17). Logo colorido na capa, negativo no fecho.
+
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
 
