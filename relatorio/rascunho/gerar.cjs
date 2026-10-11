@@ -26,7 +26,7 @@ const IMG = {
   logoNeg: url('relatorio/marca/Capital Realty Logo RGB Negativo.png'),
 };
 
-const SECOES = ['O problema', 'A solução', 'Impacto', 'Qualidade e viabilidade', 'Próximos passos'];
+const SECOES = ['O problema', 'A solução', 'Impacto', 'Qualidade e viabilidade', 'Entregue e próximos'];
 
 // ---------- peças ----------
 const trilha = (atual) => `<div class="trilha">${SECOES.map((s, i) =>
@@ -93,7 +93,7 @@ S.push(`<section class="slide sumario">
     ['A solução', 'Um cadastro, três documentos, um padrão', '6–8'],
     ['Impacto', 'Tempo, uso real e quem usa', '9–11'],
     ['Qualidade e viabilidade', 'Pedido vira versão; sem licença nova', '12–13'],
-    ['Próximos passos', 'O que vem e o que pedimos', '14'],
+    ['Entregue e próximos passos', 'O que está em produção e o que vem', '14'],
   ].map(([t, d, p], i) => `<div class="sum-item"><div class="sum-n">0${i + 1}</div><div><div class="sum-t">${t}</div><div class="sum-d">${d}</div></div><div class="sum-p">slides ${p}</div></div>`).join('')}</div>
   <footer><span>Capital Realty · Facilities</span><span>Gestão de Contratações · Melhor Ideia 2026 · 3</span></footer>
 </section>`);
@@ -103,12 +103,12 @@ S.push(conteudo(4, 1,
   'Cada fornecedor entende o pedido de um jeito, porque o escopo deixa margem',
   'Três contratações reais da empresa: a resposta muda conforme quem lê o pedido',
   `<div class="tres">
-    <div class="kpi"><div class="kpi-n">2 · 3 · 12</div><div class="kpi-t">visitas por ano, no mesmo item cotado como "1 verba"</div><div class="kpi-d">Manutenção de ar-condicionado: três proponentes, a mesma linha; a diferença estava escondida na observação. Uma das propostas informava que não emite o laudo PMOC.</div></div>
+    <div class="kpi"><div class="kpi-n">2 · 3 · 12</div><div class="kpi-t">visitas por ano, no mesmo item cotado como "1 verba"</div><div class="kpi-d">Manutenção de ar-condicionado: três proponentes, a mesma linha; a diferença estava escondida na observação. A de 2 visitas não incluía o laudo PMOC com responsabilidade técnica previsto no pedido.</div></div>
     <div class="kpi"><div class="kpi-n">1 preço</div><div class="kpi-t">para a mão de obra inteira, sem valor por item</div><div class="kpi-d">Infraestrutura, passagem de cabos e instalação do painel vieram descritas, mas sem preço próprio. Não dá para comparar item a item com quem abriu.</div></div>
     <div class="kpi"><div class="kpi-n">VB × KG</div><div class="kpi-t">para o mesmo item, conforme o proponente</div><div class="kpi-d">Obra de fundação: o posicionamento da armadura veio como verba em duas propostas e em quilos em outras duas.</div></div>
   </div>
-  <div class="conclusao">Avaliar o fornecedor depois não corrige um pedido mal feito. <b>O problema nasce no escopo.</b></div>`,
-  'Fonte: documentos reais de contratação da empresa analisados em 05/09/2026 (BASE_DE_CONHECIMENTO.md §8.4, §16.3 e §9.2). Sem nomes de fornecedores nem valores.'));
+  <div class="conclusao">Avaliar o fornecedor depois não corrige um pedido mal feito: <b>o escopo precisa deixar explícito o que se compara.</b></div>`,
+  'Fonte: documentos reais de contratação da empresa analisados em 05/09/2026 (BASE_DE_CONHECIMENTO.md §8.4, §16.3 e §9.2; mapa original do PMOC). São ofertas, não serviços executados. Sem nomes de fornecedores nem valores.'));
 // 5. A ponte com a ideia aprovada
 S.push(conteudo(5, 1,
   'A ideia aprovada começou pela causa, com o aval do conselho: o escopo',
@@ -183,11 +183,11 @@ S.push(conteudo(10, 3,
   'O escopo já está em uso: começou pelos três Megas',
   'Escopos emitidos para fornecedor, não protótipo; o mesmo padrão serve a qualquer área que contrata',
   `<div class="tres">
-    <div class="kpi"><div class="kpi-n">6</div><div class="kpi-t">escopos reais na base</div><div class="kpi-d">Curitiba, Itajaí e Esteio. Mais 2 de teste, que não contam.</div></div>
+    <div class="kpi"><div class="kpi-n">6</div><div class="kpi-t">escopos reais na base</div><div class="kpi-d">Curitiba (2), Itajaí (3) e Esteio (1). Os de teste não contam.</div></div>
     <div class="kpi"><div class="kpi-n">R9</div><div class="kpi-t">revisões do PPCI de Itajaí</div><div class="kpi-d">6 revisões geradas pelo sistema (R4 a R9), cada uma com deck e PDF; a planilha do fornecedor saiu na R9.</div></div>
     <div class="kpi"><div class="kpi-n">9 dias</div><div class="kpi-t">de 02/10 a 11/10: da v71 à v77</div><div class="kpi-d">As mudanças vieram de pedidos de quem usa (slide 12).</div></div>
   </div>`,
-  'Leitura da tela Escopos em produção em 11/10/2026. Recontar em 14/10 (escopos por Mega, revisões, usuários distintos, primeira e última data).', { selo: 'recontar 14/10' }));
+  'PDFs gerados pelo sistema na pasta do projeto e tela Escopos em produção, 11/10/2026. Recontar em 14/10 (por escopo: Mega, autor, data, revisões e o que foi emitido).', { selo: 'recontar 14/10' }));
 
 // 11. Depoimentos (pendente)
 S.push(conteudo(11, 3,
@@ -224,23 +224,23 @@ S.push(conteudo(13, 4,
   ].map(([t, x]) => `<div class="card"><div class="card-t">${t}</div><div class="card-x">${x}</div></div>`).join('')}</div>`,
   'Preço, equalização e fornecedores estão ocultos na tela (modo escopo), não apagados: o código e os dados continuam até a integração.'));
 
-// 14. Próximos passos
+// 14. Entregue e próximos passos (prestação de contas: o conselho já aprovou)
 S.push(conteudo(14, 5,
-  'Próximos passos e o que pedimos ao comitê',
-  'Até a apresentação de novembro, com mais um mês de uso para mostrar',
+  'Entregue: a montagem do escopo; a seguir, fornecedor e preço com a TI',
+  'O que está em produção hoje e o que vem depois, como o conselho aprovou',
   `<div class="dois">
+    <div class="pedido"><div class="fx-rot">ENTREGUE · EM PRODUÇÃO</div><ol class="passos">
+      <li><b>Cadastro do escopo:</b> serviços por local, fotos junto do serviço e EAP com quantidade, unidade e marca</li>
+      <li><b>Documentos gerados:</b> deck, PDF e planilha do fornecedor, com o número da revisão</li>
+      <li><b>Revisões registradas</b> desde 15/09 (PPCI de Itajaí da R4 à R9)</li>
+      <li><b>Escopo base e busca</b> dos escopos emitidos (11/10)</li></ol></div>
     <div><div class="fx-rot">PRÓXIMOS PASSOS</div><ol class="passos">
+      <li><b>Fornecedor e preço com a TI,</b> no Fluig/RM, onde o cadastro oficial já mora</li>
       <li><b>Foto de celular:</b> reduzir no navegador; hoje foto acima de 5 MB ou HEIC é recusada</li>
       <li><b>Prévia</b> do deck antes de emitir uma revisão</li>
-      <li><b>Integração com o Fluig/RM:</b> fornecedor e preço a partir do cadastro oficial</li>
-      <li><b>Convite ao fornecedor</b> com o escopo e a planilha, e retorno pelo sistema</li></ol></div>
-    <div class="pedido"><div class="fx-rot">O QUE PEDIMOS</div><ol class="passos">
-      <li>Adotar o escopo do sistema como <b>padrão da empresa toda</b>, em toda área que contrata serviço</li>
-      <li>Prioridade para a <b>integração com o Fluig/RM</b>, com a TI</li>
-      <li>Uma <b>segunda pessoa</b> para a sustentação</li></ol></div>
+      <li><b>Outras áreas</b> da empresa que contratam serviço usando o mesmo padrão</li></ol></div>
   </div>`,
-  'Proposta; os pedidos dependem da decisão do comitê.'));
-
+  'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. Próximos passos: plano de trabalho, sem data definida; a integração depende da TI.'));
 // 15. Encerramento
 S.push(`<section class="slide fim">
   <div class="fim-txt"><img class="logo-fim" src="${IMG.logoNeg}"><div class="kicker">GESTÃO DE CONTRATAÇÕES</div><div class="nome">Começar melhor.<br>Contratar melhor.</div>

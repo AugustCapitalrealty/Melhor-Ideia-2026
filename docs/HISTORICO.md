@@ -492,6 +492,20 @@ implementação (10/10, §5.3); autor na capa e no fecho. Estratégia corrigida 
 `DEFESA_DA_MELHOR_IDEIA_MACBOOK.md` marcados como obsoletos. Vídeo: capítulo 2 virou "A aprovação"; 382 palavras (~2 min 30 s).
 A prévia de 20 s mostra fornecedores, CNPJ e valores: **não entra na entrega**.
 
+**Slide 14 sem pedidos.** O Guilherme: *"o conselho já aprovou; agora é o relatório final para eles avaliarem o que foi feito"*. O
+slide virou "Entregue × próximos passos" (prestação de contas); a seção 05 da trilha virou "Entregue e próximos".
+
+**Datas das versões (API do Apps Script, `createTime`):** v69 e v70 em 17/09; v71 a v73 em 02/10; v74 a v76 em 11/10 (manhã); v77
+em 11/10 (noite). O escopo roda em produção desde setembro (R4 do PPCI em 15/09); o escopo base e a busca (v76) e o aviso padrão
+(v74/v75) são de 11/10. O deck mantém essa distinção.
+
+**Checador do roteiro** (`video/02-relatorio/CHECAGEM-ROTEIRO-2026-10-11.md`, sobre a v1: REPROVADO). Roteiro v3 aplica o parecer:
+abertura no caso; oferta, não execução; a proposta de 2 visitas é a que não incluía o laudo PMOC com ART (não "a lei exige"); preço sem
+discriminação; VB × KG; dois botões; reaproveitamento parcial; testes "antes de publicar"; integração como proposta; casos como
+cartões; recortes obrigatórios de D02, D90/E04 e da barra de abas. **Esteio confirmado:** "Escopo - Manutenção Piso DHL - R3.pdf"
+(MEGA CENTRO LOGÍSTICO ESTEIO) em `G:\Meu Drive\MELHOR IDEIA 2026\PLANO\`; seis reais = Curitiba 2, Itajaí 3, Esteio 1. Locução v3:
+348 palavras sem o capítulo 7 (~2 min 20 s). Falta o Checador conferir a v3.
+
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
 
