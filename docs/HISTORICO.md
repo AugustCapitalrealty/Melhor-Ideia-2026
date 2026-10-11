@@ -299,6 +299,32 @@ Vieram do teste E2E. O usuário pediu para não mexer por enquanto.
 
 ---
 
+## 11/10/2026 — domingo
+
+### Ambiente
+
+O git estava íntegro, sem locks e igual ao `origin/main`. O Node agora fica em `%LOCALAPPDATA%\node` (v24) e não mais em `C:\Program Files\nodejs`. O clasp não é dependência do projeto: use `npx @google/clasp …`, porque `npx clasp` falha com "could not determine executable". Por isso o `npm run push` também falha; rode `npm test` e depois `npx @google/clasp push -f`.
+
+### Disclaimer padrão no aviso ao proponente (v75)
+
+O pedido veio do Jonatas, em comentário de 05/10. O texto foi usado como ele enviou, com uma correção: "têm" virou "tem", concordando com "o escopo".
+
+| Decisão | Motivo |
+| :--- | :--- |
+| `ES_AVISO_PADRAO` em `Escopos.gs`, com "caráter orientativo" e "visita técnica prévia" em negrito no deck | Os negritos estão no texto original |
+| Aviso vazio ou igual a um dos dois padrões antigos vira o novo, tanto na normalização quanto na abertura | Escolha do usuário: trocar nos escopos já salvos. Aviso escrito à mão não muda |
+| Reabrir e salvar sem editar não cria revisão | Senão, toda revisão emitida viraria R+1 só pelo texto novo |
+| Quebra do aviso a 276 pt (era 284) | O negrito alarga a linha |
+| Versão visual `ESL7` | Uma revisão já emitida sai com o disclaimer ao clicar em Gerar |
+
+O texto sempre fala em visita técnica prévia, mesmo com a caixa "Exigir visita" desmarcada. É o padrão do Facilities; a caixa continua controlando só o alerta âmbar.
+
+### Em avaliação: escopos base para futuras contratações
+
+Pedido do Jonatas, 05/10: a plataforma deve classificar, gravar e gerar escopos base automaticamente. A avaliação está na conversa de 11/10; a decisão ainda está pendente.
+
+---
+
 ## Próxima entrada
 
 *(a preencher conforme avançamos)*
