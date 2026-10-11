@@ -38,6 +38,7 @@ function ambiente() {
             const style = { setFontFamily(v) { e.font = v; return this; }, setFontSize(v) { e.fs = v; return this; }, setForegroundColor(v) { e.color = v; return this; }, setBold(v) { e.bold = v; return this; } };
             const par = { setParagraphAlignment(v) { e.align = v; return this; }, setLineSpacing() { return this; }, setSpaceAbove() { return this; }, setSpaceBelow() { return this; } };
             const t = { setText(v) { e.text = v; }, getTextStyle: () => style, getParagraphStyle: () => par,
+              find: p => [...e.text.matchAll(new RegExp(p, 'g'))].map(m => ({ getTextStyle: () => ({ setBold(v) { if (v) (e.negritos = e.negritos || []).push(m[0]); return this; } }) })),
               getParagraphs: () => e.text.split('\n').map(texto => ({ getRange: () => ({ asString: () => texto, getParagraphStyle: () => ({
                 setIndentStart(v) { (e.recuos = e.recuos || []).push({ texto, v }); return this; }, setIndentFirstLine() { return this; } }) }) })) };
             const border = { setTransparent() { return this; }, setWeight(w) { e.borderW = w; return this; }, getLineFill: () => ({ setSolidFill(c) { e.borderColor = c; return this; } }) };
@@ -331,4 +332,26 @@ const atualizado=legado.ctx.apiEscopoGerar(rl.id,1);assert(atualizado.ok,atualiz
 assert.equal(legado.decks.length,1,'modelo antigo é regenerado mesmo sem alteração no escopo');
 assert.equal(legado.db.EscopoArquivos[0].SLIDES_ID,'slides-antigo','histórico anterior preservado');
 legado.ctx.apiEscopoGerar(rl.id,1);assert.equal(legado.decks.length,1,'modelo novo é reutilizado');
+// Disclaimer padrão (Jonatas, 05/10): o aviso antigo de fábrica vira o novo; o que alguém escreveu fica.
+const disc=ambiente(),cd=disc.ctx,PADRAO=cd.esAvisoVigente_('');
+for(const antigo of ['','Este escopo tem caráter orientativo e serve como base técnica para elaboração da proposta.','Este escopo tem caráter orientativo e serve como base técnica para cotação.'])
+  assert.equal(cd.esNormalizar_({...exemplo(),aviso:antigo}).aviso,PADRAO,'aviso padrão antigo ou vazio vira o disclaimer');
+assert.equal(cd.esNormalizar_({...exemplo(),aviso:'Aviso escrito pelo comprador.'}).aviso,'Aviso escrito pelo comprador.','aviso editado à mão não muda');
+assert(/caráter orientativo/.test(PADRAO)&&/visita técnica prévia/.test(PADRAO));
+const antigoGravado=cd.apiEscopoSalvar('',0,exemplo());
+disc.db.Escopos[0].CONTEUDO=JSON.stringify({...JSON.parse(disc.db.Escopos[0].CONTEUDO),aviso:'Este escopo tem caráter orientativo e serve como base técnica para elaboração da proposta.'});
+const carimboAntigo=cd.apiEscopoAbrir(antigoGravado.id).carimbo;
+assert.equal(cd.apiEscopoAbrir(antigoGravado.id).dados.aviso,PADRAO,'a tela já abre com o disclaimer');
+disc.db.EscopoArquivos.push({ID:'ESL6-emitido',ID_ESCOPO:antigoGravado.id,REVISAO:1,STATUS:'concluido',SLIDES_ID:'s',PDF_ID:'p'});
+const resalvo=cd.apiEscopoSalvar(antigoGravado.id,1,cd.apiEscopoAbrir(antigoGravado.id).dados,carimboAntigo);
+assert(resalvo.ok,resalvo.erro);assert.equal(resalvo.revisao,1,'reabrir e salvar sem editar não cria revisão só pelo disclaimer');
+assert.equal(resalvo.carimbo,carimboAntigo,'o carimbo continua valendo para o próximo salvamento');
+const gerado=cd.apiEscopoGerar(antigoGravado.id,1);assert(gerado.ok,gerado.erro);
+assert.equal(disc.decks.length,1,'revisão emitida no layout anterior é regenerada com o disclaimer');
+const caixaAviso=disc.decks[0].pages.flatMap(s=>s.elements).find(e=>(e.text||'').includes('imprescindível'));
+assert(caixaAviso,'o disclaimer aparece no deck');assert.equal(caixaAviso.align,'justified');
+assert.deepEqual([...(caixaAviso.negritos||[])].sort(),['caráter orientativo','visita técnica prévia'],'os dois trechos saem em negrito');
+const planoDisc=cd.esPlanejarSlides_(cd.esNormalizar_(exemplo()));
+assert(!planoDisc.some(p=>p.titulo==='Diretrizes para cotação'),'o disclaimer cabe no encerramento, sem página própria');
+console.log('Disclaimer: padrão novo, avisos antigos trocados, edição preservada, sem revisão fantasma e negrito no deck OK.');
 module.exports={ambiente,exemplo};

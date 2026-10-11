@@ -14,6 +14,21 @@ function esPreparar_() {
   });
 }
 
+/** Disclaimer padrão do Facilities (Jonatas, 05/10/2026). Os trechos em ES_AVISO_NEGRITO saem em negrito no deck. */
+const ES_AVISO_PADRAO = 'O escopo anexado tem caráter orientativo, servindo como base técnica para a elaboração da proposta. ' +
+  'É imprescindível que a empresa proponente realize visita técnica prévia, a fim de avaliar as condições reais das ' +
+  'instalações e levantar eventuais particularidades que possam impactar na execução do serviço.';
+const ES_AVISO_NEGRITO = ['caráter orientativo', 'visita técnica prévia'];
+// Textos que já foram o padrão. Aviso igual a um deles nunca foi escrito por alguém: passa a ser o padrão vigente.
+const ES_AVISOS_ANTIGOS = [
+  'Este escopo tem caráter orientativo e serve como base técnica para elaboração da proposta.',
+  'Este escopo tem caráter orientativo e serve como base técnica para cotação.'
+];
+function esAvisoVigente_(aviso) {
+  const s = String(aviso == null ? '' : aviso).trim();
+  return !s || ES_AVISOS_ANTIGOS.indexOf(s) >= 0 ? ES_AVISO_PADRAO : s;
+}
+
 function esTexto_(v, max, nome) {
   const s = String(v == null ? '' : v).trim();
   if (s.length > max) throw new Error((nome || 'Texto') + ': máximo de ' + max + ' caracteres.');
@@ -39,6 +54,7 @@ function esNormalizar_(d) {
     n[k] = esTexto_(d[k], limites[k], k);
     if (['objetivo','vistoria','consideracoes','inclusoes','exclusoes','criteriosAceite','aviso','prazo'].indexOf(k) < 0) n[k] = n[k].replace(/\s+/g, ' ');
   });
+  n.aviso = esAvisoVigente_(n.aviso);
   if (!n.titulo || !n.megaId) throw new Error('Informe o título e selecione o empreendimento.');
   n.imagem = esImagemId_(d.imagem); n.detalhe = esImagemId_(d.detalhe);
   n.visita = d.visita === true;
@@ -118,8 +134,9 @@ function esPlanilhaLinks_(r) {
 function apiEscopoAbrir(id) {
   return esApi_(function () {
     esPreparar_(); const r = esRevisao_(id);
+    const dados = JSON.parse(r.CONTEUDO); dados.aviso = esAvisoVigente_(dados.aviso);
     const artefatos = cfLerTudo_('EscopoArquivos').filter(function (f) { return f.ID_ESCOPO === id; });
-    return { id: r.ID, revisao: Number(r.REVISAO), carimbo: esCarimbo_(String(r.CONTEUDO)), dados: JSON.parse(r.CONTEUDO),
+    return { id: r.ID, revisao: Number(r.REVISAO), carimbo: esCarimbo_(String(r.CONTEUDO)), dados: dados,
       arquivos: artefatos.filter(function (f) { return f.STATUS === 'concluido'; }).map(esArquivoLinks_),
       planilhas: artefatos.filter(function (f) { return f.STATUS === 'planilha'; }).map(esPlanilhaLinks_) };
   });
@@ -169,6 +186,10 @@ function esRevisaoEmitida_(id, rev) {
   });
 }
 
+function esConteudoVigente_(json) {
+  try { return JSON.stringify(esNormalizar_(JSON.parse(json))); } catch (_) { return null; }
+}
+
 function apiEscopoSalvar(id, revisao, dados, carimbo) {
   return esApi_(function () {
     esPreparar_(); const d = esDadosDoFormulario_(dados);
@@ -178,7 +199,9 @@ function apiEscopoSalvar(id, revisao, dados, carimbo) {
       if (atual && (Number(atual.REVISAO) !== Number(revisao) || (carimbo != null && carimbo !== esCarimbo_(String(atual.CONTEUDO)))))
         throw new Error('Este escopo foi alterado em outra janela. Guarde suas alterações e reabra a versão atual antes de salvar.');
       const json = JSON.stringify(d);
-      if (atual && atual.CONTEUDO === json) return { id: id, revisao: Number(atual.REVISAO), carimbo: esCarimbo_(json) };
+      // Gravado com o aviso padrão antigo e reaberto sem edição: é o mesmo conteúdo, não uma revisão nova.
+      if (atual && (atual.CONTEUDO === json || esConteudoVigente_(atual.CONTEUDO) === json))
+        return { id: id, revisao: Number(atual.REVISAO), carimbo: esCarimbo_(String(atual.CONTEUDO)) };
       const agora = new Date().toISOString();
       if (atual && !esRevisaoEmitida_(id, atual.REVISAO)) {
         cfAtualizarLinha_('Escopos', atual._linha, { CONTEUDO: json, CRIADO_EM: agora });
@@ -328,10 +351,10 @@ function apiEscopoGerar(id, revisao) {
     const reserva = cfComTrava_(function () {
       const anteriores = cfLerTudo_('EscopoArquivos').filter(function (f) { return f.ID_ESCOPO === id && Number(f.REVISAO) === Number(revisao); });
       // Reutiliza apenas a versão visual atual; arquivos antigos ficam no histórico.
-      const pronto = anteriores.filter(function (f) { return f.STATUS === 'concluido' && String(f.ID).indexOf('ESL6-') === 0; })[0];
+      const pronto = anteriores.filter(function (f) { return f.STATUS === 'concluido' && String(f.ID).indexOf('ESL7-') === 0; })[0];
       if (pronto) return { pronto: pronto };
       if (anteriores.some(esGerandoAtivo_)) throw new Error('Esta revisão já está sendo gerada. Aguarde alguns minutos e reabra o escopo.');
-      const token = 'ESL6-' + Utilities.getUuid(), agora = new Date().toISOString();
+      const token = 'ESL7-' + Utilities.getUuid(), agora = new Date().toISOString();
       // Tentativa que falhou ou morreu no limite de tempo: a mesma linha é reaproveitada,
       // e os arquivos incompletos que ela deixou vão para a lixeira.
       const refazer = anteriores.filter(function (f) { return f.STATUS === 'falhou' || f.STATUS === 'gerando'; })[0];

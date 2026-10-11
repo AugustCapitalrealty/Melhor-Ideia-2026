@@ -82,6 +82,10 @@ function esQuebrar_(texto, largura, fonte) {
   return linhas;
 }
 
+function esEscaparRegex_(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /** Junta as linhas estimadas de volta nos parágrafos originais, para o Slides quebrar e justificar. */
 function esParagrafos_(texto) {
   return String(texto).split('\n').reduce(function (out, linha) {
@@ -387,8 +391,9 @@ function esPlanejarSlides_(d) {
 
   // 9. Prazos, Contato e Aviso Final (Consolidado em Cards Executivos)
   if (d.prazo || d.responsavel || d.aviso || d.visita) {
-    const aviso = d.aviso || 'Este escopo tem caráter orientativo e serve como base técnica para cotação.';
-    const linhasAviso = esQuebrar_(aviso, 284, ES_FS.corpo);
+    const aviso = esAvisoVigente_(d.aviso);
+    // Os trechos em negrito alargam a linha: quebra com folga para não estourar a coluna.
+    const linhasAviso = esQuebrar_(aviso, 276, ES_FS.corpo);
     const linhasPrazo = esQuebrar_(d.prazo || '', 282, ES_FS.corpo);
     if (linhasPrazo.length > 6) cartoes('Prazos', 'Proposta, visita e execução', 'CRONOGRAMA', esQuebrar_(d.prazo, ES_LARG.cheio, ES_FS.corpo));
     if (linhasAviso.length > 11) cartoes('Diretrizes para cotação', d.megaNome, 'AVISO AO PROPONENTE', esQuebrar_(aviso, ES_LARG.cheio, ES_FS.corpo));
@@ -444,8 +449,11 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
   // Os três papéis de texto do deck. Nenhum slide escolhe tamanho ou cor por conta própria.
   function cartao(s, x, y, w, h) { caixa(s, x, y, w, h, '', 0, null, cores.bgSlide, false, null, cores.line); }
   function rotulo(s, x, y, w, t, cor, fundo, centro) { caixa(s, x, y, w, 22, t, ES_FS.rotulo, cor || cores.brandLight, fundo, true, fontes.titles, null, centro); }
-  function corpo(s, x, y, w, linhas, destaque) {
-    caixa(s, x, y, w, esAlturaTexto_(linhas.length, ES_FS.corpo), linhas.join('\n'), ES_FS.corpo, cores.textBody, null, !!destaque, null, null, 'justificar');
+  function corpo(s, x, y, w, linhas, destaque, negritos) {
+    const shape = caixa(s, x, y, w, esAlturaTexto_(linhas.length, ES_FS.corpo), linhas.join('\n'), ES_FS.corpo, cores.textBody, null, !!destaque, null, null, 'justificar');
+    (negritos || []).forEach(function (trecho) {
+      shape.getText().find(esEscaparRegex_(trecho)).forEach(function (r) { r.getTextStyle().setBold(true); });
+    });
     return esAlturaTexto_(linhas.length, ES_FS.corpo);
   }
   /**
@@ -685,7 +693,7 @@ function esDesenharSlides_(deck, paginas, blobs, meta) {
         caixa(s, 382, yD, 300, hAlerta, 'OBRIGATÓRIA VISITA TÉCNICA PRÉVIA\nPara validação das condições locais antes da proposta.', ES_FS.rotulo, cores.amberInk, cores.amberBg, true, fontes.titles, cores.amberSolid);
         yD += hAlerta + 8;
       }
-      corpo(s, 382, yD, 300, p.aviso);
+      corpo(s, 382, yD, 300, p.aviso, false, ES_AVISO_NEGRITO);
     }
 
     // ──────────────────────────────────────────
