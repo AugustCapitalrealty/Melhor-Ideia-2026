@@ -1,3 +1,5 @@
+> **OBSOLETO (11/10/2026):** histórico, não usar na entrega. Traz números nunca medidos (ex.: ~50 → 15 min) e chama simulação de nota da banca. Fonte atual: [ESTRATEGIA_NOTA_MAXIMA.md](ESTRATEGIA_NOTA_MAXIMA.md) e o parecer [AUDITORIA_ENTREGA_2026-10-11.md](AUDITORIA_ENTREGA_2026-10-11.md).
+
 # Auditoria de Nota Oficial — Concurso da Melhor Ideia 2026
 ## Projeto: Capital Fornecedores (Capital Realty & Demercado)
 **Data da Auditoria:** 08/09/2026 · **Commit Base:** `5cc9c35` · **Autor:** Guilherme Marques  

@@ -472,6 +472,26 @@ corporativos em `video/motor/_motor/sons/relatorio/` e a música instrumental `v
 raiz. Brandbook: cores #151E49, #003D7B, #065CA9 (as do deck); tipografia oficial **Gotham** (paga; o deck segue com Montserrat, a
 alternativa livre mais próxima, até haver licença); área de proteção = altura do "C" (p. 17). Logo colorido na capa, negativo no fecho.
 
+### Parecer do Auditor da entrega e decisões do Guilherme
+
+Parecer em [AUDITORIA_ENTREGA_2026-10-11.md](AUDITORIA_ENTREGA_2026-10-11.md) (nota do rascunho 5,6; 6,35 com medição e
+depoimentos). Os três 🔴 de fora do deck foram decididos pelo Guilherme:
+
+| Achado do Auditor | Decisão do Guilherme |
+| :--- | :--- |
+| GitHub público com dados reais de fornecedores | *"Desconsidere, não tem problema isso"* |
+| Elegibilidade (§4: três primeiras inscrições; e-mail de 04/02 com três ideias antes de 29/04) | *"O Capital Fornecedores foi aprovado"* |
+| 19/05 não é aprovação | *"Eu me reuni com o conselho e foi aprovada a parte do Escopo; o restante será feito junto com a T.I."* **Datas da aprovação da ideia e da reunião com o conselho: a confirmar** (selo PENDENTE no slide 5) |
+
+**Correções factuais aplicadas** (deck e vídeo): laudo PMOC como fato da proposta, não infração; "preço só no total, sem valor
+por item" no lugar de "não dá para saber o que foi considerado"; VB × KG no mesmo item (posicionamento da armadura), não "3
+unidades"; escopo em produção desde setembro (R4 em 15/09), não outubro; planilha só na R9; dois botões, não "um clique"; "9 dias"
+(02/10 a 11/10); testes "antes de publicar", publicação versionada; "sem licença nem servidor novo" no lugar de "custo zero";
+fornecedor e preço "com a TI", como aprovou o conselho; recursos de 11/10 (v75 a v77) marcados como posteriores ao prazo de
+implementação (10/10, §5.3); autor na capa e no fecho. Estratégia corrigida para 34 suítes. `AUDITORIA_NOTA_2026-09-08.md` e
+`DEFESA_DA_MELHOR_IDEIA_MACBOOK.md` marcados como obsoletos. Vídeo: capítulo 2 virou "A aprovação"; 382 palavras (~2 min 30 s).
+A prévia de 20 s mostra fornecedores, CNPJ e valores: **não entra na entrega**.
+
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
 

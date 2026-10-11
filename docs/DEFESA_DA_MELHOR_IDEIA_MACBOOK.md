@@ -1,3 +1,5 @@
+> **OBSOLETO (11/10/2026):** histórico, não usar na entrega. Traz números nunca medidos (ex.: ~50 → 15 min) e chama simulação de nota da banca. Fonte atual: [ESTRATEGIA_NOTA_MAXIMA.md](ESTRATEGIA_NOTA_MAXIMA.md) e o parecer [AUDITORIA_ENTREGA_2026-10-11.md](AUDITORIA_ENTREGA_2026-10-11.md).
+
 # O Playbook da Vitória: Por que o Capital Fornecedores é a Melhor Ideia de 2026
 ## Estratégia de Nota Máxima para Conquistar o MacBook do Concurso
 

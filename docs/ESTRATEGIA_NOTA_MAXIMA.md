@@ -97,7 +97,7 @@ números e **não serve de base**.
 | :--- | :--- |
 | Plano × entregue, com o que ficou de fora declarado | `BALANCO_EXECUCAO.md`, `HISTORICO.md` |
 | Cadência: pedido do usuário → versão publicada (v71 a v76, e a v77 do modo escopo) | `HISTORICO.md` 02/10 e 11/10 |
-| 35 suítes de teste no `npm test`; teste que reprova de verdade (mutações) | `package.json`; recontar no dia |
+| 34 suítes de teste no `npm test`; teste que reprova de verdade (mutações) | `package.json`; recontar no dia |
 | Teste de ponta a ponta no Chrome da tela de Escopos | `tests/teste-escopos-browser.cjs` |
 | Publicação versionada, com volta à versão anterior em um clique | `HISTORICO.md` 02/10 |
 | Decisões registradas, inclusive as revertidas e o porquê | `HISTORICO.md` |
