@@ -340,6 +340,43 @@ Pedido do Jonatas, 05/10: a plataforma deve classificar, gravar e gerar escopos 
 
 ---
 
+## 11/10/2026 — domingo
+
+### Vídeo e relatório final: o conhecimento entra no repositório
+
+O Guilherme juntou duas pastas à sessão (a "empresa" do YouTube, `H:\Meu Drive\Youtube`, e o deck do Orçamento 2027, no Drive
+compartilhado) e pediu para aprender o que serve para entregar **um relatório e um vídeo** no fim do projeto. Tudo foi resumido em
+[CONHECIMENTO_VIDEO_E_RELATORIO.md](CONHECIMENTO_VIDEO_E_RELATORIO.md), e o `CLAUDE.md` da raiz manda toda sessão ler esse arquivo.
+
+| Decisão | Motivo |
+| :--- | :--- |
+| O relatório é um **deck** | Regulamento §7: "relatório final (apresentação)" até 15/10 |
+| O vídeo vai junto com o relatório em 15/10, 2 a 3 min, voz do Guilherme no ElevenLabs | Respostas dele |
+| Visual corporativo, sem o "jeito YouTube" | Ele reprovou esse visual no deck do orçamento em 07/10: "pense nas grandes empresas de auditoria" |
+| Núcleo do motor de vídeo copiado para `video/` | "Salve o que precisa": a pasta do YouTube é pessoal e pode ser apagada |
+| Não usar o "~50 min → 15 min" do `DEFESA_DA_MELHOR_IDEIA_MACBOOK.md` | Nunca foi medido |
+| Linha de base no Excel: o Guilherme cronometra nesta semana | Impacto vale 30% e é o 1º desempate |
+
+### Prévia de 20 s
+
+`video/01-previa-20s/`: 5 cenas (a planilha que não lembra, o ciclo do retorno, a solução, o que buscamos, o fecho), voz provisória do
+edge-tts, trilha "Como Vamos" (Biblioteca do YouTube). Narrativa do roteiro de 10/09, sem número nenhum. Folha conferida duas vezes
+(cabeçalho atropelado nas planilhas pequenas e ponto vermelho por cima do "REMONTAR", corrigidos). Render 20,2 s, `conferir.py`
+aprovado (−15 LUFS, pico −1,9 dBTP, BT.709). O `medir.py` acusa 49% de tempo parado: melhorar na versão final.
+
+### Prévia v1 e v2: telas reais e foco no escopo
+
+| Pedido do Guilherme | O que mudou |
+| :--- | :--- |
+| "O vídeo tem que usar imagem do script mesmo, real, não simulado" | Os desenhos saíram. Capturas do app em produção (implantação @76) com o login dele, pelo Chrome de depuração; scripts em `video/ferramentas/` |
+| "Minha meta é focada no escopo; base de fornecedores vamos interligar com o que está no Fluig/RM" | A prévia conta o escopo real do PPCI de Itajaí (serviços, fotos, EAP, o deck e a planilha gerados, revisões R4–R9) e fecha com a integração Fluig/RM como **próximo passo** |
+
+Resultado: 21,5 s, `conferir.py` aprovado, 24% de tempo parado (era 49%). Achados nas telas: "R$ R$" duplicado na Consulta de preço
+(defeito a corrigir com o ok dele) e o IQF médio de 76,9 com 1 avaliação na tela de Fornecedores (não usar como resultado).
+Detalhes em [CONHECIMENTO_VIDEO_E_RELATORIO.md](CONHECIMENTO_VIDEO_E_RELATORIO.md) §9.
+
+---
+
 ## Próxima entrada
 
 *(a preencher conforme avançamos)*

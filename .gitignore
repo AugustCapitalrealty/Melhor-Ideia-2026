@@ -7,3 +7,11 @@ client_secret*.json
 # Node
 node_modules/
 npm-debug.log*
+
+# Vídeo: render, áudio gerado e músicas ficam só no Drive
+video/**/build/
+video/MUSICAS/*.mp3
+__pycache__/
+# Capturas do app real: têm dados reais de fornecedores e preços; ficam só no Drive
+video/capturas/
+video/**/midia/real/

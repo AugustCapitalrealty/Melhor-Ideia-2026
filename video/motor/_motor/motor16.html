@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITULO__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Geist:wght@400..800&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Special+Elite&family=Patrick+Hand&family=Archivo+Black&family=Archivo+Narrow:wght@400..700&family=Permanent+Marker&family=Luckiest+Guy&family=Anton&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #000; color: #eee; font-family: "Montserrat", system-ui, sans-serif; }
+  canvas { display: block; width: 100vw; height: auto; max-height: 100vh; object-fit: contain; }
+  #sheet { display: block; width: 1920px !important; height: auto !important; max-height: none !important; }
+  #info { position: fixed; left: 8px; bottom: 8px; font: 12px monospace; color: #aaa; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="info"></div>
+<script>
+'use strict';
+// ─────────────────────────────────────────────────────────────
+//  Motor de vídeos longos (16:9, narrado). Renderização quadro a quadro.
+//  A narração define a linha do tempo: cada cena do ROTEIRO.md é uma cena aqui,
+//  e as animações se prendem às palavras (S.w('palavra')).
+//  render(t) é determinístico. Vídeos entram como camadas: na renderização,
+//  __quadro(t) faz uma passada de coleta, posiciona os vídeos no instante exato
+//  e só então desenha. O áudio é mixado depois, no ffmpeg (render.py).
+// ─────────────────────────────────────────────────────────────
+const DADOS = /*__DADOS__*/null;
+const MANIFESTO = /*__MANIFESTO__*/null;
+const VERTICAL = DADOS.formato === '9:16';  // Shorts: 1080×1920 (projeto.json "formato": "9:16")
+const W = VERTICAL ? 1080 : 1920, H = VERTICAL ? 1920 : 1080, TAU = Math.PI * 2, FPS = 30;
+const F = '"Montserrat",sans-serif';
+
+// Paleta do Jacaré: noite, água, lama, areia, rocha, concreto e o laranja de obra
+const C = {
+  noite: '#08111C', noite2: '#0E1B2A', agua: '#0F4C5C', agua2: '#1B6F80', aguaClara: '#58B4C4',
+  lama: '#4A3A2A', lama2: '#5C4832', areia: '#A88B5C', rocha: '#4B525C', rocha2: '#343A42',
+  concreto: '#D8D4CB', laranja: '#FF7A1A', laranja2: '#FFB066', jacare: '#7BC043',
+  branco: '#F4F1EA', mudo: 'rgba(244,241,234,0.62)', fino: 'rgba(255,255,255,0.1)', vermelho: '#FF4A3D',
+};
+
+const cv = document.getElementById('cv');
+cv.width = W; cv.height = H;
+let ctx = cv.getContext('2d');  // let (01/10/2026): o deslize troca o ctx por um canvas à parte enquanto desenha cada cena
+let NOW = 0;
+
+// ───────── utilidades ─────────
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const E = {
+  outCubic: t => 1 - Math.pow(1 - t, 3),
+  inOutCubic: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  inOutSine: t => -(Math.cos(Math.PI * t) - 1) / 2,
+  outExpo: t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t),
+  outBack: t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); },
+};
+const hexA = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${a})`;
+function keys(t, K, ease = E.inOutSine) {  // keyframes [[t, v], ...]
+  if (t <= K[0][0]) return K[0][1];
+  for (let i = 1; i < K.length; i++)
+    if (t < K[i][0]) return lerp(K[i - 1][1], K[i][1], ease((t - K[i - 1][0]) / (K[i][0] - K[i - 1][0])));
+  return K[K.length - 1][1];
+}
+const fmtN = n => Math.round(n).toLocaleString('pt-BR');
+
+function txt(s, x, y, size, weight, color, o = {}) {
+  ctx.font = `${weight} ${size}px ${F}`;
+  ctx.fillStyle = color;
+  ctx.textAlign = o.align || 'left';
+  ctx.textBaseline = o.base || 'alphabetic';
+  ctx.letterSpacing = (o.ls || 0) + 'px';
+  if (o.sombra) { ctx.shadowColor = 'rgba(0,0,0,0.65)'; ctx.shadowBlur = o.sombra; ctx.shadowOffsetY = o.sombra / 4; }
+  ctx.fillText(s, x, y);
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  const w = ctx.measureText(s).width;
+  ctx.letterSpacing = '0px';
+  return w;
+}
+function measure(s, size, weight, ls = 0) {
+  ctx.font = `${weight} ${size}px ${F}`; ctx.letterSpacing = ls + 'px';
+  const w = ctx.measureText(s).width; ctx.letterSpacing = '0px'; return w;
+}
+// Texto que sobe de dentro de uma máscara
+function reveal(str, x, y, weight, size, color, p, o = {}) {
+  if (p <= 0) return;
+  ctx.save();
+  const w = measure(str, size, weight, o.ls || 0), x0 = o.align === 'center' ? x - w / 2 : o.align === 'right' ? x - w : x;
+  ctx.beginPath(); ctx.rect(x0 - 20, y - size * 1.1, w + 40, size * 1.45); ctx.clip();
+  ctx.globalAlpha *= clamp(p * 1.6);
+  txt(str, x, y + (1 - p) * size * 1.25, size, weight, color, o);
+  ctx.restore();
+}
+function rr(x, y, w, h, r, fill, stroke, lw) {
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, r);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 2; ctx.stroke(); }
+}
+
+// ───────── mídia ─────────
+const IMGS = {}, VIDS = {};
+function M(pref) {  // acha a mídia pelo começo do nome (ex.: 'V05', 'R01f-ponte-foto-1')
+  if (MANIFESTO[pref]) return pref;
+  const k = Object.keys(MANIFESTO).filter(n => n.startsWith(pref));
+  if (k.length !== 1) throw new Error(`mídia "${pref}": ${k.length} resultados`);
+  return k[0];
+}
+let COLETA = null;  // na passada de coleta: lista de [nome, tempo local] dos vídeos pedidos
+function cobrir(sw, sh, box) {  // escala para cobrir a caixa
+  return Math.max(box.w / sw, box.h / sh);
+}
+// Vídeo como camada. tl = tempo dentro do vídeo; o = {box, zoom, x, y (0..1 = ponto focal), alpha}
+function video(pref, tl, o = {}) {
+  const n = M(pref), m = MANIFESTO[n];
+  const t = clamp(tl, 0, m.dur - 0.05);
+  if (COLETA) { COLETA.push([n, t]); return; }
+  const v = VIDS[n]; if (!v || v.readyState < 2) return;
+  desenhaCobrindo(v, 1920, 1080, o);
+}
+// Foto com movimento de câmera. o = {box, zoom, x, y (ponto focal 0..1)}
+function foto(pref, o = {}) {
+  const n = M(pref), im = IMGS[n]; if (!im || !im.complete) return;
+  desenhaCobrindo(im, im.naturalWidth, im.naturalHeight, o);
+}
+function desenhaCobrindo(src, sw, sh, o) {
+  const box = o.box || { x: 0, y: 0, w: W, h: H };
+  const s = cobrir(sw, sh, box) * (o.zoom || 1);
+  const dw = sw * s, dh = sh * s;
+  const fx = o.x ?? 0.5, fy = o.y ?? 0.5;
+  const x = box.x + (box.w - dw) * fx, y = box.y + (box.h - dh) * fy;
+  ctx.save();
+  if (o.alpha !== undefined) ctx.globalAlpha *= o.alpha;
+  ctx.beginPath(); ctx.rect(box.x, box.y, box.w, box.h); ctx.clip();
+  ctx.drawImage(src, x, y, dw, dh);
+  ctx.restore();
+}
+// Desenha a foto numa "câmera" de coordenadas da própria foto: mostra a região que começa em (cx, cy) com zoom z
+function fotoCam(pref, cx, cy, z, alpha = 1) {
+  const n = M(pref), im = IMGS[n]; if (!im || !im.complete) return;
+  ctx.save(); ctx.globalAlpha *= alpha;
+  ctx.drawImage(im, -cx * z, -cy * z, im.naturalWidth * z, im.naturalHeight * z);
+  ctx.restore();
+}
+
+// ───────── foto viva (04/10/2026: _motor/pecas.py; estudo em _referencias/LEMO-WAKE.md) ─────────
+// A foto desmontada (fundo sem as peças, camada "perto" e cada peça recortada, todas do tamanho da foto) é montada num
+// canvas a cada quadro e registrada como a mídia 'viva-<pref>'. Qualquer função que desenha a foto A CADA QUADRO passa a
+// mostrar a foto viva só trocando o nome: foto('viva-F07', ...), arFoto('viva-F07', ...). Chame no começo do fn da cena.
+// Estilos que guardam a foto processada em cache (gsGravura, recortes da colagem, pontilhado) mostrariam só o 1º quadro:
+// na gravura use gsGravuraPecas (estilo-gravura.js).
+//   info = o pc-<pref>.json do pecas.py, colado na cena (w, h, pecas: {nome: {caixa, prof}})
+//   o.par = paralaxe em px da foto (o fundo anda 30%, a peça pela profundidade dela, o "perto" 100%); o.ordem = [nomes]
+//   o.pecas = { nome: { dx, dy, rot, alpha, recorte } } em px da foto (rot em volta da base da peça; recorte = só dentro da caixa)
+function fotoViva(pref, info, o = {}) {
+  const fundo = IMGS[M('pc-' + pref + '-fundo')];
+  if (!fundo || !fundo.complete || !fundo.naturalWidth) return;
+  const nome = 'viva-' + pref, w = fundo.naturalWidth, h = fundo.naturalHeight, k = w / info.w;
+  let c = IMGS[nome];
+  if (!c || c.width !== w) {
+    c = document.createElement('canvas'); c.width = w; c.height = h;
+    c.complete = true; c.naturalWidth = w; c.naturalHeight = h;   // para as funções de foto tratarem como imagem carregada
+    IMGS[nome] = c; MANIFESTO[nome] = { tipo: 'foto', arq: '', w, h };
+  }
+  const g = c.getContext('2d'), par = (o.par || 0) * k;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, w, h);
+  g.drawImage(fundo, par * 0.3, 0);
+  if (par) { g.drawImage(fundo, par * 0.3 - w, 0); g.drawImage(fundo, par * 0.3 + w, 0); }  // a borda não abre buraco
+  const perto = MANIFESTO['pc-' + pref + '-perto'] ? IMGS['pc-' + pref + '-perto'] : null;
+  if (perto && perto.complete) g.drawImage(perto, par, 0);
+  const nomes = o.ordem || Object.keys(info.pecas).sort((a, b) => info.pecas[a].prof - info.pecas[b].prof);
+  for (const n of nomes) {
+    const pc = info.pecas[n], mv = (o.pecas || {})[n] || {}, im = IMGS[M('pc-' + pref + '-' + n)];
+    if (!im || !im.complete || (mv.alpha ?? 1) <= 0) continue;
+    const kp = 0.3 + 0.7 * clamp((pc.prof - 0.2) / 0.5), px = (pc.caixa[0] + pc.caixa[2]) / 2 * k, py = pc.caixa[3] * k;
+    g.save(); g.globalAlpha = mv.alpha ?? 1;
+    if (mv.recorte) {  // a peça só aparece dentro da própria caixa: nasce da base (bloco que sobe do chão), some na borda
+      const [x0, y0, x1, y1] = pc.caixa; g.beginPath(); g.rect(x0 * k + par * kp, y0 * k, (x1 - x0) * k, (y1 - y0) * k); g.clip();
+    }
+    g.translate(px + (mv.dx || 0) * k + par * kp, py + (mv.dy || 0) * k); g.rotate(mv.rot || 0); g.translate(-px, -py);
+    g.drawImage(im, 0, 0, w, h); g.restore();
+  }
+}
+
+// Movimentos prontos para as peças (devolvem { dx, dy, rot, alpha } para o o.pecas de fotoViva / gsGravuraPecas):
+// pecaEntra: desliza de 'de' px (fora da foto: a borda esconde) até o lugar entre t0 e t1, desacelerando; inclina com a
+//   velocidade e balança de leve (o navio do Centurion, aprovado pelo Guilherme em 04/10/2026). balanco = 0 para coisa parada.
+function pecaEntra(lt, t0, t1, de, fase = 0, balanco = 1) {
+  const q = prog(lt, t0, t1), e = E.outCubic(q), vel = q > 0 && q < 1 ? 3 * (1 - q) * (1 - q) : 0;
+  return { dx: de * (1 - e), dy: Math.sin(lt * 1.25 + fase) * 2.2 * balanco,
+           rot: Math.sin(lt * 1.6 + fase * 1.7) * 0.007 * balanco + Math.sign(de) * vel * 0.012, alpha: lt < t0 ? 0 : 1 };
+}
+// pecaSobe: sobe de 'de' px abaixo até o lugar e assenta com um quique (prédio, bloco, peça de montagem: a imagem começa
+//   incompleta e fica completa no clímax). Para cair de cima, de negativo.
+function pecaSobe(lt, t0, t1, de, o = {}) {
+  const q = prog(lt, t0, t1), e = E.outBack ? E.outBack(q) : E.outCubic(q);
+  return { dx: 0, dy: de * (1 - e), rot: 0, alpha: lt < t0 ? 0 : 1 };
+}
+
+// ───────── elementos recorrentes ─────────
+// Escurece as bordas e a parte de baixo (dá leitura ao texto sobre vídeo)
+function vinheta(a = 0.55, baixo = 0.35) {
+  let g = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.95);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${a})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (baixo) {
+    g = ctx.createLinearGradient(0, H * 0.6, 0, H);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${baixo})`);
+    ctx.fillStyle = g; ctx.fillRect(0, H * 0.6, W, H * 0.4);
+  }
+}
+// Carimbo de lugar e data ("NOVA YORK · 1870"), no canto superior esquerdo
+function carimbo(s, lt, o = {}) {
+  const p = E.outExpo(prog(lt, o.de ?? 0.1, (o.de ?? 0.1) + 0.6));
+  const q = o.ate !== undefined ? 1 - prog(lt, o.ate, o.ate + 0.4) : 1;
+  if (p <= 0 || q <= 0) return;
+  ctx.save(); ctx.globalAlpha *= q;
+  const x = o.x ?? 96, y = o.y ?? 110, size = o.size || 34;
+  ctx.fillStyle = C.laranja; ctx.fillRect(x, y - size * 0.95, 8, size * 1.2 * p);
+  reveal(s, x + 26, y, 800, size, C.branco, p, { ls: 5, sombra: 12 });
+  ctx.restore();
+}
+// Número grande com rótulo ("1.138" / "TUBULÕES")
+function numero(valor, rot, x, y, p, o = {}) {
+  if (p <= 0) return;
+  const size = o.size || 150, cor = o.cor || C.branco;
+  ctx.save(); ctx.globalAlpha *= clamp(p * 3);
+  const v = o.texto ? o.texto : fmtN(valor * E.outCubic(clamp(p)));
+  txt(v, x, y, size, 900, cor, { align: o.align || 'left', sombra: 20, ls: -2 });
+  if (rot) {
+    const rs = size * 0.22, rw = measure(rot, rs, 800, 6) + 36, ry = y + size * 0.2;
+    const rx = o.align === 'right' ? x - rw + 18 : o.align === 'center' ? x - rw / 2 : x - 12;
+    rr(rx, ry, rw, rs * 1.7, 8, 'rgba(8,17,28,0.72)');
+    txt(rot, o.align === 'right' ? x : o.align === 'center' ? x : x + 6, ry + rs * 1.2, rs, 800, o.corRot || C.laranja,
+      { align: o.align || 'left', ls: 6 });
+  }
+  ctx.restore();
+}
+// Rótulo com traço: aponta algo na tela
+function rotulo(s, x, y, p, o = {}) {
+  if (p <= 0) return;
+  const size = o.size || 26, lado = o.lado || 1, comp = (o.comp || 60) * E.outCubic(p);
+  ctx.save(); ctx.globalAlpha *= clamp(p * 2);
+  ctx.strokeStyle = o.cor || C.branco; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + comp * lado, y); ctx.stroke();
+  ctx.fillStyle = o.cor || C.branco; ctx.beginPath(); ctx.arc(x, y, 6, 0, TAU); ctx.fill();
+  txt(s, x + (comp + 14) * lado, y + size * 0.36, size, 800, o.corTxt || C.branco,
+    { align: lado > 0 ? 'left' : 'right', ls: 3, sombra: 10 });
+  ctx.restore();
+}
+// Assinatura discreta do canal
+function marca() {
+  ctx.save(); ctx.globalAlpha = 0.55;
+  ctx.fillStyle = C.jacare; ctx.beginPath(); ctx.arc(W - 212, H - 58, 7, 0, TAU); ctx.fill();
+  txt('O JACARÉ', W - 196, H - 49, 24, 900, C.branco, { ls: 4, sombra: 8 });
+  ctx.restore();
+}
+// Marca-d'água fixa em texto no canto inferior direito (01/10/2026, Guilherme: "deixe Guilherme August no canto inferior
+// direito como marca d'água fixa"). Ligada por OPCOES.marcaTexto = 'GUILHERME AUGUST' no projeto.
+function marcaTexto(s) {
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 0.6;
+  txt(s, W - 34, H - 30, 22, 800, '#F2ECDD', { align: 'right', ls: 4, sombra: 10 });
+  ctx.restore();
+}
+// Título do capítulo (entra sozinho no começo de cada capítulo)
+function tituloCapitulo(cap, lt) {
+  const p = E.outExpo(prog(lt, 0.35, 1.1)), q = 1 - prog(lt, 3.6, 4.2);
+  if (p <= 0 || q <= 0) return;
+  ctx.save(); ctx.globalAlpha *= q;
+  const x = 96, y = H - 150;
+  txt(`CAPÍTULO ${cap.n}`, x, y - 58, 24, 800, C.laranja, { ls: 8, sombra: 10 });
+  reveal(cap.titulo, x, y, 900, 60, C.branco, p, { ls: 2, sombra: 16 });
+  ctx.fillStyle = C.laranja; ctx.fillRect(x, y + 22, 180 * p, 6);
+  ctx.restore();
+}
+
+// Corte transversal: camadas do fundo desenhadas por profundidade.
+// o = {x, w, y0 (superfície), px (pixels por metro), camadas: [[nome, até (m), cor], ...], regua, p (0..1 revela)}
+function corte(o) {
+  const p = o.p ?? 1; if (p <= 0) return;
+  ctx.save(); ctx.globalAlpha *= clamp(p * 1.5);
+  let z0 = 0;
+  o.camadas.forEach(([nome, ate, cor], i) => {
+    const y1 = o.y0 + z0 * o.px, y2 = o.y0 + ate * o.px;
+    const g = ctx.createLinearGradient(0, y1, 0, y2);
+    g.addColorStop(0, cor); g.addColorStop(1, hexA(cor, 0.85));
+    ctx.fillStyle = g; ctx.fillRect(o.x, y1, o.w, y2 - y1);
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(o.x, y1); ctx.lineTo(o.x + o.w, y1); ctx.stroke();
+    if (o.rotulos !== false) txt(nome, o.x + 30, y1 + 44, 24, 800, 'rgba(255,255,255,0.75)', { ls: 5 });
+    z0 = ate;
+  });
+  ctx.restore();
+}
+
+// ═════════════ cenas do vídeo (vêm de <projeto>/cenas/*.js) ═════════════
+const CENAS = {};
+let TRILHA = [];
+// Opções de estilo (um projeto pode mudar em cenas/00-projeto.js). Padrão desde 27/09/2026, pedido do Guilherme:
+// sem cartão de capítulo na tela e troca de capítulo com mistura suave (nada de cortina/linha d'água).
+const OPCOES = { titulosCapitulo: false, transCapitulo: 'suave', durSuave: 1.0, cauda: 3,
+  // 30/09/2026 (aprovado pelo Guilherme; réguas do motion-video-kit, ver MOTOR/_referencias/LEIA-ME.md):
+  // camViva = empurrão lento e constante em TODA cena, POR SEGUNDO (0,006 = 0,6%/s, até camMax = 10%); a cena desliga
+  // com camViva: 0. (1ª versão era 4% por cena: numa cena de 14 s ficou lento demais e o medir.py acusou 2,6 s parados.)
+  // tremor/corClarao = impacto do carimbo que bate (cena declara impactos: S => [t]); 'pontos' = transição de pontos.
+  camViva: 0.006, camMax: 0.1, tremor: 9, corClarao: '#FFF8E8', durPontos: 0.5, corPontos: '#1B1714' };
+// Design system editorial (_motor/editorial.js), injetado pelo gerar.py
+/*__ESTILO__*/
+/*__CENAS__*/
+
+// ═════════════ linha do tempo, montada a partir da narração ═════════════
+const V0 = 0.35, GAP = 0.4, PRE = 0.15, CAP_GAP = 1.2, TAIL = OPCOES.cauda;
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, '');
+const LINHA = [];
+{
+  let tv = V0, capAnt = null;
+  DADOS.cenas.forEach((c, i) => {
+    if (!CENAS[c.id]) {  // cena ainda sem visual: rascunho com o texto, para não travar a montagem
+      console.warn(`cena "${c.id}" ainda sem visual (rascunho)`);
+      CENAS[c.id] = { rascunho: true, fn(lt) {
+        ctx.fillStyle = C.noite2; ctx.fillRect(0, 0, W, H);
+        txt(`CENA ${c.id} · RASCUNHO`, 96, 140, 30, 800, C.laranja, { ls: 6 });
+        const pal = c.texto.split(' '); let linha = '', y = 300;
+        for (const p of pal) { if (measure(linha + p, 46, 700) > W - 192) { txt(linha, 96, y, 46, 700, C.mudo); y += 66; linha = ''; } linha += p + ' '; }
+        txt(linha, 96, y, 46, 700, C.mudo);
+      } };
+    }
+    const def = CENAS[c.id];
+    if (capAnt !== null && c.cap !== capAnt) tv += CAP_GAP;
+    tv += def.antes || 0;
+    LINHA.push({ i, id: c.id, cap: c.cap, v: tv, fala: c.fala, audios: c.audios, pal: c.palavras.map(p => ({ ...p, g: tv + p.t })) });
+    tv += c.fala + (def.depois ?? OPCOES.depois ?? GAP);  // OPCOES.depois: tempo de leitura padrão do projeto (01/10/2026)
+    capAnt = c.cap;
+  });
+}
+LINHA.forEach((s, i) => { s.a = i === 0 ? 0 : s.v - PRE; });
+const DURATION = LINHA[LINHA.length - 1].v + LINHA[LINHA.length - 1].fala + TAIL;
+LINHA.forEach((s, i) => { s.b = i < LINHA.length - 1 ? LINHA[i + 1].a : DURATION; });
+const CAPS = {};
+LINHA.forEach(s => { if (!CAPS[s.cap]) CAPS[s.cap] = { ...DADOS.caps.find(c => c.n === s.cap), a: s.a }; CAPS[s.cap].b = s.b; });
+
+LINHA.forEach(s => {
+  s.S = {
+    dur: s.b - s.a, cap0: CAPS[s.cap].a, a: s.a,
+    w(alvo, k = 0) {
+      const exato = alvo.endsWith('$'), n = norm(alvo.replace(/\$$/, ''));  // 'D$' = só a palavra "D" (03/10/2026)
+      const hits = s.pal.filter(p => exato ? norm(p.w) === n : norm(p.w).startsWith(n));
+      if (!hits.length) { console.warn(`palavra "${alvo}" não encontrada na cena ${s.id}`); return 0.5; }
+      return hits[Math.min(k, hits.length - 1)].g - s.a;
+    },
+    fim() { const p = s.pal[s.pal.length - 1]; return p.g + p.d - s.a; },
+  };
+});
+
+// ═════════════ render ═════════════
+const T_FADE = 0.4;  // transição padrão: mistura curta
+// Câmera viva: "nada fica parado mais de ~0,6 s". A cena inteira cresce devagar em volta de def.foco ([x, y] de 0 a 1,
+// padrão o centro), em velocidade constante (sem desacelerar no fim, para não virar quadro parado).
+// Impactos: def.impactos = S => [t, ...] → tremor amortecido (0,35 s) + clarão de papel (0,12 s) no mesmo quadro.
+function drawScene(i, t) {
+  const s = LINHA[i], def = CENAS[s.id], lt = t - s.a;
+  ctx.save();
+  const z = def.camViva ?? OPCOES.camViva ?? 0;
+  if (z) {
+    const k = 1 + Math.min(OPCOES.camMax ?? 0.1, z * Math.max(0, lt));
+    const fx = (def.foco ? def.foco[0] : 0.5) * W, fy = (def.foco ? def.foco[1] : 0.5) * H;
+    ctx.translate(fx, fy); ctx.scale(k, k); ctx.translate(-fx, -fy);
+  }
+  let clarao = 0;
+  if (def.impactos) for (const ti of def.impactos(s.S)) {
+    const d = lt - ti; if (!(d >= 0 && d <= 0.35)) continue;
+    const a = (1 - d / 0.35) * (OPCOES.tremor ?? 9);
+    ctx.translate(Math.sin(d * 97) * a, Math.cos(d * 83) * a * 0.7);
+    clarao = Math.max(clarao, 0.5 * (1 - clamp(d / 0.12)));  // no máximo 50%: 100% parece quadro perdido
+  }
+  // OPCOES.emDois / def.emDois (04/10/2026, guia de clay/papercraft do lemo-wake): as peças mudam a 15 qps ("em dois", como
+  // stop-motion feito à mão) enquanto a câmera viva continua lisa a 30. REPROVADO no papel pelo Guilherme (04/10/2026): não ligar.
+  const emDois = def.emDois ?? OPCOES.emDois;
+  def.fn(emDois ? Math.floor(lt * 15 + 1e-6) / 15 : lt, s.S);
+  ctx.restore();
+  if (clarao > 0) { ctx.save(); ctx.globalAlpha *= clarao; ctx.fillStyle = OPCOES.corClarao || '#FFF8E8'; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+}
+// Transição de pontos (halftone-dossier): uma grade de círculos cresce na diagonal até cobrir a tela e encolhe de novo;
+// a cena troca enquanto está coberta. p de 0 a 1 na janela da transição.
+function pontosCobrindo(p) {
+  const c = p < 0.5 ? p / 0.5 : (1 - p) / 0.5, passo = 64;
+  ctx.save(); ctx.fillStyle = OPCOES.corPontos || '#1B1714'; ctx.beginPath();
+  for (let y = passo / 2; y < H + passo; y += passo) for (let x = passo / 2; x < W + passo; x += passo) {
+    const r = clamp(c * 1.45 - 0.45 * (x / W + y / H) / 2) * passo * 0.75;
+    if (r > 0.5) { ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, TAU); }
+  }
+  ctx.fill(); ctx.restore();
+}
+let _cvDeslize = null;
+function cenasEmCanvas(i, j, t) {  // desenha duas cenas, cada uma no seu canvas (para o deslize)
+  if (!_cvDeslize) _cvDeslize = [0, 1].map(() => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; });
+  const principal = ctx;
+  [i, j].forEach((k, n) => { ctx = _cvDeslize[n].getContext('2d'); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
+    ctx.fillStyle = C.noite; ctx.fillRect(0, 0, W, H); drawScene(k, t); });
+  ctx = principal; return _cvDeslize;
+}
+function render(t) {
+  NOW = t;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
+  ctx.fillStyle = C.noite; ctx.fillRect(0, 0, W, H);
+  let i = 0;
+  for (let k = 0; k < LINHA.length; k++) if (LINHA[k].a <= t) i = k;
+  const s = LINHA[i], nx = LINHA[i + 1];
+  const trans = nx ? (CENAS[nx.id].trans || (nx.cap !== s.cap ? OPCOES.transCapitulo : (OPCOES.transCena || 'mistura'))) : null;
+  const dur = trans === 'agua' ? 1.0 : trans === 'suave' ? OPCOES.durSuave : trans === 'pontos' ? (OPCOES.durPontos ?? 0.5) : trans === 'deslize' ? (OPCOES.durDeslize ?? 0.6) : T_FADE;
+  if (nx && trans !== 'corte' && trans !== 'nenhuma' && t > nx.a - dur) {
+    const p = E.inOutCubic(prog(t, nx.a - dur, nx.a));
+    if (trans === 'deslize') {  // 01/10/2026 (Guilherme: "o corte dá um piscadão; o suave indo pro lado é melhor"): a cena
+      // seguinte entra pela direita empurrando a atual, como um painel de papel. Cada cena é desenhada num canvas à parte
+      // porque as cenas resetam o transform (um translate direto se perderia).
+      const [A, B] = cenasEmCanvas(i, i + 1, t), dx = W * p;
+      ctx.drawImage(A, -dx, 0); ctx.drawImage(B, W - dx, 0);
+      const g = ctx.createLinearGradient(W - dx - 40, 0, W - dx, 0); g.addColorStop(0, 'rgba(20,10,0,0)'); g.addColorStop(1, 'rgba(20,10,0,0.35)');
+      ctx.fillStyle = g; ctx.fillRect(W - dx - 40, 0, 40, H);  // sombra na emenda: o painel novo passa por cima
+    } else if (trans === 'pontos') {  // cobre, troca a cena enquanto está coberta, descobre
+      drawScene(p < 0.5 ? i : i + 1, t); pontosCobrindo(p);
+    } else if (trans === 'agua') {  // a linha d'água desce e revela a cena seguinte
+      drawScene(i, t);
+      const y = H * p;
+      ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, y); ctx.clip(); drawScene(i + 1, t); ctx.restore();
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(0, y);
+      for (let x = 0; x <= W; x += 40) ctx.lineTo(x, y + Math.sin(x / 90 + t * 6) * 10);
+      ctx.strokeStyle = C.aguaClara; ctx.lineWidth = 6; ctx.stroke();
+      ctx.restore();
+    } else {
+      drawScene(i, t);
+      ctx.save(); ctx.globalAlpha = p; drawScene(i + 1, t); ctx.restore();
+    }
+  } else if (trans === 'nenhuma' && nx && t >= nx.a) {
+    drawScene(i + 1, t);
+  } else {
+    drawScene(i, t);
+  }
+  const cap = CAPS[s.cap];
+  if (OPCOES.titulosCapitulo && cap && cap.n > 0 && cap.mostrar !== false && s.a === cap.a) tituloCapitulo(cap, t - cap.a);
+  if (!(CENAS[s.id].marca === false)) marca();
+  if (OPCOES.marcaTexto) marcaTexto(OPCOES.marcaTexto);  // marca-d'água fixa do canal (canto inferior direito)
+  if (typeof SOBREPOR === 'function') SOBREPOR(t, i);  // camada do design system editorial
+}
+
+// Chamado pelo render.py, um quadro por vez: coleta os vídeos, posiciona, desenha e devolve o JPEG
+async function posicionar(usos) {
+  await Promise.all(usos.map(([n, t]) => new Promise(res => {
+    const v = VIDS[n];
+    const alvo = Math.floor(t * FPS) / FPS + 0.5 / FPS;
+    if (Math.abs(v.currentTime - alvo) < 0.001 && v.readyState >= 2) return res();
+    const ok = () => { v.removeEventListener('seeked', ok); res(); };
+    v.addEventListener('seeked', ok); v.currentTime = alvo;
+    setTimeout(ok, 4000);
+  })));
+}
+window.__quadro = async (t, qualidade = 0.92) => {
+  COLETA = []; render(t); const usos = COLETA; COLETA = null;
+  await posicionar(usos);
+  render(t);
+  return { usos, img: cv.toDataURL('image/jpeg', qualidade) };
+};
+// Plano de áudio para o render.py: narração, trilha e duração
+window.__plano = () => ({
+  dur: DURATION, fps: FPS,
+  narracao: LINHA.flatMap(s => s.audios.map(a => ({ arq: a.arq, t: +(s.v + a.off).toFixed(3) }))),
+  trilha: TRILHA.map(x => ({ ...x, t0: CAPS[x.de] ? CAPS[x.de].a : 0, t1: CAPS[x.ate ?? x.de] ? CAPS[x.ate ?? x.de].b : DURATION })),
+  caps: Object.values(CAPS).map(c => ({ n: c.n, titulo: c.titulo, a: c.a, b: c.b })),
+  cenas: LINHA.map(s => ({ id: s.id, cap: s.cap, a: s.a, b: s.b, v: s.v })),
+  legendas: LINHA.flatMap(s => s.pal.map(p => ({ w: p.w, t: p.g, d: p.d }))),
+  // sonoplastia: cada cena pode declarar sons: S => [{ t (s na cena), som, vol, pan }] (arquivos em _motor/sons/)
+  efeitos: LINHA.flatMap(s => { const d = CENAS[s.id]; if (!d.sons) return [];
+    return d.sons(s.S).filter(x => x && isFinite(x.t)).map(x => ({ som: x.som, t: +(s.a + x.t).toFixed(3), vol: x.vol ?? 1, pan: x.pan ?? 0 })); })
+    // 03/10/2026 (Guilherme: "às vezes dá um choque muito grande"): som automático em toda troca de cena que não é corte.
+    // OPCOES.somTransicao = { som, vol, somCapitulo, volCapitulo }; a cena pode desligar com semSomTransicao: true.
+    // pularSe (03/10/2026, revisão do Senna Tower: ~45 sopros iguais cansavam): sem o som automático quando a cena nova já
+    // tem um efeito próprio nos primeiros pularSe segundos (vale só para troca de cena; a de capítulo sempre soa).
+    .concat(!OPCOES.somTransicao ? [] : LINHA.slice(1).flatMap((s, k) => {
+      const d = CENAS[s.id], ant = LINHA[k]; if (d.semSomTransicao) return [];
+      const tr = d.trans || (s.cap !== ant.cap ? OPCOES.transCapitulo : (OPCOES.transCena || 'mistura'));
+      if (tr === 'corte' || tr === 'nenhuma') return [];
+      const cap = s.cap !== ant.cap, o = OPCOES.somTransicao;
+      if (!cap && o.pularSe && d.sons && d.sons(s.S).some(x => x && isFinite(x.t) && x.t <= o.pularSe)) return [];
+      const dur = tr === 'deslize' ? (OPCOES.durDeslize ?? 0.6) : tr === 'suave' ? OPCOES.durSuave : 0.4;
+      return [{ som: cap && o.somCapitulo ? o.somCapitulo : o.som, t: +(s.a - dur * 0.85).toFixed(3),
+        vol: cap ? (o.volCapitulo ?? o.vol ?? 1) : (o.vol ?? 1), pan: 0.3 }];
+    })),
+  // 05/10/2026 (plano de correções do flamingo, "os dois silêncios da virada"): a cena pode declarar
+  // silencio: S => [[t0, t1], ...] (s na cena; pode começar antes da cena) → trilha e efeitos quase somem nessa janela (render.py)
+  silencios: LINHA.flatMap(s => { const d = CENAS[s.id]; if (!d.silencio) return [];
+    return d.silencio(s.S).filter(j => j && isFinite(j[0]) && isFinite(j[1]) && j[1] > j[0]).map(([a, b, r]) => [+(s.a + a).toFixed(3), +(s.a + b).toFixed(3), ...(r != null ? [r] : [])]); }),  // r = rampa de saída (s)
+  volEfeitos: OPCOES.volEfeitos ?? 0.12,  // → 0,12 em 01/10 + troca pelos sons _suave no render.py  // 0,6 → 0,35 em 28/09 ("ficou muito alta") → 0,25 em 30/09 ("ainda está alta") → 0,18 em 30/09 à noite ("muito alto, tipo um chiado"), + passa-baixa no render.py
+});
+
+// ═════════════ inicialização ═════════════
+async function carregar() {
+  const fontes = Promise.race([
+    Promise.all([...['500', '600', '700', '800', '900'].map(w => document.fonts.load(`${w} 100px Montserrat`)),
+      ...['400', '500', '600', '700'].map(w => document.fonts.load(`${w} 100px Geist`)),
+      document.fonts.load('500 100px "Geist Mono"'), document.fonts.load('italic 400 100px "Instrument Serif"'),
+      document.fonts.load('400 100px "Special Elite"'), document.fonts.load('400 100px "Patrick Hand"'),
+      document.fonts.load('400 100px "Archivo Black"'), document.fonts.load('600 100px "Archivo Narrow"'),
+      // 03/10/2026: marcador, número de desenho e a condensada da colagem (estilos inspirados nos vídeos do X)
+      document.fonts.load('400 100px "Permanent Marker"'), document.fonts.load('400 100px "Luckiest Guy"'), document.fonts.load('400 100px "Anton"')]),
+    new Promise(r => setTimeout(r, 5000)),
+  ]).catch(() => {});
+  const itens = Object.entries(MANIFESTO).map(([n, m]) => new Promise(res => {
+    if (m.tipo === 'foto') {
+      const im = new Image(); im.onload = im.onerror = () => res(); im.src = 'cache/' + m.arq; IMGS[n] = im;
+    } else {
+      const v = document.createElement('video');
+      v.muted = true; v.preload = 'auto'; v.playsInline = true; v.crossOrigin = 'anonymous';
+      v.onloadeddata = v.onerror = () => res(); v.src = 'cache/' + m.arq; VIDS[n] = v;
+      setTimeout(res, 15000);
+    }
+  }));
+  await Promise.all([fontes, ...itens]);
+}
+const params = new URLSearchParams(location.search);
+window.__pronto = carregar().then(async () => {
+  document.getElementById('info').textContent = `${W}×${H} · ${DURATION.toFixed(1)} s · ${LINHA.length} cenas`;
+  if (params.has('sheet')) {  // folha de contato: ?sheet=auto ou ?sheet=1,5,10 (&cap=0 filtra um capítulo)
+    const capF = params.has('cap') ? +params.get('cap') : null;
+    const L = LINHA.filter(s => capF === null || s.cap === capF);
+    const times = params.get('sheet') === 'auto'
+      ? L.flatMap(s => [s.a + 0.5, (s.a + s.b) / 2, s.b - 0.3].map(x => +x.toFixed(2)))
+      : params.get('sheet').split(',').map(Number);
+    const cols = +(params.get('cols') || (VERTICAL ? 5 : 3)), tw = 1920 / cols, th = tw * H / W;
+    const sh = document.createElement('canvas');
+    sh.id = 'sheet'; sh.width = 1920; sh.height = Math.ceil(times.length / cols) * th;
+    const sc = sh.getContext('2d');
+    for (const [i, t] of times.entries()) {
+      try { await window.__quadro(t); }
+      catch (e) {  // cena com erro: quadro vermelho com a mensagem, em vez de travar a folha
+        console.error(e); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#400'; ctx.fillRect(0, 0, W, H);
+        txt('ERRO: ' + String(e.message || e).slice(0, 80), 40, H / 2, 40, 800, '#fff');
+      }
+      const x = (i % cols) * tw, y = Math.floor(i / cols) * th;
+      sc.drawImage(cv, x, y, tw, th);
+      sc.fillStyle = 'rgba(0,0,0,0.7)'; sc.fillRect(x, y, 110, 30);
+      sc.fillStyle = '#fff'; sc.font = '600 20px monospace'; sc.fillText(t.toFixed(2) + 's', x + 8, y + 22);
+    }
+    cv.style.display = 'none'; document.body.appendChild(sh);
+  } else {
+    await window.__quadro(params.has('still') ? +params.get('still') : 0);
+  }
+  document.body.dataset.pronto = '1';
+}).catch(e => { console.error(e); document.body.dataset.erro = String(e); document.body.dataset.pronto = '1'; });
+</script>
+</body>
+</html>

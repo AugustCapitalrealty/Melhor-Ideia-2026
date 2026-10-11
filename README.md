@@ -90,6 +90,7 @@ Isso é dito aqui porque muda o desenho: a consulta externa é o **último** rec
 | [Histórico](docs/HISTORICO.md) | Registro cronológico das decisões técnicas. |
 | [Resposta ao Comitê](docs/RESPOSTA_AO_COMITE.md) | Texto formal em resposta à devolutiva do comitê. |
 | [O Playbook da Vitória](docs/DEFESA_DA_MELHOR_IDEIA_MACBOOK.md) | Leitura dos critérios do concurso. |
+| [Vídeo e relatório final](docs/CONHECIMENTO_VIDEO_E_RELATORIO.md) | Como fazer os dois entregáveis finais: regulamento, números com lastro, processo com portões, motor de vídeo e lições do deck do orçamento. |
 
 ### Propostas — frentes registradas para depois de 15/10
 
