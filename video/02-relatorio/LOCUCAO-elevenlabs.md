@@ -12,7 +12,7 @@ Um MP3 por capítulo, salvo em `video/02-relatorio/voz/` com o nome indicado. Fo
 
 **1-problema.mp3**
 
-Numa concorrência real da empresa, um em cada quatro proponentes cotou sobre um escopo que já tinha mudado. Um dos itens caiu cinquenta e oito por cento entre as revisões, e a comparação não percebeu. Avaliar o fornecedor depois não corrige um pedido mal feito. O problema nasce no escopo.
+Na empresa, o mesmo pedido volta do fornecedor de jeitos diferentes. Num contrato de manutenção de ar-condicionado, três empresas cotaram o mesmo item como uma verba só. Uma fazia duas visitas por ano, outra três, outra doze. E uma delas não emitia o laudo que a lei exige. Em outra contratação, a mão de obra veio com um preço fechado, sem abrir o que estava dentro: infraestrutura, passagem de cabos, instalação do painel. Numa obra de fundação, cada proponente usou a sua própria unidade para o mesmo serviço. Quando o escopo deixa margem, cada fornecedor entende de um jeito, e a comparação deixa de ser justa. O problema nasce no escopo.
 
 **2-virada.mp3**
 

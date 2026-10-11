@@ -94,18 +94,17 @@ S.push(`<section class="slide sumario">
   <footer><span>Capital Realty · Facilities</span><span>Gestão de Contratações · Melhor Ideia 2026 · 3</span></footer>
 </section>`);
 
-// 4. A dor
+// 4. A dor: casos reais da empresa, sem nomes nem valores
 S.push(conteudo(4, 1,
-  'O mesmo pedido gera respostas diferentes porque o escopo deixa margem',
-  'Uma concorrência real de fundação, jan–fev/2026: o escopo mudou entre revisões e a comparação não percebeu',
+  'Cada fornecedor entende o pedido de um jeito, porque o escopo deixa margem',
+  'Três contratações reais da empresa: a resposta muda conforme quem lê o pedido',
   `<div class="tres">
-    <div class="kpi"><div class="kpi-n">−58%</div><div class="kpi-t">de perfuração D = 50 cm entre a revisão 00 e a 03</div><div class="kpi-d">O quantitativo mudou de verdade, sob a mesma numeração de revisão usada para negociação de preço.</div></div>
-    <div class="kpi"><div class="kpi-n">2</div><div class="kpi-t">arquivos dizem "REVISÃO 03" com conteúdos diferentes</div><div class="kpi-d">O arquivo chamado "R02" era o mais novo. Nem o nome nem o campo interno serviam de referência.</div></div>
-    <div class="kpi"><div class="kpi-n">1 de 4</div><div class="kpi-t">proponentes cotou sobre o quantitativo antigo</div><div class="kpi-d">Os outros três respondiam ao escopo novo. A comparação juntou escopos diferentes na mesma tabela.</div></div>
+    <div class="kpi"><div class="kpi-n">2 · 3 · 12</div><div class="kpi-t">visitas por ano, no mesmo item cotado como "1 verba"</div><div class="kpi-d">Manutenção de ar-condicionado: três proponentes, a mesma linha, entregas diferentes escondidas na observação. Um deles não emitia o laudo exigido em lei.</div></div>
+    <div class="kpi"><div class="kpi-n">1 preço</div><div class="kpi-t">fechado para a mão de obra, sem abrir o que tem dentro</div><div class="kpi-d">Infraestrutura, passagem de cabos e instalação do painel ficaram sem valor. Não dá para saber o que foi considerado.</div></div>
+    <div class="kpi"><div class="kpi-n">3 unidades</div><div class="kpi-t">VB, KG e M³ para o mesmo serviço, conforme o proponente</div><div class="kpi-d">Obra de fundação: cada empresa cotou na sua própria unidade. Comparar linha a linha deixa de ser justo.</div></div>
   </div>
   <div class="conclusao">Avaliar o fornecedor depois não corrige um pedido mal feito. <b>O problema nasce no escopo.</b></div>`,
-  'Fonte: análise de 28 documentos reais de contratação, 05/09/2026 (BASE_DE_CONHECIMENTO.md §9.6–9.8). Sem nomes de fornecedores nem valores.'));
-
+  'Fonte: documentos reais de contratação da empresa analisados em 05/09/2026 (BASE_DE_CONHECIMENTO.md §8.4, §16.3 e §9.2). Sem nomes de fornecedores nem valores.'));
 // 5. A ponte com a ideia aprovada
 S.push(conteudo(5, 1,
   'O comitê pediu avaliar fornecedores; o campo mostrou que o problema nasce no escopo',

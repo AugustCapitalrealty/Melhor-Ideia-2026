@@ -12,7 +12,9 @@ equalização e fornecedores ficam fora. Fluig/RM é **próximo passo** (não ex
 
 | Fato falado | Fonte |
 | :--- | :--- |
-| 1 de 4 proponentes cotou sobre o quantitativo antigo; um item caiu 58% entre revisões | `docs/BASE_DE_CONHECIMENTO.md` §9.6 e §9.8 (28 documentos reais, 05/09/2026) |
+| Manutenção de ar-condicionado (PMOC): 3 proponentes cotaram "1,00 VB" e entregam 2, 3 e 12 visitas/ano; um não emite o laudo exigido (Lei 13.589/2018) | `docs/BASE_DE_CONHECIMENTO.md` §8.4 (documentos reais analisados em 05/09/2026) |
+| Mão de obra com preço fechado no item pai; infraestrutura, passagem de cabos e instalação do painel sem preço | `docs/BASE_DE_CONHECIMENTO.md` §16.3 |
+| Fundação: o mesmo serviço cotado em VB, KG e M³ conforme o proponente | `docs/BASE_DE_CONHECIMENTO.md` §9.2 |
 | O comitê aprovou a avaliação de prestadores; ela foi construída | `docs/RESPOSTA_AO_COMITE.md`; `docs/ESTRATEGIA_NOTA_MAXIMA.md` §2 |
 | Um cadastro gera apresentação, PDF e planilha, com a mesma EAP e a mesma revisão | app em produção; capturas de 11/10/2026 |
 | Escopo base: o que vem pronto e o que fica em branco | `docs/HISTORICO.md`, v76 (11/10/2026) |
@@ -22,18 +24,27 @@ equalização e fornecedores ficam fora. Fluig/RM é **próximo passo** (não ex
 
 ## 1 · O PROBLEMA
 
-**1.1 · ABERTURA.** Quadro 0 já em ação: a tabela de uma concorrência real, sem nomes e sem valores; quatro colunas de
-proponentes, uma delas destacada em laranja. Número grande: "1 de 4".
+**1.1 · ABERTURA (manutenção de ar-condicionado).** Quadro 0 já em ação: três colunas de proponentes, sem nomes e sem valores,
+todas com "1,00 VB" na quantidade. Por baixo de cada uma acende a observação real: "2 visitas/ano", "3 visitas/ano", "12 visitas/ano".
 
-> Numa concorrência real da empresa, um em cada quatro proponentes cotou sobre um escopo que já tinha mudado.
+> Na empresa, o mesmo pedido volta do fornecedor de jeitos diferentes. Num contrato de manutenção de ar-condicionado, três empresas cotaram o mesmo item como uma verba só. Uma fazia duas visitas por ano, outra três, outra doze.
 
-**1.2 · O ITEM QUE MUDOU.** Um item da EAP entre a revisão zero e a três: a barra encolhe; "−58%".
+**1.2 · O LAUDO.** A terceira coluna ganha o selo laranja "não emite o laudo exigido em lei".
 
-> Um dos itens caiu cinquenta e oito por cento entre as revisões, e a comparação não percebeu.
+> E uma delas não emitia o laudo que a lei exige.
 
-**1.3 · A CONCLUSÃO.** Cartão branco, frase em azul-marinho.
+**1.3 · PREÇO FECHADO.** Uma árvore de EAP: "Mão de obra" com um valor único (borrado) e, abaixo, "infraestrutura",
+"passagem de cabos", "instalação do painel" com a célula de preço vazia.
 
-> Avaliar o fornecedor depois não corrige um pedido mal feito. O problema nasce no escopo.
+> Em outra contratação, a mão de obra veio com um preço fechado, sem abrir o que estava dentro: infraestrutura, passagem de cabos, instalação do painel.
+
+**1.4 · CADA UM NA SUA UNIDADE.** Uma linha de uma obra de fundação: o mesmo serviço em "VB", "KG" e "M³", conforme o proponente.
+
+> Numa obra de fundação, cada proponente usou a sua própria unidade para o mesmo serviço.
+
+**1.5 · A CONCLUSÃO.** Cartão branco, frase em azul-marinho.
+
+> Quando o escopo deixa margem, cada fornecedor entende de um jeito, e a comparação deixa de ser justa. O problema nasce no escopo.
 
 ## 2 · A VIRADA
 
