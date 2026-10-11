@@ -77,7 +77,7 @@ S.push(`<section class="slide revisar">
   <table class="pend">
     <tr><th>Item</th><th>Slide</th><th>O que falta</th><th>Quem</th><th>Até</th></tr>
     <tr><td><b>Tempo: PowerPoint × sistema</b></td><td>9</td><td>Cronometrar 2 ou 3 escopos, do primeiro campo ao PDF pronto</td><td>Guilherme</td><td>14/10</td></tr>
-    <tr><td><b>Depoimentos de quem usa</b></td><td>11</td><td>2 frases: Ricardo (Propriedades) e alguém do Facilities, Mega Itajaí; com cargo e autorização</td><td>Guilherme</td><td>14/10</td></tr>
+    <tr><td><b>Depoimentos de quem usa</b></td><td>11</td><td>2 frases: Propriedades e Facilities (Mega Itajaí); com cargo e autorização</td><td>Guilherme</td><td>14/10</td></tr>
     <tr><td><b>Escopos antigos em PowerPoint</b></td><td>7</td><td>2 ou 3 arquivos de Megas diferentes para o antes × depois</td><td>Guilherme</td><td>13/10</td></tr>
     <tr><td><b>Recontar o uso na base</b></td><td>10</td><td>Por escopo: Mega, autor, data, revisões e o que foi emitido</td><td>Claude</td><td>14/10</td></tr>
   </table>
@@ -100,18 +100,18 @@ S.push(`<section class="slide sumario">
 
 // 4. A dor: casos reais da empresa, sem nomes nem valores
 S.push(conteudo(4, 1,
-  'Cada fornecedor entende o pedido de um jeito, porque o escopo deixa margem',
-  'Três contratações reais, do Facilities e da Engenharia: a resposta muda conforme quem lê o pedido',
+  'Três casos reais mostram diferenças que o escopo precisa deixar explícitas',
+  'Ofertas reais do Facilities e da Engenharia: diferenças de frequência, de preço por item e de unidade',
   `<div class="tres">
     <div class="kpi"><div class="kpi-n">2 · 3 · 12</div><div class="kpi-t">visitas por ano, no mesmo item cotado como "1 verba"</div><div class="kpi-d">Manutenção de ar-condicionado: três proponentes, a mesma linha; a diferença estava escondida na observação. A de 2 visitas não incluía o laudo PMOC com responsabilidade técnica previsto no pedido.</div></div>
     <div class="kpi"><div class="kpi-n">1 preço</div><div class="kpi-t">para a mão de obra inteira, sem valor por item</div><div class="kpi-d">Infraestrutura, passagem de cabos e instalação do painel vieram descritas, mas sem preço próprio. Não dá para comparar item a item com quem abriu.</div></div>
     <div class="kpi"><div class="kpi-n">VB × KG</div><div class="kpi-t">para o mesmo item, conforme o proponente</div><div class="kpi-d">Obra de fundação da Engenharia: o posicionamento da armadura veio como verba em duas propostas e em quilos em outras duas.</div></div>
   </div>
-  <div class="conclusao">Avaliar o fornecedor depois não corrige um pedido mal feito: <b>o escopo precisa deixar explícito o que se compara.</b></div>`,
-  'Fonte: documentos reais de contratação da empresa analisados em 05/09/2026 (BASE_DE_CONHECIMENTO.md §8.4, §16.3 e §9; mapa original do PMOC). Ar-condicionado: Facilities; fundação: Engenharia (Mega Curitiba, fase 7). São ofertas, não serviços executados. Sem nomes de fornecedores nem valores.'));
+  <div class="conclusao"><b>O escopo precisa explicitar os requisitos antes da comparação.</b></div>`,
+  'Fonte: documentos reais analisados em 05/09/2026 (BASE_DE_CONHECIMENTO §8.4, §16.3, §9; mapa original do PMOC). Ar-condicionado: Facilities; fundação: Engenharia. Ofertas, não serviços executados; sem nomes nem valores.'));
 // 5. A ponte com a ideia aprovada
 S.push(conteudo(5, 1,
-  'A ideia aprovada começou pela causa, com o aval do comitê: o escopo',
+  'Em 11/09, o comitê aprovou começar pelo escopo',
   'Na reunião de 11/09/2026, o comitê aprovou seguir pelo escopo; fornecedor e preço viram um projeto futuro com a TI',
   `<div class="linha-tempo">${[
     ['29/04/2026', 'A inscrição', 'Capital Fornecedores: avaliação periódica de prestadores de serviço.'],
@@ -124,7 +124,7 @@ S.push(conteudo(5, 1,
 // 6. A solução
 S.push(conteudo(6, 2,
   'Um cadastro alimenta o deck, o PDF e a planilha do fornecedor',
-  'Quem monta o escopo preenche uma vez; os documentos saem do mesmo cadastro, com a mesma EAP e o número da revisão',
+  'Um cadastro alimenta apresentação, PDF e planilha, gerados em duas etapas; neste exemplo, os três estão na R9',
   `<div class="fluxo">
     <div class="fx-col"><div class="fx-rot">1 · O CADASTRO</div>${recorte(IMG.escopoForm, 1920, [270, 60, 1360, 940], 560)}</div>
     <div class="fx-seta">→</div>
@@ -137,7 +137,7 @@ S.push(conteudo(6, 2,
 // 7. Antes × depois (pendente: escopos antigos)
 S.push(conteudo(7, 2,
   'Um padrão de escopo para a empresa toda',
-  'Facilities (Mega Itajaí) e Propriedades já testaram em escopos reais; Engenharia e as demais áreas que montam escopo podem usar o mesmo cadastro',
+  'O projeto é para a empresa toda: já testado por Facilities (Mega Itajaí) e Propriedades; expansão proposta para Engenharia e demais áreas',
   `<div class="antes-depois">
     <div class="ad-lado"><div class="fx-rot">ANTES · POWERPOINT</div><div class="ad-antes">${['Curitiba', 'Itajaí', 'Esteio'].map((m) =>
       `<div class="vazio">Escopo antigo<br><b>Mega ${m}</b><br><span>aguardando arquivo</span></div>`).join('')}</div></div>
@@ -152,11 +152,11 @@ S.push(conteudo(8, 2,
   'O próximo escopo parte do último emitido',
   '"Usar como base" parte da última revisão emitida: o que é do serviço vem pronto; o que é do lugar e da data fica em branco',
   `<div class="base">
-    <div class="base-col"><div class="kpi-n">9</div><div class="kpi-t">blocos vêm prontos</div>
+    <div class="base-col"><div class="kpi-n">9</div><div class="kpi-t">grupos de conteúdo reaproveitados</div>
       <div class="chips ok">${['Grupos de serviço', 'EAP', 'Objetivo', 'Inclusões', 'Exclusões', 'Aceite', 'Considerações', 'Visita técnica', 'Aviso ao proponente'].map((c) => `<span>${c}</span>`).join('')}</div>
       <div class="kpi-t mt2">ficam em branco</div>
       <div class="chips">${['Título', 'Mega', 'Endereço', 'Imagens', 'Fotos', 'Vistoria', 'Prazos', 'Contato', 'Armazém', 'Módulos'].map((c) => `<span>${c}</span>`).join('')}</div>
-      <p class="nota">Cada escopo novo guarda de qual partiu ("partiu de…"), e o original mostra quantas vezes serviu de base.</p></div>
+      <p class="nota">Agrupados neste slide; a categoria também é copiada. Cada escopo novo guarda de qual partiu ("partiu de…"), e o original mostra quantas vezes serviu de base.</p></div>
     <div class="base-tela">${recorte(IMG.escopoLista, 1920, [254, 224, 1400, 820], 820)}</div>
   </div>`,
   'Fonte: código do app (Escopos.gs) e HISTORICO.md. Recurso publicado na v76, em 11/10/2026, depois do prazo de implementação (10/10). Tela real de produção.'));
@@ -179,7 +179,7 @@ S.push(conteudo(9, 3,
 // 10. Uso real
 S.push(conteudo(10, 3,
   'Já testado em escopos reais por duas áreas: Facilities e Propriedades',
-  'Facilities testou no Mega Itajaí e Propriedades também testou; o mesmo padrão serve à Engenharia e às demais áreas',
+  'O projeto é para a empresa toda; expansão proposta para Engenharia e demais áreas',
   `<div class="tres">
     <div class="kpi"><div class="kpi-n">4</div><div class="kpi-t">escopos reais emitidos</div><div class="kpi-d">Facilities, Mega Itajaí (3); Propriedades, casa de bombas do Mega Curitiba (1). Os outros da base foram teste ou exemplo e não contam.</div></div>
     <div class="kpi"><div class="kpi-n">R4–R9</div><div class="kpi-t">exemplo: PPCI de Itajaí</div><div class="kpi-d">Cada emissão fica registrada como revisão, com deck e PDF. Hoje até um ajuste pequeno vira revisão nova (próximo passo, slide 14).</div></div>
@@ -191,20 +191,20 @@ S.push(conteudo(10, 3,
 S.push(conteudo(11, 3,
   'Quem usa diz',
   'O critério de Impacto cita a satisfação de colaboradores: aqui ela é dita por quem monta escopo',
-  `<div class="dois-iguais">${[['Ricardo', 'Propriedades'], ['A definir', 'Facilities · Mega Itajaí']].map(([n, a]) => `<div class="citacao"><div class="aspas">“</div><div class="lacuna-txt">Uma frase sobre o que mudou ao montar escopo</div><div class="quem">${n} · cargo · ${a}</div></div>`).join('')}</div>`,
-  'Depoimentos com autorização para citar, coletados até 14/10/2026.', { selo: 'depoimentos' }));
+  `<div class="dois-iguais">${[['Ricardo', 'Propriedades'], ['A definir', 'Facilities · Mega Itajaí']].map(([n, a]) => `<div class="citacao"><div class="aspas">“</div><div class="lacuna-txt">Uma frase sobre o que mudou ao montar escopo</div><div class="quem">${a} · depoimento pendente</div></div>`).join('')}</div>`,
+  'Coleta prevista até 14/10/2026, com autorização para citar nome e cargo.', { selo: 'depoimentos' }));
 
 // 12. Qualidade: pedido vira versão
 S.push(conteudo(12, 4,
   'Pedido de quem usa vira versão publicada em dias',
   'As mudanças passam pela suíte de testes antes de publicar; a publicação é versionada',
   `<div class="versoes">
-    <div class="vs"><div class="vs-d">02/10</div><div class="vs-p"><b>Usuários:</b> "cada slide sai com fonte e cor diferentes", "fica tudo num canto", "a foto precisa estar junto da descrição"</div><div class="vs-v">v71 · v72 · v73<br><span>no mesmo dia</span></div></div>
-    <div class="vs"><div class="vs-d">05/10</div><div class="vs-p"><b>Jonatas:</b> disclaimer padrão do Facilities no aviso ao proponente; classificar e reaproveitar escopos como base</div><div class="vs-v">v75 · v76<br><span>em 11/10</span></div></div>
+    <div class="vs"><div class="vs-d">02/10</div><div class="vs-p"><b>Usuários:</b> fonte e cor diferentes em cada slide, conteúdo num canto, foto longe da descrição</div><div class="vs-v">v71 · v72 · v73<br><span>no mesmo dia</span></div></div>
+    <div class="vs"><div class="vs-d">05/10</div><div class="vs-p"><b>Pedido do Facilities:</b> disclaimer padrão no aviso ao proponente; classificar e reaproveitar escopos como base</div><div class="vs-v">v75 · v76<br><span>em 11/10</span></div></div>
     <div class="vs"><div class="vs-d">11/10</div><div class="vs-p"><b>Foco da entrega:</b> o app abre direto no escopo; preço e fornecedor ficam para o Fluig/RM</div><div class="vs-v">v77<br><span>no mesmo dia</span></div></div>
   </div>
   <div class="tres mt3">
-    <div class="mini"><b>34</b> suítes de teste no npm test, rodadas antes de publicar</div>
+    <div class="mini"><b>34</b> scripts automatizados no comando de testes; execução registrada antes da v77</div>
     <div class="mini"><b>Versionada:</b> a versão anterior pode voltar no mesmo link</div>
     <div class="mini"><b>Medido antes de corrigir:</b> o texto de corpo saía em 7 tamanhos; passou a 1</div>
   </div>`,
@@ -218,27 +218,27 @@ S.push(conteudo(13, 4,
     ['Infraestrutura', 'Google Workspace já contratado: Apps Script, Slides, Planilhas e Drive. Nenhuma licença nova.'],
     ['Arquivos', 'Deck, PDF e planilha ficam no Drive compartilhado do Facilities, com as revisões anteriores.'],
     ['Projeto futuro', 'Fornecedor e preço serão um projeto futuro com a TI, no Fluig/RM, como aprovou o comitê. O app cuida do escopo.'],
-    ['Quem mantém', 'Documentação, testes e histórico no repositório. Segunda pessoa para publicar: <span class="lacuna-txt">a definir</span>.'],
+    ['Quem mantém', 'Manutenção atual: Guilherme. Documentação, testes e histórico no repositório; transferência para um segundo operador <span class="lacuna-txt">pendente</span>.'],
   ].map(([t, x]) => `<div class="card"><div class="card-t">${t}</div><div class="card-x">${x}</div></div>`).join('')}</div>`,
   'Preço, equalização e fornecedores estão ocultos na tela (modo escopo), não apagados: o código e os dados continuam até a integração.'));
 
-// 14. Entregue e próximos passos (prestação de contas: o comitê já aprovou)
+// 14. Entregue e próximos passos (prestação de contas; fornecedor e preço são OUTRO projeto, com a TI)
 S.push(conteudo(14, 5,
-  'Entregue: a montagem do escopo; fornecedor e preço serão um projeto futuro com a TI',
-  'O que está em produção hoje e o que vem depois, como o comitê aprovou',
+  'Entregue: a montagem do escopo. Fornecedor e preço serão outro projeto, com a TI',
+  'O que está em produção hoje, as evoluções propostas do escopo e o projeto futuro',
   `<div class="dois">
     <div class="pedido"><div class="fx-rot">ENTREGUE · EM PRODUÇÃO</div><ol class="passos">
-      <li><b>Cadastro do escopo:</b> serviços por local, fotos junto do serviço e EAP com quantidade, unidade e marca</li>
+      <li><b>Cadastro do escopo:</b> serviços por local, imagens junto do serviço e EAP com quantidade, unidade e marca</li>
       <li><b>Documentos gerados:</b> deck, PDF e planilha do fornecedor, com o número da revisão</li>
       <li><b>Revisões registradas</b> desde 15/09 (exemplo: PPCI de Itajaí)</li>
       <li><b>Escopo base e busca</b> dos escopos emitidos (11/10)</li></ol></div>
-    <div><div class="fx-rot">PRÓXIMOS PASSOS</div><ol class="passos">
-      <li><b>Projeto futuro com a TI:</b> fornecedor e preço no Fluig/RM, onde o cadastro oficial já mora</li>
-      <li><b>Foto de celular:</b> reduzir no navegador; hoje foto acima de 5 MB ou HEIC é recusada</li>
-      <li><b>Corrigir sem gerar revisão:</b> um botão para ajustar e outro para gerar nova revisão, com prévia antes de emitir</li>
-      <li><b>A empresa toda:</b> Propriedades, Engenharia e as demais áreas que montam escopo, no mesmo padrão</li></ol></div>
+    <div><div class="fx-rot">EVOLUÇÕES PROPOSTAS DO ESCOPO</div><ol class="passos">
+      <li><b>Corrigir sem gerar revisão:</b> um botão para ajustar e outro para gerar nova revisão, com prévia</li>
+      <li><b>Foto de celular:</b> reduzir no navegador; hoje acima de 5 MB ou HEIC é recusada</li>
+      <li><b>Ampliar o uso:</b> Engenharia e as demais áreas (Propriedades já testou)</li></ol>
+      <div class="caixa-ti"><div class="fx-rot">OUTRO PROJETO FUTURO, COM A TI</div>Fornecedor e preço no Fluig/RM, onde o cadastro oficial já mora. Sem prazo definido.</div></div>
   </div>`,
-  'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. Próximos passos sem data definida; fornecedor e preço são um projeto futuro com a TI, aprovado pelo comitê.'));
+  'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. Evoluções e projeto com a TI são propostas, sem data definida.'));
 // 15. Encerramento
 S.push(`<section class="slide fim">
   <div class="fim-txt"><img class="logo-fim" src="${IMG.logoNeg}"><div class="kicker">GESTÃO DE CONTRATAÇÕES</div><div class="nome">Começar melhor.<br>Contratar melhor.</div>
@@ -258,8 +258,9 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:#fff}
 h1{font-family:Montserrat;font-weight:700;color:var(--navy);font-size:48px;line-height:1.15;margin-top:128px;max-width:1320px;letter-spacing:-.5px}
 .sub{font-size:26px;margin-top:16px;color:var(--txt);max-width:1500px}
 .corpo{position:absolute;left:128px;right:128px;top:390px;bottom:120px}
-footer{position:absolute;left:128px;right:128px;bottom:40px;border-top:2px solid var(--linha);padding-top:22px;display:flex;justify-content:space-between;font-size:18px;color:var(--mudo)}
-footer span:first-child{max-width:1250px}
+footer{position:absolute;left:128px;right:128px;bottom:40px;border-top:2px solid var(--linha);padding-top:22px;display:flex;justify-content:space-between;font-size:21px;color:#5B6578}
+footer span:first-child{max-width:1200px}
+footer span:last-child{white-space:nowrap;flex-shrink:0;margin-left:32px}
 .trilha{position:absolute;left:128px;right:128px;top:48px;display:flex;gap:16px}
 .tr{flex:1;border-top:4px solid var(--linha);padding-top:10px;font-size:17px;color:var(--mudo)}
 .tr b{font-family:Montserrat;font-weight:700;margin-right:6px}
@@ -371,6 +372,7 @@ table.pend{margin-top:56px;width:100%;border-collapse:collapse;font-size:24px}
 .passos{padding-left:36px;font-size:25px;line-height:1.5}
 .passos li{margin-bottom:20px}
 .passos li::marker{font-family:Montserrat;font-weight:800;color:var(--azul2)}
+.caixa-ti{margin-top:26px;border:3px dashed #9CC7FF;border-radius:12px;padding:22px 26px;font-size:23px;line-height:1.45;color:var(--navy)}.caixa-ti .fx-rot{margin-bottom:8px}
 .pedido{background:var(--navy);color:#fff;border-radius:12px;padding:36px}
 .pedido .fx-rot{color:#9CC7FF}
 .pedido b{color:#fff}

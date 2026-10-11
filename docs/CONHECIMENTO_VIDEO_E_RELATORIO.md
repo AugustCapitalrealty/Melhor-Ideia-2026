@@ -225,7 +225,7 @@ planilha trazem o telefone da responsável. Enquadrar a câmera para deixar os d
 
 | Tela | Número |
 | :--- | :--- |
-| Escopos | 8 escopos (6 reais emitidos nos 3 Megas + 2 de teste); o do PPCI de Itajaí está na R9, com 6 revisões geradas (R4–R9) e a planilha do fornecedor |
+| Escopos | ~~8 escopos (6 reais nos 3 Megas)~~ corrigido em 11/10: **4 escopos reais**, Facilities (Mega Itajaí, 3) e Propriedades (1); o resto foi exemplo ou teste; o do PPCI de Itajaí está na R9, com 6 revisões geradas (R4–R9) e a planilha do fornecedor |
 | Equalizações | 21 no acervo, 3 homologadas (R$ 52.029,31), 18 em aberto, nenhuma rodada de negociação registrada (saving "—") |
 | Consulta de preço | 791 pontos de preço, 318 fornecedores, 3 empreendimentos, cotações de 19/12/2025 a 11/09/2026 |
 | Fornecedores | 318 na base |

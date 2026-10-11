@@ -101,10 +101,10 @@ const ent = lt => E.outCubic(prog(lt, -0.6, 0.3));
 
 // ═════════ 1 · O PROBLEMA ═════════
 const PROP = [{ n: 'A', v: '2' }, { n: 'B', v: '3' }, { n: 'C', v: '12' }];
-function cartoesPMOC(lt, tV, tVerba, tLaudo) {
+function cartoesPMOC(lt, tV, tVerba, tLaudo, e0 = 0.1) {
   PROP.forEach((pp, i) => {
     const x = 210 + i * 530, y = 300;
-    comCartao(prog(lt, 0.1 + i * 0.15, 0.6 + i * 0.15), () => {
+    comCartao(prog(lt, e0 + i * 0.15, e0 + 0.5 + i * 0.15), () => {
       const alerta = i === 0 && tLaudo !== null ? E.outCubic(prog(lt, tLaudo - 0.3, tLaudo + 0.3)) : 0;
       cartao(x, y, 440, 520, alerta > 0 ? { borda: CR.lar, lw: 6 * alerta } : {});
       txt('PROPOSTA ' + pp.n, x + 40, y + 70, 22, 800, CR.cinza, { ls: 3 });
@@ -133,23 +133,23 @@ CENAS['1.1'] = {
   sons: S => [{ t: S.w('Duas'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('tres', 1), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('doze'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
     crFundo();
-    rotulo('01 · O PROBLEMA', 'Manutenção do ar-condicionado: três propostas', prog(lt, 0, 0.5));
-    cartoesPMOC(lt, [S.w('Duas'), S.w('tres', 1), S.w('doze')], S.w('verba'), null);
+    rotulo('01 · O PROBLEMA', 'Manutenção do ar-condicionado: três propostas', 1);
+    cartoesPMOC(lt, [S.w('Duas'), S.w('tres', 1), S.w('doze')], S.w('verba'), null, -0.9);
     rodape('Mapa de equalização real (Facilities). São ofertas, não serviços executados. Sem nomes nem valores.'); selo();
   },
 };
 CENAS['1.2'] = {
   marca: false,
-  sons: S => [{ t: S.w('laudo'), som: 'relatorio/destaque', vol: 0.45 }],
+  sons: S => [{ t: S.w('incluia'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
     crFundo();
     rotulo('01 · O PROBLEMA', 'Manutenção do ar-condicionado: três propostas', 1);
-    cartoesPMOC(lt + 5, [0, 0, 0], null, S.w('laudo') + 5);
+    cartoesPMOC(lt + 5, [0, 0, 0], null, S.w('incluia') + 5);
     rodape('Mapa de equalização real (Facilities). São ofertas, não serviços executados. Sem nomes nem valores.'); selo();
   },
 };
 CENAS['1.3'] = {
-  marca: false,
+  marca: false, depois: 1.2,
   sons: S => [{ t: S.w('preco'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
     crFundo();
@@ -168,15 +168,14 @@ CENAS['1.3'] = {
         cartao(440, y, 1180, 110);
         txt(s, 480, y + 68, 34, 700, CR.tinta);
         rr(1180, y + 26, 380, 58, 12, '#F1F4F8');
-        const v = prog(lt, tSe - 0.3, tSe + 0.3);
-        txt(v > 0.5 ? 'sem preço separado' : '—', 1210, y + 66, 26, 800, v > 0.5 ? CR.lar : CR.cinza);
+        txt('sem preço separado', 1210, y + 66, 26, 800, CR.lar);
       });
     });
     rodape('Documento real analisado em 05/09/2026: os itens estão descritos; o preço só aparece no total.'); selo();
   },
 };
 CENAS['1.4'] = {
-  marca: false,
+  marca: false, depois: 1.6,
   sons: S => [{ t: S.w('verba'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('quilos'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
     crFundo();
@@ -212,10 +211,10 @@ CENAS['1.5'] = {
 };
 
 // ═════════ 2 · A APROVAÇÃO ═════════
-const PAR = [['29/04/2026', 'A inscrição', 'Capital Fornecedores: avaliação', 'de prestadores de serviço'],
-  ['19/05/2026', 'O comitê pede detalhes', 'Parte do processo já existe', 'no Fluig'],
-  ['11/09/2026', 'O comitê aprova o caminho', 'Seguir começando', 'pelo escopo'],
-  ['set/2026', 'Escopo em produção', 'Revisões emitidas', 'em 15/09 e 22/09']];
+const PAR = [['29/04/2026', ['A inscrição'], 'Capital Fornecedores: avaliação', 'de prestadores de serviço'],
+  ['19/05/2026', ['O comitê pede', 'detalhes'], 'Parte do processo já existe', 'no Fluig'],
+  ['11/09/2026', ['O comitê aprova:', 'começar pelo escopo'], 'Reunião do comitê', 'de 11/09'],
+  ['set/2026', ['Escopo em', 'produção'], 'Revisões emitidas', 'em 15/09 e 22/09']];
 function linhaTempo(lt, ts) {
   const x0 = 230, dx = 420, y = 470;
   ctx.fillStyle = 'rgba(127,178,229,0.3)'; ctx.fillRect(x0, y, dx * 3, 4);
@@ -226,8 +225,8 @@ function linhaTempo(lt, ts) {
     ctx.fillStyle = i === 2 ? CR.claro : CR.dest; ctx.beginPath(); ctx.arc(x, y + 2, 26 * q, 0, TAU); ctx.fill();
     txt(String(i + 1), x, y + 12, 28, 900, i === 2 ? CR.noite : CR.branco, { align: 'center' });
     txt(p[0], x - 30, y + 90, 24, 800, CR.claro);
-    txt(p[1], x - 30, y + 136, 30, 800, CR.branco);
-    txt(p[2], x - 30, y + 180, 22, 500, CR.mudo); txt(p[3], x - 30, y + 210, 22, 500, CR.mudo);
+    linhas(p[1], x - 30, y + 136, 28, 800, CR.branco, 1.25);
+    txt(p[2], x - 30, y + 232, 22, 500, CR.mudo); txt(p[3], x - 30, y + 262, 22, 500, CR.mudo);
     ctx.restore();
   });
 }
@@ -308,7 +307,7 @@ CENAS['3.3'] = {
   },
 };
 CENAS['3.4'] = {
-  marca: false,
+  marca: false, depois: 1.5,
   sons: S => [{ t: S.w('apresentacao'), som: 'relatorio/documento', vol: 0.4 }, { t: S.w('PDF'), som: 'relatorio/documento', vol: 0.4 },
     { t: S.w('planilha'), som: 'relatorio/documento', vol: 0.4 }, { t: S.w('duas'), som: 'relatorio/clique', vol: 0.5 }],
   fn(lt, S) {
@@ -317,7 +316,7 @@ CENAS['3.4'] = {
     comCartao(prog(lt, tA - 0.3, tA + 0.3), () => { txt('APRESENTAÇÃO', 150, 250, 20, 800, CR.claro, { ls: 3 }); recorte('D02', 473, 20, 960, 330, 150, 270, 520); });
     comCartao(prog(lt, tP - 0.3, tP + 0.3), () => { txt('PDF', 700, 250, 20, 800, CR.claro, { ls: 3 }); recorte('E03', 473, 180, 960, 470, 700, 270, 520); });
     comCartao(prog(lt, tPl - 0.3, tPl + 0.3), () => { txt('PLANILHA PARA O FORNECEDOR', 1250, 250, 20, 800, CR.claro, { ls: 3 }); recorte('D90', 44, 160, 1566, 770, 1250, 270, 520); });
-    comCartao(prog(lt, tD - 0.4, tD + 0.2), () => {
+    comCartao(prog(lt, tPl + 0.2, tPl + 0.7), () => {
       txt('EM DUAS ETAPAS', 150, 760, 20, 800, CR.claro, { ls: 3 });
       const w1 = pilula('1 · Gerar Slides e PDF', 150, 790, CR.dest, CR.branco, 26);
       pilula('2 · Gerar planilha para fornecedor', 150 + w1 + 24, 790, CR.branco, CR.royal, 26);
@@ -362,10 +361,10 @@ CENAS['5.1'] = {
   marca: false,
   sons: S => [{ t: S.w('Facilities'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('Propriedades'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('registrada'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
-    const tFa = S.w('Facilities'), tPr = S.w('Propriedades'), tPd = S.w('predio'), tNo = S.w('registrada'), tAj = S.w('ajuste'), tPa = S.w('padrao'), tEn = S.w('Engenharia');
+    const tFa = S.w('Facilities'), tPr = S.w('Propriedades'), tPd = S.w('predio'), tNo = S.w('registrada'), tAj = S.w('ajuste'), tPa = S.w('ampliar'), tEn = S.w('Engenharia');
     crFundo();
     const fase = lt < tPd - 0.3 ? 0 : lt < tPa - 0.3 ? 1 : 2;
-    rotulo('05 · EM USO', ['Testado em escopos reais por duas áreas', 'Revisões registradas (exemplo)', 'O mesmo padrão para a empresa toda'][fase], 1);
+    rotulo('05 · EM USO', ['Testado em escopos reais por duas áreas', 'Revisões registradas (exemplo)', 'Expansão proposta para a empresa toda'][fase], 1);
     if (fase === 0) {
       [['Facilities', 'Mega Itajaí · 3 escopos', tFa], ['Propriedades', 'Mega Curitiba · casa de bombas', tPr]].forEach(([a, b, t], i) => {
         comCartao(prog(lt, t - 0.3, t + 0.3), () => {
@@ -375,16 +374,17 @@ CENAS['5.1'] = {
       });
     } else if (fase === 1) {
       const cam = [250, 440, keys(lt, [[tPd, 1100], [tNo, 1000]])];
+      const sai = 1 - prog(lt, tAj - 0.5, tAj); ctx.save(); ctx.globalAlpha *= sai;
       crJanela('Escopo · arquivos emitidos'); crTela('E05', cam);
-      crDestaque(cam, [298, 606, 715, 890], prog(lt, tNo - 0.4, tNo + 0.2), 'EXEMPLO: CADA EMISSÃO É UMA REVISÃO');
-      comCartao(prog(lt, tAj - 0.3, tAj + 0.3), () => { cartao(1010, 640, 700, 300); txt('PRÓXIMO PASSO', 1050, 700, 20, 800, CR.dest, { ls: 3 }); linhas(['Hoje até um ajuste pequeno', 'vira revisão nova.'], 1050, 755, 30, 700, CR.tinta); pilula('Corrigir', 1050, 850, '#E8F1FB', CR.royal, 24); pilula('Gerar nova revisão', 1210, 850, CR.dest, CR.branco, 24); });
+      crDestaque(cam, [298, 606, 715, 890], prog(lt, tNo - 0.4, tNo + 0.2), 'EXEMPLO: CADA EMISSÃO É UMA REVISÃO'); ctx.restore();
+      comCartao(prog(lt, tAj - 0.2, tAj + 0.4), () => { cartao(360, 320, 1200, 460); txt('PROPOSTA · NÃO IMPLEMENTADA', 420, 400, 22, 800, CR.lar, { ls: 3 }); linhas(['Hoje até um ajuste pequeno vira revisão nova.', 'Separar dois botões:'], 420, 480, 40, 800, CR.tinta); pilula('Corrigir', 420, 620, '#E8F1FB', CR.royal, 30); pilula('Gerar nova revisão', 620, 620, CR.dest, CR.branco, 30); });
     } else {
       [['Facilities', true], ['Propriedades', true], ['Engenharia', false], ['Demais áreas', false]].forEach(([s, ok], i) => {
         const t = i < 2 ? tPa : tEn + (i - 2) * 0.4;
         comCartao(prog(lt, t - 0.3 + i * 0.12, t + 0.3 + i * 0.12), () => {
           cartao(150 + i * 410, 420, 380, 220, ok ? {} : { fill: 'rgba(255,255,255,0.08)' });
           txt(s, 190 + i * 410, 530, 38, 800, ok ? CR.tinta : CR.branco);
-          txt(ok ? 'já testou' : 'pode usar', 190 + i * 410, 590, 24, 700, ok ? CR.verde : CR.claro);
+          txt(ok ? 'já testou' : 'expansão proposta', 190 + i * 410, 590, 24, 700, ok ? CR.verde : CR.claro);
         });
       });
     }
@@ -394,11 +394,11 @@ CENAS['5.1'] = {
 
 // ═════════ 6 · QUEM USA PEDE ═════════
 CENAS['6.1'] = {
-  marca: false,
+  marca: false, depois: 1.6,
   fn(lt, S) {
     crFundo(); rotulo('06 · QUEM USA PEDE, O SISTEMA MUDA', 'Pedidos de quem usa viraram versões', prog(lt, 0, 0.5));
     const it = [['Texto padronizado', '02/10 · v71', S.w('padronizado')], ['Imagens logo após o serviço', '02/10 · v72', S.w('imagens')],
-      ['Texto justificado', '02/10 · v73', S.w('justificado')], ['Aviso padrão do Facilities', '11/10 · v74–v75', S.w('aviso')], ['Escopos base', '11/10 · v76', S.w('base')]];
+      ['Texto justificado', '02/10 · v73', S.w('justificado')], ['Aviso padrão do Facilities', '11/10 · v74–v75', S.w('aviso')], ['Escopos base', '11/10 · v76', S.w('escopos')]];
     it.forEach(([s, v, t], i) => comCartao(prog(lt, t - 0.3, t + 0.2), () => {
       const y = 250 + i * 135; cartao(150, y, 1620, 110);
       txt(s, 200, y + 68, 38, 800, CR.tinta); txt(v, 1720, y + 68, 30, 800, CR.dest, { align: 'right' });
@@ -407,13 +407,13 @@ CENAS['6.1'] = {
   },
 };
 CENAS['6.2'] = {
-  marca: false,
+  marca: false, depois: 1.8,
   sons: S => [{ t: S.w('testes'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
     crFundo(); rotulo('06 · QUEM USA PEDE, O SISTEMA MUDA', '', 1);
     const t = S.w('testes'), q = E.outBack(clamp(prog(lt, t - 0.3, t + 0.4)));
-    if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); txt('34', 960, 560 + (1 - q) * 30, 260, 900, CR.branco, { align: 'center' }); ctx.restore(); }
-    reveal('suítes de teste, rodadas antes de publicar', 960, 680, 700, 44, CR.claro, E.outCubic(prog(lt, S.w('publicar') - 0.5, S.w('publicar') + 0.2)), { align: 'center' });
+    if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); txt('34', 960, 520 + (1 - q) * 30, 240, 900, CR.branco, { align: 'center' }); txt('suítes de teste automatizado', 960, 610, 48, 800, CR.branco, { align: 'center' }); ctx.restore(); }
+    reveal('rodadas antes de publicar', 960, 690, 700, 40, CR.claro, E.outCubic(prog(lt, S.w('publicar') - 0.6, S.w('publicar') + 0.1)), { align: 'center' });
     selo();
   },
 };
@@ -422,8 +422,8 @@ CENAS['6.2'] = {
 CENAS['8.1'] = {
   marca: false,
   fn(lt, S) {
-    crFundo(); rotulo('07 · O PRÓXIMO PASSO', 'Um projeto para a empresa toda', prog(lt, 0, 0.5));
-    const ar = [['Facilities', S.w('Facilities')], ['Propriedades', S.w('Propriedades')], ['Engenharia', S.w('Engenharia')], ['Toda área que monta escopo', S.w('toda')]];
+    crFundo(); rotulo('07 · ALCANCE E PROJETO FUTURO', 'Um projeto para a empresa toda', prog(lt, 0, 0.5));
+    const ar = [['Facilities', S.w('Facilities')], ['Propriedades', S.w('Propriedades')], ['Engenharia', S.w('Engenharia')], ['Toda área que monta escopo', S.w('toda', 1)]];
     let x = 150; ar.forEach(([s, t]) => { const q = E.outBack(clamp(prog(lt, t - 0.2, t + 0.3))); if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); x += pilula(s, x, 300, CR.branco, CR.royal, 34) + 22; ctx.restore(); } });
     const tF = S.w('futuro');
     comCartao(prog(lt, tF - 0.4, tF + 0.2), () => {
@@ -436,7 +436,7 @@ CENAS['8.1'] = {
   },
 };
 CENAS['8.2'] = {
-  marca: false, depois: 1.6, camViva: 0,
+  marca: false, depois: 2.2, camViva: 0,
   sons: S => [{ t: S.w('Gestao'), som: 'relatorio/fecho', vol: 0.5 }],
   fn(lt, S) {
     const tG = S.w('Gestao'), tCo = S.w('Comecar'), tCt = S.w('Contratar');

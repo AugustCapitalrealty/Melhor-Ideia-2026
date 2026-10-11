@@ -554,6 +554,18 @@ básico vira uma nova revisão; deveria ter um botão de arrumar e outro de gera
 
 Antes de codar: plano e o "sim" do Guilherme (regra 4). Lembrar: a v75 já evita revisão nova quando só o aviso padrão muda.
 
+**Parecer do vídeo e do deck** ([AUDITORIA_VIDEO_DECK_2026-10-11.md](AUDITORIA_VIDEO_DECK_2026-10-11.md)): deck e vídeo "com correções". Aplicado:
+deck sem causalidade no slide 4 ("Três casos reais mostram diferenças que o escopo precisa deixar explícitas"; faixa "O escopo precisa
+explicitar os requisitos antes da comparação"); slide 5 "Em 11/09, o comitê aprovou começar pelo escopo"; slide 6 "gerados em duas etapas;
+neste exemplo, os três estão na R9"; slides 7 e 10 "expansão proposta" no lugar de "serve/podem usar"; slide 8 "9 grupos de conteúdo";
+slide 12 "34 scripts... execução registrada antes da v77", pedidos sem aspas, "Pedido do Facilities" no lugar do nome; slide 11 sem nomes
+("depoimento pendente"); slide 13 "Manutenção atual: Guilherme; segundo operador pendente"; slide 14 separa "Evoluções propostas do escopo"
+de "Outro projeto futuro, com a TI"; rodapé maior e mais escuro (21 px). Vídeo: títulos da linha do tempo em duas linhas (sem
+sobreposição), cartões já no 1º quadro, leitura sustentada (preço separado, VB × KG, documentos, escopos base, 34 suítes), proposta das
+revisões fora da janela "TELA REAL" ("Proposta · não implementada"), "expansão proposta", chip "toda área" na 2ª ocorrência, título
+"Alcance e projeto futuro", pronúncia corrigida (o `projeto.json` tinha acento quebrado). CONHECIMENTO §9 corrigido para 4 escopos reais.
+O parecer antigo `AUDITORIA_DECK_CONSELHO.md` (09/09) é do deck do Conselho de setembro: não se aplica a este deck.
+
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
 
