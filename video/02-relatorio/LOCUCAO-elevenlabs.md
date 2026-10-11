@@ -14,7 +14,7 @@ Três propostas para a manutenção do ar-condicionado. Duas, três e doze visit
 
 **2-aprovacao.mp3**
 
-A ideia inscrita foi avaliar prestadores de serviço, e ela foi aprovada. O comitê pediu mais detalhes, porque parte desse processo já existe no Fluig. A análise de documentos reais mostrou diferenças no que os fornecedores ofereciam. Por isso, o conselho aprovou começar pelo escopo. Fornecedor e preço serão feitos junto com a TI.
+A ideia inscrita foi avaliar prestadores de serviço, e ela foi aprovada. O comitê pediu mais detalhes, porque parte desse processo já existe no Fluig. A análise de documentos reais mostrou diferenças no que os fornecedores ofereciam. Por isso, o conselho aprovou começar pelo escopo. Fornecedor e preço serão um projeto futuro, junto com a TI.
 
 **3-solucao.mp3**
 
@@ -38,5 +38,5 @@ Na amostra de [N] escopos, a mediana foi de [X] minutos no sistema e [Y] no Powe
 
 **8-proximo-passo.mp3**
 
-A proposta é levar o padrão para a empresa toda. E, junto com a TI, integrar fornecedor e preço ao Fluig e ao RM, usando o cadastro oficial, para evitar uma base duplicada. Gestão de Contratações. Começar melhor. Contratar melhor.
+A proposta é levar o padrão para a empresa toda. Fornecedor e preço serão um projeto futuro com a TI, no Fluig e no RM, usando o cadastro oficial, para evitar uma base duplicada. Gestão de Contratações. Começar melhor. Contratar melhor.
 

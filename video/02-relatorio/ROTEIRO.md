@@ -1,7 +1,7 @@
 # Gestão de Contratações · vídeo do relatório (2–3 min) — v3, 11/10/2026
 
 Pedido do Guilherme em 11/10/2026: *"me manda o roteiro para eu gerar no ElevenLabs"*. Escala: **a empresa toda** é proposta; o uso
-começou pelos três Megas. O conselho aprovou a parte do escopo; fornecedor e preço serão feitos **com a TI** (Fluig/RM ainda não
+começou pelos três Megas. O conselho aprovou a parte do escopo; fornecedor e preço serão um **projeto futuro com a TI** (Fluig/RM ainda não
 integrado; o vídeo não diz que existe). Mesma história do deck (`relatorio/rascunho/`).
 
 - **v3** aplica o parecer do Checador (`CHECAGEM-ROTEIRO-2026-10-11.md`, feito sobre a v1): abertura no caso, oferta (não execução),
@@ -30,7 +30,7 @@ integrado; o vídeo não diz que existe). Mesma história do deck (`relatorio/ra
 | Ar-condicionado: 3 propostas, "1,00 VB" anual, 2, 3 e 12 visitas/ano; uma (a de 2 visitas) sem o laudo PMOC com ART previsto | `docs/BASE_DE_CONHECIMENTO.md` §8.4; mapa original `MCtba - Mapa de Equalização Manut Preventiva + Emissão de PMOC_v02.pdf` (conferido pelo Checador) |
 | Mão de obra com um preço no item pai; infraestrutura, passagem de cabos e instalação do painel descritas, sem preço separado | `docs/BASE_DE_CONHECIMENTO.md` §16.3 |
 | Fundação: posicionamento da armadura em VB (2 propostas) e KG (2 propostas) | `docs/BASE_DE_CONHECIMENTO.md` §9.2 |
-| Ideia aprovada; comitê pediu detalhes porque parte já existe no Fluig; conselho aprovou o escopo, o restante com a TI | e-mails de 29/04 e 19/05/2026; aprovações informadas pelo Guilherme (`docs/HISTORICO.md`, 11/10/2026) — **datas a confirmar** |
+| Ideia aprovada; comitê pediu detalhes porque parte já existe no Fluig; conselho aprovou o escopo; fornecedor e preço em projeto futuro com a TI | e-mails de 29/04 e 19/05/2026; aprovações informadas pelo Guilherme (`docs/HISTORICO.md`, 11/10/2026) — **datas a confirmar** |
 | Do mesmo cadastro saem apresentação, PDF e planilha, em duas etapas (dois botões) | `app/EscopoInterface.html`; tela E05 |
 | Escopo base: o que vem e o que se preenche | `app/Escopos.gs`; `docs/HISTORICO.md` (v76, 11/10/2026) |
 | Escopos emitidos nos três Megas: Curitiba (bombas de água potável; adequações elétricas), Itajaí (sinalização viária; bombas de drenagem; PPCI do prédio de apoio), Esteio (manutenção do piso DHL, R3) | PDFs gerados pelo sistema em `G:\Meu Drive\MELHOR IDEIA 2026\PLANO\` (lidos em 11/10/2026) |
@@ -73,9 +73,9 @@ produção (setembro) → o conselho aprova o foco.
 
 > A análise de documentos reais mostrou diferenças no que os fornecedores ofereciam.
 
-**2.3 · O CONSELHO.** A última parada acende; cartão "Aprovado pelo conselho: o escopo · Com a TI: fornecedor e preço".
+**2.3 · O CONSELHO.** A última parada acende; cartão "Aprovado pelo conselho: o escopo · Projeto futuro com a TI: fornecedor e preço".
 
-> Por isso, o conselho aprovou começar pelo escopo. Fornecedor e preço serão feitos junto com a TI.
+> Por isso, o conselho aprovou começar pelo escopo. Fornecedor e preço serão um projeto futuro, junto com a TI.
 
 ## 3 · A SOLUÇÃO
 
@@ -132,10 +132,10 @@ números do slide 9.
 
 ## 8 · O PRÓXIMO PASSO
 
-**8.1 · PRÓXIMOS PASSOS (cartões).** "Proposta: padrão para a empresa toda" e "Com a TI: fornecedor e preço no Fluig/RM". Sem a tela
+**8.1 · PRÓXIMOS PASSOS (cartões).** "Proposta: padrão para a empresa toda" e "Projeto futuro com a TI: fornecedor e preço no Fluig/RM". Sem a tela
 de fornecedores.
 
-> A proposta é levar o padrão para a empresa toda. E, junto com a TI, integrar fornecedor e preço ao Fluig e ao RM, usando o cadastro oficial, para evitar uma base duplicada.
+> A proposta é levar o padrão para a empresa toda. Fornecedor e preço serão um projeto futuro com a TI, no Fluig e no RM, usando o cadastro oficial, para evitar uma base duplicada.
 
 **8.2 · FECHO.** Fundo azul-marinho, logo negativo, assinatura e o nome do projeto.
 
