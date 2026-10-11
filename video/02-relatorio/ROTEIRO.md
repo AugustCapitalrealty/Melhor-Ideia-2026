@@ -1,7 +1,7 @@
 # Gestão de Contratações · vídeo do relatório (2–3 min) — v3, 11/10/2026
 
 Pedido do Guilherme em 11/10/2026: *"me manda o roteiro para eu gerar no ElevenLabs"*. Escala (Guilherme, 11/10: "vamos vender que o projeto é para a empresa toda"): **Facilities, Propriedades, Engenharia e toda área que monta escopo**; o uso
-começou pelos Megas Itajaí e Curitiba. O conselho aprovou a parte do escopo; fornecedor e preço serão um **projeto futuro com a TI** (Fluig/RM ainda não
+começou pelos Megas Itajaí e Curitiba. O comitê aprovou a parte do escopo; fornecedor e preço serão um **projeto futuro com a TI** (Fluig/RM ainda não
 integrado; o vídeo não diz que existe). Mesma história do deck (`relatorio/rascunho/`).
 
 - **v3** aplica o parecer do Checador (`CHECAGEM-ROTEIRO-2026-10-11.md`, feito sobre a v1): abertura no caso, oferta (não execução),
@@ -30,7 +30,7 @@ integrado; o vídeo não diz que existe). Mesma história do deck (`relatorio/ra
 | Ar-condicionado: 3 propostas, "1,00 VB" anual, 2, 3 e 12 visitas/ano; uma (a de 2 visitas) sem o laudo PMOC com ART previsto | `docs/BASE_DE_CONHECIMENTO.md` §8.4; mapa original `MCtba - Mapa de Equalização Manut Preventiva + Emissão de PMOC_v02.pdf` (conferido pelo Checador) |
 | Mão de obra com um preço no item pai; infraestrutura, passagem de cabos e instalação do painel descritas, sem preço separado | `docs/BASE_DE_CONHECIMENTO.md` §16.3 |
 | Fundação: posicionamento da armadura em VB (2 propostas) e KG (2 propostas) | `docs/BASE_DE_CONHECIMENTO.md` §9.2 |
-| Ideia aprovada; comitê pediu detalhes porque parte já existe no Fluig; conselho aprovou o escopo; fornecedor e preço em projeto futuro com a TI | e-mails de 29/04 e 19/05/2026; aprovações informadas pelo Guilherme (`docs/HISTORICO.md`, 11/10/2026) — **datas a confirmar** |
+| Ideia aprovada; comitê pediu detalhes porque parte já existe no Fluig; comitê aprovou o escopo; fornecedor e preço em projeto futuro com a TI | e-mails de 29/04 e 19/05/2026; aprovações informadas pelo Guilherme (`docs/HISTORICO.md`, 11/10/2026) — reunião do comitê de 11/09/2026 (convite do calendário) |
 | Do mesmo cadastro saem apresentação, PDF e planilha, em duas etapas (dois botões) | `app/EscopoInterface.html`; tela E05 |
 | Escopo base: o que vem e o que se preenche | `app/Escopos.gs`; `docs/HISTORICO.md` (v76, 11/10/2026) |
 | Escopos reais emitidos: Itajaí (sinalização viária; bombas de drenagem; PPCI do prédio de apoio) e Curitiba (casa de bombas de água potável). Os demais (Esteio, piso DHL; Curitiba, adequações elétricas; "Teste 01") foram exemplo ou teste | Guilherme, 11/10/2026; PDFs em `G:\Meu Drive\MELHOR IDEIA 2026\PLANO\` |
@@ -65,8 +65,8 @@ com "sem preço separado".
 
 ## 2 · A APROVAÇÃO
 
-**2.1 · A LINHA DO TEMPO (cartão).** As cinco paradas do slide 5: inscrição → o comitê pede detalhes → ideia aprovada → escopo em
-produção (setembro) → o conselho aprova o foco.
+**2.1 · A LINHA DO TEMPO (cartão).** As quatro paradas do slide 5: inscrição → o comitê pede detalhes → o comitê aprova o caminho (11/09) →
+escopo em produção (15/09).
 
 > A ideia inscrita foi avaliar prestadores de serviço, e ela foi aprovada. O comitê pediu mais detalhes, porque parte desse processo já existe no Fluig.
 
@@ -74,9 +74,9 @@ produção (setembro) → o conselho aprova o foco.
 
 > A análise de documentos reais mostrou diferenças no que os fornecedores ofereciam.
 
-**2.3 · O CONSELHO.** A última parada acende; cartão "Aprovado pelo conselho: o escopo · Projeto futuro com a TI: fornecedor e preço".
+**2.3 · O COMITÊ.** A última parada acende; cartão "Aprovado pelo comitê: o escopo · Projeto futuro com a TI: fornecedor e preço".
 
-> Por isso, o conselho aprovou começar pelo escopo. Fornecedor e preço serão um projeto futuro, junto com a TI.
+> Na reunião de setembro, o comitê aprovou começar pelo escopo. Fornecedor e preço serão um projeto futuro, junto com a TI.
 
 ## 3 · A SOLUÇÃO
 

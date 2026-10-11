@@ -72,7 +72,7 @@ S.push(`<section class="slide capa">
 // 2. Revisar antes da versão final (alerta sempre ligado, como no orçamento)
 S.push(`<section class="slide revisar">
   <div class="rev-tag">⚠ REVISAR ANTES DA VERSÃO FINAL</div>
-  <h1>Faltam 5 itens; este slide some quando todos estiverem preenchidos</h1>
+  <h1>Faltam 4 itens; este slide some quando todos estiverem preenchidos</h1>
   <p class="sub">O que ainda não foi medido aparece aqui e no próprio slide, em vez de ficar só no registro.</p>
   <table class="pend">
     <tr><th>Item</th><th>Slide</th><th>O que falta</th><th>Quem</th><th>Até</th></tr>
@@ -80,7 +80,6 @@ S.push(`<section class="slide revisar">
     <tr><td><b>Depoimentos de quem usa</b></td><td>11</td><td>2 frases: Ricardo (Propriedades) e alguém do Facilities, Mega Itajaí; com cargo e autorização</td><td>Guilherme</td><td>14/10</td></tr>
     <tr><td><b>Escopos antigos em PowerPoint</b></td><td>7</td><td>2 ou 3 arquivos de Megas diferentes para o antes × depois</td><td>Guilherme</td><td>13/10</td></tr>
     <tr><td><b>Recontar o uso na base</b></td><td>10</td><td>Por escopo: Mega, autor, data, revisões e o que foi emitido</td><td>Claude</td><td>14/10</td></tr>
-    <tr><td><b>Datas das aprovações</b></td><td>5</td><td>Data (e e-mail ou ata) da aprovação da ideia e da reunião com o conselho</td><td>Guilherme</td><td>13/10</td></tr>
   </table>
   <footer><span>Regra da casa: nenhum número sem método ao lado; nenhum ganho afirmado antes de medido.</span><span>Gestão de Contratações · Melhor Ideia 2026 · 2</span></footer>
 </section>`);
@@ -112,18 +111,16 @@ S.push(conteudo(4, 1,
   'Fonte: documentos reais de contratação da empresa analisados em 05/09/2026 (BASE_DE_CONHECIMENTO.md §8.4, §16.3 e §9; mapa original do PMOC). Ar-condicionado: Facilities; fundação: Engenharia (Mega Curitiba, fase 7). São ofertas, não serviços executados. Sem nomes de fornecedores nem valores.'));
 // 5. A ponte com a ideia aprovada
 S.push(conteudo(5, 1,
-  'A ideia aprovada começou pela causa, com o aval do conselho: o escopo',
-  'Capital Fornecedores foi aprovada; o conselho aprovou entregar agora a parte do escopo; fornecedor e preço viram um projeto futuro com a TI',
-  `<div class="linha-tempo cinco">${[
+  'A ideia aprovada começou pela causa, com o aval do comitê: o escopo',
+  'Na reunião de 11/09/2026, o comitê aprovou seguir pelo escopo; fornecedor e preço viram um projeto futuro com a TI',
+  `<div class="linha-tempo">${[
     ['29/04/2026', 'A inscrição', 'Capital Fornecedores: avaliação periódica de prestadores de serviço.'],
     ['19/05/2026', 'O comitê pede detalhes', 'Parte do processo já existe no Fluig: critérios, gatilho, indicadores e uso na decisão.'],
-    ['<span class="lacuna">data</span>', 'A ideia é aprovada', 'Capital Fornecedores aprovada pelo comitê.'],
-    ['set/2026', 'O escopo entra em produção', 'Documentos reais mostram que a divergência nasce no pedido; primeiras revisões emitidas em 15/09.'],
-    ['<span class="lacuna">data</span>', 'O conselho aprova o foco', 'Escopo agora; fornecedor e preço num projeto futuro com a TI.'],
+    ['11/09/2026', 'O comitê aprova o caminho', 'Reunião do comitê: seguir começando pelo escopo, onde as propostas começam a divergir.'],
+    ['set/2026', 'O escopo entra em produção', 'Revisões do PPCI de Itajaí emitidas em 15/09 e 22/09.'],
   ].map(([d, t, x], i) => `<div class="lt"><div class="lt-bola">${i + 1}</div><div class="lt-d">${d}</div><div class="lt-t">${t}</div><div class="lt-x">${x}</div></div>`).join('')}</div>
-  <div class="caixa-azul"><b>Aprovado pelo conselho:</b> a montagem do escopo, já em produção. <b>Projeto futuro com a TI:</b> fornecedor e preço no Fluig/RM, onde o cadastro oficial já mora, sem base duplicada.</div>`,
-  'Fontes: e-mails de 29/04/2026 (inscrição) e 19/05/2026 (comitê); aprovações informadas por Guilherme Marques (HISTORICO.md, 11/10/2026); revisões do PPCI de Itajaí (R4 em 15/09/2026).', { selo: 'datas das aprovações' }));
-
+  <div class="caixa-azul"><b>Aprovado pelo comitê:</b> a montagem do escopo, já em produção. <b>Projeto futuro com a TI:</b> fornecedor e preço no Fluig/RM, onde o cadastro oficial já mora, sem base duplicada.</div>`,
+  'Fontes: e-mails de 29/04/2026 (inscrição) e 19/05/2026 (comitê); reunião "Comitê: Concurso Melhor Ideia" de 11/09/2026 (convite do calendário); revisões do PPCI de Itajaí (15/09 e 22/09/2026).'));
 // 6. A solução
 S.push(conteudo(6, 2,
   'Um cadastro alimenta o deck, o PDF e a planilha do fornecedor',
@@ -220,15 +217,15 @@ S.push(conteudo(13, 4,
   `<div class="quatro">${[
     ['Infraestrutura', 'Google Workspace já contratado: Apps Script, Slides, Planilhas e Drive. Nenhuma licença nova.'],
     ['Arquivos', 'Deck, PDF e planilha ficam no Drive compartilhado do Facilities, com as revisões anteriores.'],
-    ['Projeto futuro', 'Fornecedor e preço serão um projeto futuro com a TI, no Fluig/RM, como aprovou o conselho. O app cuida do escopo.'],
+    ['Projeto futuro', 'Fornecedor e preço serão um projeto futuro com a TI, no Fluig/RM, como aprovou o comitê. O app cuida do escopo.'],
     ['Quem mantém', 'Documentação, testes e histórico no repositório. Segunda pessoa para publicar: <span class="lacuna-txt">a definir</span>.'],
   ].map(([t, x]) => `<div class="card"><div class="card-t">${t}</div><div class="card-x">${x}</div></div>`).join('')}</div>`,
   'Preço, equalização e fornecedores estão ocultos na tela (modo escopo), não apagados: o código e os dados continuam até a integração.'));
 
-// 14. Entregue e próximos passos (prestação de contas: o conselho já aprovou)
+// 14. Entregue e próximos passos (prestação de contas: o comitê já aprovou)
 S.push(conteudo(14, 5,
   'Entregue: a montagem do escopo; fornecedor e preço serão um projeto futuro com a TI',
-  'O que está em produção hoje e o que vem depois, como o conselho aprovou',
+  'O que está em produção hoje e o que vem depois, como o comitê aprovou',
   `<div class="dois">
     <div class="pedido"><div class="fx-rot">ENTREGUE · EM PRODUÇÃO</div><ol class="passos">
       <li><b>Cadastro do escopo:</b> serviços por local, fotos junto do serviço e EAP com quantidade, unidade e marca</li>
@@ -241,7 +238,7 @@ S.push(conteudo(14, 5,
       <li><b>Prévia</b> do deck antes de emitir uma revisão</li>
       <li><b>A empresa toda:</b> Propriedades, Engenharia e as demais áreas que montam escopo, no mesmo padrão</li></ol></div>
   </div>`,
-  'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. Próximos passos sem data definida; fornecedor e preço são um projeto futuro com a TI, aprovado pelo conselho.'));
+  'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. Próximos passos sem data definida; fornecedor e preço são um projeto futuro com a TI, aprovado pelo comitê.'));
 // 15. Encerramento
 S.push(`<section class="slide fim">
   <div class="fim-txt"><img class="logo-fim" src="${IMG.logoNeg}"><div class="kicker">GESTÃO DE CONTRATAÇÕES</div><div class="nome">Começar melhor.<br>Contratar melhor.</div>

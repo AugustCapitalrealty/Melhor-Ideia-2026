@@ -14,7 +14,7 @@ Três propostas para a manutenção do ar-condicionado. Duas, três e doze visit
 
 **2-aprovacao.mp3**
 
-A ideia inscrita foi avaliar prestadores de serviço, e ela foi aprovada. O comitê pediu mais detalhes, porque parte desse processo já existe no Fluig. A análise de documentos reais mostrou diferenças no que os fornecedores ofereciam. Por isso, o conselho aprovou começar pelo escopo. Fornecedor e preço serão um projeto futuro, junto com a TI.
+A ideia inscrita foi avaliar prestadores de serviço, e ela foi aprovada. O comitê pediu mais detalhes, porque parte desse processo já existe no Fluig. A análise de documentos reais mostrou diferenças no que os fornecedores ofereciam. Na reunião de setembro, o comitê aprovou começar pelo escopo. Fornecedor e preço serão um projeto futuro, junto com a TI.
 
 **3-solucao.mp3**
 

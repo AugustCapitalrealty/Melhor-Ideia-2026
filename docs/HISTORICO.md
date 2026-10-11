@@ -525,14 +525,17 @@ PENDENTE) e no slide 2.
 
 | Pendência | Quem | Até |
 | :--- | :--- | :--- |
-| Datas (e e-mail ou ata) da aprovação da ideia e da reunião com o conselho, para o slide 5 | Guilherme | 13/10 |
 | 2 depoimentos: Ricardo (Propriedades) e Facilities (Mega Itajaí) | Guilherme | 14/10 |
 | Medição PowerPoint × sistema (slide 9 e capítulo 7) | Guilherme | 14/10 |
 | Escopos antigos em PowerPoint para o antes × depois (slide 7) | Guilherme | 13/10 |
 | Recontar o uso por escopo (slide 10) | Claude | 14/10 |
 | Checador sobre o roteiro atual, depois a voz no ElevenLabs (sem o capítulo 7) | Guilherme | 13/10 |
-| Confirmar com o RH formato, horário e se aceitam vídeo no protocolo | Guilherme | 13/10 |
 | Gerador do deck final no Google Slides (hoje é rascunho em PNG) | Claude | 14/10 |
+
+**Aprovação documentada.** Print do convite "Comitê: Concurso Melhor Ideia", sexta 11/09/2026, 14h–15h (organização do RH; 6 convidados),
+em que, segundo o Guilherme, foi aprovado seguir pelo escopo. Guardado em `relatorio/evidencias/` (fora do git: nomes e link). Slide 5
+refeito: 29/04 inscrição → 19/05 comitê pede detalhes → **11/09 comitê aprova o caminho** → 15/09 e 22/09 revisões em produção.
+"Conselho" virou **"comitê"** em tudo (nome do convite e do regulamento). **Formato:** *"vai ser o relatório; o vídeo é um bônus"*.
 
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
