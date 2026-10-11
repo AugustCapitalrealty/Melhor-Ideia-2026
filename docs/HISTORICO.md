@@ -429,7 +429,29 @@ O computador esquentou e reiniciou às ~18:15; o Deep Freeze levou Node, clasp, 
 | `npx @google/clasp login` (conta guilherme.marques) e `push -f` | @HEAD atualizado |
 | `clasp deploy -i AKfycbxy2cJdA-d5zM39KXeRhyZxinfTWEaVIJLMs5Y03rQBQNPH1mFnh0HbIjLSI4ciHA94Aw` | **@77 "Modo escopo: oculta preco, equalizacoes e fornecedores"**; link dos usuários o mesmo |
 
-Pendente: conferir no navegador que a @77 abre em Escopos sem as abas ocultas; o "sim" da estratégia.
+Pendente: conferir no navegador que a @77 abre em Escopos sem as abas ocultas.
+
+### Estratégia aprovada e rascunho do relatório (v1)
+
+O Guilherme: *"sim, vamos isso"* para a [estratégia](ESTRATEGIA_NOTA_MAXIMA.md); *"vamos fazer a apresentação tipo a do orçamento e
+deixe em aberto somente a parte da medição e depoimentos"*.
+
+| Decisão | Motivo |
+| :--- | :--- |
+| Simulação da nota (julgamento sobre as provas, não medição): hoje 6,3; estratégia cumprida 7,7; novembro 8,65; lida como "trocou de ideia" 6,8 | Mostra que Impacto e a ponte com a ideia aprovada são as alavancas |
+| Visual do deck do orçamento: capa com as fotos dos 3 Megas, sumário, trilha das 5 seções no topo, título com a conclusão, fonte no rodapé, slide "Revisar antes da versão final" sempre ligado | Pedido dele; padrão já aprovado no orçamento (IDEIAS-DESIGN.md) |
+| Rascunho em PNG antes do gerador: `relatorio/rascunho/gerar.cjs` (HTML 1920×1080 → Chrome) | Ciclo aprovado no orçamento: PNG na tela → analista → v2 → "aprovado" → código |
+| 15 slides; em aberto com selo PENDENTE: tempo (9), depoimentos (11), escopos antigos do antes × depois (7) e recontagem do uso (10) | Os dois últimos também dependem de dado que não existe ainda; ficam declarados em vez de inventados |
+| Fontes Montserrat e Open Sans (OFL) copiadas para `relatorio/fontes/`; fotos dos Megas em `relatorio/rascunho/midia/` (fora do git) | Sobreviver ao Deep Freeze sem depender do Drive do orçamento |
+
+**PowerPoint antigo mede tempo?** Só em parte. O `.pptx` guarda o tempo de edição registrado pelo PowerPoint (`TotalTime`), datas de
+criação e gravação e o número de revisões. Esse tempo conta o arquivo aberto (até parado), herda o tempo do arquivo de origem quando
+o escopo foi copiado de outro e não anda quando editado no navegador. O deck do Conselho, gerado por código, mostra 0 min. Serve de
+indício ao lado do cronômetro, nunca no lugar dele. A comparação mais justa: refazer no sistema, com cronômetro, o mesmo escopo
+de um PowerPoint antigo.
+
+**Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
+app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
 
 ---
 

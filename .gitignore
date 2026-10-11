@@ -15,3 +15,8 @@ __pycache__/
 # Capturas do app real: têm dados reais de fornecedores e preços; ficam só no Drive
 video/capturas/
 video/**/midia/real/
+
+# Rascunho do relatorio: PNGs e HTML gerados trazem telas reais; fotos dos Megas vem do Drive do orcamento
+relatorio/rascunho/saida/
+relatorio/rascunho/midia/
+relatorio/rascunho/deck.html
