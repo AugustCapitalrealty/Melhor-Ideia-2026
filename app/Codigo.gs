@@ -9,14 +9,19 @@
 const CF_VERSAO_APP = '2026-09-05.3';
 
 function doGet(e) {
+  const modoEscopo = cfModoEscopo_();
   let pagina = (e && e.parameter && e.parameter.page) || '';
   if (!pagina) {
     if (e && e.parameter && e.parameter.editar) pagina = 'nova';
     else if (e && e.parameter && e.parameter.eq) pagina = 'mapa';
     else pagina = 'consulta';
   }
+  // No modo escopo, todo link (inclusive os antigos, de e-mail e de PDF,
+  // para equalização, ficha e avaliação) cai nos Escopos.
+  if (modoEscopo && pagina !== 'escopos') pagina = 'escopos';
   const t = HtmlService.createTemplateFromFile('Interface');
   t.pagina = pagina;
+  t.modoEscopo = modoEscopo ? 'sim' : '';
   // ?page=ficha&eq=EQU-... abre a equalização inteira numa janela própria,
   // sem navegação, pronta para ler ao lado do documento e para imprimir.
   t.eq = (e && e.parameter && e.parameter.eq) || '';
@@ -529,6 +534,25 @@ function urlDoWebApp() {
   const url = cfUrlPublicada_();
   Logger.log(url || 'Ainda não implantado. Vá em Implantar → Nova implantação → Aplicativo da Web.');
   return url;
+}
+
+/**
+ * Modo escopo (11/10/2026). A entrega do concurso vende a montagem do
+ * escopo; preço, equalização e base de fornecedores vão ser integrados
+ * com o Fluig/RM e saem da tela, não da base: dados e código continuam
+ * aqui. Ligado por padrão. MODO_ESCOPO = 'nao' nas propriedades do
+ * script devolve as abas, sem nova implantação.
+ *
+ * É ocultação de tela, não controle de acesso: as funções api* seguem
+ * respondendo a quem as chamar.
+ */
+function cfModoEscopo_() {
+  try {
+    const valor = PropertiesService.getScriptProperties().getProperty('MODO_ESCOPO');
+    return String(valor || '').trim().toLowerCase() !== 'nao';
+  } catch (erro) {
+    return true;
+  }
 }
 
 /** Nunca lança: sem implantação, a ficha em janela própria só não aparece. */

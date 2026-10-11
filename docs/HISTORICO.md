@@ -375,6 +375,35 @@ Resultado: 21,5 s, `conferir.py` aprovado, 24% de tempo parado (era 49%). Achado
 (defeito a corrigir com o ok dele) e o IQF médio de 76,9 com 1 avaliação na tela de Fornecedores (não usar como resultado).
 Detalhes em [CONHECIMENTO_VIDEO_E_RELATORIO.md](CONHECIMENTO_VIDEO_E_RELATORIO.md) §9.
 
+### Foco da entrega: a montagem do escopo
+
+O Guilherme, à noite: *"vamos entregar essa semana; o foco é vender a montagem do Escopo. Vamos ocultar preços e base de fornecedores
+(isso vai ser integrado com FLUIG/RM)"*.
+
+| Decisão | Motivo |
+| :--- | :--- |
+| Ocultar **Consulta de preço, Equalizações e Base Fornecedores** (e o "+ Nova cotação") | Preço, equalização e fornecedor entram juntos como integração Fluig/RM, que é **próximo passo** e não existe ainda |
+| Ocultar **no app e nas peças**: implantação nova em "modo escopo", e vídeo e deck sem preço nem fornecedor | Escolha dele. No app, a ocultação é por chave reversível: nada é apagado (dados e código ficam) |
+| O app abre direto em Escopos | É o produto que vamos vender |
+| A linha de base de tempo passa a ser **montar um escopo no PowerPoint × no sistema**, com 2 ou 3 escopos | Impacto (30%, 1º desempate) precisa de número do produto que vendemos. ~~Cronometrar equalização no Excel~~: saiu do foco |
+| Publicação da implantação nova só com o ok dele | Regra da casa |
+
+**Modo escopo no código (ainda não publicado):**
+
+| Decisão | Motivo |
+| :--- | :--- |
+| `cfModoEscopo_()` em `Codigo.gs`: ligado por padrão; a propriedade do script `MODO_ESCOPO = nao` desliga | Reverter sem nova implantação quando o Fluig/RM entrar |
+| No `doGet`, toda página que não é Escopos vira Escopos, inclusive links antigos de e-mail e PDF (`?page=mapa`, `ficha`, `avaliacao`, `nova`) | Link antigo não pode reabrir preço por trás |
+| Na tela, somem Consulta de preço, Equalizações, Base Fornecedores e "+ Nova cotação"; `aba()` redireciona qualquer chamada a elas para Escopos; Configurações fica (grupos, itens e marcas, sem preço) | Salvar, ficha e avaliação ainda chamam `aba('mapa')` e `aba('fornecedores')` no código |
+| Rodapé sem "dados importados do acervo de equalizações" | Fora do assunto no modo escopo |
+| É ocultação de tela, não controle de acesso | As funções `api*` continuam respondendo; dito no comentário do código |
+
+`tests/teste-modo-escopo.cjs` entrou no `npm test` e pegou 5 de 5 mutações. Print no Chrome (Google simulado): barra só com Escopos e
+Configurações, sem erro de JavaScript.
+
+Cronograma: seg 12 app em modo escopo e medições; ter 13 roteiro e texto do deck (Checador em outra sessão); qua 14 voz, folha,
+Auditor, render e deck final; qui 15 revisão e protocolo no RH.
+
 ---
 
 ## Próxima entrada

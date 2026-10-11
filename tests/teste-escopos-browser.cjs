@@ -140,7 +140,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     // mantendo todo o CSS e JavaScript do aplicativo existente.
     const integrado=fs.readFileSync('app/Interface.html','utf8')
       .replace("<?!= HtmlService.createHtmlOutputFromFile('EscopoInterface').getContent(); ?>",fs.readFileSync('app/EscopoInterface.html','utf8'))
-      .replace(/<\?= pagina \?>/g,'escopos').replace(/<\?= (eq|editar|cnpj|urlBase) \?>/g,'')
+      .replace(/<\?= pagina \?>/g,'escopos').replace(/<\?= (eq|editar|cnpj|urlBase|modoEscopo) \?>/g,'')
       .replace('<head>','<head><script>'+mock+'</script>');
     await page.setViewportSize({width:1280,height:900});
     await page.setContent(integrado,{waitUntil:'domcontentloaded'});

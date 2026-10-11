@@ -3501,6 +3501,10 @@ var EDITAR_INICIAL = '<?= editar ?>';
 var CNPJ_INICIAL = '<?= cnpj ?>';
 var URL_BASE = '<?= urlBase ?>';
 var EH_FICHA = PAGINA === 'ficha' && !!EQ_INICIAL;
+// Modo escopo (cfModoEscopo_ em Codigo.gs): preço, equalização e base de
+// fornecedores saem da tela até a integração com o Fluig/RM.
+var MODO_ESCOPO = '<?= modoEscopo ?>' === 'sim';
+var ABAS_FORA_DO_MODO_ESCOPO = ['consulta', 'mapa', 'fornecedores', 'nova'];
 var idEmEdicao = null;
 var modoMarcasAtivo = false;
 var cacheRefPrecos = {};
@@ -5096,7 +5100,8 @@ google.script.run.withSuccessHandler(function (p) {
   }).join('');
 
   document.getElementById('rodape').textContent =
-    'Gestão de Contratações · web ' + p.versao + ' · dados importados do acervo de equalizações';
+    'Gestão de Contratações · web ' + p.versao +
+    (MODO_ESCOPO ? '' : ' · dados importados do acervo de equalizações');
 }).apiPanorama();
 
 /* Um conjunto pequeno de ícones embutidos: sem CDN, sem fonte de ícone,
@@ -5719,6 +5724,7 @@ var TITULOS = {
 };
 
 function aba(nome) {
+  if (MODO_ESCOPO && ABAS_FORA_DO_MODO_ESCOPO.indexOf(nome) >= 0) nome = 'escopos';
   ['consulta', 'mapa', 'fornecedores', 'config', 'nova', 'escopos'].forEach(function (n) {
     var el = document.getElementById('v-' + n);
     if (el) el.hidden = n !== nome;
@@ -10123,7 +10129,13 @@ function abrirAvaliacaoDireta(cnpj, idEq) {
 // ─────────────────────────────────────────────────────────────
 //  Inicialização direta por ?page=
 // ─────────────────────────────────────────────────────────────
-if (PAGINA === 'escopos') {
+if (MODO_ESCOPO) {
+  ['ab-consulta', 'ab-mapa', 'ab-fornecedores', 'ab-nova'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.hidden = true;
+  });
+}
+if (PAGINA === 'escopos' || MODO_ESCOPO) {
   aba('escopos');
 } else if (PAGINA === 'nova') {
   aba('nova');

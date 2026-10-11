@@ -41,6 +41,9 @@ pede a fonte.
 | Suíte de testes que reprova (37 defeitos com teste de regressão em 06/09) | `npm test`, `PLANO_DE_CORRECOES.md` | Recontar no dia |
 | Escopos: avaliação simulada do comprador, nota 6,5/10; ~20 min no sistema × ~30–35 min no PowerPoint (escopo simples) | `docs/avaliacao-escopo-2026-10-02/` (ainda fora do git) | **Tempo estimado por contagem de cliques**, não medido com gente. Escrever assim |
 
+> **Atualizado em 11/10 (noite):** o foco passou a ser o escopo (§8). A linha de base agora é **montar escopo no PowerPoint × no
+> sistema**; o parágrafo abaixo fica como registro.
+
 **O buraco que continua aberto:** a linha de base de tempo **no Excel** nunca foi cronometrada (`BALANCO_EXECUCAO.md` §6). Sem ela,
 Impacto (30%, desempate 1) vira afirmação. O relatório precisa dizer isso com franqueza ou trazer a medição. Uma saída honesta:
 cronometrar 2 ou 3 equalizações na planilha antes de 15/10 e apresentar como amostra pequena.
@@ -191,6 +194,14 @@ daquele repositório.
 
 | Imagens do vídeo | "tem que usar imagem do script mesmo, real, não simulado" → só capturas de tela do app em produção e dos documentos que ele gera |
 | Foco | **"minha meta é focado no escopo; base de fornecedores vamos interligar com o que está no Fluig/RM"** → o vídeo e o relatório contam o escopo; a integração Fluig/RM entra como **próximo passo** (não existe ainda: nunca dizer que existe) |
+
+| Entrega (11/10, noite) | **"vamos entregar essa semana; o foco é vender a montagem do Escopo; ocultar preços e base de fornecedores (vai ser integrado com FLUIG/RM)"** |
+| O que ocultar | Consulta de preço, **Equalizações** e Base Fornecedores, **no app** (implantação em "modo escopo", reversível por chave) **e nas peças** |
+| Linha de base | **Montar escopo no PowerPoint × no sistema** (2 ou 3 escopos). Substitui a do Excel |
+
+**Consequência para o relatório e o vídeo:** a história é só o escopo (dor → base e busca → grupos, fotos, EAP → deck padronizado,
+planilha do fornecedor, revisões → número medido → Fluig/RM como próximo passo). A tabela do §2 vale só no que é escopo; os números de
+equalização, consulta de preço, fornecedores e IQF **não entram**.
 
 Ainda em aberto: os números de uso (equalizações, homologações, avaliações, tempos) precisam ser lidos de novo na base de produção.
 
