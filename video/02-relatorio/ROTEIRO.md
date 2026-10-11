@@ -1,6 +1,6 @@
 # Gestão de Contratações · vídeo do relatório (2–3 min) — v1, 11/10/2026
 
-Pedido do Guilherme em 11/10/2026: *"enquanto a análise roda, me manda o roteiro para eu gerar no ElevenLabs"*. Segue a
+Pedido do Guilherme em 11/10/2026: *"enquanto a análise roda, me manda o roteiro para eu gerar no ElevenLabs"*. Escala: **a empresa toda**, não só os Megas (Guilherme, 11/10: "não vai ser apenas para os 3 Megas, é para a empresa toda"). Segue a
 [estratégia aprovada](../../docs/ESTRATEGIA_NOTA_MAXIMA.md) e o rascunho do deck (`relatorio/rascunho/`): só o escopo; preço,
 equalização e fornecedores ficam fora. Fluig/RM é **próximo passo** (não existe ainda; o vídeo não diz que existe).
 
@@ -17,7 +17,7 @@ equalização e fornecedores ficam fora. Fluig/RM é **próximo passo** (não ex
 | Um cadastro gera apresentação, PDF e planilha, com a mesma EAP e a mesma revisão | app em produção; capturas de 11/10/2026 |
 | Escopo base: o que vem pronto e o que fica em branco | `docs/HISTORICO.md`, v76 (11/10/2026) |
 | PPCI do prédio de apoio de Itajaí na revisão 9 | tela Escopos em produção, 11/10/2026 |
-| Em uso nos três Megas | `docs/CONHECIMENTO_VIDEO_E_RELATORIO.md` §9 ("6 reais emitidos nos 3 Megas", leitura de 11/10). **Checador: confirmar Esteio na base** |
+| Uso começou pelos três Megas; o padrão serve à empresa toda (proposta, não uso atual) | `docs/CONHECIMENTO_VIDEO_E_RELATORIO.md` §9 ("6 reais emitidos nos 3 Megas", leitura de 11/10). **Checador: confirmar Esteio na base** |
 | Pedidos de usuários viraram versão (fonte única, fotos junto, justificado, aviso padrão, escopos base) | `docs/HISTORICO.md` 02/10 e 11/10/2026 |
 
 ## 1 · O PROBLEMA
@@ -81,9 +81,9 @@ do fornecedor com as colunas amarelas.
 
 ## 5 · EM USO
 
-**5.1 · AS REVISÕES (E05).** "Arquivos emitidos" do PPCI de Itajaí, da revisão 4 à 9.
+**5.1 · AS REVISÕES (E05).** "Arquivos emitidos" do PPCI de Itajaí, da revisão 4 à 9; no fim, cartão "da área que contrata, em toda a empresa".
 
-> Já está em uso nos três Megas. O escopo do sistema de incêndio do prédio de apoio de Itajaí chegou à revisão nove, e cada revisão ficou registrada.
+> Já está em uso. Começou pelos três Megas: o escopo do sistema de incêndio do prédio de apoio de Itajaí chegou à revisão nove, e cada revisão ficou registrada. O mesmo padrão serve para qualquer área da empresa que contrata.
 
 ## 6 · QUEM USA PEDE, O SISTEMA MUDA
 
@@ -103,9 +103,9 @@ do fornecedor com as colunas amarelas.
 
 ## 8 · O PRÓXIMO PASSO
 
-**8.1 · FLUIG E RM.** Cartão de texto (sem a tela de fornecedores): "Próximo passo: fornecedor e preço a partir do Fluig/RM".
+**8.1 · PRÓXIMOS PASSOS.** Dois cartões de texto (sem a tela de fornecedores): "Padrão para a empresa toda" e "Fornecedor e preço a partir do Fluig/RM".
 
-> O próximo passo é trazer fornecedor e preço do Fluig e do RM, onde o cadastro oficial já mora. Sem base duplicada.
+> Os próximos passos: levar o padrão para a empresa toda e trazer fornecedor e preço do Fluig e do RM, onde o cadastro oficial já mora. Sem base duplicada.
 
 **8.2 · FECHO.** Fundo azul-marinho, assinatura e o nome do projeto.
 

@@ -450,6 +450,13 @@ o escopo foi copiado de outro e não anda quando editado no navegador. O deck do
 indício ao lado do cronômetro, nunca no lugar dele. A comparação mais justa: refazer no sistema, com cronômetro, o mesmo escopo
 de um PowerPoint antigo.
 
+**Escala: a empresa toda.** O Guilherme: *"não vai ser apenas para os 3 Megas, é para a empresa toda"*. Deck e vídeo separam fato de
+proposta: o uso **começou** pelos três Megas (fato, leitura de 11/10); o padrão de escopo e o pedido ao comitê valem para **toda área
+da empresa que contrata** (proposta). Slides 5, 7, 10 e 14 e capítulos 5 e 8 do vídeo (`video/02-relatorio/`) ajustados.
+
+**Vídeo do relatório:** `video/02-relatorio/ROTEIRO.md` e `LOCUCAO-elevenlabs.md` (8 capítulos, ~320 palavras, cerca de 2 min 10 s;
+o capítulo 7, do tempo, só depois da medição). O Checador ainda não passou: fato que cair, refaz-se só aquele MP3.
+
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
 

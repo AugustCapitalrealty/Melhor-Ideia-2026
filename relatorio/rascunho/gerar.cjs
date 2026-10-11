@@ -62,7 +62,7 @@ S.push(`<section class="slide capa">
     <div class="nome">Gestão de Contratações</div>
     <div class="frase">A contratação começa no escopo.</div>
   </div>
-  <footer><span>Capital Realty · Facilities · Mega Curitiba · Mega Itajaí · Mega Esteio · 15/10/2026</span><span class="assin"><i></i>Começar melhor. Contratar melhor.</span></footer>
+  <footer><span>Capital Realty · Facilities · 15/10/2026</span><span class="assin"><i></i>Começar melhor. Contratar melhor.</span></footer>
 </section>`);
 
 // 2. Revisar antes da versão final (alerta sempre ligado, como no orçamento)
@@ -114,7 +114,7 @@ S.push(conteudo(5, 1,
     ['19/05/2026', 'O comitê aprova', 'Capital Fornecedores: avaliação de prestadores, ligada à decisão de compra.'],
     ['set/2026', 'A avaliação é construída', 'Cinco critérios com os pesos da ata e o gatilho depois da ordem de compra.'],
     ['05/09/2026', 'O campo mostra a causa', '28 documentos reais: as respostas divergem porque o escopo deixa margem.'],
-    ['out/2026', 'O escopo entra em produção', 'Padrão único nos 3 Megas, com revisões registradas e escopo base.'],
+    ['out/2026', 'O escopo entra em produção', 'Começa pelos 3 Megas, com revisões registradas e escopo base, para servir à empresa toda.'],
   ].map(([d, t, x], i) => `<div class="lt"><div class="lt-bola">${i + 1}</div><div class="lt-d">${d}</div><div class="lt-t">${t}</div><div class="lt-x">${x}</div></div>`).join('')}</div>
   <div class="caixa-azul"><b>Fornecedor e preço vão para o Fluig/RM,</b> onde o cadastro oficial já mora. Decisão de sustentabilidade: a empresa não mantém duas bases de fornecedores. <span class="prox">Próximo passo, ainda não integrado.</span></div>`,
   'Fontes: e-mail do comitê de 19/05/2026 (RESPOSTA_AO_COMITE.md), HISTORICO.md 05/09 e 11/10/2026.'));
@@ -134,8 +134,8 @@ S.push(conteudo(6, 2,
 
 // 7. Antes × depois (pendente: escopos antigos)
 S.push(conteudo(7, 2,
-  'Três Megas, um padrão de escopo',
-  'Antes, cada Mega montava o escopo do seu jeito no PowerPoint; agora todos saem do mesmo cadastro',
+  'Um padrão de escopo para a empresa toda',
+  'Antes, cada área montava o escopo do seu jeito no PowerPoint; agora todos saem do mesmo cadastro, com a mesma estrutura',
   `<div class="antes-depois">
     <div class="ad-lado"><div class="fx-rot">ANTES · POWERPOINT</div><div class="ad-antes">${['Curitiba', 'Itajaí', 'Esteio'].map((m) =>
       `<div class="vazio">Escopo antigo<br><b>Mega ${m}</b><br><span>aguardando arquivo</span></div>`).join('')}</div></div>
@@ -176,8 +176,8 @@ S.push(conteudo(9, 3,
 
 // 10. Uso real
 S.push(conteudo(10, 3,
-  'O escopo já está em uso nos três Megas',
-  'Escopos emitidos para fornecedor, não protótipo',
+  'O escopo já está em uso: começou pelos três Megas',
+  'Escopos emitidos para fornecedor, não protótipo; o mesmo padrão serve a qualquer área que contrata',
   `<div class="tres">
     <div class="kpi"><div class="kpi-n">6</div><div class="kpi-t">escopos reais na base</div><div class="kpi-d">Curitiba, Itajaí e Esteio. Mais 2 de teste, que não contam.</div></div>
     <div class="kpi"><div class="kpi-n">R9</div><div class="kpi-t">revisões do PPCI de Itajaí</div><div class="kpi-d">6 revisões geradas pelo sistema (R4 a R9), cada uma com deck, PDF e planilha.</div></div>
@@ -231,7 +231,7 @@ S.push(conteudo(14, 5,
       <li><b>Integração com o Fluig/RM:</b> fornecedor e preço a partir do cadastro oficial</li>
       <li><b>Convite ao fornecedor</b> com o escopo e a planilha, e retorno pelo sistema</li></ol></div>
     <div class="pedido"><div class="fx-rot">O QUE PEDIMOS</div><ol class="passos">
-      <li>Adotar o escopo do sistema como <b>padrão nos três Megas</b></li>
+      <li>Adotar o escopo do sistema como <b>padrão da empresa toda</b>, em toda área que contrata serviço</li>
       <li>Apoio da TI para a <b>integração com o Fluig/RM</b></li>
       <li>Uma <b>segunda pessoa</b> para a sustentação</li></ol></div>
   </div>`,

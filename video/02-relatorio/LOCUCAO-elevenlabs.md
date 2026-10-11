@@ -28,7 +28,7 @@ E o próximo escopo já começa pronto. Usando um escopo emitido como base, vêm
 
 **5-em-uso.mp3**
 
-Já está em uso nos três Megas. O escopo do sistema de incêndio do prédio de apoio de Itajaí chegou à revisão nove, e cada revisão ficou registrada.
+Já está em uso. Começou pelos três Megas: o escopo do sistema de incêndio do prédio de apoio de Itajaí chegou à revisão nove, e cada revisão ficou registrada. O mesmo padrão serve para qualquer área da empresa que contrata.
 
 **6-quem-usa.mp3**
 
@@ -40,4 +40,4 @@ Montar um escopo levou X minutos no sistema, contra Y no PowerPoint, numa amostr
 
 **8-proximo-passo.mp3**
 
-O próximo passo é trazer fornecedor e preço do Fluig e do RM, onde o cadastro oficial já mora. Sem base duplicada. Gestão de Contratações. Começar melhor. Contratar melhor.
+Os próximos passos: levar o padrão para a empresa toda e trazer fornecedor e preço do Fluig e do RM, onde o cadastro oficial já mora. Sem base duplicada. Gestão de Contratações. Começar melhor. Contratar melhor.
