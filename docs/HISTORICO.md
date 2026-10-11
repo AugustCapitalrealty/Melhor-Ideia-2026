@@ -515,7 +515,24 @@ slide 4, o ar-condicionado é do Facilities e a fundação é da Engenharia (Meg
 
 **Quem testou.** O Guilherme: *"Facilities com o Mega Itajaí, que testou o projeto, e Propriedades com o Ricardo, que testou"*. Slides 7 e
 10 e capítulo 5 do vídeo: "já testado em escopos reais por duas áreas: Facilities (Mega Itajaí) e Propriedades". O nome do Ricardo
-só entra com depoimento autorizado. A confirmar: de que área é o escopo de Curitiba (casa de bombas).
+só entra com depoimento autorizado. Confirmado: a casa de bombas do Mega Curitiba é de **Propriedades (Ricardo)**. Escopos reais: Facilities, Mega Itajaí, 3; Propriedades, 1.
+
+**Depoimentos (guardar):** o Guilherme coleta **2 nesta semana**: o **Ricardo (Propriedades)** e alguém do **Facilities, Mega Itajaí**.
+Cada um: uma frase sobre o que mudou ao montar escopo, nome, cargo e autorização para citar. Os espaços já estão no slide 11 (selo
+PENDENTE) e no slide 2.
+
+**Pendências da entrega (11/10, noite):**
+
+| Pendência | Quem | Até |
+| :--- | :--- | :--- |
+| Datas (e e-mail ou ata) da aprovação da ideia e da reunião com o conselho, para o slide 5 | Guilherme | 13/10 |
+| 2 depoimentos: Ricardo (Propriedades) e Facilities (Mega Itajaí) | Guilherme | 14/10 |
+| Medição PowerPoint × sistema (slide 9 e capítulo 7) | Guilherme | 14/10 |
+| Escopos antigos em PowerPoint para o antes × depois (slide 7) | Guilherme | 13/10 |
+| Recontar o uso por escopo (slide 10) | Claude | 14/10 |
+| Checador sobre o roteiro atual, depois a voz no ElevenLabs (sem o capítulo 7) | Guilherme | 13/10 |
+| Confirmar com o RH formato, horário e se aceitam vídeo no protocolo | Guilherme | 13/10 |
+| Gerador do deck final no Google Slides (hoje é rascunho em PNG) | Claude | 14/10 |
 
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.

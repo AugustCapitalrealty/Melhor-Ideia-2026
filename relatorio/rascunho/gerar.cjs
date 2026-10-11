@@ -77,7 +77,7 @@ S.push(`<section class="slide revisar">
   <table class="pend">
     <tr><th>Item</th><th>Slide</th><th>O que falta</th><th>Quem</th><th>Até</th></tr>
     <tr><td><b>Tempo: PowerPoint × sistema</b></td><td>9</td><td>Cronometrar 2 ou 3 escopos, do primeiro campo ao PDF pronto</td><td>Guilherme</td><td>14/10</td></tr>
-    <tr><td><b>Depoimentos de quem usa</b></td><td>11</td><td>2 ou 3 frases com nome, cargo e autorização para citar</td><td>Guilherme</td><td>14/10</td></tr>
+    <tr><td><b>Depoimentos de quem usa</b></td><td>11</td><td>2 frases: Ricardo (Propriedades) e alguém do Facilities, Mega Itajaí; com cargo e autorização</td><td>Guilherme</td><td>14/10</td></tr>
     <tr><td><b>Escopos antigos em PowerPoint</b></td><td>7</td><td>2 ou 3 arquivos de Megas diferentes para o antes × depois</td><td>Guilherme</td><td>13/10</td></tr>
     <tr><td><b>Recontar o uso na base</b></td><td>10</td><td>Por escopo: Mega, autor, data, revisões e o que foi emitido</td><td>Claude</td><td>14/10</td></tr>
     <tr><td><b>Datas das aprovações</b></td><td>5</td><td>Data (e e-mail ou ata) da aprovação da ideia e da reunião com o conselho</td><td>Guilherme</td><td>13/10</td></tr>
@@ -184,7 +184,7 @@ S.push(conteudo(10, 3,
   'Já testado em escopos reais por duas áreas: Facilities e Propriedades',
   'Facilities testou no Mega Itajaí e Propriedades também testou; o mesmo padrão serve à Engenharia e às demais áreas',
   `<div class="tres">
-    <div class="kpi"><div class="kpi-n">4</div><div class="kpi-t">escopos reais emitidos</div><div class="kpi-d">Itajaí (3) e Curitiba (1, a casa de bombas). Os outros da base foram teste ou exemplo e não contam.</div></div>
+    <div class="kpi"><div class="kpi-n">4</div><div class="kpi-t">escopos reais emitidos</div><div class="kpi-d">Facilities, Mega Itajaí (3); Propriedades, casa de bombas do Mega Curitiba (1). Os outros da base foram teste ou exemplo e não contam.</div></div>
     <div class="kpi"><div class="kpi-n">R9</div><div class="kpi-t">revisões do PPCI de Itajaí</div><div class="kpi-d">6 revisões geradas pelo sistema (R4 a R9), cada uma com deck e PDF; a planilha do fornecedor saiu na R9.</div></div>
     <div class="kpi"><div class="kpi-n">9 dias</div><div class="kpi-t">de 02/10 a 11/10: da v71 à v77</div><div class="kpi-d">As mudanças vieram de pedidos de quem usa (slide 12).</div></div>
   </div>`,
@@ -194,7 +194,7 @@ S.push(conteudo(10, 3,
 S.push(conteudo(11, 3,
   'Quem usa diz',
   'O critério de Impacto cita a satisfação de colaboradores: aqui ela é dita por quem monta escopo',
-  `<div class="tres">${[1, 2, 3].map((i) => `<div class="citacao"><div class="aspas">“</div><div class="lacuna-txt">Depoimento ${i}: uma frase sobre o que mudou ao montar escopo</div><div class="quem">Nome · cargo · Mega</div></div>`).join('')}</div>`,
+  `<div class="dois-iguais">${[['Ricardo', 'Propriedades'], ['A definir', 'Facilities · Mega Itajaí']].map(([n, a]) => `<div class="citacao"><div class="aspas">“</div><div class="lacuna-txt">Uma frase sobre o que mudou ao montar escopo</div><div class="quem">${n} · cargo · ${a}</div></div>`).join('')}</div>`,
   'Depoimentos com autorização para citar, coletados até 14/10/2026.', { selo: 'depoimentos' }));
 
 // 12. Qualidade: pedido vira versão
@@ -306,6 +306,7 @@ table.pend{margin-top:56px;width:100%;border-collapse:collapse;font-size:24px}
 .sum-d{font-size:24px;margin-top:4px}
 .sum-p{text-align:right;color:var(--mudo);font-size:20px}
 /* kpis */
+.dois-iguais{display:grid;grid-template-columns:1fr 1fr;gap:48px}
 .tres{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
 .quatro{display:grid;grid-template-columns:repeat(4,1fr);gap:32px}
 .dois{display:grid;grid-template-columns:1.3fr 1fr;gap:70px}
