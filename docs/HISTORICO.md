@@ -537,6 +537,13 @@ em que, segundo o Guilherme, foi aprovado seguir pelo escopo. Guardado em `relat
 refeito: 29/04 inscrição → 19/05 comitê pede detalhes → **11/09 comitê aprova o caminho** → 15/09 e 22/09 revisões em produção.
 "Conselho" virou **"comitê"** em tudo (nome do convite e do regulamento). **Formato:** *"vai ser o relatório; o vídeo é um bônus"*.
 
+**Vídeo: rascunho com voz de IA** (*"vamos fazer o vídeo já, mesmo com voz de IA"*). Subprojeto `video/02-relatorio/rascunho-ia/`: o ROTEIRO
+v3 sem o capítulo 7, 19 cenas (`cenas/02-relatorio.js`), voz edge-tts `pt-BR-AntonioNeural` +8%, música e efeitos do ElevenLabs.
+MP4: `build/render/rascunho-ia.mp4` (fora do git), **2 min 36 s**; `conferir.py` aprovado (1920×1080, 30 fps, BT.709, −15 LUFS,
+pico −1,8 dBTP). O Guilherme: *"está ótimo o tempo"*. A melhorar: o 1º quadro quase vazio (contraste 5/255; a cena 1.1 começa só
+com o fundo) e conferir os 21 saltos que o `medir.py` apontou. O edge-tts devolveu áudio truncado em 1.3 e 1.5: refeitos
+conferindo palavras do roteiro × palavras no áudio.
+
 **Auditor:** prompt para uma sessão independente em [PROMPT_AUDITOR_ENTREGA.md](PROMPT_AUDITOR_ENTREGA.md) (nota, apresentação,
 app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA_<data>.md`.
 
