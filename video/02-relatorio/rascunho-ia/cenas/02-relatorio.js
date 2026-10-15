@@ -1,5 +1,5 @@
-// Gestão de Contratações · vídeo do relatório · RASCUNHO com voz de IA (edge-tts), 11/10/2026
-// Pedido do Guilherme: "vamos fazer o vídeo já, mesmo com voz de IA, para eu ver como ficou". Sem o capítulo 7 (tempo não medido).
+// Gestão de Contratações · vídeo do relatório · v4, 15/10/2026 (voz ElevenLabs; trilha corporativa; sem efeitos de canal)
+// Pedidos do Guilherme (15/10): contexto antes do problema, escopos sem padrão, sem melhorias futuras, sem testes automatizados, testes reais.
 // Regras (ROTEIRO.md v3 e pareceres): telas reais do app só em janela "TELA REAL", recortadas sem a barra de abas antiga
 // (y < 60), sem a caixa de responsável do deck (D02: só até y 350) e sem a barra do Google e a linha 25 da planilha (D90: y 160–930).
 // Casos do capítulo 1 e linha do tempo são CARTÕES de texto: não imitam captura. Visual corporativo: marca Capital Realty.
@@ -11,8 +11,8 @@ OPCOES.depois = 0.45;
 OPCOES.cauda = 0.8;
 OPCOES.camViva = 0.004;
 OPCOES.transCena = 'mistura';
-OPCOES.somTransicao = { som: 'relatorio/transicao', vol: 0.35, pularSe: 0.35 };
-TRILHA = [{ de: 0, arq: 'elevenlabs/musica_contratacoes.mp3', vol: 0.10 }];
+OPCOES.somTransicao = null;  // 15/10: "os efeitos sonoros e sonoplastia não tavam corporativos"
+TRILHA = [{ de: 0, arq: 'elevenlabs/musica_corporativa.mp3', vol: 0.09 }];
 
 // ───────── peças ─────────
 function crFundo() {
@@ -31,7 +31,7 @@ function rotulo(cap, titulo, p) {  // canto superior: "01 · O PROBLEMA" + assun
   ctx.restore();
 }
 function rodape(s) { ctx.save(); ctx.globalAlpha *= 0.55; txt(s, 150, 1040, 17, 600, CR.branco, { ls: 1 }); ctx.restore(); }
-function selo() { ctx.save(); ctx.globalAlpha *= 0.5; txt('RASCUNHO · VOZ DE IA', 1860, 1040, 16, 700, CR.branco, { align: 'right', ls: 2 }); ctx.restore(); }
+function selo() {}  // v4: voz final pelo ElevenLabs; sem o selo de rascunho
 function comCartao(p, fn) {  // entra subindo e aparecendo
   if (p <= 0) return;
   const e = E.outCubic(clamp(p));
@@ -99,170 +99,110 @@ function recorte(pref, sx, sy, sw, sh, dx, dy, dw) {
 }
 const ent = lt => E.outCubic(prog(lt, -0.6, 0.3));
 
-// ═════════ 1 · O PROBLEMA ═════════
-const PROP = [{ n: 'A', v: '2' }, { n: 'B', v: '3' }, { n: 'C', v: '12' }];
-function cartoesPMOC(lt, tV, tVerba, tLaudo, e0 = 0.1) {
-  PROP.forEach((pp, i) => {
-    const x = 210 + i * 530, y = 300;
-    comCartao(prog(lt, e0 + i * 0.15, e0 + 0.5 + i * 0.15), () => {
-      const alerta = i === 0 && tLaudo !== null ? E.outCubic(prog(lt, tLaudo - 0.3, tLaudo + 0.3)) : 0;
-      cartao(x, y, 440, 520, alerta > 0 ? { borda: CR.lar, lw: 6 * alerta } : {});
-      txt('PROPOSTA ' + pp.n, x + 40, y + 70, 22, 800, CR.cinza, { ls: 3 });
-      const qv = tVerba !== null ? prog(lt, tVerba - 0.3, tVerba + 0.3) : 1;
-      rr(x + 40, y + 100, 300, 50, 25, qv > 0.5 ? '#E8F1FB' : '#F1F4F8');
-      txt('1 verba anual', x + 64, y + 135, 24, 800, CR.royal);
-      const pv = E.outBack(clamp(prog(lt, tV[i] - 0.25, tV[i] + 0.35)));
-      if (pv > 0) {
-        ctx.save(); ctx.globalAlpha *= clamp(pv);
-        txt(pp.v, x + 40, y + 330 + (1 - pv) * 30, 170, 900, CR.tinta);
-        txt('visitas por ano', x + 44, y + 400, 28, 700, CR.cinza);
-        ctx.restore();
-      }
-      if (alerta > 0) {
-        ctx.save(); ctx.globalAlpha *= alerta;
-        rr(x + 30, y + 432, 380, 66, 14, CR.larF);
-        txt('sem o laudo PMOC com ART', x + 48, y + 462, 22, 800, CR.lar);
-        txt('previsto no pedido', x + 48, y + 488, 20, 600, CR.lar);
-        ctx.restore();
-      }
-    });
-  });
+// foto em "cover" dentro de [x, y, w, h], escurecida de leve para o texto por cima ler bem
+function foto(pref, x, y, w, h, escuro = 0.25, raio = 16) {
+  const n = M(pref), im = IMGS[n]; if (!im || !im.complete) return;
+  const k = Math.max(w / im.naturalWidth, h / im.naturalHeight), sw = w / k, sh = h / k;
+  ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, raio); ctx.clip();
+  ctx.drawImage(im, (im.naturalWidth - sw) / 2, (im.naturalHeight - sh) / 2, sw, sh, x, y, w, h);
+  if (escuro) { ctx.fillStyle = `rgba(14,22,56,${escuro})`; ctx.fillRect(x, y, w, h); }
+  ctx.restore();
 }
+// imagem inteira com largura w (capas de escopo)
+function inteira(pref, x, y, w) {
+  const n = M(pref), im = IMGS[n]; if (!im || !im.complete) return 0;
+  const h = w * im.naturalHeight / im.naturalWidth;
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 36; ctx.shadowOffsetY = 14; rr(x, y, w, h, 12, '#FFFFFF'); ctx.restore();
+  ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 12); ctx.clip(); ctx.drawImage(im, x, y, w, h); ctx.restore();
+  return h;
+}
+function numero(s, rotuloTxt, x, y, p, cor = CR.branco) {
+  const q = E.outBack(clamp(p)); if (q <= 0) return;
+  ctx.save(); ctx.globalAlpha *= clamp(q);
+  txt(s, x, y + (1 - q) * 24, 120, 900, cor);
+  linhas(rotuloTxt, x, y + 56, 26, 700, CR.mudo, 1.3);
+  ctx.restore();
+}
+
+// ═════════ 1 · O CONTEXTO ═════════
 CENAS['1.1'] = {
   marca: false,
-  sons: S => [{ t: S.w('Duas'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('tres', 1), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('doze'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
     crFundo();
-    rotulo('01 · O PROBLEMA', 'Manutenção do ar-condicionado: três propostas', 1);
-    cartoesPMOC(lt, [S.w('Duas'), S.w('tres', 1), S.w('doze')], S.w('verba'), null, -0.9);
-    rodape('Mapa de equalização real (Facilities). São ofertas, não serviços executados. Sem nomes nem valores.'); selo();
+    const tE = S.w('escopo'), tD = S.w('documento');
+    [['F01', 'MEGA CURITIBA'], ['F02', 'MEGA ITAJAÍ'], ['F03', 'MEGA ESTEIO']].forEach(([f, n], i) => {
+      comCartao(prog(lt, -0.8 + i * 0.25, -0.2 + i * 0.25), () => {
+        const x = 150 + i * 548, zoom = 1 + 0.03 * clamp(lt / 8);
+        ctx.save(); ctx.translate(x + 256, 470); ctx.scale(zoom, zoom); ctx.translate(-(x + 256), -470);
+        foto(f, x, 200, 512, 540, 0.15); ctx.restore();
+        txt(n, x + 24, 712, 22, 800, CR.branco, { ls: 3 });
+      });
+    });
+    reveal('Toda contratação começa por um escopo', 150, 860, 800, 52, CR.branco, E.outCubic(prog(lt, tE - 0.5, tE + 0.2)));
+    reveal('o documento que o fornecedor recebe para cotar', 150, 930, 600, 34, CR.claro, E.outCubic(prog(lt, tD - 0.5, tD + 0.2)));
   },
 };
 CENAS['1.2'] = {
   marca: false,
-  sons: S => [{ t: S.w('incluia'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
-    crFundo();
-    rotulo('01 · O PROBLEMA', 'Manutenção do ar-condicionado: três propostas', 1);
-    cartoesPMOC(lt + 5, [0, 0, 0], null, S.w('incluia') + 5);
-    rodape('Mapa de equalização real (Facilities). São ofertas, não serviços executados. Sem nomes nem valores.'); selo();
+    crFundo(); rotulo('01 · O CONTEXTO', 'Como o escopo era feito nos Megas', prog(lt, 0, 0.5));
+    const anos = [['2024', ['Muitos serviços', 'contratados sem escopo'], S.w('muitos')], ['2025', ['O escopo começa', 'a aparecer'], S.w('aparecer')],
+      ['2026', ['Passa a ser', 'obrigatório'], S.w('obrigatorio')]];
+    anos.forEach(([a, l, t], i) => comCartao(prog(lt, t - 0.4, t + 0.2), () => {
+      const x = 150 + i * 548; cartao(x, 280, 512, 380);
+      txt(a, x + 44, 400, 84, 900, CR.dest); linhas(l, x + 44, 480, 32, 800, CR.tinta, 1.3);
+    }));
+    const tC = S.w('cada');
+    comCartao(prog(lt, tC - 0.4, tC + 0.2), () => {
+      rr(150, 730, 1620, 120, 20, 'rgba(224,123,36,0.16)', CR.lar, 3);
+      txt('Mas cada Mega montava do seu jeito', 200, 808, 46, 800, CR.branco);
+    });
+    rodape('Relato escrito do gerente de Propriedades e Facilities, 14/10/2026.');
   },
 };
 CENAS['1.3'] = {
   marca: false, depois: 1.2,
-  sons: S => [{ t: S.w('preco'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
-    crFundo();
-    rotulo('01 · O PROBLEMA', 'Outro caso: a mão de obra com um preço só', prog(lt, 0, 0.5));
-    const tP = S.w('preco'), tI = S.w('Infraestrutura'), tPa = S.w('passagem'), tIn = S.w('instalacao'), tSe = S.w('separados');
-    comCartao(prog(lt, 0.1, 0.6), () => {
-      cartao(300, 260, 1320, 150);
-      txt('Mão de obra', 350, 350, 44, 800, CR.tinta);
-      const q = E.outBack(clamp(prog(lt, tP - 0.3, tP + 0.3)));
-      if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); rr(1180, 300, 380, 70, 14, '#E8F1FB'); txt('1 preço', 1220, 350, 40, 900, CR.royal); ctx.restore(); }
-    });
-    [['Infraestrutura', tI], ['Passagem de cabos', tPa], ['Instalação do painel', tIn]].forEach(([s, t], i) => {
-      comCartao(prog(lt, t - 0.3, t + 0.2), () => {
-        const y = 450 + i * 140;
-        ctx.fillStyle = CR.claro; ctx.fillRect(360, 410, 4, y + 50 - 410); ctx.fillRect(360, y + 48, 60, 4);
-        cartao(440, y, 1180, 110);
-        txt(s, 480, y + 68, 34, 700, CR.tinta);
-        rr(1180, y + 26, 380, 58, 12, '#F1F4F8');
-        txt('sem preço separado', 1210, y + 66, 26, 800, CR.lar);
-      });
-    });
-    rodape('Documento real analisado em 05/09/2026: os itens estão descritos; o preço só aparece no total.'); selo();
-  },
-};
-CENAS['1.4'] = {
-  marca: false, depois: 1.6,
-  sons: S => [{ t: S.w('verba'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('quilos'), som: 'relatorio/destaque', vol: 0.45 }],
-  fn(lt, S) {
-    crFundo();
-    rotulo('01 · O PROBLEMA', 'Obra de fundação da Engenharia', prog(lt, 0, 0.5));
-    const tVb = S.w('verba'), tKg = S.w('quilos');
-    comCartao(prog(lt, 0.1, 0.6), () => {
-      cartao(200, 300, 1520, 520);
-      txt('O MESMO ITEM', 260, 380, 22, 800, CR.cinza, { ls: 3 });
-      txt('Posicionamento da armadura', 260, 450, 54, 800, CR.tinta);
-      ['VB', 'KG', 'VB', 'KG'].forEach((u, i) => {
-        const x = 260 + i * 360, ehVb = u === 'VB', t = ehVb ? tVb : tKg;
-        const q = E.outBack(clamp(prog(lt, t - 0.25, t + 0.35)));
-        txt('Proposta ' + (i + 1), x, 560, 24, 700, CR.cinza);
-        rr(x, 590, 300, 160, 18, q > 0 ? (ehVb ? '#E8F1FB' : CR.larF) : '#F1F4F8');
-        if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); txt(u, x + 150, 700, 84, 900, ehVb ? CR.royal : CR.lar, { align: 'center' }); ctx.restore(); }
-      });
-    });
-    rodape('Concorrência real de fundação (Engenharia, Mega Curitiba, fase 7): verba em duas propostas, quilos em outras duas.'); selo();
-  },
-};
-CENAS['1.5'] = {
-  marca: false,
-  sons: S => [{ t: S.w('explicito'), som: 'relatorio/destaque', vol: 0.4 }],
-  fn(lt, S) {
-    crFundo();
-    rotulo('01 · O PROBLEMA', '', 1);
-    const t = S.w('explicito');
-    reveal('O escopo precisa deixar', 960, 470, 800, 76, CR.branco, E.outCubic(prog(lt, 0.1, 0.8)), { align: 'center' });
-    reveal('explícito o que se compara.', 960, 570, 800, 76, CR.claro, E.outCubic(prog(lt, t - 0.4, t + 0.3)), { align: 'center' });
-    const l = E.inOutCubic(prog(lt, t + 0.2, t + 0.9)); if (l > 0) { ctx.fillStyle = CR.dest; ctx.fillRect(960 - 300 * l, 625, 600 * l, 5); }
-    selo();
+    crFundo(); rotulo('01 · O CONTEXTO', 'Escopos reais feitos sem o sistema', prog(lt, 0, 0.5));
+    const tF = S.w('formatos'), tN = S.w('Nenhum'), tV = S.w('visita');
+    [['A01', 'Itajaí'], ['A02', 'Esteio'], ['A03', 'Curitiba']].forEach(([a, m], i) => comCartao(prog(lt, 0.1 + i * 0.3, 0.6 + i * 0.3), () => {
+      const x = 150 + i * 400, y = 250 + (i % 2) * 40;
+      inteira(a, x, y, 360); txt('DOCUMENTO REAL · ' + m.toUpperCase(), x, y + 240, 17, 800, CR.claro, { ls: 2 });
+    }));
+    numero('3', ['formatos', 'de página'], 1380, 360, prog(lt, tF - 0.3, tF + 0.4));
+    numero('0', ['com inclusões', 'e exclusões'], 1380, 600, prog(lt, tN - 0.3, tN + 0.4), CR.lar);
+    numero('1', ['diz se a visita', 'é obrigatória'], 1380, 840, prog(lt, tV - 0.3, tV + 0.4), CR.lar);
+    rodape('9 escopos reais (Itajaí 4, Esteio 2, Curitiba 3) reunidos em 15/10/2026; amostra escolhida pela área.');
   },
 };
 
-// ═════════ 2 · A APROVAÇÃO ═════════
-const PAR = [['29/04/2026', ['A inscrição'], 'Capital Fornecedores: avaliação', 'de prestadores de serviço'],
-  ['19/05/2026', ['O comitê pede', 'detalhes'], 'Parte do processo já existe', 'no Fluig'],
-  ['11/09/2026', ['O comitê aprova:', 'começar pelo escopo'], 'Reunião do comitê', 'de 11/09'],
-  ['set/2026', ['Escopo em', 'produção'], 'Revisões emitidas', 'em 15/09 e 22/09']];
-function linhaTempo(lt, ts) {
-  const x0 = 230, dx = 420, y = 470;
-  ctx.fillStyle = 'rgba(127,178,229,0.3)'; ctx.fillRect(x0, y, dx * 3, 4);
-  PAR.forEach((p, i) => {
-    const q = E.outBack(clamp(prog(lt, ts[i] - 0.3, ts[i] + 0.3))); if (q <= 0) return;
-    const x = x0 + i * dx;
-    ctx.save(); ctx.globalAlpha *= clamp(q);
-    ctx.fillStyle = i === 2 ? CR.claro : CR.dest; ctx.beginPath(); ctx.arc(x, y + 2, 26 * q, 0, TAU); ctx.fill();
-    txt(String(i + 1), x, y + 12, 28, 900, i === 2 ? CR.noite : CR.branco, { align: 'center' });
-    txt(p[0], x - 30, y + 90, 24, 800, CR.claro);
-    linhas(p[1], x - 30, y + 136, 28, 800, CR.branco, 1.25);
-    txt(p[2], x - 30, y + 232, 22, 500, CR.mudo); txt(p[3], x - 30, y + 262, 22, 500, CR.mudo);
-    ctx.restore();
-  });
-}
+// ═════════ 2 · O PROBLEMA ═════════
 CENAS['2.1'] = {
-  marca: false,
+  marca: false, depois: 1.0,
   fn(lt, S) {
-    crFundo(); rotulo('02 · A APROVAÇÃO', 'A ideia inscrita foi aprovada', prog(lt, 0, 0.5));
-    linhaTempo(lt, [S.w('inscrita'), S.w('detalhes'), 999, 999]);
-    rodape('Fontes: e-mail de inscrição (29/04/2026) e e-mail do comitê (19/05/2026).'); selo();
+    crFundo(); rotulo('02 · O PROBLEMA', 'Nas propostas, as diferenças aparecem', prog(lt, 0, 0.5));
+    const it = [['2 · 3 · 12', ['visitas por ano', 'no mesmo item'], S.w('Duas')], ['1 preço', ['para a mão de obra', 'inteira'], S.w('preco')],
+      ['VB × KG', ['o mesmo item em verba', 'e em quilos'], S.w('verba')]];
+    it.forEach(([n, l, t], i) => comCartao(prog(lt, t - 0.4, t + 0.2), () => {
+      const x = 150 + i * 548; cartao(x, 300, 512, 440);
+      txt(n, x + 44, 470, 88, 900, CR.tinta); linhas(l, x + 44, 560, 32, 700, CR.cinza, 1.35);
+    }));
+    rodape('Ofertas reais do Facilities e da Engenharia, analisadas em 05/09/2026. Sem nomes nem valores.');
   },
 };
 CENAS['2.2'] = {
-  marca: false,
+  marca: false, depois: 1.2,
   fn(lt, S) {
-    crFundo(); rotulo('02 · A APROVAÇÃO', 'O que os documentos reais mostraram', 1);
-    linhaTempo(lt + 9, [0, 0, 999, 999]);
-    const t = S.w('diferencas');
-    ['2 · 3 · 12 visitas', '1 preço só', 'VB × KG'].forEach((s, i) => {
-      comCartao(prog(lt, t - 0.3 + i * 0.25, t + 0.3 + i * 0.25), () => { cartao(330 + i * 440, 780, 380, 110); txt(s, 520 + i * 440, 850, 34, 900, CR.tinta, { align: 'center' }); });
+    crFundo(); rotulo('02 · O PROBLEMA', '', 1);
+    const t = S.w('explicito'), tS = S.w('setembro');
+    reveal('O escopo precisa deixar', 960, 400, 800, 76, CR.branco, E.outCubic(prog(lt, 0.1, 0.8)), { align: 'center' });
+    reveal('explícito o que se compara.', 960, 500, 800, 76, CR.claro, E.outCubic(prog(lt, t - 0.4, t + 0.3)), { align: 'center' });
+    comCartao(prog(lt, tS - 0.4, tS + 0.2), () => {
+      cartao(510, 640, 900, 150);
+      txt('COMITÊ · 11/09/2026', 560, 700, 22, 800, CR.dest, { ls: 3 });
+      txt('Aprovado: começar pelo escopo', 560, 755, 42, 800, CR.tinta);
     });
-    selo();
-  },
-};
-CENAS['2.3'] = {
-  marca: false,
-  sons: S => [{ t: S.w('escopo'), som: 'relatorio/destaque', vol: 0.45 }],
-  fn(lt, S) {
-    crFundo(); rotulo('02 · A APROVAÇÃO', 'O comitê aprovou começar pelo escopo', 1);
-    linhaTempo(lt + 9, [0, 0, S.w('reuniao') + 9, S.w('escopo') + 9]);
-    const tF = S.w('futuro');
-    comCartao(prog(lt, tF - 0.4, tF + 0.2), () => {
-      ctx.save(); ctx.setLineDash([12, 10]); rr(330, 770, 1260, 140, 20, 'rgba(255,255,255,0.06)', CR.claro, 3); ctx.restore();
-      txt('PROJETO FUTURO COM A TI', 380, 830, 22, 800, CR.claro, { ls: 3 });
-      txt('Fornecedor e preço no Fluig/RM', 380, 882, 38, 800, CR.branco);
-    });
-    rodape('Reunião "Comitê: Concurso Melhor Ideia", 11/09/2026.'); selo();
+    rodape('Reunião "Comitê: Concurso Melhor Ideia", 11/09/2026.');
   },
 };
 
@@ -271,13 +211,13 @@ CENAS['3.1'] = {
   marca: false, camViva: 0,
   fn(lt, S) {
     const t = S.w('servicos');
-    crFundo(); rotulo('03 · A SOLUÇÃO', 'O escopo é montado no sistema', prog(lt, 0, 0.5));
+    crFundo(); rotulo('03 · A SOLUÇÃO', 'Um caminho guiado no sistema', prog(lt, 0, 0.5));
     ctx.save(); const e = ent(lt); ctx.translate(0, (1 - e) * 60); ctx.globalAlpha *= e;
     crJanela('Escopo · PPCI do prédio de apoio · Mega Itajaí');
     const cam = [keys(lt, [[0, 260], [t, 270]]), keys(lt, [[0, 60], [t, 100]]), keys(lt, [[0, 1420], [t, 1380]])];
     crTela('E01', cam);
     crDestaque(cam, [296, 150, 1608, 354], prog(lt, t - 0.3, t + 0.3), 'SERVIÇOS POR LOCAL');
-    ctx.restore(); selo();
+    ctx.restore();
   },
 };
 CENAS['3.2'] = {
@@ -289,7 +229,6 @@ CENAS['3.2'] = {
     const cam = [keys(lt, [[0, 270], [t, 270]]), keys(lt, [[0, 100], [t, 230]]), keys(lt, [[0, 1380], [t, 1380]])];
     crTela('E01', cam);
     crDestaque(cam, [297, 478, 1608, 760], prog(lt, t - 0.2, t + 0.4), 'IMAGENS DO GRUPO');
-    selo();
   },
 };
 CENAS['3.3'] = {
@@ -303,155 +242,109 @@ CENAS['3.3'] = {
     crDestaque(cam, [280, 84, 1625, 586], prog(lt, tL - 0.3, tL + 0.3) * (1 - prog(lt, tQ - 0.4, tQ)), 'ITENS');
     crDestaque(cam, [1203, 84, 1366, 586], prog(lt, tQ - 0.3, tQ + 0.3) * (1 - prog(lt, tM - 0.4, tM)), 'QUANTIDADE E UNIDADE');
     crDestaque(cam, [1374, 84, 1522, 586], prog(lt, tM - 0.3, tM + 0.3), 'MARCA DE REFERÊNCIA');
-    selo();
   },
 };
 CENAS['3.4'] = {
-  marca: false, depois: 1.5,
-  sons: S => [{ t: S.w('apresentacao'), som: 'relatorio/documento', vol: 0.4 }, { t: S.w('PDF'), som: 'relatorio/documento', vol: 0.4 },
-    { t: S.w('planilha'), som: 'relatorio/documento', vol: 0.4 }, { t: S.w('duas'), som: 'relatorio/clique', vol: 0.5 }],
+  marca: false, depois: 1.0,
   fn(lt, S) {
-    const tA = S.w('apresentacao'), tP = S.w('PDF'), tPl = S.w('planilha'), tD = S.w('duas');
+    const tA = S.w('apresentacao'), tP = S.w('PDF'), tPl = S.w('planilha');
     crFundo(); rotulo('03 · A SOLUÇÃO', 'Do mesmo cadastro saem três documentos', prog(lt, 0, 0.5));
-    comCartao(prog(lt, tA - 0.3, tA + 0.3), () => { txt('APRESENTAÇÃO', 150, 250, 20, 800, CR.claro, { ls: 3 }); recorte('D02', 473, 20, 960, 330, 150, 270, 520); });
-    comCartao(prog(lt, tP - 0.3, tP + 0.3), () => { txt('PDF', 700, 250, 20, 800, CR.claro, { ls: 3 }); recorte('E03', 473, 180, 960, 470, 700, 270, 520); });
-    comCartao(prog(lt, tPl - 0.3, tPl + 0.3), () => { txt('PLANILHA PARA O FORNECEDOR', 1250, 250, 20, 800, CR.claro, { ls: 3 }); recorte('D90', 44, 160, 1566, 770, 1250, 270, 520); });
-    comCartao(prog(lt, tPl + 0.2, tPl + 0.7), () => {
-      txt('EM DUAS ETAPAS', 150, 760, 20, 800, CR.claro, { ls: 3 });
-      const w1 = pilula('1 · Gerar Slides e PDF', 150, 790, CR.dest, CR.branco, 26);
-      pilula('2 · Gerar planilha para fornecedor', 150 + w1 + 24, 790, CR.branco, CR.royal, 26);
-    });
-    rodape('Documentos reais gerados pelo sistema: PPCI do prédio de apoio, Mega Itajaí, revisão 9 (22/09/2026).'); selo();
+    comCartao(prog(lt, tA - 0.3, tA + 0.3), () => { txt('APRESENTAÇÃO', 150, 300, 20, 800, CR.claro, { ls: 3 }); recorte('D02', 473, 20, 960, 330, 150, 320, 520); });
+    comCartao(prog(lt, tP - 0.3, tP + 0.3), () => { txt('PDF', 700, 300, 20, 800, CR.claro, { ls: 3 }); recorte('E03', 473, 180, 960, 470, 700, 320, 520); });
+    comCartao(prog(lt, tPl - 0.3, tPl + 0.3), () => { txt('PLANILHA PARA O FORNECEDOR', 1250, 300, 20, 800, CR.claro, { ls: 3 }); recorte('D90', 44, 160, 1566, 770, 1250, 320, 520); });
+    rodape('Documentos reais gerados pelo sistema: PPCI do prédio de apoio, Mega Itajaí, revisão 9 (22/09/2026).');
+  },
+};
+CENAS['3.5'] = {
+  marca: false, depois: 1.2,
+  fn(lt, S) {
+    crFundo(); rotulo('03 · A SOLUÇÃO', 'Todo escopo do sistema sai no mesmo padrão', prog(lt, 0, 0.5));
+    const it = [['A mesma estrutura', S.w('estrutura')], ['Os prazos da proposta', S.w('prazos')], ['A revisão em cada página', S.w('revisao')]];
+    it.forEach(([s, t], i) => comCartao(prog(lt, t - 0.4, t + 0.2), () => {
+      const y = 290 + i * 190; cartao(150, y, 1620, 150);
+      txt(s, 210, y + 95, 48, 800, CR.tinta);
+      rr(1480, y + 40, 230, 70, 35, '#E8F1FB'); txt('4 de 4', 1595, y + 88, 36, 900, CR.dest, { align: 'center' });
+    }));
+    rodape('Leitura dos 4 escopos reais emitidos pelo sistema (PDFs), em 15/10/2026.');
   },
 };
 
-// ═════════ 4 · REAPROVEITAR ═════════
+// ═════════ 4 · UM SÓ LUGAR ═════════
 CENAS['4.1'] = {
   marca: false, camViva: 0,
-  sons: S => [{ t: S.w('emitido'), som: 'relatorio/clique', vol: 0.5 }],
   fn(lt, S) {
-    const t = S.w('emitido');
-    crFundo(); rotulo('04 · REAPROVEITAR', 'O próximo parte de um já emitido', prog(lt, 0, 0.5));
+    const tL = S.w('lugar'), tP = S.w('pasta');
+    crFundo(); rotulo('04 · UM SÓ LUGAR', 'Todos os escopos num só lugar', prog(lt, 0, 0.5));
     ctx.save(); const e = ent(lt); ctx.translate(0, (1 - e) * 60); ctx.globalAlpha *= e;
     crJanela('Escopos · início');
-    const cam = [keys(lt, [[0, 254], [t, 270]]), keys(lt, [[0, 224], [t, 300]]), keys(lt, [[0, 1400], [t, 1200]])];
+    const cam = [keys(lt, [[0, 254], [tL, 260]]), keys(lt, [[0, 224], [tL, 240]]), keys(lt, [[0, 1400], [tL, 1360]])];
     crTela('C01', cam);
-    crDestaque(cam, [294, 631, 428, 672], prog(lt, t - 0.3, t + 0.3), 'USAR COMO BASE');
-    ctx.restore(); selo();
+    ctx.restore();
+    comCartao(prog(lt, tP - 0.6, tP), () => {
+      cartao(1020, 760, 760, 170, { fill: CR.larF });
+      txt('ANTES', 1060, 815, 20, 800, CR.lar, { ls: 3 });
+      txt('Esqueceu de salvar na pasta,', 1060, 862, 32, 800, CR.tinta); txt('o escopo se perdia.', 1060, 904, 32, 800, CR.tinta);
+    });
   },
 };
 CENAS['4.2'] = {
   marca: false,
-  sons: S => [{ t: S.w('servicos'), som: 'relatorio/documento', vol: 0.35 }],
   fn(lt, S) {
-    crFundo(); rotulo('04 · REAPROVEITAR', 'O que vem e o que se preenche', 1);
+    crFundo(); rotulo('04 · UM SÓ LUGAR', 'O próximo parte de um já emitido', 1);
     const vem = [['Serviços', S.w('servicos')], ['Lista de itens', S.w('lista')], ['Inclusões', S.w('inclusoes')], ['Exclusões', S.w('exclusoes')], ['Aceite', S.w('aceite')]];
-    const tT = S.w('Titulo');
-    const novo = [['Título', tT], ['Local', S.w('local')], ['Fotos', S.w('fotos')], ['Contato', S.w('contato')], ['Prazos', S.w('prazos')]];
-    txt('VÊM DO ESCOPO BASE', 150, 300, 22, 800, CR.claro, { ls: 3 });
-    let x = 150; vem.forEach(([s, t]) => { const q = E.outBack(clamp(prog(lt, t - 0.2, t + 0.3))); if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); x += pilula(s, x, 330, CR.branco, CR.royal, 30) + 20; ctx.restore(); } });
-    comCartao(prog(lt, tT - 0.5, tT), () => txt('PREENCHE-SE PARA A NOVA CONTRATAÇÃO', 150, 560, 22, 800, CR.claro, { ls: 3 }));
-    x = 150; novo.forEach(([s, t]) => { const q = E.outBack(clamp(prog(lt, t - 0.2, t + 0.3))); if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); ctx.setLineDash([8, 8]); const w = measure(s, 30, 800, 1) + 36; rr(x, 590, w, 52, 26, 'rgba(255,255,255,0.06)', CR.mudo, 2); ctx.setLineDash([]); txt(s, x + 18, 627, 30, 800, CR.mudo, { ls: 1 }); x += w + 20; ctx.restore(); } });
-    rodape('Função "Usar como base" (publicada em 11/10/2026).'); selo();
+    txt('VÊM DO ESCOPO BASE', 150, 420, 22, 800, CR.claro, { ls: 3 });
+    let x = 150; vem.forEach(([s, t]) => { const q = E.outBack(clamp(prog(lt, t - 0.2, t + 0.3))); if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); x += pilula(s, x, 460, CR.branco, CR.royal, 34) + 22; ctx.restore(); } });
+    rodape('Função "Usar como base" do sistema.');
   },
 };
 
-// ═════════ 5 · EM USO ═════════
+// ═════════ 5 · TESTES REAIS ═════════
 CENAS['5.1'] = {
   marca: false,
-  sons: S => [{ t: S.w('Facilities'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('Propriedades'), som: 'relatorio/destaque', vol: 0.45 }, { t: S.w('registrada'), som: 'relatorio/destaque', vol: 0.45 }],
   fn(lt, S) {
-    const tFa = S.w('Facilities'), tPr = S.w('Propriedades'), tPd = S.w('predio'), tNo = S.w('registrada'), tAj = S.w('ajuste'), tPa = S.w('ampliar'), tEn = S.w('Engenharia');
-    crFundo();
-    const fase = lt < tPd - 0.3 ? 0 : lt < tPa - 0.3 ? 1 : 2;
-    rotulo('05 · EM USO', ['Testado em escopos reais por duas áreas', 'Revisões registradas (exemplo)', 'Expansão proposta para a empresa toda'][fase], 1);
-    if (fase === 0) {
-      [['Facilities', 'Mega Itajaí · 3 escopos', tFa], ['Propriedades', 'Mega Curitiba · casa de bombas', tPr]].forEach(([a, b, t], i) => {
-        comCartao(prog(lt, t - 0.3, t + 0.3), () => {
-          cartao(250 + i * 740, 340, 680, 360); txt('TESTOU', 300 + i * 740, 420, 22, 800, CR.verde, { ls: 3 });
-          txt(a, 300 + i * 740, 520, 64, 900, CR.tinta); txt(b, 300 + i * 740, 600, 28, 600, CR.cinza);
-        });
+    const tFa = S.w('Facilities'), tPr = S.w('Propriedades');
+    crFundo(); rotulo('05 · TESTES REAIS', 'Testado em escopos reais por duas áreas', prog(lt, 0, 0.5));
+    [['Facilities', 'Mega Itajaí', '3', tFa, 'F02'], ['Propriedades', 'Mega Curitiba', '1', tPr, 'F01']].forEach(([a, b, n, t, f], i) => {
+      comCartao(prog(lt, t - 0.4, t + 0.2), () => {
+        const x = 150 + i * 830; cartao(x, 280, 790, 560);
+        foto(f, x, 280, 790, 260, 0.2, 20);
+        txt(n, x + 50, 690, 130, 900, CR.dest); txt(n === '1' ? 'escopo real' : 'escopos reais', x + 160, 680, 32, 700, CR.cinza);
+        txt(a, x + 50, 780, 48, 900, CR.tinta); txt(b, x + 50, 822, 28, 600, CR.cinza);
       });
-    } else if (fase === 1) {
-      const cam = [250, 440, keys(lt, [[tPd, 1100], [tNo, 1000]])];
-      const sai = 1 - prog(lt, tAj - 0.5, tAj); ctx.save(); ctx.globalAlpha *= sai;
-      crJanela('Escopo · arquivos emitidos'); crTela('E05', cam);
-      crDestaque(cam, [298, 606, 715, 890], prog(lt, tNo - 0.4, tNo + 0.2), 'EXEMPLO: CADA EMISSÃO É UMA REVISÃO'); ctx.restore();
-      comCartao(prog(lt, tAj - 0.2, tAj + 0.4), () => { cartao(360, 320, 1200, 460); txt('PROPOSTA · NÃO IMPLEMENTADA', 420, 400, 22, 800, CR.lar, { ls: 3 }); linhas(['Hoje até um ajuste pequeno vira revisão nova.', 'Separar dois botões:'], 420, 480, 40, 800, CR.tinta); pilula('Corrigir', 420, 620, '#E8F1FB', CR.royal, 30); pilula('Gerar nova revisão', 620, 620, CR.dest, CR.branco, 30); });
-    } else {
-      [['Facilities', true], ['Propriedades', true], ['Engenharia', false], ['Demais áreas', false]].forEach(([s, ok], i) => {
-        const t = i < 2 ? tPa : tEn + (i - 2) * 0.4;
-        comCartao(prog(lt, t - 0.3 + i * 0.12, t + 0.3 + i * 0.12), () => {
-          cartao(150 + i * 410, 420, 380, 220, ok ? {} : { fill: 'rgba(255,255,255,0.08)' });
-          txt(s, 190 + i * 410, 530, 38, 800, ok ? CR.tinta : CR.branco);
-          txt(ok ? 'já testou' : 'expansão proposta', 190 + i * 410, 590, 24, 700, ok ? CR.verde : CR.claro);
-        });
-      });
-    }
-    rodape('Escopos reais: Facilities (Mega Itajaí, 3) e Propriedades (1). Revisões: tela real do sistema.'); selo();
-  },
-};
-
-// ═════════ 6 · QUEM USA PEDE ═════════
-CENAS['6.1'] = {
-  marca: false, depois: 1.6,
-  fn(lt, S) {
-    crFundo(); rotulo('06 · QUEM USA PEDE, O SISTEMA MUDA', 'Pedidos de quem usa viraram versões', prog(lt, 0, 0.5));
-    const it = [['Texto padronizado', '02/10 · v71', S.w('padronizado')], ['Imagens logo após o serviço', '02/10 · v72', S.w('imagens')],
-      ['Texto justificado', '02/10 · v73', S.w('justificado')], ['Aviso padrão do Facilities', '11/10 · v74–v75', S.w('aviso')], ['Escopos base', '11/10 · v76', S.w('escopos')]];
-    it.forEach(([s, v, t], i) => comCartao(prog(lt, t - 0.3, t + 0.2), () => {
-      const y = 250 + i * 135; cartao(150, y, 1620, 110);
-      txt(s, 200, y + 68, 38, 800, CR.tinta); txt(v, 1720, y + 68, 30, 800, CR.dest, { align: 'right' });
-    }));
-    rodape('Fonte: registro do projeto (HISTORICO.md) e datas das versões no Apps Script.'); selo();
-  },
-};
-CENAS['6.2'] = {
-  marca: false, depois: 1.8,
-  sons: S => [{ t: S.w('testes'), som: 'relatorio/destaque', vol: 0.45 }],
-  fn(lt, S) {
-    crFundo(); rotulo('06 · QUEM USA PEDE, O SISTEMA MUDA', '', 1);
-    const t = S.w('testes'), q = E.outBack(clamp(prog(lt, t - 0.3, t + 0.4)));
-    if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); txt('34', 960, 520 + (1 - q) * 30, 240, 900, CR.branco, { align: 'center' }); txt('suítes de teste automatizado', 960, 610, 48, 800, CR.branco, { align: 'center' }); ctx.restore(); }
-    reveal('rodadas antes de publicar', 960, 690, 700, 40, CR.claro, E.outCubic(prog(lt, S.w('publicar') - 0.6, S.w('publicar') + 0.1)), { align: 'center' });
-    selo();
-  },
-};
-
-// ═════════ 8 · O PRÓXIMO PASSO ═════════
-CENAS['8.1'] = {
-  marca: false,
-  fn(lt, S) {
-    crFundo(); rotulo('07 · ALCANCE E PROJETO FUTURO', 'Um projeto para a empresa toda', prog(lt, 0, 0.5));
-    const ar = [['Facilities', S.w('Facilities')], ['Propriedades', S.w('Propriedades')], ['Engenharia', S.w('Engenharia')], ['Toda área que monta escopo', S.w('toda', 1)]];
-    let x = 150; ar.forEach(([s, t]) => { const q = E.outBack(clamp(prog(lt, t - 0.2, t + 0.3))); if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); x += pilula(s, x, 300, CR.branco, CR.royal, 34) + 22; ctx.restore(); } });
-    const tF = S.w('futuro');
-    comCartao(prog(lt, tF - 0.4, tF + 0.2), () => {
-      ctx.save(); ctx.setLineDash([12, 10]); rr(150, 520, 1620, 260, 22, 'rgba(255,255,255,0.06)', CR.claro, 3); ctx.restore();
-      txt('PROJETO FUTURO COM A TI', 210, 600, 24, 800, CR.claro, { ls: 3 });
-      txt('Fornecedor e preço no Fluig e no RM', 210, 670, 50, 800, CR.branco);
-      txt('a partir do cadastro oficial, sem base duplicada · ainda não integrado', 210, 730, 26, 600, CR.mudo);
     });
-    selo();
+    rodape('Tela Escopos em produção, recontada em 15/10/2026: 4 reais; os outros 4 da base foram teste ou exemplo.');
   },
 };
-CENAS['8.2'] = {
-  marca: false, depois: 2.2, camViva: 0,
-  sons: S => [{ t: S.w('Gestao'), som: 'relatorio/fecho', vol: 0.5 }],
+CENAS['5.2'] = {
+  marca: false, depois: 1.4,
   fn(lt, S) {
-    const tG = S.w('Gestao'), tCo = S.w('Comecar'), tCt = S.w('Contratar');
+    crFundo(); rotulo('05 · TESTES REAIS', 'Facilities do Mega Itajaí, passada a adaptação', prog(lt, 0, 0.5));
+    const tA = S.w('adaptacao'), tP = S.w('padronizado'), tM = S.w('medido');
+    [['“No começo a gente se bateu… depois que', 'o pessoal pegar vai ser bem top.”', tA], ['“Fica muito mais padronizado. A gente não', 'precisa ficar configurando slide.”', tP]].forEach(([l1, l2, t], i) => {
+      comCartao(prog(lt, t - 0.5, t + 0.1), () => {
+        const y = 290 + i * 230; cartao(150, y, 1620, 190);
+        txt(l1, 210, y + 85, 40, 700, CR.tinta); txt(l2, 210, y + 140, 40, 700, CR.tinta);
+      });
+    });
+    comCartao(prog(lt, tM - 0.5, tM + 0.1), () => { pilula('percepção, não medição · tempo não cronometrado', 150, 790, CR.larF, CR.lar, 26); });
+    rodape('Conversa com Facilities, Mega Itajaí, 14/10/2026 (transcrição do Google Meet); trechos literais, sem nome.');
+  },
+};
+
+// ═════════ 6 · FECHO ═════════
+CENAS['6.1'] = {
+  marca: false, depois: 2.2, camViva: 0,
+  fn(lt, S) {
+    const tU = S.w('padrao'), tG = S.w('Gestao'), tCo = S.w('Comecar'), tCt = S.w('Contratar');
     crFundo();
+    foto('F04', 1160, 0, 760, 1080, 0.35, 0);
+    reveal('Um padrão de escopo', 150, 330, 800, 56, CR.branco, E.outCubic(prog(lt, tU - 0.6, tU + 0.1)));
+    reveal('para a empresa toda.', 150, 400, 800, 56, CR.claro, E.outCubic(prog(lt, tU, tU + 0.6)));
     const a = prog(lt, tG - 0.4, tG + 0.4);
-    if (a > 0) { const n = M('L01'), im = IMGS[n]; if (im && im.complete) { ctx.save(); ctx.globalAlpha *= a; const w = 520, h = w * im.naturalHeight / im.naturalWidth; ctx.drawImage(im, 960 - w / 2, 250, w, h); ctx.restore(); } }
-    reveal('Começar melhor.', 960, 520, 800, 96, CR.branco, E.outCubic(prog(lt, tCo - 0.4, tCo + 0.2)), { align: 'center' });
-    reveal('Contratar melhor.', 960, 640, 800, 96, CR.claro, E.outCubic(prog(lt, tCt - 0.4, tCt + 0.2)), { align: 'center' });
+    if (a > 0) { const n = M('L01'), im = IMGS[n]; if (im && im.complete) { ctx.save(); ctx.globalAlpha *= a; const w = 380, h = w * im.naturalHeight / im.naturalWidth; ctx.drawImage(im, 150, 500, w, h); ctx.restore(); } }
+    reveal('Começar melhor.', 150, 720, 800, 80, CR.branco, E.outCubic(prog(lt, tCo - 0.4, tCo + 0.2)));
+    reveal('Contratar melhor.', 150, 820, 800, 80, CR.claro, E.outCubic(prog(lt, tCt - 0.4, tCt + 0.2)));
     const b = prog(lt, tCt + 0.3, tCt + 0.9);
-    if (b > 0) {
-      ctx.save(); ctx.globalAlpha *= b;
-      txt('GESTÃO DE CONTRATAÇÕES', 960, 760, 30, 800, CR.branco, { align: 'center', ls: 6 });
-      txt('Guilherme Marques · Facilities · Capital Realty · Melhor Ideia 2026', 960, 810, 24, 500, CR.mudo, { align: 'center' });
-      ctx.restore();
-    }
-    selo();
+    if (b > 0) { ctx.save(); ctx.globalAlpha *= b; txt('Guilherme Marques · Facilities · Capital Realty · Melhor Ideia 2026', 150, 920, 24, 500, CR.mudo); ctx.restore(); }
   },
 };

@@ -53,7 +53,10 @@ def main(projeto):
     adir = os.path.join(projeto, 'build', 'audio'); os.makedirs(adir, exist_ok=True)
     pron = cfg.get('pronuncia', {})
     total = 0
-    if cfg.get('locucao'):  # locução gravada fora (ElevenLabs): um MP3 por capítulo, alinhado com o Whisper
+    if cfg.get('locucao') == 'eleven_api':  # voz pela API, cena a cena, com tempos por palavra (eleven_api.py)
+        import eleven_api
+        eleven_api.main(projeto)
+    elif cfg.get('locucao'):  # locução gravada fora (ElevenLabs): um MP3 por capítulo, alinhado com o Whisper
         import locucao
         locucao.preparar(projeto, cfg, cenas, adir)
     for c in cenas:
