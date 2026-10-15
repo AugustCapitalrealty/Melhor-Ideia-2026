@@ -660,3 +660,11 @@ só com Impacto medido. Parecer no scratchpad da sessão (fora do repositório).
 *(a preencher conforme avançamos)*
 
 **Salvo contra o Deep Freeze (15/10):** pareceres dos analistas em `docs/AUDITORIA_*_2026-10-15.md` (valores de fornecedor retirados); ambiente em `docs/AMBIENTE.md`; assinatura e "apresentação" no `CLAUDE.md`; projeto Apps Script vinculado em `relatorio/google-slides/` (`.clasp.json`); recontagem em `tools/playwright-recontar-escopos.cjs`; transcrição, textos dos escopos e pareceres originais em `G:\Meu Drive\MELHOR IDEIA 2026\FONTES-SESSAO-2026-10-15` (fora do git).
+
+**Formalização da entrega ao comitê (15/10):** pasta no Drive `ENTREGA-COMITE-2026-10-15` (id `1JK_x89vkq2g-odhgGn9ZmLKqpcuJzEnA`) conferida:
+LEIA-ME já com os links do Slides e do vídeo; 01 PDF da apresentação; 02 vídeo MP4; 03 (escopos sem padrão); 04 (4 PDFs do sistema); 05 (PMOC e
+lavagem de piso); 06 (convite de 11/09, relato do gerente, feedback do Mega Itajaí); 07 e 08. O §7 pede o relatório ao RH até 15/10. Rascunho
+de e-mail criado no Gmail, **não enviado**, como resposta à conversa do comitê de 19/05 ("Capital Fornecedores"), para rh@ com Juliano,
+Guilherme Souza e Rodrigo Proença em cópia: links da pasta, do PDF, do Slides e do vídeo (voz sintética declarada) e o aviso de sigilo das pastas
+03 a 05. **Atenção:** pasta, vídeo e Slides estavam como "qualquer pessoa com o link: **editor**". Recomendado mudar para **leitor** (ou
+restrito à Capital Realty) antes de enviar.
