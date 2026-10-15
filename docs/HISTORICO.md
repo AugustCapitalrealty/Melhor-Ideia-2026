@@ -658,3 +658,5 @@ só com Impacto medido. Parecer no scratchpad da sessão (fora do repositório).
 ## Próxima entrada
 
 *(a preencher conforme avançamos)*
+
+**Salvo contra o Deep Freeze (15/10):** pareceres dos analistas em `docs/AUDITORIA_*_2026-10-15.md` (valores de fornecedor retirados); ambiente em `docs/AMBIENTE.md`; assinatura e "apresentação" no `CLAUDE.md`; projeto Apps Script vinculado em `relatorio/google-slides/` (`.clasp.json`); recontagem em `tools/playwright-recontar-escopos.cjs`; transcrição, textos dos escopos e pareceres originais em `G:\Meu Drive\MELHOR IDEIA 2026\FONTES-SESSAO-2026-10-15` (fora do git).

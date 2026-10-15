@@ -1,0 +1,70 @@
+# Parecer do analista independente: apresentação final, 15/10/2026
+
+Só leitura. Nenhum arquivo do projeto nem da pasta de entrega foi alterado.
+Li: CLAUDE.md; Regulamento §6, §7 e §12; HISTORICO.md:574–645; o parecer anterior; os 16 PNGs; `gerar.cjs`; o LEIA-ME;
+`06-Evidencias/*.txt`; `07-Metodo-e-contagens/*`; o texto dos PDFs da pasta 05 e do escopo do reservatório; a transcrição de 14/10 (scratchpad);
+BASE_DE_CONHECIMENTO §8.4 e §16.3.
+Conferi também que o PDF de entrega (16 páginas) bate com os 16 PNGs: diferença média de pixel ≤ 2,3 (só compressão). O PDF não tem camada de texto.
+Abreviações: S05 = slide 5; G = `gerar.cjs`; T = transcrição de 14/10; EV = `06-Evidencias/feedback-Mega-Itajai-2026-10-14.txt`.
+As decisões de 15/10 do Guilherme não foram reabertas.
+
+## Veredito
+
+1. **Pode protocolar hoje.** As correções do parecer anterior entraram: inovação explícita (S08), tabela 9 × 4 (S09), "4 reais / a base mostra 8" (S12), "não medido" declarado (S11, S12). Os números batem com o CSV.
+2. **O que ainda tira nota:** duas afirmações que as evidências não sustentam. S15 e o LEIA-ME dizem "ajustes pedidos pelo Mega Itajaí já publicados", mas os pedidos de 14/10 não foram feitos. S11 diz "passada a adaptação", e a fala é no futuro. Além disso, o LEIA-ME tem dois links ainda como "[colar…]".
+3. **Impacto (30%, 1º desempate) segue o ponto fraco.** S12 tem um terço vazio e não usa o único antes × depois com números do relatório (S09). Dá para ligar os dois em 10 minutos, sem dado novo.
+
+## Nota estimada por critério (julgamento do analista; não é a nota da banca)
+
+| Critério (peso, §6) | Hoje | Depois das correções | Por quê |
+|---|---:|---:|---|
+| Viabilidade e sustentabilidade (20%) | 7,5 | 8,0 | Sem licença nem servidor (S14). Ponto fraco: um só mantenedor. O cartão "Projeto futuro" do S14 é a 3ª repetição do tema da TI (S07, S14, S15). Trocar por "Continuidade", com a fala "não vai cair em esquecimento", fortalece a sustentabilidade (item 9). |
+| Inovação (20%) | 7,0 | 7,0 | "O que é novo na empresa" está no subtítulo do S08, e S09 mostra o contraste. Basta. Não há comparação com o setor, e não deve haver. |
+| Qualidade da implementação (30%) | 7,5 | 8,0 | Títulos concluem. Prazo de 10/10 declarado (S10, S13). Planejado × entregue (S15). Perde por imprecisões (S15, S11, S05, S09). |
+| Impacto (30%) | 6,0 | 6,5 | O repositório único (S12) e a percepção de uma área (S11) são o impacto possível sem medição. O antes × depois do S09 (data limite 2/9 → 4/4; revisão 1/9 → 4/4) é resultado já visível nos documentos e deve aparecer no S12. |
+| **Ponderada** | **7,0** | **7,4** | Hoje: 1,50 + 1,40 + 2,25 + 1,80 = 6,95. Depois: 1,60 + 1,40 + 2,40 + 1,95 = 7,35. Acima de 8 só com impacto medido, e não há. |
+
+## Correções priorizadas
+
+🔴 = afirmação sem sustentação ou constrangimento · 🟡 = tira nota · ⚪ = acabamento. Tempos estimados com o gerador pronto (editar G e rodar).
+
+| # | Grav. | Slide | Problema (fonte) | Texto exato proposto | Tempo |
+|---|---|---|---|---|---|
+| 1 | 🔴 | S15 (caixa "Pronto para os outros Megas") e LEIA-ME ("Situação hoje") | **"Com os ajustes pedidos pelo Mega Itajaí já publicados"** não é verdade para os pedidos de 14/10 (tirar o "Resumo da vistoria"; foto em slide próprio). Eles ficaram "para depois" (H:599–600). Não houve mudança no app depois de 11/10 (H:637–638). Na conversa, ela diz: "depois disso eu não usei mais… não sei se deu certo" (T:59). O comitê lê S11 (14/10) e depois S15, e entende que tudo foi feito. | G:275: **"Com os ajustes pedidos até 11/10 já publicados (slide 13), o sistema está disponível para os demais Megas: <b>a transição pode começar a qualquer momento.</b>"** No LEIA-ME, a mesma frase: "Com os ajustes pedidos até 11/10 já publicados, o sistema está disponível para os demais Megas…". Mantém a decisão "pronto para os outros Megas" e não cria evolução futura. | 5 min |
+| 2 | 🔴 | LEIA-ME ("Links") | Ainda está escrito "[colar o link gerado pelo script]" e "[colar o link de compartilhamento do arquivo em 02-Video]". Primeiro arquivo que o comitê abre. | Colar os dois links. Se o Slides não for compartilhado, apagar a linha. Conferir se o comitê tem acesso ao repositório do GitHub. Se não tiver, trocar por "Repositório do projeto: acesso sob pedido ao autor". | 10 min |
+| 3 | 🟡 | S11 (título e cartão "Adaptação") | **"Passada a adaptação"** e "houve um período de transição antes de o uso ficar natural" afirmam que a adaptação acabou. A fala está no futuro: "depois que o pessoal pegar **vai ser** bem top" (T:93). E também no presente: "tem o tempo de transição e tem um tempo para se adaptar" (T:95). A mensagem do Guilherme fica a mesma ("depois do período de adaptação, se mostrou melhor", H:587). Só o verbo muda. | Título (G:210): **"Para o Facilities do Mega Itajaí, depois de um começo difícil, montar escopo ficou mais fácil"**. Cartão (G:220): **"<b>Adaptação:</b> no começo houve dificuldade; a expectativa é melhorar quando a equipe pegar o jeito."** | 5 min |
+| 4 | 🟡 | S11 (3ª e 4ª falas) e EV | (a) A 3ª fala tira o "eu acho que" (T:93: "Mas eu acho que depois que o pessoal pegar…"). Isso tira uma ressalva sem marcar o corte, e o rodapé diz "trechos literais". (b) A 4ª fala, "Acho que diminuiu o nosso tempo", está em T:66, mas **não está em EV**. Quem conferir o slide com a pasta 06 não acha a frase. | (a) G:215: **"No começo a gente se bateu… Mas eu acho que depois que o pessoal pegar vai ser bem top."** (b) Em EV, acrescentar antes da linha da pergunta: **`[00:03] "E acho que [...] diminuiu o nosso tempo realmente [...]" (dito antes da pergunta "diminuiu?")`**. | 10 min |
+| 5 | 🟡 | S12 (impacto) | Um terço do slide está vazio. O resultado já visível nos documentos está só no S09. O subtítulo diz "expansão proposta para Engenharia e demais áreas", e isso é evolução futura, que a decisão de 15/10 tirou ("só o projeto com a TI"). O rodapé atribui "se perdia" a "relato de Facilities", mas a frase é do próprio autor (H:614). O comitê pode achar que veio do Mega Itajaí. | Subtítulo (G:228): **"Um repositório de escopos para a empresa toda, já usado por Facilities e Propriedades"**. Acrescentar abaixo dos 3 cartões uma faixa `conclusao`: **"<b>Nos documentos, o padrão já aparece:</b> data limite da proposta em 4 de 4 escopos do sistema (2 de 9 sem ele); revisão escrita no documento em 4 de 4 (1 de 9). Slide 9."** Rodapé (G:234): **"Recontado em 15/10/2026 na tela Escopos em produção (v77). “Se perdia”: relato do autor (Facilities) sobre a prática anterior, sem contagem de casos."** | 15 min |
+| 6 | 🟡 | S05 ("5 grafias de revisão") | O "02" vem do nome "MEsteio_EscopoTratamento e pintura reseravatório 02.pdf". O documento não tem revisão escrita (8 páginas lidas). "Reservatório 02" pode ser o número do reservatório, não uma revisão. O CSV não registra esse "02" como revisão. | Se o Guilherme não confirmar que "02" é revisão, trocar (G:131) por **"<b>4</b> grafias de revisão (RV02, R02, R00, v01), quase sempre só no nome do arquivo"**. Se confirmar, manter e anotar no METODO.txt. | 5 min |
+| 7 | 🟡 | S06 (3º cartão, "3,3×") | Mapa de 06/04/2026: o total da mais barata já é o valor negociado (a proposta inicial era maior); a mais cara não foi negociada. Nas propostas iniciais, a razão é 2,6×. Quem conferir o PDF da pasta 05 pode ler isso como comparação injusta. | Manter 3,3× e acrescentar ao rodapé (G:146): **"Lavagem de piso: totais finais do mapa, com a mais barata já negociada; nas propostas iniciais, 2,6×."** | 3 min |
+| 8 | 🟡 | S06 (2º cartão, "1 preço") e LEIA-ME | O caso não tem documento na pasta 05. O LEIA-ME diz que a pasta 05 traz "os documentos dos casos do slide 6", mas só traz dois. BASE §16.3 mostra o pai com preço e os filhos vazios, mas não mostra outro proponente que "abriu" os preços. O subtítulo diz "manutenção", e esse caso é instalação. | Cartão (G:142): **"Infraestrutura, passagem de cabos e instalação do painel vieram descritas, mas sem preço próprio: só o total da mão de obra."** (sem "com quem abriu", salvo se o mapa mostrar). Subtítulo (G:139): **"Ofertas reais nos Megas: diferenças de frequência, de preço por item, de valor e de prazo"**. LEIA-ME, linha do slide 6: **"…05-Casos-das-propostas (ar-condicionado e lavagem de piso); o caso da mão de obra em preço único está descrito no repositório, BASE_DE_CONHECIMENTO §16.3."** | 10 min |
+| 9 | 🟡 | S14 (cartão "Projeto futuro") | O projeto com a TI aparece no S07, no S14 e três vezes no S15. O critério de Viabilidade pede que "os benefícios possam se manter ao longo do tempo" (§6), e o slide não fala disso. Há fala que sustenta: "a gente vai usar, não vai cair em esquecimento" (T:59, EV 00:02). | Trocar o cartão (G:259) por: **['Continuidade', 'Facilities do Mega Itajaí: “a gente vai usar, não vai cair em esquecimento” (slide 11). O app guarda escopos e revisões, e não depende de licença.']**. Levar "fornecedor e preço com a TI" só para o rodapé do S14, que já fala de integração. | 10 min |
+| 10 | 🟡 | S09 (tabela) e S02 | (a) "Mesmo formato e **mesma ordem de seções**": o METODO.txt (item 3) só conta "formato da página". (b) "Prazos da proposta" no S09 e "data limite para a proposta" no S05 nomeiam o mesmo critério. "Prazos" pode ser lido como prazo de execução. (c) O S09 é a principal prova de qualidade ("qualidade = padronização"), mas fica na seção 02. Quem procura "Qualidade" no sumário não chega a ele. | (a) G:186: **"Mesmo formato de página"**. (b) G:188: **"Data limite para a proposta"**. (c) Sumário (G:83): **['Qualidade e viabilidade', 'Padrão em todo escopo (slide 9); pedido vira versão; sem licença nova', '9, 13–14']**. O código já mostra "slides" porque há "–". | 10 min |
+| 11 | 🟡 | S10 (título) | "O próximo escopo parte do último emitido" soa como regra e como uso comprovado. O recurso é de 11/10 (rodapé), e a usuária diz que só reaproveitaria "no outro ano, quando eu contratar a mesma coisa" (T:85). | G:196: **"Um escopo novo pode partir de outro já emitido"**. | 2 min |
+| 12 | 🟡 | S04 (faixa e rodapé) | "O procedimento já pedia escopo; na prática, às vezes passava batido" é decisão do Guilherme (correta), mas não está no relato citado no rodapé. "Passava batido" é coloquial para o comitê. | Faixa (G:112): **"…O procedimento já pedia escopo; na prática, nem sempre era cumprido. Propriedades é a área mais madura."** Rodapé (G:113): acrescentar **"Exigência de escopo no procedimento de contratação: informação do autor."** | 5 min |
+| 13 | ⚪ | S04 (título) | Falta vírgula depois da expressão inicial. | **"De 2024 a 2026, o escopo passou a ser feito; faltavam padrão e estrutura"** | 1 min |
+| 14 | ⚪ | S07 (rodapé) | Aspas retas em "Comitê: Concurso Melhor Ideia", entre aspas curvas no resto do relatório (G:158). | **“Comitê: Concurso Melhor Ideia”** | 1 min |
+| 15 | ⚪ | S15 (subtítulo) | Repete o título. | **"Planejado em 11/09: começar pelo escopo. Em produção desde 15/09."** e tirar o item 5 da caixa escura, que diz o mesmo. Ou manter o item 5 e usar o subtítulo **"Em produção desde 15/09, com 4 escopos reais"**. | 3 min |
+| 16 | ⚪ | S08 (subtítulo) | "PowerPoint, Slides ou Word": "Slides" sozinho é ambíguo num relatório de slides. | **"…em PowerPoint, Google Slides ou Word (slides 4 e 5)…"** | 1 min |
+| 17 | ⚪ | PDF de entrega | O PDF é só imagem. Não dá para buscar, copiar nem clicar. | Nada a fazer hoje, se o link do Google Slides (versão editável) entrar no LEIA-ME (item 2). | — |
+| 18 | ⚪ | S05, S12, S14 | De 20% a 35% de área vazia embaixo. O item 5 resolve o S12. | S05: subir as miniaturas (`.sp-fotos` com `margin-top:20px` e `.sp-img.a4{height:340px}`). S14: `min-height` dos cartões de 420 para 360. Só se sobrar tempo. | 10 min |
+
+**Ordem para hoje (cerca de 1 h 30 min):** 1 → 2 → 3 → 4 → 5 → 6 (perguntar ao Guilherme sobre o "02") → 7 → 8 → 10 → 11 → 9 → 12 → regerar os PNGs e o PDF → copiar o PDF para `01-Apresentacao` → abrir as 16 páginas. Itens 13 a 18 só se sobrar tempo.
+
+## Coerência conferida (sem achado)
+
+- 9 escopos sem o sistema (Itajaí 4, Esteio 2, Curitiba 3): S05 = S09 = CSV = METODO.
+- 3 formatos (720×405, 960×540, A4); 0 inclusões; 0 exclusões; 1 visita; 2 com data limite; 1 com revisão no documento: S05 = S09 = CSV.
+- 4 escopos do sistema: inclusões 3, exclusões 1, visita 1, data limite 4/4, revisão 4/4 em cada página: S09 = CSV.
+- 4 reais e 8 na base (2 exemplos + 2 testes): S03 = S12 = METODO item 4 = LEIA-ME. A tela do S10 mostra "Todas (8)", e o S12 explica.
+- 580 m³ no título e 520 m³ no texto: confirmado no PDF do reservatório.
+- PMOC (Mega Curitiba, 11/03/2026): 2, 3 e 12 visitas; "1,00 VB"; a de 2 visitas "NÃO emite laudo PMOC": confirmado.
+- Lavagem de piso (Esteio, 06/04/2026): prazos de 4, 15 e 7 dias; "INCLUSO" numa proposta; escopo em um parágrafo; 33.150 ÷ 10.000 = 3,3: confirmado (ressalva no item 7).
+- Datas: 11/09 (S03, S07, S15); PPCI 15/09 e 22/09 (S07, S08, S15); v71–v77 de 02/10 a 11/10 (S13); v76 em 11/10 (S10). Prazo de 10/10 declarado no S10 e no S13.
+- Falas do S11: a 1ª e a 2ª são literais (T:26, T:64). A 4ª é literal com cortes (T:66–70). Ressalvas nos itens 3 e 4.
+- Relato do gerente (S04): fiel ao texto de 14/10. Esteio 2026 aparece como "sem relato", o que está certo.
+- Referências cruzadas: "slide 12" (S03), "slides 4 e 5" (S08) e "slide 5" (S09) estão certas. O sumário (4–7 / 8–10 / 11–12 / 13–14 / 15) bate com a trilha.
+- Ortografia: nenhum erro no texto dos slides. Os nomes de arquivo da pasta 03 ("armaéns", "reseravatório") são originais: não renomear, porque são evidência.
+- Decisões de 15/10 respeitadas: Mega Itajaí sem nome; sem Propriedades/Ricardo; sem futuros, salvo a TI (exceto S12, item 5); "apresentação" no lugar de "deck"; lavagem de piso no lugar da fundação; "pronto para os outros Megas".
+
+Ressalvas do analista: (a) não abri o MP4, porque o pedido era o relatório; (b) não confirmei a qual Mega e área pertence o caso "1 preço" (BASE §16.3 não diz); (c) não abri os 4 PDFs do sistema nem os 9 sem o sistema página a página: confiei no CSV e conferi só o reservatório; (d) as notas são estimativa, sem saber como são as outras ideias.
