@@ -643,6 +643,15 @@ só com Impacto medido. Parecer no scratchpad da sessão (fora do repositório).
 - **Fotos** da capa e contracapa: `Drives compartilhados/08.000 - Business Analysis/APRESENTAÇÃO ORÇAMENTO/_fotos-subcapas`.
 - **Pasta de entrega ao comitê**: `G:\Meu Drive\MELHOR IDEIA 2026\ENTREGA-COMITE-2026-10-15` (LEIA-ME, apresentação, vídeo, 9 escopos sem
   padrão, 4 do sistema, casos, evidências, método e contagens, regulamento). Faltam os links do Slides e do vídeo no LEIA-ME.
+- **Dois analistas independentes** (pareceres no scratchpad da sessão): apresentação 6,95 → ~7,35 com as correções; vídeo 7,3 → 8,2–8,5.
+  Aplicado na apresentação: "ajustes pedidos pelo Mega Itajaí **até 11/10** já publicados" (os pedidos de 14/10 não estão no app);
+  4 grafias de revisão (o "02" do reservatório pode ser o número do reservatório); 3,3× nos valores finais (2,6× nas propostas iniciais);
+  "Continuidade" no lugar do 3º cartão da TI. Mantido por decisão do Guilherme: "passada a adaptação" (slide 11).
+  Aplicado no vídeo: intro (logo, "Melhor Ideia 2026", nome); "toda contratação **deve começar** por um escopo"; *"o escopo já era exigido
+  pelo procedimento, mas às vezes passava batido; em 2026 a exigência passou a ser cumprida"* (Guilherme); os 3 formatos visíveis (A4
+  no lugar da 3ª capa, nomes cobertos); viabilidade em 5.1 ("em produção desde setembro, sem licença nova"); inclusões, exclusões e
+  visita com seção própria; cenas sem tela vazia; fecho "um só padrão de escopo para a empresa toda, pronto para todos os Megas" com o
+  nome na tela. Vídeo final ~3 min (sem limite de duração, Guilherme). Assinatura: **Guilherme August · Planejamento e Gestão**.
 
 ---
 
