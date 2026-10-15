@@ -136,14 +136,14 @@ S.push(conteudo(4, 1,
 // 5. A dor: casos reais da empresa, sem nomes nem valores
 S.push(conteudo(4, 1,
   'Três casos reais mostram diferenças que o escopo precisa deixar explícitas',
-  'Ofertas reais do Facilities e da Engenharia: diferenças de frequência, de preço por item e de unidade',
+  'Ofertas reais de manutenção nos Megas: diferenças de frequência, de preço por item, de valor e de prazo',
   `<div class="tres">
     <div class="kpi"><div class="kpi-n">2 · 3 · 12</div><div class="kpi-t">visitas por ano, no mesmo item cotado como “1 verba”</div><div class="kpi-d">Manutenção de ar-condicionado: três proponentes, a mesma linha; a diferença estava escondida na observação. A de 2 visitas não incluía o laudo PMOC com responsabilidade técnica previsto no pedido.</div></div>
     <div class="kpi"><div class="kpi-n">1 preço</div><div class="kpi-t">para a mão de obra inteira, sem valor por item</div><div class="kpi-d">Infraestrutura, passagem de cabos e instalação do painel vieram descritas, mas sem preço próprio. Não dá para comparar item a item com quem abriu.</div></div>
-    <div class="kpi"><div class="kpi-n">VB × KG</div><div class="kpi-t">para o mesmo item, conforme o proponente</div><div class="kpi-d">Obra de fundação da Engenharia: o posicionamento da armadura veio como verba em duas propostas e em quilos em outras duas.</div></div>
+    <div class="kpi"><div class="kpi-n">3,3×</div><div class="kpi-t">entre a proposta mais barata e a mais cara, no mesmo serviço</div><div class="kpi-d">Lavagem do piso de um armazém do Mega Esteio: prazos de 4, 7 e 15 dias; uma separou máquina, produtos e mão de obra, outra deixou como “incluso”. O escopo era um parágrafo.</div></div>
   </div>
   <div class="conclusao"><b>O escopo precisa explicitar os requisitos antes da comparação.</b></div>`,
-  'Fonte: documentos reais analisados em 05/09/2026 (BASE_DE_CONHECIMENTO §8.4, §16.3, §9; mapa original do PMOC). Ar-condicionado: Facilities; fundação: Engenharia. Ofertas, não serviços executados; sem nomes nem valores.'));
+  'Fonte: documentos reais (BASE_DE_CONHECIMENTO §8.4 e §16.3; mapa original do PMOC; equalização da lavagem de piso do Mega Esteio, 06/04/2026). Ar-condicionado: Facilities; lavagem de piso: Propriedades. Ofertas, não serviços executados; sem nomes nem valores.'));
 // 5. A ponte com a ideia aprovada
 S.push(conteudo(5, 1,
   'Em 11/09, o comitê aprovou começar pelo escopo',
@@ -186,7 +186,7 @@ S.push(conteudo(8, 2,
       <tr><td>Mesmo formato e mesma ordem de seções</td><td>não: 3 formatos</td><td class="ok">4 de 4</td></tr>
       <tr><td>Revisão numerada dentro do documento</td><td>1 de 9</td><td class="ok">4 de 4, em cada página</td></tr>
       <tr><td>Prazos da proposta</td><td>2 de 9</td><td class="ok">4 de 4</td></tr>
-      <tr><td>Inclusões · exclusões · visita técnica</td><td>0 · 0 · 1 de 9</td><td>3 · 1 · 1 de 4 <span class="cmp-n">campos obrigatórios: próximo passo (slide 15)</span></td></tr>
+      <tr><td>Inclusões · exclusões · visita técnica</td><td>0 · 0 · 1 de 9</td><td>3 · 1 · 1 de 4 <span class="cmp-n">o padrão dá o lugar; o conteúdo depende de quem preenche</span></td></tr>
     </table>
   </div>`,
   'Esquerda: capas de escopos reais reunidos em 15/10/2026 (slide 5). Direita: PPCI de Itajaí (R9). Tabela: leitura dos 9 escopos e dos 4 PDFs reais do sistema em 15/10/2026; amostras pequenas, não é medição de qualidade das propostas.'));
@@ -218,7 +218,7 @@ S.push(conteudo(10, 3,
   <div class="tres mt3">
     <div class="mini"><b>Não medido:</b> o tempo não foi cronometrado. É a percepção de quem usa: 1 área, 1 conversa (14/10).</div>
     <div class="mini"><b>Adaptação:</b> houve um período de transição antes de o uso ficar natural.</div>
-    <div class="mini"><b>Pedidos da mesma conversa:</b> vistoria opcional e duas formas de mostrar as fotos (slide 15).</div>
+    <div class="mini"><b>Sem nome:</b> as falas são citadas como Facilities, Mega Itajaí.</div>
   </div>`,
   'Fonte: conversa com Facilities, Mega Itajaí, em 14/10/2026 (transcrição automática do Google Meet). Trechos literais, sem nome, com hesitações retiradas (…); a fala do tempo respondeu a uma pergunta direta.'));
 
@@ -257,14 +257,14 @@ S.push(conteudo(13, 4,
     ['Infraestrutura', 'Google Workspace já contratado: Apps Script, Slides, Planilhas e Drive. Nenhuma licença nova.'],
     ['Arquivos', 'Apresentação, PDF e planilha ficam no Drive compartilhado do Facilities, com as revisões anteriores.'],
     ['Projeto futuro', 'Fornecedor e preço serão um projeto futuro com a TI, no Fluig/RM, como aprovou o comitê. O app cuida do escopo.'],
-    ['Quem mantém', 'Manutenção atual: Guilherme. Documentação, testes e histórico no repositório; transferência para um segundo operador <span class="lacuna-txt">pendente</span>.'],
+    ['Quem mantém', 'Manutenção atual: Guilherme. Documentação, testes e histórico no repositório; transferência prevista para uma pasta no Workspace com acesso de todos.'],
   ].map(([t, x]) => `<div class="card"><div class="card-t">${t}</div><div class="card-x">${x}</div></div>`).join('')}</div>`,
   'Preço, equalização e fornecedores estão ocultos na tela (modo escopo), não apagados: o código e os dados continuam até a integração.'));
 
 // 14. Entregue e próximos passos (prestação de contas; fornecedor e preço são OUTRO projeto, com a TI)
 S.push(conteudo(14, 5,
   'Entregue: a montagem do escopo. Fornecedor e preço serão outro projeto, com a TI',
-  'O que está em produção hoje, as evoluções propostas do escopo e o projeto futuro',
+  'O que está em produção hoje e o projeto futuro com a TI',
   `<div class="dois">
     <div class="pedido"><div class="fx-rot">ENTREGUE · EM PRODUÇÃO</div><ol class="passos">
       <li><b>Cadastro do escopo:</b> serviços por local, imagens junto do serviço e EAP com quantidade, unidade e marca</li>
@@ -272,14 +272,9 @@ S.push(conteudo(14, 5,
       <li><b>Revisões registradas</b> desde 15/09 (exemplo: PPCI de Itajaí)</li>
       <li><b>Escopo base e busca</b> dos escopos emitidos (11/10)</li>
       <li><b>Planejado em 11/09 × entregue:</b> escopo primeiro → em produção desde 15/09; fornecedor e preço → projeto futuro com a TI</li></ol></div>
-    <div><div class="fx-rot">EVOLUÇÕES PROPOSTAS DO ESCOPO</div><ol class="passos">
-      <li><b>Corrigir sem gerar revisão:</b> um botão para ajustar e outro para gerar nova revisão, com prévia</li>
-      <li><b>Campos obrigatórios:</b> exclusões e visita técnica, hoje preenchidas em 1 de 4 escopos</li>
-      <li><b>Fotos e vistoria (pedidos de 14/10):</b> foto no mesmo slide ou em slide próprio; vistoria opcional; foto de celular acima de 5&nbsp;MB ou HEIC reduzida no navegador</li>
-      <li><b>Ampliar o uso:</b> Engenharia e as demais áreas (Propriedades já testou)</li></ol>
-      <div class="caixa-ti"><div class="fx-rot">OUTRO PROJETO FUTURO, COM A TI</div>Fornecedor e preço no Fluig/RM, onde o cadastro oficial já mora. Sem prazo definido.</div></div>
+    <div><div class="caixa-ti grande"><div class="fx-rot">PROJETO FUTURO, COM A TI</div><b>Fornecedor e preço no Fluig/RM</b>, onde o cadastro oficial já mora, sem base duplicada. Foi o caminho aprovado pelo comitê em 11/09: começar pelo escopo e levar fornecedor e preço para a TI. Sem prazo definido.</div></div>
   </div>`,
-  'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. Evoluções e projeto com a TI são propostas, sem data definida.'));
+  'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. O projeto com a TI é proposta, sem data definida.'));
 // 15. Encerramento
 S.push(`<section class="slide fim">
   <div class="fim-txt"><img class="logo-fim" src="${IMG.logoNeg}"><div class="kicker">GESTÃO DE CONTRATAÇÕES</div><div class="nome">Começar melhor.<br>Contratar melhor.</div>
@@ -414,7 +409,7 @@ table.pend{margin-top:56px;width:100%;border-collapse:collapse;font-size:24px}
 .passos{padding-left:36px;font-size:25px;line-height:1.5}
 .passos li{margin-bottom:20px}
 .passos li::marker{font-family:Montserrat;font-weight:800;color:var(--azul2)}
-.caixa-ti{margin-top:26px;border:3px dashed #9CC7FF;border-radius:12px;padding:22px 26px;font-size:23px;line-height:1.45;color:var(--navy)}.caixa-ti .fx-rot{margin-bottom:8px}
+.caixa-ti{margin-top:26px;border:3px dashed #9CC7FF;border-radius:12px;padding:22px 26px;font-size:23px;line-height:1.45;color:var(--navy)}.caixa-ti .fx-rot{margin-bottom:8px}.caixa-ti.grande{margin-top:0;font-size:28px;line-height:1.5;padding:40px 44px;border-width:4px}
 .pedido{background:var(--navy);color:#fff;border-radius:12px;padding:36px}
 .pedido .fx-rot{color:#9CC7FF}
 .pedido b{color:#fff}

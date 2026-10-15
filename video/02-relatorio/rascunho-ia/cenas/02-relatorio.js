@@ -182,12 +182,12 @@ CENAS['2.1'] = {
   fn(lt, S) {
     crFundo(); rotulo('02 · O PROBLEMA', 'Nas propostas, as diferenças aparecem', prog(lt, 0, 0.5));
     const it = [['2 · 3 · 12', ['visitas por ano', 'no mesmo item'], S.w('Duas')], ['1 preço', ['para a mão de obra', 'inteira'], S.w('preco')],
-      ['VB × KG', ['o mesmo item em verba', 'e em quilos'], S.w('verba')]];
+      ['3,3×', ['lavagem do piso:', 'a mais cara × a mais barata'], S.w('lavagem')]];
     it.forEach(([n, l, t], i) => comCartao(prog(lt, t - 0.4, t + 0.2), () => {
       const x = 150 + i * 548; cartao(x, 300, 512, 440);
       txt(n, x + 44, 470, 88, 900, CR.tinta); linhas(l, x + 44, 560, 32, 700, CR.cinza, 1.35);
     }));
-    rodape('Ofertas reais do Facilities e da Engenharia, analisadas em 05/09/2026. Sem nomes nem valores.');
+    rodape('Ofertas reais de manutenção: Facilities (ar-condicionado) e Propriedades (lavagem de piso, Mega Esteio). Sem nomes nem valores.');
   },
 };
 CENAS['2.2'] = {

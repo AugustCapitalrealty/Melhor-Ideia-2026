@@ -13,7 +13,7 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 | :--- | :--- |
 | 2024: muitos serviços sem escopo; 2025: começa; 2026: obrigatório; cada Mega do seu jeito | Relato escrito do gerente de Propriedades e Facilities, 14/10/2026 (slide 4) |
 | 9 escopos sem o sistema: 3 formatos; 0 com inclusões e exclusões; 1 diz se a visita técnica é obrigatória | Leitura dos 9 escopos reunidos em 15/10/2026 (slide 5) |
-| 2, 3 e 12 visitas; mão de obra com um preço só; VB × KG | `docs/BASE_DE_CONHECIMENTO.md` §8.4, §16.3, §9.2 (slide 6) |
+| 2, 3 e 12 visitas; mão de obra com um preço só; lavagem do piso do Mega Esteio com a mais cara 3,3× a mais barata | `docs/BASE_DE_CONHECIMENTO.md` §8.4, §16.3; equalização EQU_20260406 (Propriedades, Mega Esteio) (slide 6) |
 | Comitê aprovou começar pelo escopo (11/09/2026) | Convite da reunião do comitê (slide 7) |
 | Mesma estrutura, prazos da proposta e revisão em cada página: 4 de 4 escopos reais | PDFs em `G:\Meu Drive\MELHOR IDEIA 2026\PLANO\`, lidos em 15/10/2026 (slide 9) |
 | Um só lugar; antes, se esquecesse de salvar na pasta, o escopo se perdia | Tela Escopos (v77); relato do Guilherme sobre a prática anterior (slide 12) |
@@ -36,9 +36,9 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 
 ## 2 · O PROBLEMA
 
-**2.1 · NAS PROPOSTAS (cartões).** "2 · 3 · 12", "1 preço", "VB × KG".
+**2.1 · NAS PROPOSTAS (cartões).** "2 · 3 · 12", "1 preço", "3,3×".
 
-> Nas propostas, as diferenças aparecem. Duas, três e doze visitas por ano no mesmo item. A mão de obra com um preço só. O mesmo item em verba numa proposta e em quilos em outra.
+> Nas propostas, as diferenças aparecem. Duas, três e doze visitas por ano no mesmo item. A mão de obra com um preço só. E, na lavagem do piso de um armazém do Mega Esteio, a proposta mais cara custava mais de três vezes a mais barata.
 
 **2.2 · A CONCLUSÃO E A APROVAÇÃO (cartão).** Frase em destaque; depois "Comitê · 11/09/2026: começar pelo escopo".
 
