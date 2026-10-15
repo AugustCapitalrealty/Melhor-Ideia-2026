@@ -14,9 +14,10 @@ const url = (rel) => pathToFileURL(path.join(RAIZ, rel)).href;
 
 const CAP = 'video/capturas/2026-10-11/';
 const IMG = {
-  megaCuritiba: url('relatorio/rascunho/midia/mega-curitiba.png'),
-  megaItajai: url('relatorio/rascunho/midia/mega-itajai.png'),
-  megaEsteio: url('relatorio/rascunho/midia/mega-esteio.png'),
+  megaCuritiba: url('relatorio/rascunho/midia/fotos/MEGA CURITIBA.png'),
+  megaItajai: url('relatorio/rascunho/midia/fotos/MEGA ITAJAÍ.png'),
+  megaEsteio: url('relatorio/rascunho/midia/fotos/MEGA ESTEIO.png'),
+  fotoFim: url('relatorio/rascunho/midia/fotos/CORRETIVA.png'),
   escopoForm: url('video/01-previa-20s/midia/real/E01-escopo-servicos-fotos.png'),
   escopoLista: url(CAP + 'C01-escopos-lista.png'),
   deckCapa: url(CAP + 'escopo-ppci-docs/D02-slides-y0.png'),
@@ -283,7 +284,7 @@ S.push(conteudo(14, 5,
 S.push(`<section class="slide fim">
   <div class="fim-txt"><img class="logo-fim" src="${IMG.logoNeg}"><div class="kicker">GESTÃO DE CONTRATAÇÕES</div><div class="nome">Começar melhor.<br>Contratar melhor.</div>
   <div class="frase">Guilherme Marques · Facilities · Capital Realty · Melhor Ideia 2026</div></div>
-  <div class="fotos lado"><div style="background-image:url('${IMG.megaItajai}')"></div></div>
+  <div class="fotos lado"><div style="background-image:url('${IMG.fotoFim}')"></div></div>
 </section>`);
 
 // ---------- estilo ----------
