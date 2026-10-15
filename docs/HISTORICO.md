@@ -623,6 +623,27 @@ só com Impacto medido. Parecer no scratchpad da sessão (fora do repositório).
 **Vídeo, pedidos do Guilherme:** abrir com o contexto e os escopos sem padrão; tirar as melhorias futuras; tirar os testes automatizados
 ("confunde") e falar dos testes reais (uso real). O analista recomenda não anexar hoje o rascunho com selo e voz de IA.
 
+**Depois (15/10, manhã):**
+- **Vídeo v4** (2 min 35 s, `build/render/rascunho-ia.mp4`, fora do git): contexto (fotos dos Megas, 2024–2026, 9 escopos sem padrão)
+  antes do problema; sem futuro e sem testes automatizados; testes reais e feedback do Mega Itajaí. Voz pela API do ElevenLabs
+  (`_motor/eleven_api.py`, endpoint with-timestamps, voz "Lucas – Natural, Calm and Steady", modelo eleven_v4, *"eleven 4"*); chave
+  em `H:\Meu Drive\Youtube\GERAL\ferramentas`. Trilha nova `MUSICAS/elevenlabs/musica_corporativa.mp3` (piano e cordas, sem bateria) e
+  nenhum efeito sonoro: *"os efeitos sonoros e sonoplastia não tavam corporativos e música também"*. Sem o selo de rascunho.
+- **Fundação (Engenharia) saiu** da apresentação e do vídeo: *"pegue uma manutenção dentro dos Megas"*. Entrou a lavagem do piso do
+  Armazém B2 do Mega Esteio (equalização de Propriedades, 06/04/2026): a mais cara 3,3× a mais barata, prazos de 4, 7 e 15 dias, máquina
+  e produtos separados numa e "incluso" noutra; o escopo era um parágrafo.
+- **Futuros saíram** (*"remova esses futuros, só deixe o da TI"*); slide 15 ganhou *"pronto para os outros Megas: a transição pode
+  começar a qualquer momento"* (Guilherme). "Quem mantém": transferência prevista para uma pasta no Workspace com acesso de todos.
+- **"Corrigir sem gerar revisão"**: o Guilherme disse que já foi; não está no código do repositório (nenhuma mudança no app depois de
+  11/10). Não entrou como entregue. Ele pediu *"então arrume"*: implementação pausada para o Google Slides; retomar com plano.
+- **Google Slides**: projeto Apps Script `1yVvcjY7JjUQDqlRyN6KsOnAX5WDUISClTtS9N5DjKLdUKrkWZ3gokRiz` (código em `relatorio/google-slides/`).
+  `gerarApresentacao` = imagens; `gerarApresentacaoNativa` = *"PNG só de fundo, igual ao orçamento"*: `extrair.cjs` gera o fundo sem texto
+  e o `layout.json`, e o script recria cada texto como caixa editável. Pastas no Drive: `MELHOR IDEIA 2026/APRESENTACAO-SLIDES-PNG` e
+  `APRESENTACAO-SLIDES-NATIVA`. Rodar no editor (autorização do Guilherme).
+- **Fotos** da capa e contracapa: `Drives compartilhados/08.000 - Business Analysis/APRESENTAÇÃO ORÇAMENTO/_fotos-subcapas`.
+- **Pasta de entrega ao comitê**: `G:\Meu Drive\MELHOR IDEIA 2026\ENTREGA-COMITE-2026-10-15` (LEIA-ME, apresentação, vídeo, 9 escopos sem
+  padrão, 4 do sistema, casos, evidências, método e contagens, regulamento). Faltam os links do Slides e do vídeo no LEIA-ME.
+
 ---
 
 ## Próxima entrada

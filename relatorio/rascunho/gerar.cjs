@@ -272,7 +272,7 @@ S.push(conteudo(14, 5,
       <li><b>Revisões registradas</b> desde 15/09 (exemplo: PPCI de Itajaí)</li>
       <li><b>Escopo base e busca</b> dos escopos emitidos (11/10)</li>
       <li><b>Planejado em 11/09 × entregue:</b> escopo primeiro → em produção desde 15/09; fornecedor e preço → projeto futuro com a TI</li></ol></div>
-    <div><div class="caixa-ti grande"><div class="fx-rot">PROJETO FUTURO, COM A TI</div><b>Fornecedor e preço no Fluig/RM</b>, onde o cadastro oficial já mora, sem base duplicada. Foi o caminho aprovado pelo comitê em 11/09: começar pelo escopo e levar fornecedor e preço para a TI. Sem prazo definido.</div></div>
+    <div><div class="pronto"><div class="fx-rot">PRONTO PARA OS OUTROS MEGAS</div>Com os ajustes pedidos pelo Mega Itajaí já publicados, o sistema está disponível para os demais Megas: <b>a transição pode começar a qualquer momento.</b></div><div class="caixa-ti grande"><div class="fx-rot">PROJETO FUTURO, COM A TI</div><b>Fornecedor e preço no Fluig/RM</b>, onde o cadastro oficial já mora, sem base duplicada. Foi o caminho aprovado pelo comitê em 11/09: começar pelo escopo e levar fornecedor e preço para a TI. Sem prazo definido.</div></div>
   </div>`,
   'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. O projeto com a TI é proposta, sem data definida.'));
 // 15. Encerramento
@@ -409,7 +409,7 @@ table.pend{margin-top:56px;width:100%;border-collapse:collapse;font-size:24px}
 .passos{padding-left:36px;font-size:25px;line-height:1.5}
 .passos li{margin-bottom:20px}
 .passos li::marker{font-family:Montserrat;font-weight:800;color:var(--azul2)}
-.caixa-ti{margin-top:26px;border:3px dashed #9CC7FF;border-radius:12px;padding:22px 26px;font-size:23px;line-height:1.45;color:var(--navy)}.caixa-ti .fx-rot{margin-bottom:8px}.caixa-ti.grande{margin-top:0;font-size:28px;line-height:1.5;padding:40px 44px;border-width:4px}
+.caixa-ti{margin-top:26px;border:3px dashed #9CC7FF;border-radius:12px;padding:22px 26px;font-size:23px;line-height:1.45;color:var(--navy)}.caixa-ti .fx-rot{margin-bottom:8px}.caixa-ti.grande{margin-top:24px;font-size:24px;line-height:1.5;padding:28px 34px;border-width:3px}.pronto{background:#E8F1FB;border-left:8px solid var(--azul2);border-radius:10px;padding:26px 30px;font-size:25px;line-height:1.45;color:var(--navy)}.pronto .fx-rot{margin-bottom:8px}
 .pedido{background:var(--navy);color:#fff;border-radius:12px;padding:36px}
 .pedido .fx-rot{color:#9CC7FF}
 .pedido b{color:#fff}
