@@ -256,7 +256,7 @@ S.push(conteudo(13, 4,
   `<div class="quatro">${[
     ['Infraestrutura', 'Google Workspace já contratado: Apps Script, Slides, Planilhas e Drive. Nenhuma licença nova.'],
     ['Arquivos', 'Apresentação, PDF e planilha ficam no Drive compartilhado do Facilities, com as revisões anteriores.'],
-    ['Continuidade', 'Quem testou no Mega Itajaí: “não vai cair em esquecimento”. Pronto para os outros Megas (slide 15).'],
+    ['Continuidade', 'Quem testou no Mega Itajaí: “não vai cair em esquecimento”. Pronto para expandir para outros Megas e áreas (slide 15).'],
     ['Quem mantém', 'Manutenção atual: Guilherme. Documentação, testes e histórico no repositório; transferência prevista para uma pasta no Workspace com acesso de todos.'],
   ].map(([t, x]) => `<div class="card"><div class="card-t">${t}</div><div class="card-x">${x}</div></div>`).join('')}</div>`,
   'Preço, equalização e fornecedores estão ocultos na tela (modo escopo), não apagados: o código e os dados continuam até a integração.'));
@@ -272,7 +272,7 @@ S.push(conteudo(14, 5,
       <li><b>Revisões registradas</b> desde 15/09 (exemplo: PPCI de Itajaí)</li>
       <li><b>Escopo base e busca</b> dos escopos emitidos (11/10)</li>
       <li><b>Planejado em 11/09 × entregue:</b> escopo primeiro → em produção desde 15/09; fornecedor e preço → projeto futuro com a TI</li></ol></div>
-    <div><div class="pronto"><div class="fx-rot">PRONTO PARA OS OUTROS MEGAS</div>Com os ajustes pedidos pelo Mega Itajaí até 11/10 já publicados (slide 13), o sistema está disponível para os demais Megas: <b>a transição pode começar a qualquer momento.</b></div><div class="caixa-ti grande"><div class="fx-rot">PROJETO FUTURO, COM A TI</div><b>Fornecedor e preço no Fluig/RM</b>, onde o cadastro oficial já mora, sem base duplicada. Foi o caminho aprovado pelo comitê em 11/09: começar pelo escopo e levar fornecedor e preço para a TI. Sem prazo definido.</div></div>
+    <div><div class="pronto"><div class="fx-rot">PRONTO PARA EXPANDIR</div>Com os ajustes pedidos pelo Mega Itajaí até 11/10 já publicados (slide 13), o sistema já pode ser expandido <b>para os outros Megas e para outras áreas</b>: a transição pode começar a qualquer momento.</div><div class="caixa-ti grande"><div class="fx-rot">PROJETO FUTURO, COM A TI</div><b>Fornecedor e preço no Fluig/RM</b>, onde o cadastro oficial já mora, sem base duplicada. Foi o caminho aprovado pelo comitê em 11/09: começar pelo escopo e levar fornecedor e preço para a TI. Sem prazo definido.</div></div>
   </div>`,
   'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. O projeto com a TI é proposta, sem data definida.'));
 // 15. Encerramento

@@ -224,9 +224,9 @@ CENAS['2.2'] = {
     reveal('O escopo precisa deixar', 960, 400, 800, 76, CR.branco, E.outCubic(prog(lt, 0.1, 0.8)), { align: 'center' });
     reveal('explícito o que se compara.', 960, 500, 800, 76, CR.claro, E.outCubic(prog(lt, t - 0.4, t + 0.3)), { align: 'center' });
     comCartao(prog(lt, tS - 0.4, tS + 0.2), () => {
-      cartao(510, 640, 900, 150);
-      txt('COMITÊ · 11/09/2026', 560, 700, 22, 800, CR.dest, { ls: 3 });
-      txt('Aprovado: o projeto começa pelo escopo', 560, 755, 40, 800, CR.tinta);
+      cartao(410, 640, 1100, 150);
+      txt('COMITÊ · 11/09/2026', 460, 700, 22, 800, CR.dest, { ls: 3 });
+      txt('Aprovado: o projeto começa pelo escopo', 460, 755, 40, 800, CR.tinta);
     });
     rodape('Reunião "Comitê: Concurso Melhor Ideia", 11/09/2026.');
   },
@@ -367,9 +367,8 @@ CENAS['6.1'] = {
     const tU = S.w('padrao'), tG = S.w('Gestao'), tCo = S.w('Comecar'), tCt = S.w('Contratar');
     crFundo();
     foto('F04', 1160, 0, 760, 1080, 0.35, 0);
-    reveal('Um só padrão de escopo', 150, 250, 800, 50, CR.branco, E.outCubic(prog(lt, tU - 0.6, tU + 0.1)));
-    reveal('para a empresa toda,', 150, 315, 800, 50, CR.branco, E.outCubic(prog(lt, tU - 0.3, tU + 0.4)));
-    reveal('pronto para todos os Megas.', 150, 380, 800, 50, CR.claro, E.outCubic(prog(lt, tU, tU + 0.6)));
+    reveal('Um só padrão de escopo,', 150, 290, 800, 56, CR.branco, E.outCubic(prog(lt, tU - 0.6, tU + 0.1)));
+    reveal('pronto para a empresa toda.', 150, 365, 800, 56, CR.claro, E.outCubic(prog(lt, tU, tU + 0.6)));
     reveal('Gestão de Contratações', 150, 640, 800, 44, CR.branco, E.outCubic(prog(lt, tG - 0.2, tG + 0.5)));
     const a = prog(lt, tG - 0.4, tG + 0.4);
     if (a > 0) { const n = M('L01'), im = IMGS[n]; if (im && im.complete) { ctx.save(); ctx.globalAlpha *= a; const w = 380, h = w * im.naturalHeight / im.naturalWidth; ctx.drawImage(im, 150, 450, w, h); ctx.restore(); } }

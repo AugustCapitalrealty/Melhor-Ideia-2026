@@ -94,4 +94,4 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 
 **6.1 · FECHO (foto F04 ao lado, logo negativo).** Assinatura e nome do projeto.
 
-> Um só padrão de escopo para a empresa toda, pronto para todos os Megas. Gestão de Contratações. Começar melhor. Contratar melhor.
+> Um só padrão de escopo, pronto para a empresa toda. Gestão de Contratações. Começar melhor. Contratar melhor.
