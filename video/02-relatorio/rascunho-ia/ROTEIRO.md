@@ -28,11 +28,11 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 
 **1.1 · OS MEGAS (fotos F01, F02, F03).** As três fachadas entram lado a lado.
 
-> Nos Megas da Capital Realty, toda contratação de manutenção ou de obra começa por um escopo: o documento que o fornecedor recebe para cotar.
+> Nos Megas da Capital Realty, toda contratação de manutenção ou de obra deve começar por um escopo: o documento que o fornecedor recebe para cotar.
 
 **1.2 · DE 2024 A 2026 (cartão).** Três colunas por ano, acendendo com a fala.
 
-> Até 2024, muitos serviços eram contratados sem escopo, embora o procedimento já pedisse. Em 2025, ele começou a aparecer. Em 2026, passou a ser cumprido. Mas cada Mega montava do seu jeito.
+> Até 2024, muitos serviços eram contratados sem escopo, embora o procedimento já exigisse escopo. Em 2025, o escopo começou a aparecer. Em 2026, a exigência passou a ser cumprida. Mas cada Mega montava do seu jeito.
 
 **1.3 · SEM PADRÃO (capas A01, A02, A03 e contadores).** As três capas reais; depois os números do slide 5.
 
@@ -42,11 +42,11 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 
 **2.1 · NAS PROPOSTAS (cartões).** "2 · 3 · 12", "1 preço", "3,3×".
 
-> Nas propostas, as diferenças aparecem. Duas, três e doze visitas por ano no mesmo item. A mão de obra com um preço só. E, na lavagem do piso de um armazém do Mega Esteio, a proposta mais cara custava mais de três vezes a mais barata.
+> Nas propostas, as diferenças aparecem. Duas, três e doze visitas por ano no mesmo item. A mão de obra num preço só, sem valor por item. E, na lavagem do piso de um armazém do Mega Esteio, a proposta mais cara custava mais de três vezes a mais barata.
 
 **2.2 · A CONCLUSÃO E A APROVAÇÃO (cartão).** Frase em destaque; depois "Comitê · 11/09/2026: começar pelo escopo".
 
-> O escopo precisa deixar explícito o que se compara. Por isso, em setembro, o comitê aprovou começar pelo escopo.
+> O escopo precisa deixar explícito o que se compara. Por isso, em setembro, o comitê aprovou que o projeto começasse pelo escopo.
 
 ## 3 · A SOLUÇÃO
 
@@ -68,7 +68,7 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 
 **3.5 · O PADRÃO (cartão).** "4 de 4": mesma estrutura · prazos da proposta · revisão em cada página.
 
-> Todo escopo do sistema sai no mesmo padrão: a mesma estrutura, os prazos da proposta e a revisão numerada em cada página.
+> Todo escopo do sistema sai no mesmo padrão: a mesma estrutura, a data limite da proposta e a revisão numerada em cada página. E inclusões, exclusões e visita técnica têm seção própria no cadastro.
 
 ## 4 · UM SÓ LUGAR
 
@@ -84,7 +84,7 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 
 **5.1 · ONDE JÁ FOI TESTADO (cartões).** "Facilities · Mega Itajaí · 3 escopos" e "Propriedades · Mega Curitiba · 1 escopo".
 
-> O sistema já foi testado em escopos reais: três do Facilities, no Mega Itajaí, e um de Propriedades, no Mega Curitiba.
+> Em produção desde setembro, sem licença nova, o sistema já foi testado em escopos reais: três do Facilities, no Mega Itajaí, e um de Propriedades, no Mega Curitiba.
 
 **5.2 · QUEM USA DIZ (cartões, sem nome).** "Fica muito mais padronizado." · "No começo a gente se bateu… depois vai ser bem top." Selo "percepção, não medição".
 
@@ -94,4 +94,4 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 
 **6.1 · FECHO (foto F04 ao lado, logo negativo).** Assinatura e nome do projeto.
 
-> Um padrão de escopo para a empresa toda. Gestão de Contratações. Começar melhor. Contratar melhor.
+> Um só padrão de escopo para a empresa toda, pronto para todos os Megas. Gestão de Contratações. Começar melhor. Contratar melhor.

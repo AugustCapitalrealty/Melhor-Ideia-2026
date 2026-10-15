@@ -30,7 +30,7 @@ function rotulo(cap, titulo, p) {  // canto superior: "01 · O PROBLEMA" + assun
   if (titulo) txt(titulo, 150, 140, 40, 800, CR.branco);
   ctx.restore();
 }
-function rodape(s) { ctx.save(); ctx.globalAlpha *= 0.55; txt(s, 150, 1040, 17, 600, CR.branco, { ls: 1 }); ctx.restore(); }
+function rodape(s) { ctx.save(); ctx.globalAlpha *= 0.72; txt(s, 150, 1040, 20, 600, CR.branco, { ls: 1 }); ctx.restore(); }
 function selo() {}  // v4: voz final pelo ElevenLabs; sem o selo de rascunho
 function comCartao(p, fn) {  // entra subindo e aparecendo
   if (p <= 0) return;
@@ -160,7 +160,7 @@ CENAS['1.1'] = {
         txt(n, x + 24, 712, 22, 800, CR.branco, { ls: 3 });
       });
     });
-    reveal('Toda contratação começa por um escopo', 150, 860, 800, 52, CR.branco, E.outCubic(prog(lt, tE - 0.5, tE + 0.2)));
+    reveal('Toda contratação deve começar por um escopo', 150, 860, 800, 52, CR.branco, E.outCubic(prog(lt, tE - 0.5, tE + 0.2)));
     reveal('o documento que o fornecedor recebe para cotar', 150, 930, 600, 34, CR.claro, E.outCubic(prog(lt, tD - 0.5, tD + 0.2)));
   },
 };
@@ -169,7 +169,7 @@ CENAS['1.2'] = {
   fn(lt, S) {
     crFundo(); rotulo('01 · O CONTEXTO', 'Como o escopo era feito nos Megas', prog(lt, 0, 0.5));
     const anos = [['2024', ['Muitos serviços', 'contratados sem escopo'], S.w('muitos')], ['2025', ['O escopo começa', 'a aparecer'], S.w('aparecer')],
-      ['2026', ['Passa a ser', 'cumprido'], S.w('cumprido')]];
+      ['2026', ['A exigência passa', 'a ser cumprida'], S.w('cumprid')]];
     anos.forEach(([a, l, t], i) => comCartao(prog(lt, t - 0.4, t + 0.2), () => {
       const x = 150 + i * 548; cartao(x, 280, 512, 380);
       txt(a, x + 44, 400, 84, 900, CR.dest); linhas(l, x + 44, 480, 32, 800, CR.tinta, 1.3);
@@ -179,7 +179,7 @@ CENAS['1.2'] = {
       rr(150, 730, 1620, 120, 20, 'rgba(224,123,36,0.16)', CR.lar, 3);
       txt('Mas cada Mega montava do seu jeito', 200, 808, 46, 800, CR.branco);
     });
-    rodape('Relato escrito do gerente de Propriedades e Facilities, 14/10/2026.');
+    rodape('Relato escrito do gerente de Propriedades e Facilities, 14/10/2026; procedimento interno de contratação.');
   },
 };
 CENAS['1.3'] = {
@@ -187,9 +187,13 @@ CENAS['1.3'] = {
   fn(lt, S) {
     crFundo(); rotulo('01 · O CONTEXTO', 'Escopos reais feitos sem o sistema', prog(lt, 0, 0.5));
     const tF = S.w('formatos'), tN = S.w('Nenhum'), tV = S.w('visita');
-    [['A01', 'Itajaí'], ['A02', 'Esteio'], ['A03', 'Curitiba']].forEach(([a, m], i) => comCartao(prog(lt, 0.1 + i * 0.3, 0.6 + i * 0.3), () => {
-      const x = 150 + i * 400, y = 250 + (i % 2) * 40;
-      inteira(a, x, y, 360); txt('DOCUMENTO REAL · ' + m.toUpperCase(), x, y + 240, 17, 800, CR.claro, { ls: 2 });
+    [['A01', 'ITAJAÍ', 'SLIDE 720×405'], ['A02', 'ESTEIO', 'SLIDE 960×540'], ['A05', 'CURITIBA', 'A4 · WORD']].forEach(([a, m, f], i) => comCartao(prog(lt, 0.1 + i * 0.3, 0.6 + i * 0.3), () => {
+      const x = 150 + i * 400, y = 250, w = a === 'A05' ? 230 : 360;
+      const h = inteira(a, x, y, w);
+      if (a === 'A05') rr(x + 14, y + h * 0.86, w - 28, h * 0.1, 2, '#FFFFFF');  // cobre os nomes da capa do RFQ
+      txt('DOCUMENTO REAL · ' + m, x, y + h + 34, 17, 800, CR.claro, { ls: 2 });
+      const q = prog(lt, tF - 0.3, tF + 0.3);
+      if (q > 0) { ctx.save(); ctx.globalAlpha *= q; pilula(f, x, y + h + 56, CR.larF, CR.lar, 18); ctx.restore(); }
     }));
     numero('3', ['formatos', 'de página'], 1380, 360, prog(lt, tF - 0.3, tF + 0.4));
     numero('0', ['com inclusões', 'e exclusões'], 1380, 600, prog(lt, tN - 0.3, tN + 0.4), CR.lar);
@@ -203,13 +207,13 @@ CENAS['2.1'] = {
   marca: false, depois: 1.0,
   fn(lt, S) {
     crFundo(); rotulo('02 · O PROBLEMA', 'Nas propostas, as diferenças aparecem', prog(lt, 0, 0.5));
-    const it = [['2 · 3 · 12', ['visitas por ano', 'no mesmo item'], S.w('Duas')], ['1 preço', ['para a mão de obra', 'inteira'], S.w('preco')],
+    const it = [['2 · 3 · 12', ['visitas por ano', 'no mesmo item'], S.w('propostas')], ['1 preço', ['para a mão de obra,', 'sem valor por item'], S.w('preco')],
       ['3,3×', ['lavagem do piso:', 'a mais cara × a mais barata'], S.w('lavagem')]];
     it.forEach(([n, l, t], i) => comCartao(prog(lt, t - 0.4, t + 0.2), () => {
       const x = 150 + i * 548; cartao(x, 300, 512, 440);
       txt(n, x + 44, 470, 88, 900, CR.tinta); linhas(l, x + 44, 560, 32, 700, CR.cinza, 1.35);
     }));
-    rodape('Ofertas reais de manutenção: Facilities (ar-condicionado) e Propriedades (lavagem de piso, Mega Esteio). Sem nomes nem valores.');
+    rodape('Ofertas reais: ar-condicionado (Facilities), mão de obra fechada (Mega Curitiba), lavagem de piso (Propriedades, Mega Esteio; 3,3× nos valores finais). Sem nomes nem valores.');
   },
 };
 CENAS['2.2'] = {
@@ -222,7 +226,7 @@ CENAS['2.2'] = {
     comCartao(prog(lt, tS - 0.4, tS + 0.2), () => {
       cartao(510, 640, 900, 150);
       txt('COMITÊ · 11/09/2026', 560, 700, 22, 800, CR.dest, { ls: 3 });
-      txt('Aprovado: começar pelo escopo', 560, 755, 42, 800, CR.tinta);
+      txt('Aprovado: o projeto começa pelo escopo', 560, 755, 40, 800, CR.tinta);
     });
     rodape('Reunião "Comitê: Concurso Melhor Ideia", 11/09/2026.');
   },
@@ -278,15 +282,16 @@ CENAS['3.4'] = {
   },
 };
 CENAS['3.5'] = {
-  marca: false, depois: 1.2,
+  marca: false, depois: 1.4,
   fn(lt, S) {
     crFundo(); rotulo('03 · A SOLUÇÃO', 'Todo escopo do sistema sai no mesmo padrão', prog(lt, 0, 0.5));
-    const it = [['A mesma estrutura', S.w('estrutura')], ['Os prazos da proposta', S.w('prazos')], ['A revisão em cada página', S.w('revisao')]];
+    const it = [['A mesma estrutura', S.w('padrao')], ['A data limite da proposta', S.w('limite')], ['A revisão em cada página', S.w('revisao')]];
     it.forEach(([s, t], i) => comCartao(prog(lt, t - 0.4, t + 0.2), () => {
       const y = 290 + i * 190; cartao(150, y, 1620, 150);
       txt(s, 210, y + 95, 48, 800, CR.tinta);
       rr(1480, y + 40, 230, 70, 35, '#E8F1FB'); txt('4 de 4', 1595, y + 88, 36, 900, CR.dest, { align: 'center' });
     }));
+    comCartao(prog(lt, S.w('inclusoes') - 0.4, S.w('inclusoes') + 0.2), () => pilula('Inclusões · exclusões · visita técnica: seção própria no cadastro', 150, 870, CR.larF, CR.lar, 26));
     rodape('Leitura dos 4 escopos reais emitidos pelo sistema (PDFs), em 15/10/2026.');
   },
 };
@@ -314,8 +319,9 @@ CENAS['4.2'] = {
   fn(lt, S) {
     crFundo(); rotulo('04 · UM SÓ LUGAR', 'O próximo parte de um já emitido', 1);
     const vem = [['Serviços', S.w('servicos')], ['Lista de itens', S.w('lista')], ['Inclusões', S.w('inclusoes')], ['Exclusões', S.w('exclusoes')], ['Aceite', S.w('aceite')]];
-    txt('VÊM DO ESCOPO BASE', 150, 420, 22, 800, CR.claro, { ls: 3 });
-    let x = 150; vem.forEach(([s, t]) => { const q = E.outBack(clamp(prog(lt, t - 0.2, t + 0.3))); if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); x += pilula(s, x, 460, CR.branco, CR.royal, 34) + 22; ctx.restore(); } });
+    comCartao(prog(lt, 0.1, 0.7), () => recorte('C01', 270, 505, 1384, 185, 150, 200, 1620));
+    txt('VÊM DO ESCOPO BASE', 150, 560, 22, 800, CR.claro, { ls: 3 });
+    let x = 150; vem.forEach(([s, t]) => { const q = E.outBack(clamp(prog(lt, t - 0.2, t + 0.3))); if (q > 0) { ctx.save(); ctx.globalAlpha *= clamp(q); x += pilula(s, x, 600, CR.branco, CR.royal, 34) + 22; ctx.restore(); } });
     rodape('Função "Usar como base" do sistema.');
   },
 };
@@ -326,6 +332,7 @@ CENAS['5.1'] = {
   fn(lt, S) {
     const tFa = S.w('Facilities'), tPr = S.w('Propriedades');
     crFundo(); rotulo('05 · TESTES REAIS', 'Testado em escopos reais por duas áreas', prog(lt, 0, 0.5));
+    comCartao(prog(lt, S.w('producao') - 0.4, S.w('producao') + 0.2), () => pilula('EM PRODUÇÃO DESDE 15/09/2026 · GOOGLE WORKSPACE · SEM LICENÇA NOVA', 150, 190, '#E8F1FB', CR.dest, 22));
     [['Facilities', 'Mega Itajaí', '3', tFa, 'F02'], ['Propriedades', 'Mega Curitiba', '1', tPr, 'F01']].forEach(([a, b, n, t, f], i) => {
       comCartao(prog(lt, t - 0.4, t + 0.2), () => {
         const x = 150 + i * 830; cartao(x, 280, 790, 560);
@@ -342,7 +349,7 @@ CENAS['5.2'] = {
   fn(lt, S) {
     crFundo(); rotulo('05 · TESTES REAIS', 'Facilities do Mega Itajaí, passada a adaptação', prog(lt, 0, 0.5));
     const tA = S.w('adaptacao'), tP = S.w('padronizado'), tM = S.w('medido');
-    [['“No começo a gente se bateu… depois que', 'o pessoal pegar vai ser bem top.”', tA], ['“Fica muito mais padronizado. A gente não', 'precisa ficar configurando slide.”', tP]].forEach(([l1, l2, t], i) => {
+    [['“No começo a gente se bateu… depois que', 'o pessoal pegar vai ser bem top.”', S.w('testou')], ['“Fica muito mais padronizado. A gente não', 'precisa ficar configurando slide.”', tP]].forEach(([l1, l2, t], i) => {
       comCartao(prog(lt, t - 0.5, t + 0.1), () => {
         const y = 290 + i * 230; cartao(150, y, 1620, 190);
         txt(l1, 210, y + 85, 40, 700, CR.tinta); txt(l2, 210, y + 140, 40, 700, CR.tinta);
@@ -360,10 +367,12 @@ CENAS['6.1'] = {
     const tU = S.w('padrao'), tG = S.w('Gestao'), tCo = S.w('Comecar'), tCt = S.w('Contratar');
     crFundo();
     foto('F04', 1160, 0, 760, 1080, 0.35, 0);
-    reveal('Um padrão de escopo', 150, 330, 800, 56, CR.branco, E.outCubic(prog(lt, tU - 0.6, tU + 0.1)));
-    reveal('para a empresa toda.', 150, 400, 800, 56, CR.claro, E.outCubic(prog(lt, tU, tU + 0.6)));
+    reveal('Um só padrão de escopo', 150, 250, 800, 50, CR.branco, E.outCubic(prog(lt, tU - 0.6, tU + 0.1)));
+    reveal('para a empresa toda,', 150, 315, 800, 50, CR.branco, E.outCubic(prog(lt, tU - 0.3, tU + 0.4)));
+    reveal('pronto para todos os Megas.', 150, 380, 800, 50, CR.claro, E.outCubic(prog(lt, tU, tU + 0.6)));
+    reveal('Gestão de Contratações', 150, 640, 800, 44, CR.branco, E.outCubic(prog(lt, tG - 0.2, tG + 0.5)));
     const a = prog(lt, tG - 0.4, tG + 0.4);
-    if (a > 0) { const n = M('L01'), im = IMGS[n]; if (im && im.complete) { ctx.save(); ctx.globalAlpha *= a; const w = 380, h = w * im.naturalHeight / im.naturalWidth; ctx.drawImage(im, 150, 500, w, h); ctx.restore(); } }
+    if (a > 0) { const n = M('L01'), im = IMGS[n]; if (im && im.complete) { ctx.save(); ctx.globalAlpha *= a; const w = 380, h = w * im.naturalHeight / im.naturalWidth; ctx.drawImage(im, 150, 450, w, h); ctx.restore(); } }
     reveal('Começar melhor.', 150, 720, 800, 80, CR.branco, E.outCubic(prog(lt, tCo - 0.4, tCo + 0.2)));
     reveal('Contratar melhor.', 150, 820, 800, 80, CR.claro, E.outCubic(prog(lt, tCt - 0.4, tCt + 0.2)));
     const b = prog(lt, tCt + 0.3, tCt + 0.9);
