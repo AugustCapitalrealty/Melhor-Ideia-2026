@@ -605,6 +605,24 @@ tempo virou o feedback do Mega Itajaí (11). Os depoimentos saíram. O uso (12) 
 evoluções (15). O número da página agora vem da posição no deck. PDF de entrega: `relatorio/rascunho/saida/Gestao-de-Contratacoes_Melhor-Ideia-2026.pdf`
 (fora do git).
 
+**Analista independente (15/10)**: nota estimada de 6,2 hoje e cerca de 7,05 depois das correções (V 7,5 · I 7,5 · Q 7,5 · E 6,0); acima de 8
+só com Impacto medido. Parecer no scratchpad da sessão (fora do repositório). Aplicado no deck:
+- Inovação explícita no subtítulo do slide 8 ("O que é novo na empresa").
+- Slide 9: *"Qualidade é padronização"* (fala do Guilherme), com tabela 9 sem o sistema × 4 reais do sistema, lida nos PDFs da pasta PLANO:
+  mesmo formato 4/4; revisão no documento 1/9 → 4/4; prazos da proposta 2/9 → 4/4; inclusões · exclusões · visita técnica 0·0·1 de 9 → 3·1·1 de 4.
+  O padrão dá o lugar, o conteúdo ainda depende de quem preenche → próximo passo "campos obrigatórios" (slide 15).
+- Slide 12 (Impacto): *"repositório de escopos: hoje, se alguém esquece de salvar na pasta, o escopo se perde"* (Guilherme). Cartões "1 lugar",
+  "4 reais (a base mostra 8)" e "ainda não medido". Recontagem pelo Playwright na produção (v77), 15/10: 8 na base = 4 reais
+  (Itajaí 3, Curitiba/Propriedades 1) + 2 exemplos (Piso DHL Esteio, Adequações elétricas Curitiba) + 2 testes.
+- Slide 11: título restrito ao Facilities do Mega Itajaí; falas conferidas com a transcrição (literais, hesitações retiradas).
+- Slides 7, 13 e 15: subtítulos sem repetição nem generalização; "planejado em 11/09 × entregue" no slide 15.
+- "Deck" virou "apresentação" no texto visível (*"pode confundir"*).
+- Ressalva do analista: a frase entre aspas do gerente (slide 4) identifica uma pessoa só; ele escreveu o relato para isso, mas não há
+  autorização registrada.
+
+**Vídeo, pedidos do Guilherme:** abrir com o contexto e os escopos sem padrão; tirar as melhorias futuras; tirar os testes automatizados
+("confunde") e falar dos testes reais (uso real). O analista recomenda não anexar hoje o rascunho com selo e voz de IA.
+
 ---
 
 ## Próxima entrada
