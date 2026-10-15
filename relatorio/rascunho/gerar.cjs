@@ -128,7 +128,7 @@ S.push(conteudo(4, 1,
       <div class="ach"><b>0</b><span>com seção de inclusões e exclusões; o que o preço cobre fica espalhado ou não aparece</span></div>
       <div class="ach"><b>2</b><span>com data limite para a proposta</span></div>
       <div class="ach"><b>1</b><span>diz se a visita técnica é obrigatória</span></div>
-      <div class="ach"><b>5</b><span>grafias de revisão (RV02, R02, R00, v01, “02”), quase sempre só no nome do arquivo</span></div>
+      <div class="ach"><b>4</b><span>grafias de revisão (RV02, R02, R00, v01), quase sempre só no nome do arquivo</span></div>
     </div>
   </div>`,
   'Fonte: 9 escopos reais reunidos em 15/10/2026 (Itajaí 4, Esteio 2, Curitiba 3), lidos página a página. Amostra escolhida pela área, não aleatória; parte é de 2026, feita fora do sistema.'));
@@ -139,11 +139,11 @@ S.push(conteudo(4, 1,
   'Ofertas reais de manutenção nos Megas: diferenças de frequência, de preço por item, de valor e de prazo',
   `<div class="tres">
     <div class="kpi"><div class="kpi-n">2 · 3 · 12</div><div class="kpi-t">visitas por ano, no mesmo item cotado como “1 verba”</div><div class="kpi-d">Manutenção de ar-condicionado: três proponentes, a mesma linha; a diferença estava escondida na observação. A de 2 visitas não incluía o laudo PMOC com responsabilidade técnica previsto no pedido.</div></div>
-    <div class="kpi"><div class="kpi-n">1 preço</div><div class="kpi-t">para a mão de obra inteira, sem valor por item</div><div class="kpi-d">Infraestrutura, passagem de cabos e instalação do painel vieram descritas, mas sem preço próprio. Não dá para comparar item a item com quem abriu.</div></div>
+    <div class="kpi"><div class="kpi-n">1 preço</div><div class="kpi-t">para a mão de obra inteira, sem valor por item</div><div class="kpi-d">Infraestrutura, passagem de cabos e instalação do painel vieram descritas, mas sem preço próprio. Não dá para comparar item a item.</div></div>
     <div class="kpi"><div class="kpi-n">3,3×</div><div class="kpi-t">entre a proposta mais barata e a mais cara, no mesmo serviço</div><div class="kpi-d">Lavagem do piso de um armazém do Mega Esteio: prazos de 4, 7 e 15 dias; uma separou máquina, produtos e mão de obra, outra deixou como “incluso”. O escopo era um parágrafo.</div></div>
   </div>
   <div class="conclusao"><b>O escopo precisa explicitar os requisitos antes da comparação.</b></div>`,
-  'Fonte: documentos reais (BASE_DE_CONHECIMENTO §8.4 e §16.3; mapa original do PMOC; equalização da lavagem de piso do Mega Esteio, 06/04/2026). Ar-condicionado: Facilities; lavagem de piso: Propriedades. Ofertas, não serviços executados; sem nomes nem valores.'));
+  'Fonte: documentos reais (BASE_DE_CONHECIMENTO §8.4 e §16.3; mapa original do PMOC; equalização da lavagem de piso do Mega Esteio, 06/04/2026). Ar-condicionado: Facilities; lavagem de piso: Propriedades, 3,3× nos valores finais da equalização (2,6× nas propostas iniciais). Ofertas, não serviços executados; sem nomes nem valores.'));
 // 5. A ponte com a ideia aprovada
 S.push(conteudo(5, 1,
   'Em 11/09, o comitê aprovou começar pelo escopo',
@@ -183,9 +183,9 @@ S.push(conteudo(8, 2,
     </div>
     <table class="cmp">
       <tr><th></th><th>9 escopos sem o sistema</th><th>4 escopos reais do sistema</th></tr>
-      <tr><td>Mesmo formato e mesma ordem de seções</td><td>não: 3 formatos</td><td class="ok">4 de 4</td></tr>
+      <tr><td>Mesmo formato de documento</td><td>não: 3 formatos</td><td class="ok">4 de 4</td></tr>
       <tr><td>Revisão numerada dentro do documento</td><td>1 de 9</td><td class="ok">4 de 4, em cada página</td></tr>
-      <tr><td>Prazos da proposta</td><td>2 de 9</td><td class="ok">4 de 4</td></tr>
+      <tr><td>Data limite para a proposta</td><td>2 de 9</td><td class="ok">4 de 4</td></tr>
       <tr><td>Inclusões · exclusões · visita técnica</td><td>0 · 0 · 1 de 9</td><td>3 · 1 · 1 de 4 <span class="cmp-n">o padrão dá o lugar; o conteúdo depende de quem preenche</span></td></tr>
     </table>
   </div>`,
@@ -212,7 +212,7 @@ S.push(conteudo(10, 3,
   `<div class="falas">
     <div class="fala"><div class="aspas">“</div>Vamos continuar usando, que facilita bastante.</div>
     <div class="fala"><div class="aspas">“</div>Fica muito mais padronizado. A gente não precisa ficar configurando slide.</div>
-    <div class="fala"><div class="aspas">“</div>No começo a gente se bateu… mas depois que o pessoal pegar vai ser bem top.</div>
+    <div class="fala"><div class="aspas">“</div>No começo a gente se bateu… mas eu acho que depois que o pessoal pegar vai ser bem top.</div>
     <div class="fala"><div class="aspas">“</div>Acho que diminuiu o nosso tempo… porque a gente não tem o trabalho de ficar configurando.<div class="fala-tag">percepção, não medição</div></div>
   </div>
   <div class="tres mt3">
@@ -225,13 +225,13 @@ S.push(conteudo(10, 3,
 // 10. Uso real
 S.push(conteudo(10, 3,
   'Os escopos passam a ficar num só lugar, já com 4 reais de duas áreas',
-  'Um repositório de escopos para a empresa toda: testado por Facilities e Propriedades; expansão proposta para Engenharia e demais áreas',
+  'Um repositório de escopos para a empresa toda, já testado por Facilities e Propriedades',
   `<div class="tres">
     <div class="kpi"><div class="kpi-n">1 lugar</div><div class="kpi-t">para todo escopo emitido</div><div class="kpi-d">Busca por Mega, categoria e situação, com todas as revisões e a apresentação e o PDF de cada uma. Antes, dependia de cada um salvar o arquivo na pasta certa; se esquecesse, o escopo se perdia.</div></div>
     <div class="kpi"><div class="kpi-n">4</div><div class="kpi-t">escopos reais emitidos</div><div class="kpi-d">A base mostra 8: Facilities, Mega Itajaí (3) e Propriedades, Mega Curitiba (1) são reais; os outros 4 foram teste ou exemplo e não contam.</div></div>
     <div class="kpi nao"><div class="kpi-n">—</div><div class="kpi-t">ainda não medido</div><div class="kpi-d">Tempo para montar, idas e voltas na equalização e comparabilidade das propostas. Medir nos próximos escopos, até a apresentação de novembro.</div></div>
   </div>`,
-  'Recontado em 15/10/2026 na tela Escopos em produção (v77). “Se perdia”: relato de Facilities sobre a prática anterior, sem contagem de casos.'));
+  'Recontado em 15/10/2026 na tela Escopos em produção (v77). “Se perdia”: relato do autor sobre a prática anterior, sem contagem de casos.'));
 
 // 12. Qualidade: pedido vira versão
 S.push(conteudo(12, 4,
@@ -256,7 +256,7 @@ S.push(conteudo(13, 4,
   `<div class="quatro">${[
     ['Infraestrutura', 'Google Workspace já contratado: Apps Script, Slides, Planilhas e Drive. Nenhuma licença nova.'],
     ['Arquivos', 'Apresentação, PDF e planilha ficam no Drive compartilhado do Facilities, com as revisões anteriores.'],
-    ['Projeto futuro', 'Fornecedor e preço serão um projeto futuro com a TI, no Fluig/RM, como aprovou o comitê. O app cuida do escopo.'],
+    ['Continuidade', 'Quem testou no Mega Itajaí: “não vai cair em esquecimento”. Pronto para os outros Megas (slide 15).'],
     ['Quem mantém', 'Manutenção atual: Guilherme. Documentação, testes e histórico no repositório; transferência prevista para uma pasta no Workspace com acesso de todos.'],
   ].map(([t, x]) => `<div class="card"><div class="card-t">${t}</div><div class="card-x">${x}</div></div>`).join('')}</div>`,
   'Preço, equalização e fornecedores estão ocultos na tela (modo escopo), não apagados: o código e os dados continuam até a integração.'));
@@ -272,7 +272,7 @@ S.push(conteudo(14, 5,
       <li><b>Revisões registradas</b> desde 15/09 (exemplo: PPCI de Itajaí)</li>
       <li><b>Escopo base e busca</b> dos escopos emitidos (11/10)</li>
       <li><b>Planejado em 11/09 × entregue:</b> escopo primeiro → em produção desde 15/09; fornecedor e preço → projeto futuro com a TI</li></ol></div>
-    <div><div class="pronto"><div class="fx-rot">PRONTO PARA OS OUTROS MEGAS</div>Com os ajustes pedidos pelo Mega Itajaí já publicados, o sistema está disponível para os demais Megas: <b>a transição pode começar a qualquer momento.</b></div><div class="caixa-ti grande"><div class="fx-rot">PROJETO FUTURO, COM A TI</div><b>Fornecedor e preço no Fluig/RM</b>, onde o cadastro oficial já mora, sem base duplicada. Foi o caminho aprovado pelo comitê em 11/09: começar pelo escopo e levar fornecedor e preço para a TI. Sem prazo definido.</div></div>
+    <div><div class="pronto"><div class="fx-rot">PRONTO PARA OS OUTROS MEGAS</div>Com os ajustes pedidos pelo Mega Itajaí até 11/10 já publicados (slide 13), o sistema está disponível para os demais Megas: <b>a transição pode começar a qualquer momento.</b></div><div class="caixa-ti grande"><div class="fx-rot">PROJETO FUTURO, COM A TI</div><b>Fornecedor e preço no Fluig/RM</b>, onde o cadastro oficial já mora, sem base duplicada. Foi o caminho aprovado pelo comitê em 11/09: começar pelo escopo e levar fornecedor e preço para a TI. Sem prazo definido.</div></div>
   </div>`,
   'Entregue: HISTORICO.md e revisões do PPCI de Itajaí. O projeto com a TI é proposta, sem data definida.'));
 // 15. Encerramento
