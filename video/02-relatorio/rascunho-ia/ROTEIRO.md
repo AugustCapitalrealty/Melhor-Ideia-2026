@@ -22,6 +22,10 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 
 ## 1 · O CONTEXTO
 
+**1.0 · INTRO (logo, nome e frase).** Fundo azul-marinho com as fotos dos Megas bem suaves; entram o logo, "MELHOR IDEIA 2026", o nome e a frase.
+
+> Melhor Ideia 2026: Gestão de Contratações.
+
 **1.1 · OS MEGAS (fotos F01, F02, F03).** As três fachadas entram lado a lado.
 
 > Nos Megas da Capital Realty, toda contratação de manutenção ou de obra começa por um escopo: o documento que o fornecedor recebe para cotar.

@@ -125,6 +125,28 @@ function numero(s, rotuloTxt, x, y, p, cor = CR.branco) {
 }
 
 // ═════════ 1 · O CONTEXTO ═════════
+CENAS['1.0'] = {
+  marca: false, depois: 0.9, camViva: 0,
+  fn(lt, S) {
+    crFundo();
+    const tG = S.w('Gestao'), tA = tG + 1.0;
+    // faixa de fotos dos Megas, bem escura, entrando devagar
+    const f = clamp(lt / 1.2);
+    ctx.save(); ctx.globalAlpha *= 0.28 * f;
+    ['F01', 'F02', 'F03'].forEach((p, i) => foto(p, i * 640, 0, 640, 1080, 0.55, 0));
+    ctx.restore();
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(21,30,73,0.35)'); g.addColorStop(1, 'rgba(14,22,56,0.92)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const a = E.outCubic(prog(lt, -0.2, 0.7));
+    if (a > 0) { const n = M('L01'), im = IMGS[n]; if (im && im.complete) { ctx.save(); ctx.globalAlpha *= a; const w = 360, h = w * im.naturalHeight / im.naturalWidth; ctx.drawImage(im, 960 - w / 2, 300 + (1 - a) * 20, w, h); ctx.restore(); } }
+    const k = E.outCubic(prog(lt, 0.3, 1.0));
+    if (k > 0) { ctx.save(); ctx.globalAlpha *= k; txt('MELHOR IDEIA 2026', 960, 500, 24, 800, CR.claro, { align: 'center', ls: 8 }); ctx.restore(); }
+    reveal('Gestão de Contratações', 960, 610, 800, 96, CR.branco, E.outCubic(prog(lt, tG - 0.4, tG + 0.3)), { align: 'center' });
+    const l = E.inOutCubic(prog(lt, tG + 0.2, tG + 0.9)); if (l > 0) { ctx.fillStyle = CR.dest; ctx.fillRect(960 - 220 * l, 650, 440 * l, 5); }
+    reveal('A contratação começa no escopo.', 960, 730, 600, 40, CR.claro, E.outCubic(prog(lt, tA - 0.5, tA + 0.2)), { align: 'center' });
+  },
+};
+
 CENAS['1.1'] = {
   marca: false,
   fn(lt, S) {
