@@ -571,6 +571,42 @@ app, vídeo e o que pode ter sido esquecido). Parecer em `docs/AUDITORIA_ENTREGA
 
 ---
 
+## 15/10/2026 — Fechamento do relatório: contexto, escopos sem padrão e feedback do Mega Itajaí
+
+**Ambiente** (Deep Freeze): Node portátil em `%LOCALAPPDATA%\node\node-v24.22.0-win-x64` (com clasp 3.4.1), posto no PATH do usuário com
+`C:\Program Files\Git\cmd`. Python 3.13.16 instalado em `%LOCALAPPDATA%\Programs\Python\Python313` com openpyxl, pypdf, pypdfium2 e Pillow.
+`npm test`: exit 0.
+
+**Decisões do Guilherme:**
+
+| Decisão | Motivo |
+| :--- | :--- |
+| Sem medição de tempo nem de qualidade: *"não vai dar para aferir, não temos tempo"* | Prazo do relatório é hoje. O slide declara "não medido" e usa a percepção de quem usa |
+| A fala de Facilities entra **sem nome**: *"em vez de citar a pessoa, fala Mega Itajaí"* | Sem autorização para nome e cargo |
+| Depoimento de Propriedades (Ricardo) não veio; o espaço saiu do deck | Nada inventado no lugar |
+| Mensagem do slide de impacto: *"nos testes iniciais, depois do período de adaptação, se mostrou melhor para criar escopos, já que é um caminho guiado"* | Fiel à conversa de 14/10; a fala do tempo fica marcada "percepção, não medição" porque respondeu a uma pergunta direta |
+| Deck e vídeo precisam de **contexto antes do problema** e de mostrar os escopos sem padrão | Pedido do Guilherme ao ver o deck |
+
+**Fontes novas (fora do git):** transcrição da conversa com Facilities do Mega Itajaí (14/10, Google Meet, 12 min; tem conversa pessoal, por
+isso só o trecho útil fica aqui); 9 escopos reais sem o sistema (Itajaí 4, Esteio 2, Curitiba 3), miniaturas em
+`relatorio/rascunho/midia/antigos/`; relato escrito do gerente de Propriedades e Facilities (14/10) sobre 2024–2026 por Mega.
+
+**Achados nos 9 escopos:** 3 formatos de página (slide 720×405, slide 960×540, A4); nenhum com seção de inclusões e exclusões; 2 com data
+limite da proposta; 1 diz se a visita técnica é obrigatória; 5 grafias de revisão (RV02, R02, R00, v01, "02"), quase sempre só no nome do
+arquivo; o do reservatório de Esteio diz 580 m³ no título e 520 m³ no texto. Ressalva: amostra escolhida pela área, e parte é de 2026,
+feita fora do sistema ("sem padrão", não "antes").
+
+**Pedidos de Facilities (Mega Itajaí) em 14/10, para depois** (regra 4): tirar ou tornar opcional o "Resumo da vistoria"; duas formas de foto
+(no mesmo slide do texto ou em slide próprio). Ela ainda não testou os últimos ajustes.
+
+**Deck (16 slides, sem selo PENDENTE):** saiu o slide "Revisar antes da versão final". Novos: 3 "A ideia em uma página" (o que é a solução),
+4 contexto 2024–2026 por Mega (visão da gestão), 5 escopos sem padrão com os achados. O antes × depois (9) usa capas reais. O slide de
+tempo virou o feedback do Mega Itajaí (11). Os depoimentos saíram. O uso (12) fica com a contagem de 11/10. Os pedidos de 14/10 entraram nas
+evoluções (15). O número da página agora vem da posição no deck. PDF de entrega: `relatorio/rascunho/saida/Gestao-de-Contratacoes_Melhor-Ideia-2026.pdf`
+(fora do git).
+
+---
+
 ## Próxima entrada
 
 *(a preencher conforme avançamos)*
