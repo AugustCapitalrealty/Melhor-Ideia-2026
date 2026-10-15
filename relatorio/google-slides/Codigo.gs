@@ -15,7 +15,7 @@ const TITULOS = [
   'Gestão de Contratações: a contratação começa no escopo',
   'Sumário',
   'Um sistema que guia a montagem do escopo, do cadastro ao documento que vai ao fornecedor',
-  'De 2024 a 2026 o escopo passou a existir; faltavam padrão e estrutura',
+  'De 2024 a 2026 o escopo passou a ser feito; faltavam padrão e estrutura',
   'Sem padrão, cada escopo sai num formato e deixa lacunas diferentes',
   'Três casos reais mostram diferenças que o escopo precisa deixar explícitas',
   'Em 11/09, o comitê aprovou começar pelo escopo',

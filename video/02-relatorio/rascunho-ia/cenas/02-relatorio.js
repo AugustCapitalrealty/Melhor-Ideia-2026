@@ -169,7 +169,7 @@ CENAS['1.2'] = {
   fn(lt, S) {
     crFundo(); rotulo('01 · O CONTEXTO', 'Como o escopo era feito nos Megas', prog(lt, 0, 0.5));
     const anos = [['2024', ['Muitos serviços', 'contratados sem escopo'], S.w('muitos')], ['2025', ['O escopo começa', 'a aparecer'], S.w('aparecer')],
-      ['2026', ['Passa a ser', 'obrigatório'], S.w('obrigatorio')]];
+      ['2026', ['Passa a ser', 'cumprido'], S.w('cumprido')]];
     anos.forEach(([a, l, t], i) => comCartao(prog(lt, t - 0.4, t + 0.2), () => {
       const x = 150 + i * 548; cartao(x, 280, 512, 380);
       txt(a, x + 44, 400, 84, 900, CR.dest); linhas(l, x + 44, 480, 32, 800, CR.tinta, 1.3);

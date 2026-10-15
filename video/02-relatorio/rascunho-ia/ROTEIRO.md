@@ -11,7 +11,7 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 
 | Fato falado | Fonte |
 | :--- | :--- |
-| 2024: muitos serviços sem escopo; 2025: começa; 2026: obrigatório; cada Mega do seu jeito | Relato escrito do gerente de Propriedades e Facilities, 14/10/2026 (slide 4) |
+| 2024: muitos serviços sem escopo, embora o procedimento já pedisse; 2025: começa; 2026: passa a ser cumprido; cada Mega do seu jeito | Relato escrito do gerente de Propriedades e Facilities, 14/10/2026 (slide 4) |
 | 9 escopos sem o sistema: 3 formatos; 0 com inclusões e exclusões; 1 diz se a visita técnica é obrigatória | Leitura dos 9 escopos reunidos em 15/10/2026 (slide 5) |
 | 2, 3 e 12 visitas; mão de obra com um preço só; lavagem do piso do Mega Esteio com a mais cara 3,3× a mais barata | `docs/BASE_DE_CONHECIMENTO.md` §8.4, §16.3; equalização EQU_20260406 (Propriedades, Mega Esteio) (slide 6) |
 | Comitê aprovou começar pelo escopo (11/09/2026) | Convite da reunião do comitê (slide 7) |
@@ -32,7 +32,7 @@ Pedidos do Guilherme em 15/10/2026: abrir com o **contexto** (não direto no pro
 
 **1.2 · DE 2024 A 2026 (cartão).** Três colunas por ano, acendendo com a fala.
 
-> Até 2024, muitos serviços eram contratados sem escopo. Em 2025, ele começou a aparecer. Em 2026, passou a ser obrigatório. Mas cada Mega montava do seu jeito.
+> Até 2024, muitos serviços eram contratados sem escopo, embora o procedimento já pedisse. Em 2025, ele começou a aparecer. Em 2026, passou a ser cumprido. Mas cada Mega montava do seu jeito.
 
 **1.3 · SEM PADRÃO (capas A01, A02, A03 e contadores).** As três capas reais; depois os números do slide 5.
 

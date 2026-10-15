@@ -101,15 +101,15 @@ S.push(conteudo(3, 0,
 
 // 4. Contexto: como o escopo era feito, na visão da gestão (antes da dor)
 S.push(conteudo(3, 1,
-  'De 2024 a 2026 o escopo passou a existir; faltavam padrão e estrutura',
+  'De 2024 a 2026 o escopo passou a ser feito; faltavam padrão e estrutura',
   'Como cada Mega montava escopo, na visão do gerente de Propriedades e Facilities',
   `<table class="anos">
     <tr><th></th><th>Mega Itajaí</th><th>Mega Curitiba</th><th>Mega Esteio</th></tr>
     <tr><td>2024</td><td>Muitos serviços sem escopo; quando havia, sem padrão ou superficial. Às vezes o chamado servia de escopo</td><td>Montar escopo não era hábito</td><td>Não havia o hábito; escopo não era criado</td></tr>
     <tr><td>2025</td><td>Escopos mais detalhados, ainda usados muitas vezes como formalização de requisito</td><td>Começa, sem padrão. Um modelo em Word virou referência, mas demandava muito tempo e esforço</td><td>Começa: fácil de entender para quem é de fora, mas considerações importantes não ficavam claras</td></tr>
-    <tr><td>2026</td><td>Mais claros; escopo obrigatório nas contratações, exceto abaixo de R$ 1 mil (lançadas via RM)</td><td>Obrigatório; com a mudança de gestão, os arquivos mudaram e surgiu um novo padrão</td><td class="sem">sem relato</td></tr>
+    <tr><td>2026</td><td>Mais claros; ter escopo vira padrão nas contratações, exceto abaixo de R$ 1 mil (lançadas via RM)</td><td>O procedimento passa a ser seguido; com a mudança de gestão, os arquivos mudaram e surgiu um novo padrão</td><td class="sem">sem relato</td></tr>
   </table>
-  <div class="conclusao"><b>“O ponto é questão de padronização e estrutura.”</b> Na equalização, era e ainda é comum voltar ao fornecedor por divergência de informação. Propriedades é a área mais madura.</div>`,
+  <div class="conclusao"><b>“O ponto é questão de padronização e estrutura.”</b> Na equalização, era e ainda é comum voltar ao fornecedor por divergência de informação. O procedimento já pedia escopo; na prática, às vezes passava batido. Propriedades é a área mais madura.</div>`,
   'Fonte: relato escrito do gerente de Propriedades e Facilities, 14/10/2026, sobre os anos em que esteve à frente das áreas. Resumido sem mudar o sentido; sem nomes de quem monta escopo.'));
 
 // 4. Escopos reais sem padrão (amostra enviada pelas áreas em 15/10)
