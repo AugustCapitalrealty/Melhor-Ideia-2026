@@ -367,6 +367,6 @@ CENAS['6.1'] = {
     reveal('Começar melhor.', 150, 720, 800, 80, CR.branco, E.outCubic(prog(lt, tCo - 0.4, tCo + 0.2)));
     reveal('Contratar melhor.', 150, 820, 800, 80, CR.claro, E.outCubic(prog(lt, tCt - 0.4, tCt + 0.2)));
     const b = prog(lt, tCt + 0.3, tCt + 0.9);
-    if (b > 0) { ctx.save(); ctx.globalAlpha *= b; txt('Guilherme Marques · Facilities · Capital Realty · Melhor Ideia 2026', 150, 920, 24, 500, CR.mudo); ctx.restore(); }
+    if (b > 0) { ctx.save(); ctx.globalAlpha *= b; txt('Guilherme August · Planejamento e Gestão · Capital Realty · Melhor Ideia 2026', 150, 920, 24, 500, CR.mudo); ctx.restore(); }
   },
 };

@@ -69,7 +69,7 @@ S.push(`<section class="slide capa">
     <div class="frase">A contratação começa no escopo.</div>
     <div class="frase2">Para toda área que monta escopo: Facilities, Propriedades, Engenharia e as demais.</div>
   </div>
-  <footer><span>Guilherme Marques · Facilities · Capital Realty · 15/10/2026</span><span class="assin"><i></i>Começar melhor. Contratar melhor.</span></footer>
+  <footer><span>Guilherme August · Planejamento e Gestão · Capital Realty · 15/10/2026</span><span class="assin"><i></i>Começar melhor. Contratar melhor.</span></footer>
 </section>`);
 
 // 2. Sumário (o slide "Revisar antes da versão final" saiu em 15/10: o que não foi medido está declarado no próprio slide)
@@ -83,7 +83,7 @@ S.push(`<section class="slide sumario">
     ['Qualidade e viabilidade', 'Pedido vira versão; sem licença nova', '13–14'],
     ['Entregue e próximos passos', 'O que está em produção e o que vem', '15'],
   ].map(([t, d, p], i) => `<div class="sum-item"><div class="sum-n">0${i + 1}</div><div><div class="sum-t">${t}</div><div class="sum-d">${d}</div></div><div class="sum-p">${p.includes('–') ? 'slides' : 'slide'} ${p}</div></div>`).join('')}</div>
-  <footer><span>Capital Realty · Facilities</span><span>Gestão de Contratações · Melhor Ideia 2026 · 2</span></footer>
+  <footer><span>Capital Realty · Planejamento e Gestão</span><span>Gestão de Contratações · Melhor Ideia 2026 · 2</span></footer>
 </section>`);
 
 // 3. A ideia em uma página: o que é a solução, antes do problema
@@ -278,7 +278,7 @@ S.push(conteudo(14, 5,
 // 15. Encerramento
 S.push(`<section class="slide fim">
   <div class="fim-txt"><img class="logo-fim" src="${IMG.logoNeg}"><div class="kicker">GESTÃO DE CONTRATAÇÕES</div><div class="nome">Começar melhor.<br>Contratar melhor.</div>
-  <div class="frase">Guilherme Marques · Facilities · Capital Realty · Melhor Ideia 2026</div></div>
+  <div class="frase">Guilherme August · Planejamento e Gestão · Capital Realty · Melhor Ideia 2026</div></div>
   <div class="fotos lado"><div style="background-image:url('${IMG.fotoFim}')"></div></div>
 </section>`);
 
