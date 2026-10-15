@@ -668,3 +668,5 @@ de e-mail criado no Gmail, **não enviado**, como resposta à conversa do comit�
 Guilherme Souza e Rodrigo Proença em cópia: links da pasta, do PDF, do Slides e do vídeo (voz sintética declarada) e o aviso de sigilo das pastas
 03 a 05. **Atenção:** pasta, vídeo e Slides estavam como "qualquer pessoa com o link: **editor**". Recomendado mudar para **leitor** (ou
 restrito à Capital Realty) antes de enviar.
+Rascunho atualizado a pedido do Guilherme: entrou o link do sistema em produção (montagem de escopo), o mesmo `/exec` usado em
+`tools/playwright-recontar-escopos.cjs`, com a nota "acesso com a conta da Capital Realty".
